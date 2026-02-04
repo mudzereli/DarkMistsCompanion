@@ -1055,7 +1055,7 @@ MapColors.FinalUpdatePass()</script>
 			<Script isActive="yes" isFolder="no">
 				<name>DM Core</name>
 				<packageName></packageName>
-				<script>dofile(getMudletHomeDir() .. "/scripts/darkmists.lua" )</script>
+				<script>dofile(getMudletHomeDir() .. "/DarkMistsCompanion/darkmists.lua" )</script>
 				<eventHandlerList />
 			</Script>
 			<Script isActive="yes" isFolder="no">

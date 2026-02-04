@@ -523,5 +523,5 @@ end
 -- Initialization
 -- ============================================================================
 
-ItemTracker.load(getMudletHomeDir() .. "/scripts/assets/darkmists_items.json")
+ItemTracker.load(getMudletHomeDir() .. "/DarkMistsCompanion/assets/darkmists_items.json")
 ItemTracker.initTooltip()

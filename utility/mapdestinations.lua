@@ -6,7 +6,7 @@
 
 MapDestinations = {
   list = {},
-  path = getMudletHomeDir() .. "/scripts/saved/mapdestinations_state.lua",
+  path = getMudletHomeDir() .. "/mapdestinations_state.lua",
 }
 
 -- Add or overwrite a destination (runtime only)

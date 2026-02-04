@@ -65,7 +65,7 @@ end
 
 Darkmists.OpenItemViewer = function()
   local base = getMudletHomeDir()
-  local path = base .. "/scripts/assets/item-viewer.html"
+  local path = base .. "/DarkMistsCompanion/assets/item-viewer.html"
 
   -- normalize for Windows
   path = path:gsub("\\", "/")
@@ -75,7 +75,7 @@ end
 
 Darkmists.OpenDMAPIDocs = function()
   local base = getMudletHomeDir()
-  local path = base .. "/scripts/assets/dmapi.html"
+  local path = base .. "/DarkMistsCompanion/assets/dmapi.html"
 
   -- normalize for Windows
   path = path:gsub("\\", "/")
@@ -84,22 +84,22 @@ Darkmists.OpenDMAPIDocs = function()
 end
 
 -- DMAPI first
-dofile(getMudletHomeDir() .. "/scripts/utility/util.lua" )
-dofile(getMudletHomeDir() .. "/scripts/dmapi.lua" )
+dofile(getMudletHomeDir() .. "/DarkMistsCompanion/utility/util.lua" )
+dofile(getMudletHomeDir() .. "/DarkMistsCompanion/dmapi.lua" )
 
 -- Utility Scripts that use DMAPI
-dofile(getMudletHomeDir() .. "/scripts/utility/itemtracker.lua" )
-dofile(getMudletHomeDir() .. "/scripts/utility/statroller.lua" )
-dofile(getMudletHomeDir() .. "/scripts/utility/mapdestinations.lua" )
-dofile(getMudletHomeDir() .. "/scripts/utility/mapcolor.lua" )
+dofile(getMudletHomeDir() .. "/DarkMistsCompanion/utility/itemtracker.lua" )
+dofile(getMudletHomeDir() .. "/DarkMistsCompanion/utility/statroller.lua" )
+dofile(getMudletHomeDir() .. "/DarkMistsCompanion/utility/mapdestinations.lua" )
+dofile(getMudletHomeDir() .. "/DarkMistsCompanion/utility/mapcolor.lua" )
 
 -- UI Scripts
-dofile(getMudletHomeDir() .. "/scripts/ui/statusbars.lua" )
-dofile(getMudletHomeDir() .. "/scripts/ui/whowindow.lua" )
-dofile(getMudletHomeDir() .. "/scripts/ui/chathistory.lua" )
-dofile(getMudletHomeDir() .. "/scripts/ui/affectswindow.lua" )
+dofile(getMudletHomeDir() .. "/DarkMistsCompanion/ui/statusbars.lua" )
+dofile(getMudletHomeDir() .. "/DarkMistsCompanion/ui/whowindow.lua" )
+dofile(getMudletHomeDir() .. "/DarkMistsCompanion/ui/chathistory.lua" )
+dofile(getMudletHomeDir() .. "/DarkMistsCompanion/ui/affectswindow.lua" )
 
 -- Meta Help / Command
-dofile(getMudletHomeDir() .. "/scripts/dm_meta.lua" )
+dofile(getMudletHomeDir() .. "/DarkMistsCompanion/dm_meta.lua" )
 
 echo("\nAll Scripts Loaded!\n")
