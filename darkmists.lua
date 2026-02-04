@@ -53,26 +53,6 @@ Darkmists.OnNewLine = function()
     StatRoller.on_line(line)
   end
 
-  -- Entity death detection (raises events)
-  if EntityTracker and EntityTracker.check_death_line then
-    EntityTracker.check_death_line(line)
-  end
-
-  -- Entity scanning / annotation
-  if EntityTracker and EntityTracker.feed then
-    EntityTracker.feed(line)
-  end
-
-  -- Targeting may consume the line (combat priority)
-  if Targeting and Targeting.on_line then
-    if Targeting.on_line(line) then return end
-  end
-
-  -- Buff tracking / automation
-  if BuffManager and BuffManager.on_line then
-    BuffManager.on_line(line)
-  end
-
   if ItemTracker and ItemTracker.renderLineWithLinks then
     ItemTracker.renderLineWithLinks(line)
   end
