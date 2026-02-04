@@ -1,0 +1,1167 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE MudletPackage>
+<MudletPackage version="1.001">
+	<TriggerPackage>
+		<TriggerGroup isActive="yes" isFolder="yes" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+			<name>DM Core</name>
+			<script></script>
+			<triggerType>0</triggerType>
+			<conditonLineDelta>0</conditonLineDelta>
+			<mStayOpen>0</mStayOpen>
+			<mCommand></mCommand>
+			<packageName></packageName>
+			<mFgColor>#ff0000</mFgColor>
+			<mBgColor>#ffff00</mBgColor>
+			<mSoundFile></mSoundFile>
+			<colorTriggerFgColor>#000000</colorTriggerFgColor>
+			<colorTriggerBgColor>#000000</colorTriggerBgColor>
+			<regexCodeList />
+			<regexCodePropertyList />
+			<Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+				<name>new line</name>
+				<script>if not Darkmists then
+  cecho("&lt;red&gt;Darkmists &lt;white&gt;namespace missing!")
+else
+  Darkmists.OnNewLine()
+end</script>
+				<triggerType>0</triggerType>
+				<conditonLineDelta>0</conditonLineDelta>
+				<mStayOpen>0</mStayOpen>
+				<mCommand></mCommand>
+				<packageName></packageName>
+				<mFgColor>#00007f</mFgColor>
+				<mBgColor>#ffff00</mBgColor>
+				<mSoundFile></mSoundFile>
+				<colorTriggerFgColor>#000000</colorTriggerFgColor>
+				<colorTriggerBgColor>#000000</colorTriggerBgColor>
+				<regexCodeList>
+					<string>return true</string>
+				</regexCodeList>
+				<regexCodePropertyList>
+					<integer>4</integer>
+				</regexCodePropertyList>
+			</Trigger>
+		</TriggerGroup>
+		<TriggerGroup isActive="yes" isFolder="yes" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+			<name>DM Click</name>
+			<script></script>
+			<triggerType>0</triggerType>
+			<conditonLineDelta>0</conditonLineDelta>
+			<mStayOpen>0</mStayOpen>
+			<mCommand></mCommand>
+			<packageName></packageName>
+			<mFgColor>#ff0000</mFgColor>
+			<mBgColor>#ffff00</mBgColor>
+			<mSoundFile></mSoundFile>
+			<colorTriggerFgColor>#000000</colorTriggerFgColor>
+			<colorTriggerBgColor>#000000</colorTriggerBgColor>
+			<regexCodeList />
+			<regexCodePropertyList />
+			<TriggerGroup isActive="yes" isFolder="yes" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+				<name>Hooks</name>
+				<script></script>
+				<triggerType>0</triggerType>
+				<conditonLineDelta>0</conditonLineDelta>
+				<mStayOpen>0</mStayOpen>
+				<mCommand></mCommand>
+				<packageName></packageName>
+				<mFgColor>#ff0000</mFgColor>
+				<mBgColor>#ffff00</mBgColor>
+				<mSoundFile></mSoundFile>
+				<colorTriggerFgColor>#000000</colorTriggerFgColor>
+				<colorTriggerBgColor>#000000</colorTriggerBgColor>
+				<regexCodeList />
+				<regexCodePropertyList />
+				<Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="yes" isColorTriggerFg="no" isColorTriggerBg="no">
+					<name>onRoomNameColor</name>
+					<script>selectCurrentLine()
+if isAnsiFgColor(7) then
+  CAPTURING_ROOM = true
+  if MazeRunner and MazeRunner.onRoomName then
+    MazeRunner.onRoomName(line)
+  end
+end
+</script>
+					<triggerType>0</triggerType>
+					<conditonLineDelta>0</conditonLineDelta>
+					<mStayOpen>0</mStayOpen>
+					<mCommand></mCommand>
+					<packageName></packageName>
+					<mFgColor>#ff0000</mFgColor>
+					<mBgColor>#ffff00</mBgColor>
+					<mSoundFile></mSoundFile>
+					<colorTriggerFgColor>#ffff00</colorTriggerFgColor>
+					<colorTriggerBgColor>#000000</colorTriggerBgColor>
+					<regexCodeList>
+						<string>FG7BG-2</string>
+					</regexCodeList>
+					<regexCodePropertyList>
+						<integer>6</integer>
+					</regexCodePropertyList>
+				</Trigger>
+				<Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+					<name>onRoomExits</name>
+					<script>EXIT_LINE_MARKER = 0</script>
+					<triggerType>0</triggerType>
+					<conditonLineDelta>0</conditonLineDelta>
+					<mStayOpen>1</mStayOpen>
+					<mCommand></mCommand>
+					<packageName></packageName>
+					<mFgColor>#ff0000</mFgColor>
+					<mBgColor>#ffff00</mBgColor>
+					<mSoundFile></mSoundFile>
+					<colorTriggerFgColor>#000000</colorTriggerFgColor>
+					<colorTriggerBgColor>#000000</colorTriggerBgColor>
+					<regexCodeList>
+						<string>^\[Exits\: (.*)\]</string>
+					</regexCodeList>
+					<regexCodePropertyList>
+						<integer>1</integer>
+					</regexCodePropertyList>
+					<Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+						<name>onRoomExitsNextLine</name>
+						<script>EXIT_LINE_MARKER = EXIT_LINE_MARKER + 1
+if EXIT_LINE_MARKER &gt; 1 then
+  CAPTURING_ROOM = false
+end</script>
+						<triggerType>0</triggerType>
+						<conditonLineDelta>0</conditonLineDelta>
+						<mStayOpen>0</mStayOpen>
+						<mCommand></mCommand>
+						<packageName></packageName>
+						<mFgColor>#ff0000</mFgColor>
+						<mBgColor>#ffff00</mBgColor>
+						<mSoundFile></mSoundFile>
+						<colorTriggerFgColor>#000000</colorTriggerFgColor>
+						<colorTriggerBgColor>#000000</colorTriggerBgColor>
+						<regexCodeList>
+							<string>return true</string>
+						</regexCodeList>
+						<regexCodePropertyList>
+							<integer>4</integer>
+						</regexCodePropertyList>
+					</Trigger>
+				</Trigger>
+			</TriggerGroup>
+			<Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+				<name>ClickableAuctions</name>
+				<script></script>
+				<triggerType>0</triggerType>
+				<conditonLineDelta>0</conditonLineDelta>
+				<mStayOpen>20</mStayOpen>
+				<mCommand></mCommand>
+				<packageName></packageName>
+				<mFgColor>#ff0000</mFgColor>
+				<mBgColor>#ffff00</mBgColor>
+				<mSoundFile></mSoundFile>
+				<colorTriggerFgColor>#000000</colorTriggerFgColor>
+				<colorTriggerBgColor>#000000</colorTriggerBgColor>
+				<regexCodeList>
+					<string>^Item ID\s+Name\s+Buyout\s+Time Left\s+Current Bid</string>
+				</regexCodeList>
+				<regexCodePropertyList>
+					<integer>1</integer>
+				</regexCodePropertyList>
+				<Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+					<name>ClickableAuctions - Auction Line</name>
+					<script>replaceLine("")
+local id = matches["id"]
+local name = matches["name"]
+local buyout = matches["buyout"]
+local time = matches["time"]
+local bid = matches["bid"]
+
+name = name:gsub("^%s+","")
+
+if #name &gt;= 28 then
+  name = name:sub(1,28)
+end
+
+cechoLink(
+  string.format("&lt;green&gt;%7s  &lt;white&gt;%28s  &lt;green&gt;%7s  &lt;white&gt;%11s  &lt;green&gt;%11s\n",id, name, buyout, time, bid),
+  function()
+    if holdingModifiers(mudlet.keymodifier.Shift) then
+      send("auc buyout " .. id)
+      send("auc list")
+    else
+      send("auc browse " .. id)
+    end
+  end,
+  string.format("Click: auc browse %s | Shift+Click: auc buyout %s", id, id),
+  true
+)</script>
+					<triggerType>0</triggerType>
+					<conditonLineDelta>0</conditonLineDelta>
+					<mStayOpen>0</mStayOpen>
+					<mCommand></mCommand>
+					<packageName></packageName>
+					<mFgColor>#ff0000</mFgColor>
+					<mBgColor>#ffff00</mBgColor>
+					<mSoundFile></mSoundFile>
+					<colorTriggerFgColor>#000000</colorTriggerFgColor>
+					<colorTriggerBgColor>#000000</colorTriggerBgColor>
+					<regexCodeList>
+						<string>^(?&lt;id&gt;[a-z0-9]{7})\s+(?&lt;name&gt;.+?)\s{2,}(?&lt;buyout&gt;\d+)\s+(?&lt;time&gt;(?:\d+d\s*)?(?:\d+h\s*)?(?:\d+m)?)\s+(?&lt;bid&gt;\d*)$</string>
+					</regexCodeList>
+					<regexCodePropertyList>
+						<integer>1</integer>
+					</regexCodePropertyList>
+				</Trigger>
+			</Trigger>
+			<Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+				<name>ClickableQuests</name>
+				<script></script>
+				<triggerType>0</triggerType>
+				<conditonLineDelta>0</conditonLineDelta>
+				<mStayOpen>15</mStayOpen>
+				<mCommand></mCommand>
+				<packageName></packageName>
+				<mFgColor>#ff0000</mFgColor>
+				<mBgColor>#ffff00</mBgColor>
+				<mSoundFile></mSoundFile>
+				<colorTriggerFgColor>#000000</colorTriggerFgColor>
+				<colorTriggerBgColor>#000000</colorTriggerBgColor>
+				<regexCodeList>
+					<string>^Quest\s+Title\s+Summary</string>
+				</regexCodeList>
+				<regexCodePropertyList>
+					<integer>1</integer>
+				</regexCodePropertyList>
+				<Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+					<name>ClickableQuests - Quest Line</name>
+					<script>local questNum = matches[2]
+local rest = matches[3]
+
+replaceLine("")
+
+cechoLink(
+  string.format("&lt;green&gt;%5s&lt;white&gt;  %s\n", questNum, rest),
+  function()
+    if holdingModifiers(mudlet.keymodifier.Shift) then
+      send("quest drop " .. questNum)
+      send("quest current")
+    else
+      send("quest read " .. questNum)
+    end
+  end,
+  string.format("Click: quest read %s | Shift+Click: quest drop %s", questNum, questNum),
+  true
+)</script>
+					<triggerType>0</triggerType>
+					<conditonLineDelta>0</conditonLineDelta>
+					<mStayOpen>0</mStayOpen>
+					<mCommand></mCommand>
+					<packageName></packageName>
+					<mFgColor>#ff0000</mFgColor>
+					<mBgColor>#ffff00</mBgColor>
+					<mSoundFile></mSoundFile>
+					<colorTriggerFgColor>#000000</colorTriggerFgColor>
+					<colorTriggerBgColor>#000000</colorTriggerBgColor>
+					<regexCodeList>
+						<string>^\s*(\d+)\s{2,}(.+)$</string>
+					</regexCodeList>
+					<regexCodePropertyList>
+						<integer>1</integer>
+					</regexCodePropertyList>
+				</Trigger>
+			</Trigger>
+			<Trigger isActive="no" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="yes" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+				<name>ClickableContainers</name>
+				<script>CLICKABLE_CONTAINERS_CURRENT_ITEM = 0
+CLICKABLE_CONTAINERS_SEEN = {}
+CLICKABLE_CONTAINERS_RUNNING = true
+CLICKABLE_CONTAINERS_DELETE_LINES = {}
+enableTrigger("ClickableContainers - Inventory Item")
+enableTrigger("ClickableContainers - Cleanup")</script>
+				<triggerType>0</triggerType>
+				<conditonLineDelta>0</conditonLineDelta>
+				<mStayOpen>200</mStayOpen>
+				<mCommand></mCommand>
+				<packageName></packageName>
+				<mFgColor>#008000</mFgColor>
+				<mBgColor>transparent</mBgColor>
+				<mSoundFile></mSoundFile>
+				<colorTriggerFgColor>#000000</colorTriggerFgColor>
+				<colorTriggerBgColor>#000000</colorTriggerBgColor>
+				<regexCodeList>
+					<string>^(.+) holds:$</string>
+				</regexCodeList>
+				<regexCodePropertyList>
+					<integer>1</integer>
+				</regexCodePropertyList>
+				<Trigger isActive="no" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+					<name>ClickableContainers - Inventory Item</name>
+					<script>-- Ignore "A Pack Holds:" line
+if line:match("holds:") then return end
+
+-- Ignore Prompts
+if line:sub(1,1) == "&lt;" or not CLICKABLE_CONTAINERS_RUNNING then 
+  CLICKABLE_CONTAINERS_RUNNING = false
+  return true
+end
+
+-- Get Container "Name" from Command
+local CLICKABLE_CONTAINERS_CURRENT = command:match("l[o]?[o]?[k]? in (.*)")
+
+-- Extract the actual item name (strip counts &amp; tags)
+local item = line
+  :gsub("^%s*", "")
+  :gsub("^%(%s*%d+%)%s*", "")           -- remove (28)
+  --:gsub("^(%b())%s*", "")               -- remove first tag
+  --:gsub("^(%b())%s*", "")               -- remove second tag
+  --:gsub("^(%b())%s*", "")               -- remove third tag
+  --:gsub("^(%b())%s*", "")               -- remove fourth tag
+
+-- If after stripping it’s empty, bail
+if not item or item == "" then return end
+if not CLICKABLE_CONTAINERS_DELETE_LINES then return end
+if not CLICKABLE_CONTAINERS_CURRENT then return end
+
+CLICKABLE_CONTAINERS_CURRENT_ITEM = CLICKABLE_CONTAINERS_CURRENT_ITEM + 1
+
+local lastSeenItem = CLICKABLE_CONTAINERS_SEEN[item] or {}
+lastSeenItem.count = lastSeenItem.count or 0
+lastSeenItem.line = lastSeenItem.line or getLineNumber()
+
+local tcount = lastSeenItem.count + 1
+
+--echo(Util.dump_table(lastSeenItem))
+
+if tcount &gt; 1 then
+  table.insert(CLICKABLE_CONTAINERS_DELETE_LINES,lastSeenItem.line)
+  --echo(lastSeenItem.line.." : "..getLineNumber())
+  moveCursor(0,getLineNumber())
+  cinsertText((" (%2d) "):format(lastSeenItem.count))
+else
+  moveCursor(0,getLineNumber())
+  cinsertText(("      "):format(lastSeenItem.count))
+end
+
+local sendCmd = string.format(
+  "get %s. from %s",
+  tostring(CLICKABLE_CONTAINERS_CURRENT_ITEM),
+  CLICKABLE_CONTAINERS_CURRENT
+)
+
+moveCursor(0,getLineNumber())
+cinsertLink(
+  "&lt;green&gt;[+]",
+  function()
+    send(sendCmd)
+    expandAlias(command)
+  end,
+  string.format(
+    "Click: get %s from %s",
+    item,
+    CLICKABLE_CONTAINERS_CURRENT
+  ), true)
+
+lastSeenItem.count = tcount
+lastSeenItem.line = getLineNumber()
+CLICKABLE_CONTAINERS_SEEN[item] = lastSeenItem</script>
+					<triggerType>0</triggerType>
+					<conditonLineDelta>0</conditonLineDelta>
+					<mStayOpen>0</mStayOpen>
+					<mCommand></mCommand>
+					<packageName></packageName>
+					<mFgColor>#ff0000</mFgColor>
+					<mBgColor>#ffff00</mBgColor>
+					<mSoundFile></mSoundFile>
+					<colorTriggerFgColor>#000000</colorTriggerFgColor>
+					<colorTriggerBgColor>#000000</colorTriggerBgColor>
+					<regexCodeList>
+						<string>^\s*(?:\(\s*\d+\))?\s*(?:\([^)]+\)\s*)*(.+)$</string>
+					</regexCodeList>
+					<regexCodePropertyList>
+						<integer>1</integer>
+					</regexCodePropertyList>
+				</Trigger>
+				<Trigger isActive="no" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+					<name>ClickableContainers - Cleanup</name>
+					<script>CLICKABLE_CONTAINERS_RUNNING = false
+table.sort(CLICKABLE_CONTAINERS_DELETE_LINES)
+for i = #CLICKABLE_CONTAINERS_DELETE_LINES, 1, -1 do
+  local line = CLICKABLE_CONTAINERS_DELETE_LINES[i]
+  moveCursor(0,line)
+  deleteLine()
+end
+moveCursor(0,getLineNumber())
+disableTrigger("ClickableContainers - Inventory Item")
+disableTrigger("ClickableContainers - Cleanup")</script>
+					<triggerType>0</triggerType>
+					<conditonLineDelta>0</conditonLineDelta>
+					<mStayOpen>0</mStayOpen>
+					<mCommand></mCommand>
+					<packageName></packageName>
+					<mFgColor>#ff0000</mFgColor>
+					<mBgColor>#ffff00</mBgColor>
+					<mSoundFile></mSoundFile>
+					<colorTriggerFgColor>#000000</colorTriggerFgColor>
+					<colorTriggerBgColor>#000000</colorTriggerBgColor>
+					<regexCodeList>
+						<string>^$</string>
+					</regexCodeList>
+					<regexCodePropertyList>
+						<integer>1</integer>
+					</regexCodePropertyList>
+				</Trigger>
+			</Trigger>
+			<Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+				<name>ClickablePractices</name>
+				<script>-- Ignore prompts
+if line:sub(1,1) == "&lt;" then return end
+
+-- Only during practice / skill commands
+if not (command and (
+     command:match("^prac")
+  or command:match("^sk")
+  or command:match("^sp"))) then return end
+
+local raw = line
+
+-- capture optional "Level NN:" prefix
+local levelPrefix = raw:match("^(%s*Level%s+%d+:%s*)")
+
+-- strip it only for parsing
+if levelPrefix then
+  raw = raw:gsub("^%s*Level%s+%d+:%s*", "")
+end
+
+-- strip continuation indentation
+raw = raw:gsub("^%s+", "")
+
+local found = false
+local output = {}
+
+-- collect skills first - UPDATED to include dash
+for skill, pct in raw:gmatch("([%a%-][%a%s'%-]-)%s+(%d+)%%") do
+  found = true
+  table.insert(output, { skill = skill, pct = pct, suffix = "%" })
+end
+
+for skill, pct in raw:gmatch("([%a%-][%a%s'%-]-)%s+(%d+) mana") do
+  found = true
+  table.insert(output, { skill = skill, pct = pct, suffix = " mana" })
+end
+
+for skill, pct in raw:gmatch("([%a%-][%a%s'%-]-)%s+n/a") do
+  found = true
+  table.insert(output, { skill = skill, pct = " n/a", suffix = "" })
+end
+
+if not found then return end
+
+replaceLine("")
+
+if levelPrefix then
+  cecho("&lt;white&gt;" .. levelPrefix)
+elseif not command:match("^prac") then
+  cecho("&lt;white&gt;          ")
+end
+
+for _, entry in ipairs(output) do
+  local skill = entry.skill
+  local pct   = entry.pct
+  local skillDisplay = skill
+  if #skillDisplay &gt; 19 then
+    skillDisplay = skillDisplay:sub(1,19)
+  end
+  
+  cechoLink(
+    string.format("&lt;deep_sky_blue&gt;%-19s", skillDisplay),
+    function()
+      if holdingModifiers(mudlet.keymodifier.Shift) then
+        send("prac " .. skill)
+        send("practice")
+      else
+        send("help " .. skill)
+      end
+    end,
+    "Click: help " .. skill .. "\nShift+Click: practice " .. skill,
+    true
+  )
+  
+  -- Color code the percentage
+  local color = "&lt;gray&gt;"
+  if pct ~= " n/a" and entry.suffix == "%" then
+    local numPct = tonumber(pct)
+    if numPct == 100 then
+      color = "&lt;green&gt;"
+    elseif numPct &gt;= 90 then
+      color = "&lt;yellow&gt;"
+    elseif numPct &gt;= 50 then
+      color = "&lt;orange&gt;"
+    else
+      color = "&lt;red&gt;"
+    end
+  end
+  
+  cecho(string.format("%s%3s%s  ", color, pct, entry.suffix))
+end</script>
+				<triggerType>0</triggerType>
+				<conditonLineDelta>0</conditonLineDelta>
+				<mStayOpen>0</mStayOpen>
+				<mCommand></mCommand>
+				<packageName></packageName>
+				<mFgColor>#ff0000</mFgColor>
+				<mBgColor>#ffff00</mBgColor>
+				<mSoundFile></mSoundFile>
+				<colorTriggerFgColor>#000000</colorTriggerFgColor>
+				<colorTriggerBgColor>#000000</colorTriggerBgColor>
+				<regexCodeList>
+					<string>^(?!&lt;).*</string>
+				</regexCodeList>
+				<regexCodePropertyList>
+					<integer>1</integer>
+				</regexCodePropertyList>
+			</Trigger>
+			<Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+				<name>ClickableTrain</name>
+				<script>-- Ignore prompts
+if line:sub(1,1) == "&lt;" then return end
+
+-- Only during train command
+if not (command and command:match("^train")) then return end
+
+local raw = line
+
+-- Match the main train list
+local list = raw:match("^You can train:%s*(.+)")
+if not list then return end
+
+-- Clean punctuation
+list = list:gsub("[%.]", "")
+
+local stats = {}
+for stat in list:gmatch("(%a+)") do
+  table.insert(stats, stat)
+end
+
+if #stats == 0 then return end
+
+replaceLine("")
+cecho("&lt;white&gt;You can train: ")
+
+for _, stat in ipairs(stats) do
+  cechoLink(
+    string.format("&lt;deep_sky_blue&gt;%s", stat),
+    function()
+      if holdingModifiers(mudlet.keymodifier.Shift) then
+        send("train " .. stat)
+        send("train")
+      else
+        send("help " .. stat)
+      end
+    end,
+    "Click: help " .. stat .. "\nShift+Click: train " .. stat,
+    true
+  )
+  cecho(" ")
+end
+
+cecho("\n")
+</script>
+				<triggerType>0</triggerType>
+				<conditonLineDelta>0</conditonLineDelta>
+				<mStayOpen>0</mStayOpen>
+				<mCommand></mCommand>
+				<packageName></packageName>
+				<mFgColor>#ff0000</mFgColor>
+				<mBgColor>#ffff00</mBgColor>
+				<mSoundFile></mSoundFile>
+				<colorTriggerFgColor>#000000</colorTriggerFgColor>
+				<colorTriggerBgColor>#000000</colorTriggerBgColor>
+				<regexCodeList>
+					<string>^You can train:</string>
+				</regexCodeList>
+				<regexCodePropertyList>
+					<integer>1</integer>
+				</regexCodePropertyList>
+			</Trigger>
+			<Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+				<name>ClickableDirections</name>
+				<script>-- Ignore prompts
+if line:sub(1,1) == "&lt;" then return end
+if not CAPTURING_ROOM then return end
+
+local dirs = { "north", "south", "east", "west", "up", "down" }
+local lower = line:lower()
+
+-- collect matches
+local matches = {}
+for _, dir in ipairs(dirs) do
+  local start = 1
+  while true do
+    local s, e = lower:find("%f[%a]" .. dir .. "%f[%A]", start)
+    if not s then break end
+    table.insert(matches, { s = s, e = e, dir = dir, word = line:sub(s, e) })
+    start = e + 1
+  end
+end
+
+if #matches == 0 then return end
+
+-- process right-to-left so indices don't shift
+table.sort(matches, function(a, b) return a.s &gt; b.s end)
+
+for _, m in ipairs(matches) do
+  local pos0 = m.s - 1
+  local len  = m.e - m.s + 1
+
+  if selectSection(pos0, len) then
+    replace("")
+    moveCursor(pos0, getLineNumber())
+
+    cinsertLink(
+      "&lt;spring_green&gt;" .. m.word,
+      function() send(m.dir) end,
+      "Go " .. m.dir,
+      true
+    )
+    moveCursorEnd()
+  end
+end
+</script>
+				<triggerType>0</triggerType>
+				<conditonLineDelta>0</conditonLineDelta>
+				<mStayOpen>0</mStayOpen>
+				<mCommand></mCommand>
+				<packageName></packageName>
+				<mFgColor>#ff0000</mFgColor>
+				<mBgColor>#ffff00</mBgColor>
+				<mSoundFile></mSoundFile>
+				<colorTriggerFgColor>#000000</colorTriggerFgColor>
+				<colorTriggerBgColor>#000000</colorTriggerBgColor>
+				<regexCodeList>
+					<string>return true</string>
+				</regexCodeList>
+				<regexCodePropertyList>
+					<integer>4</integer>
+				</regexCodePropertyList>
+			</Trigger>
+		</TriggerGroup>
+	</TriggerPackage>
+	<TimerPackage />
+	<AliasPackage />
+	<ActionPackage>
+		<ActionGroup isActive="yes" isFolder="yes" isPushButton="no" isFlatButton="no" useCustomLayout="no">
+			<name>DM Buttons</name>
+			<packageName></packageName>
+			<script></script>
+			<css></css>
+			<commandButtonUp></commandButtonUp>
+			<commandButtonDown></commandButtonDown>
+			<icon></icon>
+			<orientation>0</orientation>
+			<location>0</location>
+			<posX>0</posX>
+			<posY>0</posY>
+			<mButtonState>1</mButtonState>
+			<sizeX>0</sizeX>
+			<sizeY>0</sizeY>
+			<buttonColumn>1</buttonColumn>
+			<buttonRotation>0</buttonRotation>
+			<ActionGroup isActive="yes" isFolder="yes" isPushButton="no" isFlatButton="no" useCustomLayout="no">
+				<name>❓Help</name>
+				<packageName></packageName>
+				<script></script>
+				<css></css>
+				<commandButtonUp></commandButtonUp>
+				<commandButtonDown></commandButtonDown>
+				<icon></icon>
+				<orientation>1</orientation>
+				<location>0</location>
+				<posX>0</posX>
+				<posY>0</posY>
+				<mButtonState>1</mButtonState>
+				<sizeX>0</sizeX>
+				<sizeY>0</sizeY>
+				<buttonColumn>1</buttonColumn>
+				<buttonRotation>0</buttonRotation>
+				<Action isActive="yes" isFolder="no" isPushButton="no" isFlatButton="no" useCustomLayout="no">
+					<name>❔General</name>
+					<packageName></packageName>
+					<script>expandAlias("dmm help")</script>
+					<css></css>
+					<commandButtonUp></commandButtonUp>
+					<commandButtonDown></commandButtonDown>
+					<icon></icon>
+					<orientation>1</orientation>
+					<location>0</location>
+					<posX>0</posX>
+					<posY>0</posY>
+					<mButtonState>1</mButtonState>
+					<sizeX>0</sizeX>
+					<sizeY>0</sizeY>
+					<buttonColumn>1</buttonColumn>
+					<buttonRotation>0</buttonRotation>
+				</Action>
+				<ActionGroup isActive="yes" isFolder="yes" isPushButton="no" isFlatButton="no" useCustomLayout="no">
+					<name>🧭World</name>
+					<packageName></packageName>
+					<script></script>
+					<css></css>
+					<commandButtonUp></commandButtonUp>
+					<commandButtonDown></commandButtonDown>
+					<icon></icon>
+					<orientation>1</orientation>
+					<location>0</location>
+					<posX>0</posX>
+					<posY>0</posY>
+					<mButtonState>1</mButtonState>
+					<sizeX>0</sizeX>
+					<sizeY>0</sizeY>
+					<buttonColumn>1</buttonColumn>
+					<buttonRotation>0</buttonRotation>
+					<Action isActive="yes" isFolder="no" isPushButton="no" isFlatButton="no" useCustomLayout="no">
+						<name>🗺️Area Maps</name>
+						<packageName></packageName>
+						<script>expandAlias("dmm help map")</script>
+						<css></css>
+						<commandButtonUp></commandButtonUp>
+						<commandButtonDown></commandButtonDown>
+						<icon></icon>
+						<orientation>1</orientation>
+						<location>0</location>
+						<posX>0</posX>
+						<posY>0</posY>
+						<mButtonState>1</mButtonState>
+						<sizeX>0</sizeX>
+						<sizeY>0</sizeY>
+						<buttonColumn>1</buttonColumn>
+						<buttonRotation>0</buttonRotation>
+					</Action>
+					<Action isActive="yes" isFolder="no" isPushButton="no" isFlatButton="no" useCustomLayout="no">
+						<name>🚩Map Markers</name>
+						<packageName></packageName>
+						<script>expandAlias("dmm help goto")</script>
+						<css></css>
+						<commandButtonUp></commandButtonUp>
+						<commandButtonDown></commandButtonDown>
+						<icon></icon>
+						<orientation>1</orientation>
+						<location>0</location>
+						<posX>0</posX>
+						<posY>0</posY>
+						<mButtonState>1</mButtonState>
+						<sizeX>0</sizeX>
+						<sizeY>0</sizeY>
+						<buttonColumn>1</buttonColumn>
+						<buttonRotation>0</buttonRotation>
+					</Action>
+				</ActionGroup>
+				<ActionGroup isActive="yes" isFolder="yes" isPushButton="no" isFlatButton="no" useCustomLayout="no">
+					<name>👤Character</name>
+					<packageName></packageName>
+					<script></script>
+					<css></css>
+					<commandButtonUp></commandButtonUp>
+					<commandButtonDown></commandButtonDown>
+					<icon></icon>
+					<orientation>1</orientation>
+					<location>0</location>
+					<posX>0</posX>
+					<posY>0</posY>
+					<mButtonState>1</mButtonState>
+					<sizeX>0</sizeX>
+					<sizeY>0</sizeY>
+					<buttonColumn>1</buttonColumn>
+					<buttonRotation>0</buttonRotation>
+					<Action isActive="yes" isFolder="no" isPushButton="no" isFlatButton="no" useCustomLayout="no">
+						<name>🎲Stat Roller</name>
+						<packageName></packageName>
+						<script>expandAlias("dmm help statroll")</script>
+						<css></css>
+						<commandButtonUp></commandButtonUp>
+						<commandButtonDown></commandButtonDown>
+						<icon></icon>
+						<orientation>1</orientation>
+						<location>0</location>
+						<posX>0</posX>
+						<posY>0</posY>
+						<mButtonState>1</mButtonState>
+						<sizeX>0</sizeX>
+						<sizeY>0</sizeY>
+						<buttonColumn>1</buttonColumn>
+						<buttonRotation>0</buttonRotation>
+					</Action>
+					<Action isActive="yes" isFolder="no" isPushButton="no" isFlatButton="no" useCustomLayout="no">
+						<name>📈Skillup Tracking</name>
+						<packageName></packageName>
+						<script>expandAlias("dmm help skillups")</script>
+						<css></css>
+						<commandButtonUp></commandButtonUp>
+						<commandButtonDown></commandButtonDown>
+						<icon></icon>
+						<orientation>1</orientation>
+						<location>0</location>
+						<posX>0</posX>
+						<posY>0</posY>
+						<mButtonState>1</mButtonState>
+						<sizeX>0</sizeX>
+						<sizeY>0</sizeY>
+						<buttonColumn>1</buttonColumn>
+						<buttonRotation>0</buttonRotation>
+					</Action>
+				</ActionGroup>
+				<ActionGroup isActive="yes" isFolder="yes" isPushButton="no" isFlatButton="no" useCustomLayout="no">
+					<name>☰Interface</name>
+					<packageName></packageName>
+					<script></script>
+					<css></css>
+					<commandButtonUp></commandButtonUp>
+					<commandButtonDown></commandButtonDown>
+					<icon></icon>
+					<orientation>1</orientation>
+					<location>0</location>
+					<posX>0</posX>
+					<posY>0</posY>
+					<mButtonState>1</mButtonState>
+					<sizeX>0</sizeX>
+					<sizeY>0</sizeY>
+					<buttonColumn>1</buttonColumn>
+					<buttonRotation>0</buttonRotation>
+					<Action isActive="yes" isFolder="no" isPushButton="no" isFlatButton="no" useCustomLayout="no">
+						<name>📊Status Bars</name>
+						<packageName></packageName>
+						<script>expandAlias("dmm help sb")</script>
+						<css></css>
+						<commandButtonUp></commandButtonUp>
+						<commandButtonDown></commandButtonDown>
+						<icon></icon>
+						<orientation>1</orientation>
+						<location>0</location>
+						<posX>0</posX>
+						<posY>0</posY>
+						<mButtonState>1</mButtonState>
+						<sizeX>0</sizeX>
+						<sizeY>0</sizeY>
+						<buttonColumn>1</buttonColumn>
+						<buttonRotation>0</buttonRotation>
+					</Action>
+					<Action isActive="yes" isFolder="no" isPushButton="no" isFlatButton="no" useCustomLayout="no">
+						<name>💬Chat History</name>
+						<packageName></packageName>
+						<script>expandAlias("dmm help ch")</script>
+						<css></css>
+						<commandButtonUp></commandButtonUp>
+						<commandButtonDown></commandButtonDown>
+						<icon></icon>
+						<orientation>1</orientation>
+						<location>0</location>
+						<posX>0</posX>
+						<posY>0</posY>
+						<mButtonState>1</mButtonState>
+						<sizeX>0</sizeX>
+						<sizeY>0</sizeY>
+						<buttonColumn>1</buttonColumn>
+						<buttonRotation>0</buttonRotation>
+					</Action>
+					<Action isActive="yes" isFolder="no" isPushButton="no" isFlatButton="no" useCustomLayout="no">
+						<name>👥Who List</name>
+						<packageName></packageName>
+						<script>expandAlias("dmm help who")</script>
+						<css></css>
+						<commandButtonUp></commandButtonUp>
+						<commandButtonDown></commandButtonDown>
+						<icon></icon>
+						<orientation>1</orientation>
+						<location>0</location>
+						<posX>0</posX>
+						<posY>0</posY>
+						<mButtonState>1</mButtonState>
+						<sizeX>0</sizeX>
+						<sizeY>0</sizeY>
+						<buttonColumn>1</buttonColumn>
+						<buttonRotation>0</buttonRotation>
+					</Action>
+					<Action isActive="yes" isFolder="no" isPushButton="no" isFlatButton="no" useCustomLayout="no">
+						<name>✨Affects List</name>
+						<packageName></packageName>
+						<script>expandAlias("dmm help affects")</script>
+						<css></css>
+						<commandButtonUp></commandButtonUp>
+						<commandButtonDown></commandButtonDown>
+						<icon></icon>
+						<orientation>1</orientation>
+						<location>0</location>
+						<posX>0</posX>
+						<posY>0</posY>
+						<mButtonState>1</mButtonState>
+						<sizeX>0</sizeX>
+						<sizeY>0</sizeY>
+						<buttonColumn>1</buttonColumn>
+						<buttonRotation>0</buttonRotation>
+					</Action>
+					<Action isActive="yes" isFolder="no" isPushButton="no" isFlatButton="no" useCustomLayout="no">
+						<name>🏷️Item Tracker</name>
+						<packageName></packageName>
+						<script>expandAlias("dmm help dmid")</script>
+						<css></css>
+						<commandButtonUp></commandButtonUp>
+						<commandButtonDown></commandButtonDown>
+						<icon></icon>
+						<orientation>1</orientation>
+						<location>0</location>
+						<posX>0</posX>
+						<posY>0</posY>
+						<mButtonState>1</mButtonState>
+						<sizeX>0</sizeX>
+						<sizeY>0</sizeY>
+						<buttonColumn>1</buttonColumn>
+						<buttonRotation>0</buttonRotation>
+					</Action>
+				</ActionGroup>
+			</ActionGroup>
+			<ActionGroup isActive="yes" isFolder="yes" isPushButton="no" isFlatButton="no" useCustomLayout="no">
+				<name>🛠Tools</name>
+				<packageName></packageName>
+				<script></script>
+				<css></css>
+				<commandButtonUp></commandButtonUp>
+				<commandButtonDown></commandButtonDown>
+				<icon></icon>
+				<orientation>1</orientation>
+				<location>0</location>
+				<posX>0</posX>
+				<posY>0</posY>
+				<mButtonState>1</mButtonState>
+				<sizeX>0</sizeX>
+				<sizeY>0</sizeY>
+				<buttonColumn>1</buttonColumn>
+				<buttonRotation>0</buttonRotation>
+				<Action isActive="yes" isFolder="no" isPushButton="no" isFlatButton="no" useCustomLayout="no">
+					<name>🔄Reset UI</name>
+					<packageName></packageName>
+					<script>saveWindowLayout()
+clearWindow()
+resetProfile()
+loadWindowLayout()</script>
+					<css></css>
+					<commandButtonUp></commandButtonUp>
+					<commandButtonDown></commandButtonDown>
+					<icon></icon>
+					<orientation>1</orientation>
+					<location>0</location>
+					<posX>0</posX>
+					<posY>0</posY>
+					<mButtonState>1</mButtonState>
+					<sizeX>0</sizeX>
+					<sizeY>0</sizeY>
+					<buttonColumn>1</buttonColumn>
+					<buttonRotation>0</buttonRotation>
+				</Action>
+				<Action isActive="yes" isFolder="no" isPushButton="no" isFlatButton="no" useCustomLayout="no">
+					<name>🎨Re-Color Map</name>
+					<packageName></packageName>
+					<script>MapColors.ResetAllRooms()
+MapColors.FullUpdatePass()
+MapColors.FinalUpdatePass()</script>
+					<css></css>
+					<commandButtonUp></commandButtonUp>
+					<commandButtonDown></commandButtonDown>
+					<icon></icon>
+					<orientation>1</orientation>
+					<location>0</location>
+					<posX>0</posX>
+					<posY>0</posY>
+					<mButtonState>1</mButtonState>
+					<sizeX>0</sizeX>
+					<sizeY>0</sizeY>
+					<buttonColumn>1</buttonColumn>
+					<buttonRotation>0</buttonRotation>
+				</Action>
+				<Action isActive="yes" isFolder="no" isPushButton="no" isFlatButton="no" useCustomLayout="no">
+					<name>🐞DMAPI Debug</name>
+					<packageName></packageName>
+					<script>expandAlias("dmapi debug")</script>
+					<css></css>
+					<commandButtonUp></commandButtonUp>
+					<commandButtonDown></commandButtonDown>
+					<icon></icon>
+					<orientation>1</orientation>
+					<location>0</location>
+					<posX>0</posX>
+					<posY>0</posY>
+					<mButtonState>1</mButtonState>
+					<sizeX>0</sizeX>
+					<sizeY>0</sizeY>
+					<buttonColumn>1</buttonColumn>
+					<buttonRotation>0</buttonRotation>
+				</Action>
+				<Action isActive="yes" isFolder="no" isPushButton="no" isFlatButton="no" useCustomLayout="no">
+					<name>📚DMAPI Extension</name>
+					<packageName></packageName>
+					<script>Darkmists.OpenDMAPIDocs()</script>
+					<css></css>
+					<commandButtonUp></commandButtonUp>
+					<commandButtonDown></commandButtonDown>
+					<icon></icon>
+					<orientation>1</orientation>
+					<location>0</location>
+					<posX>0</posX>
+					<posY>0</posY>
+					<mButtonState>1</mButtonState>
+					<sizeX>0</sizeX>
+					<sizeY>0</sizeY>
+					<buttonColumn>1</buttonColumn>
+					<buttonRotation>0</buttonRotation>
+				</Action>
+				<Action isActive="yes" isFolder="no" isPushButton="no" isFlatButton="no" useCustomLayout="no">
+					<name>🔮Items</name>
+					<packageName></packageName>
+					<script>Darkmists.OpenItemViewer()</script>
+					<css></css>
+					<commandButtonUp></commandButtonUp>
+					<commandButtonDown></commandButtonDown>
+					<icon></icon>
+					<orientation>1</orientation>
+					<location>0</location>
+					<posX>0</posX>
+					<posY>0</posY>
+					<mButtonState>1</mButtonState>
+					<sizeX>0</sizeX>
+					<sizeY>0</sizeY>
+					<buttonColumn>1</buttonColumn>
+					<buttonRotation>0</buttonRotation>
+				</Action>
+				<Action isActive="yes" isFolder="no" isPushButton="no" isFlatButton="no" useCustomLayout="no">
+					<name>🧭Zones</name>
+					<packageName></packageName>
+					<script>MapColors.AuditCurrentArea()</script>
+					<css></css>
+					<commandButtonUp></commandButtonUp>
+					<commandButtonDown></commandButtonDown>
+					<icon></icon>
+					<orientation>1</orientation>
+					<location>0</location>
+					<posX>0</posX>
+					<posY>0</posY>
+					<mButtonState>1</mButtonState>
+					<sizeX>0</sizeX>
+					<sizeY>0</sizeY>
+					<buttonColumn>1</buttonColumn>
+					<buttonRotation>0</buttonRotation>
+				</Action>
+			</ActionGroup>
+		</ActionGroup>
+	</ActionPackage>
+	<ScriptPackage>
+		<ScriptGroup isActive="yes" isFolder="yes">
+			<name>DM Core</name>
+			<packageName></packageName>
+			<script></script>
+			<eventHandlerList />
+			<Script isActive="yes" isFolder="no">
+				<name>DM Core</name>
+				<packageName></packageName>
+				<script>dofile(getMudletHomeDir() .. "/scripts/darkmists.lua" )</script>
+				<eventHandlerList />
+			</Script>
+			<Script isActive="yes" isFolder="no">
+				<name>DM Skillups</name>
+				<packageName></packageName>
+				<script>-- ===================================================================
+-- Skill Ups Tracker - Simple skill improvement logger
+-- ===================================================================
+
+SkillUps = SkillUps or {}
+
+SkillUps.config = {
+  maxSkillUps = 20,  -- Keep last 20 skill ups
+}
+
+SkillUps.history = {}
+
+-- ===================================================================
+-- TRACKING FUNCTION
+-- ===================================================================
+
+function SkillUps.addSkillUp(skillName)
+  local timestamp = os.date("%H:%M:%S")
+  
+  -- Add to front of history
+  table.insert(SkillUps.history, 1, {
+    skill = skillName,
+    timestamp = timestamp,
+    time = os.time()
+  })
+  
+  -- Keep only the last maxSkillUps
+  while #SkillUps.history &gt; SkillUps.config.maxSkillUps do
+    table.remove(SkillUps.history)
+  end
+  
+  cecho(string.format("\n&lt;green&gt;[SKILLUP] &lt;white&gt;%s &lt;dim_gray&gt;improved at &lt;white&gt;%s", 
+    skillName, timestamp))
+end
+
+-- ===================================================================
+-- DISPLAY FUNCTION
+-- ===================================================================
+
+function SkillUps.display()
+  if #SkillUps.history == 0 then
+    cecho("\n&lt;yellow&gt;No skill ups recorded yet!")
+    return
+  end
+  
+  cecho("\n&lt;cyan&gt;═══════════════════════════════════════════════════")
+  cecho("\n&lt;white&gt;Last &lt;cyan&gt;" .. #SkillUps.history .. " &lt;white&gt;Skill Improvements:")
+  cecho("\n&lt;cyan&gt;═══════════════════════════════════════════════════\n")
+  
+  for i, skillup in ipairs(SkillUps.history) do
+    local timeAgo = os.time() - skillup.time
+    local timeAgoStr
+    
+    if timeAgo &lt; 60 then
+      timeAgoStr = string.format("%ds ago", timeAgo)
+    elseif timeAgo &lt; 3600 then
+      timeAgoStr = string.format("%dm ago", math.floor(timeAgo / 60))
+    else
+      timeAgoStr = string.format("%dh %dm ago", 
+        math.floor(timeAgo / 3600), 
+        math.floor((timeAgo % 3600) / 60))
+    end
+    
+    cecho(string.format(
+      "&lt;dim_gray&gt;[&lt;white&gt;%s&lt;dim_gray&gt;] &lt;green&gt;%-30s &lt;yellow&gt;(%s)\n",
+      skillup.timestamp,
+      skillup.skill,
+      timeAgoStr
+    ))
+  end
+  
+  cecho("&lt;cyan&gt;═══════════════════════════════════════════════════\n")
+end
+
+-- ===================================================================
+-- EVENT HANDLER
+-- ===================================================================
+
+SkillUps.eventHandler = registerAnonymousEventHandler(
+  "dmapi.player.skill.improved",
+  function(_, data)
+    SkillUps.addSkillUp(data.skill)
+  end
+)
+
+-- ===================================================================
+-- ALIAS
+-- ===================================================================
+
+tempAlias([[^skillups$]], function()
+  SkillUps.display()
+end)
+
+-- ===================================================================
+-- INIT
+-- ===================================================================
+
+cecho("\n&lt;dim_gray&gt;[&lt;white&gt;SkillUps&lt;dim_gray&gt;] &lt;green&gt;Tracker initialized. Type '&lt;white&gt;skillups&lt;green&gt;' to view history.")</script>
+				<eventHandlerList />
+			</Script>
+		</ScriptGroup>
+	</ScriptPackage>
+	<KeyPackage />
+</MudletPackage>

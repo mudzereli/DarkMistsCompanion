@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Dark Mists API – dmapi</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+  :root {
+    --bg: #0f1216;
+    --panel: #151a21;
+    --border: #262c36;
+    --text: #d6dbe3;
+    --muted: #9aa3af;
+    --accent: #6ea8fe;
+    --code: #0b0e13;
+  }
+
+  body {
+    margin: 0;
+    font-family: system-ui, -apple-system, Segoe UI, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+  }
+
+  header {
+    padding: 2rem;
+    border-bottom: 1px solid var(--border);
+    background: linear-gradient(180deg, #121722, #0f1216);
+  }
+
+  header h1 {
+    margin: 0;
+    font-size: 1.8rem;
+  }
+
+  header p {
+    margin-top: 0.25rem;
+    color: var(--muted);
+  }
+
+  main {
+    max-width: 1100px;
+    margin: auto;
+    padding: 2rem;
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    gap: 2rem;
+  }
+
+  nav {
+    position: sticky;
+    top: 1rem;
+    align-self: start;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1rem;
+    font-size: 0.9rem;
+  }
+
+  nav h3 {
+    margin-top: 0;
+    font-size: 1rem;
+  }
+
+  nav ul {
+    list-style: none;
+    padding-left: 0;
+    margin: 0;
+  }
+
+  nav li {
+    margin: 0.25rem 0;
+  }
+
+  nav a {
+    color: var(--muted);
+    text-decoration: none;
+  }
+
+  nav a:hover {
+    color: var(--accent);
+  }
+
+  section {
+    margin-bottom: 3rem;
+  }
+
+  h2 {
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 0.4rem;
+  }
+
+  .event {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    margin: 0.75rem 0;
+  }
+
+  .event-name {
+    color: var(--accent);
+    font-weight: 600;
+    font-family: ui-monospace, monospace;
+  }
+
+  .event-desc {
+    color: var(--muted);
+    margin-top: 0.25rem;
+  }
+
+  code {
+    background: var(--code);
+    padding: 0.15rem 0.4rem;
+    border-radius: 5px;
+    font-family: ui-monospace, monospace;
+    font-size: 0.85rem;
+  }
+
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 1.5rem;
+    text-align: center;
+    color: var(--muted);
+  }
+</style>
+</head>
+
+<body>
+
+<header>
+  <h1>Dark Mists API (dmapi)</h1>
+  <p>Version 2.0.1 · Event-driven state API for Dark Mists MUD</p>
+</header>
+
+<main>
+  <nav>
+    <h3>Contents</h3>
+    <ul id="toc"></ul>
+  </nav>
+
+  <div id="content"></div>
+</main>
+
+<footer>
+  dmapi · mudzereli · Designed for extensibility, not automation
+</footer>
+
+<script>
+/* ============================================================================
+   DATA MODEL – SINGLE SOURCE OF TRUTH
+   ============================================================================ */
+
+const dmapi = {
+  meta: {
+    name: "dmapi",
+    version: "2.0.1",
+    author: "mudzereli",
+    description: "Event-driven Dark Mists MUD API"
+  },
+
+  domains: {
+    core: {
+      title: "Core Events",
+      events: [
+        ["dmapi.core.loaded", "API finished initialization"],
+        ["dmapi.core.command.sent", "A command was sent to the MUD"],
+        ["dmapi.core.line", "Raw MUD output line parsed"],
+      ]
+    },
+    
+    world: {
+      title: "World Events",
+      events: [
+        ["dmapi.world.enter", "Entered or reconnected to the world"],
+        ["dmapi.world.exit", "Disconnected from the world"],
+        ["dmapi.world.connect", "Initial server greeting received"],
+        ["dmapi.world.pendingreturn", "Game is awaiting return key"],
+        ["dmapi.world.prompt", "Prompt parsed"],
+        ["dmapi.world.room.exits.updated", "Room exits updated"],
+        ["dmapi.world.weather.update", "Weather or day/night changed"],
+      ]
+    },
+
+    player: {
+      title: "Player State Events",
+      events: [
+        ["dmapi.player.vitals.updated", "Player vitals changed"],
+        ["dmapi.player.level.updated", "Player level or age updated"],
+        ["dmapi.player.levelup", "Player gained a level"],
+        ["dmapi.player.death", "Player died"],
+        ["dmapi.player.sleep.enter", "Player entered sleep"],
+        ["dmapi.player.sleep.exit", "Player woke up"],
+        ["dmapi.player.sleep.blocked", "Sleep attempt blocked"],
+        ["dmapi.player.rest.enter", "Player started resting"],
+        ["dmapi.player.rest.exit", "Player stopped resting"],
+        ["dmapi.player.hunger.update", "Hunger state changed"],
+        ["dmapi.player.thirst.update", "Thirst state changed"],
+        ["dmapi.player.inventory.itemnotfound", "Item lookup failed"],
+      ]
+    },
+
+    navigation: {
+      title: "Navigation Events",
+      events: [
+        ["dmapi.player.navigation.blocked", "Movement blocked"],
+        ["dmapi.player.navigation.exhausted", "Too exhausted to move"],
+        ["dmapi.player.navigation.darkness", "Movement blocked by darkness"],
+        ["dmapi.player.navigation.blinded", "Movement blocked by blindness"],
+        ["dmapi.player.navigation.closed", "Closed door encountered"],
+        ["dmapi.player.navigation.locked", "Locked door encountered"],
+      ]
+    },
+
+    combat: {
+      title: "Combat Events",
+      events: [
+        ["dmapi.player.combat.start", "Combat started"],
+        ["dmapi.player.combat.mobstate", "Mob condition updated"],
+        ["dmapi.player.combat.round", "Timed combat round"],
+        ["dmapi.player.combat.end", "Combat ended"],
+        ["dmapi.player.combat.kill", "Mob killed"],
+        ["dmapi.player.combat.disarmed", "Player disarmed"],
+        ["dmapi.player.combat.flee", "Player fled combat"],
+      ]
+    },
+
+    communication: {
+      title: "Communication Events",
+      events: [
+        ["dmapi.communication.tellreceived", "Tell received"],
+        ["dmapi.communication.tellsent", "Tell sent"],
+        ["dmapi.communication.sayreceived", "Say received"],
+        ["dmapi.communication.saysent", "Say sent"],
+        ["dmapi.communication.gtellreceived", "Group tell received"],
+        ["dmapi.communication.gtellsent", "Group tell sent"],
+        ["dmapi.communication.yellreceived", "Yell received"],
+        ["dmapi.communication.yellsent", "Yell sent"],
+        ["dmapi.communication.oocreceived", "OOC received"],
+        ["dmapi.communication.oocsent", "OOC sent"],
+        ["dmapi.communication.newbiechannel", "Newbie channel message"],
+        ["dmapi.communication.newbiechanneldiscord", "Newbie Discord relay"],
+        ["dmapi.communication.housechannel", "House channel message"],
+      ]
+    },
+
+    economy: {
+      title: "Economy & Skills",
+      events: [
+        ["dmapi.player.currency.update", "Currency snapshot updated"],
+        ["dmapi.player.currency.gain", "Currency gained"],
+        ["dmapi.player.experience.gain", "Experience gained"],
+        ["dmapi.player.skill.improved", "Skill improved"],
+        ["dmapi.player.equipment.zapped", "Equipment zapped"],
+      ]
+    }
+  }
+};
+
+/* ============================================================================
+   RENDERING
+   ============================================================================ */
+
+const toc = document.getElementById("toc");
+const content = document.getElementById("content");
+
+for (const [key, domain] of Object.entries(dmapi.domains)) {
+  const id = `section-${key}`;
+
+  // TOC
+  const li = document.createElement("li");
+  li.innerHTML = `<a href="#${id}">${domain.title}</a>`;
+  toc.appendChild(li);
+
+  // Section
+  const section = document.createElement("section");
+  section.id = id;
+  section.innerHTML = `<h2>${domain.title}</h2>`;
+
+  domain.events.forEach(([name, desc]) => {
+    const div = document.createElement("div");
+    div.className = "event";
+    div.innerHTML = `
+      <div class="event-name">${name}</div>
+      <div class="event-desc">${desc}</div>
+    `;
+    section.appendChild(div);
+  });
+
+  content.appendChild(section);
+}
+</script>
+
+</body>
+</html>
