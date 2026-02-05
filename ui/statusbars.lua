@@ -18,10 +18,11 @@ StatusBar.config = {
   barHeight = Darkmists.GlobalSettings.statusBarVitalsHeight,
   xpBarHeight = Darkmists.GlobalSettings.statusBarXPHeight,
   fontColor = Darkmists.GlobalSettings.statusBarFontColor,
-  barSpacing = 2,
+  barSpacing = 0,
   bottomOffset = 4,
-  sideSpacing = 1,
-  maxLevel = 51  -- Level at which XP bar hides
+  sideSpacing = 0,
+  maxLevel = 51,  -- Level at which XP bar hides
+  totalWidth = 70  -- Percentage of screen width (leaves right 30% clear)
 }
 
 StatusBar.currentBorderHeight = 0  -- Persistent border height
@@ -127,22 +128,24 @@ function StatusBar.create()
   
   local cfg = StatusBar.config
   local barY = calculateBarY()
-  local barWidthPct = math.ceil((100 - (cfg.sideSpacing * 2)) / 3)
-  local lastBarWidthPct = 100-(2*barWidthPct)
   
-  -- Create HP/MN/MV gauges (3 bars side-by-side)
+  -- Calculate widths within the 70% constraint
+  local totalWidth = cfg.totalWidth
+  local barWidthPct = math.floor((totalWidth - (cfg.sideSpacing * 2)) / 3)
+  
+  -- Create HP/MN/MV gauges (3 bars side-by-side, left-aligned)
   local vitalGauges = {
     { name = "hpGauge", label = "StatusBar_HP", x = 0, width = barWidthPct, color = cfg.colors.hp },
     { name = "mnGauge", label = "StatusBar_MN", x = barWidthPct + cfg.sideSpacing, width = barWidthPct, color = cfg.colors.mn },
-    { name = "mvGauge", label = "StatusBar_MV", x = (barWidthPct * 2) + (cfg.sideSpacing * 2), width = 100-(barWidthPct*2), color = cfg.colors.mv }  -- nil = take remaining space
+    { name = "mvGauge", label = "StatusBar_MV", x = (barWidthPct * 2) + (cfg.sideSpacing * 2), width = totalWidth - (barWidthPct * 2) - (cfg.sideSpacing * 2), color = cfg.colors.mv }
   }
   
   for _, def in ipairs(vitalGauges) do
     StatusBar[def.name] = Geyser.Gauge:new({
       name = def.label,
-      x = (def.x == 0 and "0%" or tostring(def.x) .. "%"),
+      x = tostring(def.x) .. "%",
       y = tostring(barY) .. "px",
-      width = (def.width and tostring(def.width) .. "%" or nil),  -- nil means "fill remaining"
+      width = tostring(def.width) .. "%",
       height = tostring(cfg.barHeight) .. "px"
     })
     local frontStyle, backStyle = createBarStyle(def.color)
@@ -151,12 +154,12 @@ function StatusBar.create()
     StatusBar[def.name]:hide()
   end
   
-  -- Create XP gauge (bottom bar, full width)
+  -- Create XP gauge (bottom bar, 70% width, left-aligned)
   StatusBar.xpGauge = Geyser.Gauge:new({
     name = "StatusBar_XP",
     x = "0%",
     y = tostring(-cfg.bottomOffset - cfg.xpBarHeight) .. "px",
-    width = "100%",
+    width = tostring(totalWidth) .. "%",
     height = tostring(cfg.xpBarHeight) .. "px"
   })
   local xpFront, xpBack = createBarStyle(cfg.colors.xp)
@@ -164,12 +167,12 @@ function StatusBar.create()
   StatusBar.xpGauge.back:setStyleSheet(xpBack)
   StatusBar.xpGauge:hide()
   
-  -- Create enemy gauge (above vitals, full width)
+  -- Create enemy gauge (above vitals, 70% width, left-aligned)
   StatusBar.enemyGauge = Geyser.Gauge:new({
     name = "StatusBar_Enemy",
     x = "0%",
     y = tostring(barY - cfg.barHeight - cfg.barSpacing) .. "px",
-    width = "100%",
+    width = tostring(totalWidth) .. "%",
     height = tostring(cfg.barHeight) .. "px"
   })
   local enemyFront, enemyBack = createBarStyle(cfg.colors.enemy)
@@ -313,14 +316,13 @@ function StatusBar.repositionBars()
   local cfg = StatusBar.config
   local barY = calculateBarY()
 
-  -- Fixed widths for mana & moves (percent)
-  local fixedPct = math.floor((100 - (cfg.sideSpacing * 3)) / 3)
-
-  local mnWidth = fixedPct
-  local mvWidth = fixedPct
-
-  -- HP gets the remaining space
-  local hpWidth = 100 - (mnWidth + mvWidth) - (cfg.sideSpacing * 2)
+  -- Calculate widths within the 70% constraint
+  local totalWidth = cfg.totalWidth
+  local barWidthPct = math.floor((totalWidth - (cfg.sideSpacing * 2)) / 3)
+  
+  local hpWidth = barWidthPct
+  local mnWidth = barWidthPct
+  local mvWidth = totalWidth - (barWidthPct * 2) - (cfg.sideSpacing * 2)
 
   -- Move & resize HP bar
   if StatusBar.hpGauge then
