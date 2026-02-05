@@ -13,6 +13,8 @@ AffectsWindow.config = {
   fontSize       = Darkmists.GlobalSettings.fontSize,
   fontName       = Darkmists.GlobalSettings.fontName,
   updateInterval = Darkmists.GlobalSettings.affectsWindowUpdateIntervalSeconds,
+  textLengthAffectName = 16,
+  textLengthAffectMod = 16,
   deleteOriginalLines = false,
   timeRatio      = 30, -- 1 real second = 30 game seconds
 }
@@ -37,28 +39,41 @@ AffectsWindow.currentKeys    = {}   -- Snapshot keys for current capture
 function AffectsWindow.create()
   if AffectsWindow.window then return end
 
-  AffectsWindow.window = Geyser.UserWindow:new({
-    name       = "AffectsWindow",
+  AffectsWindow.window = Adjustable.Container:new({
+    name = "AffectsWindow",
+
+    x = "70%",
+    y = "66%",
+    width = "30%",
+    height = "33%",
+
     titleText = "Current Affects",
-    docked     = true,
-    dockPosition = "right",
+    titleTxtColor = "white",
+    padding = 10,
+    adjLabelstyle = [[
+      background-color: #111111;
+      border: 2px solid #666666;
+    ]],
+
+    lockStyle = "border",
+    locked = false,
+    autoSave = true,
+    autoLoad = true,
   })
+    
+  AffectsWindow.console = Geyser.MiniConsole:new({
+    name   = "AffectsWindowConsole",
+    x      = 0,
+    y      = 0,
+    width  = "100%",
+    height = "100%",
+    color = "black"
+  }, AffectsWindow.window)
+  AffectsWindow.console:setFontSize(AffectsWindow.config.fontSize)
+  AffectsWindow.console:setFont(AffectsWindow.config.fontName)
 
-  AffectsWindow.window:setStyleSheet([[
-    QWidget { background-color: black; }
-    QDockWidget::title {
-      background-color: #222;
-      color: white;
-      padding: 4px;
-    }
-  ]])
-
-  AffectsWindow.window:setFont(AffectsWindow.config.fontName)
-  AffectsWindow.window:setFontSize(AffectsWindow.config.fontSize)
-  AffectsWindow.window:enableScrolling()
-  AffectsWindow.window:enableScrollBar()
-  AffectsWindow.window:enableAutoWrap()
-
+  AffectsWindow.window:show()
+  AffectsWindow.window:raiseAll()
   cecho("\n<dim_gray>[<white>AffectsWindow<dim_gray>] <green>Geyser window created")
 end
 
@@ -78,7 +93,7 @@ function AffectsWindow.startCapture()
   AffectsWindow.startAgeTimer()
 
   if AffectsWindow.window then
-    AffectsWindow.window:clear()
+    AffectsWindow.console:clear()
     AffectsWindow.displayHeader()
   end
 end
@@ -126,7 +141,7 @@ function AffectsWindow.displayHeader()
   local realElapsed = os.time() - AffectsWindow.lastUpdateTime
   local age         = AffectsWindow.getAge()
 
-  AffectsWindow.window:cecho(
+  AffectsWindow.console:cecho(
     string.format("<yellow>Age: <white>%ss <dim_gray>(%s<dim_gray>)\n\n",
       realElapsed, age)
   )
@@ -146,20 +161,20 @@ function AffectsWindow.formatDuration(minutes, expired)
 
   if expired then
     local m = math.abs(minutes)
-    if m < 60 then return string.format("<red>EXPIRED (%dm ago)", m) end
+    if m < 60 then return string.format("<red>EXPIRED (%dm)", m) end
     local h, r = math.floor(m / 60), m % 60
     return r > 0
-      and string.format("<red>EXPIRED (%dh %dm ago)", h, r)
-      or  string.format("<red>EXPIRED (%dh ago)", h)
+      and string.format("<red>EXPIRED (%dh %dm)", h, r)
+      or  string.format("<red>EXPIRED (%dh)", h)
   end
 
   if minutes <= 0 then return "<orange>EXPIRING" end
-  if minutes < 60 then return string.format("<yellow>%d mins", minutes) end
+  if minutes < 60 then return string.format("<yellow>%dm", minutes) end
 
   local h, r = math.floor(minutes / 60), minutes % 60
   return r > 0
-    and string.format("<cyan>%d hrs and %d mins", h, r)
-    or  string.format("<cyan>%d hrs", h)
+    and string.format("<cyan>%dh %dm", h, r)
+    or  string.format("<cyan>%dh", h)
 end
 
 -- ============================================================================
@@ -247,9 +262,9 @@ end
 function AffectsWindow.refreshDisplay()
   if not AffectsWindow.window or not AffectsWindow.lastUpdateTime then return end
 
-  AffectsWindow.window:clear()
+  AffectsWindow.console:clear()
   AffectsWindow.displayHeader()
-  AffectsWindow.window:cecho("<ansi_cyan>You are affected by the following:\n")
+  AffectsWindow.console:cecho("<ansi_cyan>You are affected by the following:\n")
 
   local now = os.time()
   local activeAffects  = {}
@@ -292,10 +307,12 @@ function AffectsWindow.refreshDisplay()
     local dur    = AffectsWindow.formatDuration(item.mins, false)
     local mod    = string.format("%s %s", affect.modValue, affect.modifier)
 
-    AffectsWindow.window:cecho(string.format(
-      "<white>%-20s<white>: <cyan>%-16s <white>: %s\n",
-      affect.name:sub(1,20),
-      mod:sub(1,16),
+    local ln = AffectsWindow.config.textLengthAffectName
+    local lm = AffectsWindow.config.textLengthAffectMod
+    AffectsWindow.console:cecho(string.format(
+      "<white>%-"..tostring(ln).."s<white> : <cyan>%-"..tostring(lm).."s <white>: %s\n",
+      affect.name:sub(1,ln),
+      mod:sub(1,lm),
       dur
     ))
   end
@@ -307,21 +324,23 @@ function AffectsWindow.refreshDisplay()
     local mod    = string.format("%s %s", affect.modValue, affect.modifier)
     local name   = affect.name
 
-    AffectsWindow.window:cecho(string.format(
-      "<dim_gray>%-16s ",
-      name:sub(1,16)
+    local ln = AffectsWindow.config.textLengthAffectName - 4
+    local lm = AffectsWindow.config.textLengthAffectMod
+    AffectsWindow.console:cecho(string.format(
+      "<dim_gray>%-"..tostring(ln).."s ",
+      name:sub(1,ln)
     ))
 
-    AffectsWindow.window:cechoLink(
+    AffectsWindow.console:cechoLink(
       "<red>[X]",
       [[AffectsWindow.removeExpiredAffect("]] .. name .. [[")]],
       "Remove expired affect",
       true
     )
 
-    AffectsWindow.window:cecho(string.format(
-      "<dim_gray>: <gray>%-16s <white>: %s\n",
-      mod:sub(1,16),
+    AffectsWindow.console:cecho(string.format(
+      "<dim_gray> : <gray>%-"..tostring(lm).."s <white>: %s\n",
+      mod:sub(1,lm),
       dur
     ))
   end
@@ -338,7 +357,7 @@ function AffectsWindow.getAge()
                * AffectsWindow.config.timeRatio) / 60)
 
   if mins == 0 then return "<green>Just updated" end
-  if mins < 60 then return string.format("<cyan>%d min", mins) end
+  if mins < 60 then return string.format("<cyan>%dm", mins) end
 
   local h, r = math.floor(mins / 60), mins % 60
   return r > 0 and string.format("<orange>%dh %dm", h, r)
