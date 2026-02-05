@@ -22,31 +22,50 @@ ChatHistory.window   = nil
 -- ===================================================================
 
 function ChatHistory.create()
-  if ChatHistory.window then return end
+  if ChatHistory.window and ChatHistory.console then return end
 
-  ChatHistory.window = Geyser.UserWindow:new({
-    name        = "ChatHistory",
-    titleText  = "Chat History",
-    docked     = true,
-    dockPosition = "top",
-  })
+  ChatHistory.window = Adjustable.Container:new({
+      name = "ChatHistory",
 
-  ChatHistory.window:setStyleSheet([[
-    QWidget { background-color: black; }
-    QDockWidget::title {
-      background-color: #222;
-      color: white;
-      padding: 4px;
-    }
-  ]])
+      x = "70%",
+      y = "33%",
+      width = "30%",
+      height = "33%",
 
-  ChatHistory.window:setFont(ChatHistory.config.fontName)
-  ChatHistory.window:setFontSize(ChatHistory.config.fontSize)
-  ChatHistory.window:enableScrolling()
-  ChatHistory.window:enableScrollBar()
-  ChatHistory.window:enableAutoWrap()
+      titleText = "Chat History",
+      titleTxtColor = "white",
+      padding = 10,
+      adjLabelstyle = [[
+        background-color: #111111;
+        border: 2px solid #666666;
+      ]],
 
-  cecho("\n<dim_gray>[<white>ChatHistory<dim_gray>] <green>Geyser window created")
+      lockStyle = "border",
+      locked = false,
+      autoSave = true,
+      autoLoad = true,
+    })
+
+  ChatHistory.console = Geyser.MiniConsole:new({
+      name   = "ChatHistoryConsole",
+      x      = 0,
+      y      = 0,
+      width  = "100%",
+      height = "100%",
+      color = "black"
+    }, ChatHistory.window)
+
+  -- font settings
+  ChatHistory.console:setFont(ChatHistory.config.fontName)
+  ChatHistory.console:setFontSize(ChatHistory.config.fontSize)
+  ChatHistory.console:enableAutoWrap()
+  ChatHistory.console:enableScrollBar()
+
+  -- attach + show
+  ChatHistory.window:show()
+  ChatHistory.window:raiseAll()
+
+  cecho("\n<dim_gray>[<white>ChatHistory<dim_gray>] <green>Container created")
 end
 
 -- ===================================================================
@@ -187,15 +206,15 @@ end
 
 function ChatHistory.appendMessage(msg)
   if not ChatHistory.window then return end
-  ChatHistory.window:cecho(formatMessage(msg))
+  ChatHistory.console:cecho(formatMessage(msg))
 end
 
 function ChatHistory.refresh()
   if not ChatHistory.window then return end
-  ChatHistory.window:clear()
+  ChatHistory.console:clear()
 
   for i = #ChatHistory.messages, 1, -1 do
-    ChatHistory.window:cecho(formatMessage(ChatHistory.messages[i]))
+    ChatHistory.console:cecho(formatMessage(ChatHistory.messages[i]))
   end
 end
 
