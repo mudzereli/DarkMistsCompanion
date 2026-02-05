@@ -5,7 +5,7 @@ MiniMapContainer =
     x = "70%",
     y = "0%",
     width = "30%",
-    height = "50%",
+    height = "66%",
 
     titleText = "Mini Map",
     titleTxtColor = "white",
