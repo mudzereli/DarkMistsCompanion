@@ -98,6 +98,7 @@ dofile(getMudletHomeDir() .. "/DarkMistsCompanion/ui/statusbars.lua" )
 dofile(getMudletHomeDir() .. "/DarkMistsCompanion/ui/whowindow.lua" )
 dofile(getMudletHomeDir() .. "/DarkMistsCompanion/ui/chathistory.lua" )
 dofile(getMudletHomeDir() .. "/DarkMistsCompanion/ui/affectswindow.lua" )
+dofile(getMudletHomeDir() .. "/DarkMistsCompanion/ui/mapwindow.lua" )
 
 -- Meta Help / Command
 dofile(getMudletHomeDir() .. "/DarkMistsCompanion/dm_meta.lua" )
