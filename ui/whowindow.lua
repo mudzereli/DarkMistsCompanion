@@ -22,34 +22,55 @@ WhoWindow.tempBufferName = "WhoWindow_temp"
 -- ===================================================================
 
 --- Create the Who window (only if it doesn't exist)
+-- ===================================================================
+-- WINDOW MANAGEMENT (Adjustable.Container)
+-- ===================================================================
+
 function WhoWindow.create()
-  if WhoWindow.window then return end
+  if WhoWindow.window and WhoWindow.console then return end
 
-  WhoWindow.window = Geyser.UserWindow:new({
-    name = "WhoWindow",
-    titleText = "Who List",
-    docked = true,
-    dockPosition = "top"
-  })
+  WhoWindow.window = Adjustable.Container:new({
+      name = "WhoWindow",
 
-  WhoWindow.window:setStyleSheet([[
-    QWidget {
-      background-color: black;
-    }
-    QDockWidget::title {
-      background-color: #222;
-      color: white;
-      padding: 4px;
-    }
-  ]])
+      x = "70%",
+      y = "00%",
+      width = "30%",
+      height = "33%",
 
-  WhoWindow.window:setFont(WhoWindow.config.fontName)
-  WhoWindow.window:setFontSize(WhoWindow.config.fontSize)
-  WhoWindow.window:enableScrolling()
-  WhoWindow.window:enableScrollBar()
-  WhoWindow.window:enableAutoWrap()
+      titleText = "Who List",
+      titleTxtColor = "white",
+      padding = 10,
+      adjLabelstyle = [[
+        background-color: #111111;
+        border: 2px solid #666666;
+      ]],
 
-  cecho("\n<dim_gray>[<white>WhoWindow<dim_gray>] <green>Window created")
+      lockStyle = "border",
+      locked = false,
+      autoSave = true,
+      autoLoad = true,
+    })
+
+  WhoWindow.console = Geyser.MiniConsole:new({
+      name   = "WhoWindowConsole",
+      x      = 0,
+      y      = 0,
+      width  = "100%",
+      height = "100%",
+      color  = "black",
+    }, WhoWindow.window)
+
+  -- font + behavior
+  WhoWindow.console:setFont(WhoWindow.config.fontName)
+  WhoWindow.console:setFontSize(WhoWindow.config.fontSize)
+  WhoWindow.console:enableAutoWrap()
+  WhoWindow.console:enableScrollBar()
+
+  -- attach & show
+  WhoWindow.window:show()
+  WhoWindow.window:raiseAll()
+
+  cecho("\n<dim_gray>[<white>WhoWindow<dim_gray>] <green>Container created")
 end
 
 -- ===================================================================
@@ -59,7 +80,7 @@ end
 --- Display header with player count and age
 -- @param age number Seconds since last update
 local function displayHeader(age)
-  WhoWindow.window:cecho(string.format(
+  WhoWindow.console:cecho(string.format(
     "<green>Players Online: <white>%d <dim_gray>| <yellow>Age: <white>%ds\n\n",
     WhoWindow.playerCount,
     age
@@ -75,7 +96,7 @@ local function copyPlayerLinesToWindow()
     moveCursor(WhoWindow.tempBufferName, 0, i)
     selectCurrentLine(WhoWindow.tempBufferName)
     copy(WhoWindow.tempBufferName)
-    appendBuffer("WhoWindow")
+    appendBuffer("WhoWindowConsole")
   end
   
   moveCursorEnd(WhoWindow.tempBufferName)
@@ -88,7 +109,7 @@ function WhoWindow.updateAge()
   local secondsSinceUpdated = os.time() - WhoWindow.config.lastUpdated
   
   -- Rebuild display
-  WhoWindow.window:clear()
+  WhoWindow.console:clear()
   displayHeader(secondsSinceUpdated)
   copyPlayerLinesToWindow()
 end
@@ -188,7 +209,7 @@ function WhoWindow.capturePlayerList()
   end
   
   -- Display initial capture
-  WhoWindow.window:clear()
+  WhoWindow.console:clear()
   displayHeader(0)
   copyPlayerLinesToWindow()
 end
