@@ -18,6 +18,8 @@
 Darkmists = {}
 
 Darkmists.GlobalSettings = {
+  -- what % of the screen should the main window take up
+  mainWindowPanelWidth = 70,
   -- Font Size for additional Information Windows (Chat History, Who List, Affects)
   fontSize = 11,
   -- Font Face for additional Information Windows (Chat History, Who List, Affects)
@@ -38,6 +40,10 @@ Darkmists.GlobalSettings = {
   statusBarXPHeight = 16,
   -- How often Affects Window is Updated
   affectsWindowUpdateIntervalSeconds = 2,
+  -- How many characters to cut off Affect Name At
+  affectsWindowAffectNameLength = 24,
+  -- How many characters to cut off Affect Mod At
+  affectsWindowAffectModLength = 16,
   -- Clickable Item Link Color (lua showColors(3) to see allowable colors)
   itemTrackerLinkColor = "pale_goldenrod",
   -- Stat Roller Leniancy (0 = Roll must be Max, 1 = Roll can be 1 lower than Max, etc)
@@ -102,5 +108,9 @@ dofile(getMudletHomeDir() .. "/DarkMistsCompanion/ui/mapwindow.lua" )
 
 -- Meta Help / Command
 dofile(getMudletHomeDir() .. "/DarkMistsCompanion/dm_meta.lua" )
+
+local mainWidth, mainHeight = getMainWindowSize()
+local scaleWidth = (1.0-(Darkmists.GlobalSettings.mainWindowPanelWidth / 100.0)) * mainWidth
+setBorderRight(scaleWidth)
 
 echo("\nAll Scripts Loaded!\n")
