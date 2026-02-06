@@ -22,7 +22,7 @@ StatusBar.config = {
   bottomOffset = 4,
   sideSpacing = 0,
   maxLevel = 51,  -- Level at which XP bar hides
-  totalWidth = 70  -- Percentage of screen width (leaves right 30% clear)
+  totalWidth = Darkmists.GlobalSettings.mainWindowPanelWidth  -- Percentage of screen width (leaves right 30% clear)
 }
 
 StatusBar.currentBorderHeight = 0  -- Persistent border height

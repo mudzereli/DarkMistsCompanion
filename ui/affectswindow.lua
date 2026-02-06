@@ -13,8 +13,8 @@ AffectsWindow.config = {
   fontSize       = Darkmists.GlobalSettings.fontSize,
   fontName       = Darkmists.GlobalSettings.fontName,
   updateInterval = Darkmists.GlobalSettings.affectsWindowUpdateIntervalSeconds,
-  textLengthAffectName = 16,
-  textLengthAffectMod = 16,
+  textLengthAffectName = Darkmists.GlobalSettings.affectsWindowAffectNameLength,
+  textLengthAffectMod = Darkmists.GlobalSettings.affectsWindowAffectModLength,
   deleteOriginalLines = false,
   timeRatio      = 30, -- 1 real second = 30 game seconds
 }
@@ -42,10 +42,10 @@ function AffectsWindow.create()
   AffectsWindow.window = Adjustable.Container:new({
     name = "AffectsWindow",
 
-    x = "70%",
-    y = "66%",
-    width = "30%",
-    height = "33%",
+    x = tostring(Darkmists.GlobalSettings.mainWindowPanelWidth).."%",
+    width = tostring(100 - Darkmists.GlobalSettings.mainWindowPanelWidth).."%",
+    y = "66.66%",
+    height = "33.33%",
 
     titleText = "Current Affects",
     titleTxtColor = "white",

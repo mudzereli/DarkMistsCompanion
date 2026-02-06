@@ -32,10 +32,10 @@ function WhoWindow.create()
   WhoWindow.window = Adjustable.Container:new({
       name = "WhoWindow",
 
-      x = "70%",
-      y = "00%",
-      width = "30%",
-      height = "33%",
+      x = tostring(Darkmists.GlobalSettings.mainWindowPanelWidth).."%",
+      width = tostring(100 - Darkmists.GlobalSettings.mainWindowPanelWidth).."%",
+      y = "0%",
+      height = "33.33%",
 
       titleText = "Who List",
       titleTxtColor = "white",
