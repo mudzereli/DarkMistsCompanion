@@ -18,6 +18,8 @@
 Darkmists = {}
 
 Darkmists.GlobalSettings = {
+  -- should we use light mode?
+  lightMode = false,
   -- what % of the screen should the main window take up
   mainWindowPanelWidth = 70,
   -- Font Size for additional Information Windows (Chat History, Who List, Affects)
@@ -45,7 +47,9 @@ Darkmists.GlobalSettings = {
   -- How many characters to cut off Affect Mod At
   affectsWindowAffectModLength = 16,
   -- Clickable Item Link Color (lua showColors(3) to see allowable colors)
-  itemTrackerLinkColor = "pale_goldenrod",
+  itemTrackerLinkColorDarkMode = "pale_goldenrod",
+  -- Clickable Item Link Color (lua showColors(3) to see allowable colors)
+  itemTrackerLinkColorLightMode = "dark_slate_blue",
   -- Stat Roller Leniancy (0 = Roll must be Max, 1 = Roll can be 1 lower than Max, etc)
   statRollerLeniency = 1
 }
@@ -53,6 +57,7 @@ Darkmists.GlobalSettings = {
 -- =============================================================================
 -- GLOBAL LINE DISPATCHER
 -- =============================================================================
+
 Darkmists.OnNewLine = function()
   -- Stat parsing (HP/mana/etc)
   if StatRoller and StatRoller.on_line then
@@ -68,6 +73,10 @@ Darkmists.OnNewLine = function()
   end
   
 end
+
+-- =============================================================================
+-- UI / HELPER STUFF
+-- =============================================================================
 
 Darkmists.OpenItemViewer = function()
   local base = getMudletHomeDir()
@@ -89,6 +98,49 @@ Darkmists.OpenDMAPIDocs = function()
   openUrl("file:///" .. path)
 end
 
+Darkmists.getDefaultAdjLabelstyle = function()
+  if Darkmists.GlobalSettings.lightMode then
+    return [[
+        background-color: #EEEEEE;
+        border: 2px solid #111111;
+    ]]
+  else
+    return [[
+        background-color: #111111;
+        border: 2px solid #666666;
+    ]]
+  end
+end
+
+Darkmists.getDefaultTextColor = function()
+  if Darkmists.GlobalSettings.lightMode then
+    return "black"
+  else
+    return "white"
+  end
+end
+
+Darkmists.getDefaultBackgroundColor = function()
+  if Darkmists.GlobalSettings.lightMode then
+    return "white"
+  else
+    return "black"
+  end
+end
+
+Darkmists.getDefaultTextColorTag = function()
+  return ("<%s>"):format(Darkmists.getDefaultTextColor())
+end
+
+Darkmists.Log = function(pluginName,msg)
+  local output = "\n<dim_gray>[<%s>%s<dim_gray>] <green>%s"
+  output = output:format(Darkmists.getDefaultTextColor(),pluginName,msg)
+  cecho(output)
+end
+
+-- =============================================================================
+-- LOAD ALL THE STUFF
+-- =============================================================================
 -- DMAPI first
 dofile(getMudletHomeDir() .. "/DarkMistsCompanion/utility/util.lua" )
 dofile(getMudletHomeDir() .. "/DarkMistsCompanion/dmapi.lua" )

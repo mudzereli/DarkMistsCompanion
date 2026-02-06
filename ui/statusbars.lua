@@ -21,6 +21,7 @@ StatusBar.config = {
   barSpacing = 0,
   bottomOffset = 4,
   sideSpacing = 0,
+  enabled = true,
   maxLevel = 51,  -- Level at which XP bar hides
   totalWidth = Darkmists.GlobalSettings.mainWindowPanelWidth  -- Percentage of screen width (leaves right 30% clear)
 }
@@ -124,7 +125,7 @@ StatusBar.cleanup()  -- Clean up any existing instance
 -- GAUGE CREATION
 -- ===================================================================
 function StatusBar.create()
-  cecho("\n<dim_gray>[<white>StatusBar<dim_gray>] <white>Creating interface...")
+  Darkmists.Log("StatusBars","Creating interface...")
   
   local cfg = StatusBar.config
   local barY = calculateBarY()
@@ -184,7 +185,7 @@ function StatusBar.create()
   StatusBar.update()
   StatusBar.updateXP()
   
-  cecho("\n<dim_gray>[<white>StatusBar<dim_gray>] <green>Created successfully (hidden until login)")
+  Darkmists.Log("StatusBars","Created successfully (hidden until login)")
 end
 
 -- ===================================================================
@@ -264,6 +265,7 @@ end
 
 -- Show all bars (except enemy) and set border
 function StatusBar.showAll()
+  if not StatusBar.config.enabled then return end
   if not StatusBar.hpGauge then return end
   
   StatusBar.hpGauge:show()
@@ -278,7 +280,7 @@ function StatusBar.showAll()
   end
   
   StatusBar.setBorder(calculateTotalHeight(false))
-  cecho("\n<dim_gray>[<white>StatusBar<dim_gray>] <green>Bars shown")
+  Darkmists.Log("StatusBars","Bars shown")
 end
 
 -- Hide all bars and reset border
@@ -289,7 +291,7 @@ function StatusBar.hideAll()
   end
   
   StatusBar.setBorder(0)
-  cecho("\n<dim_gray>[<white>StatusBar<dim_gray>] <yellow>Bars hidden")
+  Darkmists.Log("StatusBars","Bars hidden")
 end
 
 -- Hide enemy bar and adjust border
@@ -379,7 +381,7 @@ function StatusBar.registerEvents()
       StatusBar.xpGauge:hide()
       StatusBar.repositionBars()
       StatusBar.setBorder(calculateTotalHeight(false))
-      cecho("\n<dim_gray>[<white>StatusBar<dim_gray>] <yellow>XP bar hidden (max level reached)")
+      Darkmists.Log("StatusBars","<yellow>XP bar hidden (max level reached)")
     end
   end)
   
@@ -395,26 +397,26 @@ function StatusBar.registerEvents()
   -- Show bars on login and restore border height
   StatusBar.loginHandler = registerAnonymousEventHandler("dmapi.world.enter", function()
     tempTimer(0.5, function()
-      cecho("\n<dim_gray>[<white>StatusBar<dim_gray>] <cyan>Login detected - showing bars...")
+      Darkmists.Log("StatusBars","Login detected - showing bars...")
       StatusBar.showAll()
       if StatusBar.currentBorderHeight > 0 then
         StatusBar.setBorder(StatusBar.currentBorderHeight)
-        cecho("\n<dim_gray>[<white>StatusBar<dim_gray>] <green>Border restored: " .. StatusBar.currentBorderHeight .. "px")
+        Darkmists.Log("StatusBars","<green>Border restored: " .. StatusBar.currentBorderHeight .. "px")
       end
     end)
   end)
   
   -- Disconnect handlers
   StatusBar.disconnectHandler = registerAnonymousEventHandler("dmapi.world.exit", function()
-    cecho("\n<dim_gray>[<white>StatusBar<dim_gray>] <yellow>Disconnect detected")
+    Darkmists.Log("StatusBars","<yellow>Disconnect detected")
   end)
   
   StatusBar.sysDisconnectHandler = registerAnonymousEventHandler("sysDisconnectionEvent", function()
-    cecho("\n<dim_gray>[<white>StatusBar<dim_gray>] <red>System disconnect - hiding bars")
+    Darkmists.Log("StatusBars","<red>System disconnect - hiding bars")
     StatusBar.hideAll()
   end)
   
-  cecho("\n<dim_gray>[<white>StatusBar<dim_gray>] <green>Event handlers registered")
+  Darkmists.Log("StatusBars","Event handlers registered")
 end
 
 -- ===================================================================
@@ -422,7 +424,7 @@ end
 -- ===================================================================
 tempTimer(0.5, function()
   StatusBar.create()
-  cecho("\n<dim_gray>[<white>StatusBar<dim_gray>] <green>Status Bar Loaded")  
+  Darkmists.Log("StatusBars","Status Bar Loaded")
   -- Register events after slight delay to ensure Geyser gauges are fully initialized
   tempTimer(0.2, function()
     StatusBar.registerEvents()

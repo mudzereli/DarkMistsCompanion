@@ -38,17 +38,14 @@ function WhoWindow.create()
       height = "33.33%",
 
       titleText = "Who List",
-      titleTxtColor = "white",
+      titleTxtColor = Darkmists.getDefaultTextColor(),
       padding = 10,
-      adjLabelstyle = [[
-        background-color: #111111;
-        border: 2px solid #666666;
-      ]],
+      adjLabelstyle = Darkmists.getDefaultAdjLabelstyle(),
 
       lockStyle = "border",
       locked = false,
       autoSave = true,
-      autoLoad = true,
+      autoLoad = true
     })
 
   WhoWindow.console = Geyser.MiniConsole:new({
@@ -57,7 +54,7 @@ function WhoWindow.create()
       y      = 0,
       width  = "100%",
       height = "100%",
-      color  = "black",
+      color  = Darkmists.getDefaultBackgroundColor(),
     }, WhoWindow.window)
 
   -- font + behavior
@@ -69,8 +66,7 @@ function WhoWindow.create()
   -- attach & show
   WhoWindow.window:show()
   WhoWindow.window:raiseAll()
-
-  cecho("\n<dim_gray>[<white>WhoWindow<dim_gray>] <green>Container created")
+  Darkmists.Log("WhoWindow","Container Created!")
 end
 
 -- ===================================================================
@@ -80,8 +76,14 @@ end
 --- Display header with player count and age
 -- @param age number Seconds since last update
 local function displayHeader(age)
+  local disp
+  if Darkmists.GlobalSettings.lightMode then
+    disp = "<dark_green>Players Online: <black>%d <black>| <ansi_yellow>Age: <black>%ds\n\n"
+  else
+    disp = "<green:black>Players Online: <white>%d <dim_gray>| <light_goldenrod>Age: <white>%ds\n\n"
+  end
   WhoWindow.console:cecho(string.format(
-    "<green>Players Online: <white>%d <dim_gray>| <yellow>Age: <white>%ds\n\n",
+    disp,
     WhoWindow.playerCount,
     age
   ))
@@ -131,7 +133,8 @@ local function appendContinuationLine(pendingLine)
   -- Move to end of previous line
   moveCursor(WhoWindow.tempBufferName, #prevLineSelection, prevLineNumber)
   
-  cinsertText(WhoWindow.tempBufferName, pendingLine)
+  local txt = ("<%s:%s> %s"):format(Darkmists.getDefaultTextColor(),Darkmists.getDefaultBackgroundColor(),pendingLine)
+  cinsertText(WhoWindow.tempBufferName, txt)
   moveCursorEnd(WhoWindow.tempBufferName)
 end
 
@@ -205,7 +208,7 @@ function WhoWindow.capturePlayerList()
   -- Clean up original output
   if WhoWindow.config.deleteOriginalLines then
     replaceLine("")
-    cecho("\n<dark_orange>Who List Captured.")
+    cecho("\n<coral>Who List Captured.")
   end
   
   -- Display initial capture
@@ -229,7 +232,7 @@ function WhoWindow.registerTriggers()
     WhoWindow.capturePlayerList
   )
   
-  cecho("\n<dim_gray>[<white>WhoWindow<dim_gray>] <green>Trigger registered")
+  Darkmists.Log("WhoWindow","Trigger Registered")
 end
 
 --- Register prompt event handler for age updates
@@ -242,5 +245,5 @@ WhoWindow.promptHandler = registerAnonymousEventHandler(
 tempTimer(0.5, function()
   WhoWindow.create()
   WhoWindow.registerTriggers()
-  cecho("\n<dim_gray>[<white>WhoWindow<dim_gray>] <green>Initialized!")
+  Darkmists.Log("WhoWindow","Initialized")
 end)

@@ -48,12 +48,9 @@ function AffectsWindow.create()
     height = "33.33%",
 
     titleText = "Current Affects",
-    titleTxtColor = "white",
+    titleTxtColor = Darkmists.getDefaultTextColor(),
     padding = 10,
-    adjLabelstyle = [[
-      background-color: #111111;
-      border: 2px solid #666666;
-    ]],
+    adjLabelstyle = Darkmists.getDefaultAdjLabelstyle(),
 
     lockStyle = "border",
     locked = false,
@@ -67,14 +64,14 @@ function AffectsWindow.create()
     y      = 0,
     width  = "100%",
     height = "100%",
-    color = "black"
+    color = Darkmists.getDefaultBackgroundColor()
   }, AffectsWindow.window)
   AffectsWindow.console:setFontSize(AffectsWindow.config.fontSize)
   AffectsWindow.console:setFont(AffectsWindow.config.fontName)
 
   AffectsWindow.window:show()
   AffectsWindow.window:raiseAll()
-  cecho("\n<dim_gray>[<white>AffectsWindow<dim_gray>] <green>Geyser window created")
+  Darkmists.Log("AffectsWindow","Geyser window created")
 end
 
 -- ============================================================================
@@ -141,8 +138,14 @@ function AffectsWindow.displayHeader()
   local realElapsed = os.time() - AffectsWindow.lastUpdateTime
   local age         = AffectsWindow.getAge()
 
+  local disp
+  if Darkmists.GlobalSettings.lightMode then
+    disp = "<ansi_yellow>Age: <black>%ss <dim_gray>(%s<dim_gray>)\n\n"
+  else
+    disp = "<yellow>Age: <white>%ss <dim_gray>(%s<dim_gray>)\n\n"
+  end
   AffectsWindow.console:cecho(
-    string.format("<yellow>Age: <white>%ss <dim_gray>(%s<dim_gray>)\n\n",
+    string.format(disp,
       realElapsed, age)
   )
 end
@@ -157,24 +160,24 @@ function AffectsWindow.parseDuration(text)
 end
 
 function AffectsWindow.formatDuration(minutes, expired)
-  if minutes == math.huge then return "<green>PERMANENT" end
+  if minutes == math.huge then return "<forest_green>PERMANENT" end
 
   if expired then
     local m = math.abs(minutes)
-    if m < 60 then return string.format("<red>EXPIRED (%dm)", m) end
+    if m < 60 then return string.format("<firebrick>EXPIRED (%dm)", m) end
     local h, r = math.floor(m / 60), m % 60
     return r > 0
-      and string.format("<red>EXPIRED (%dh %dm)", h, r)
-      or  string.format("<red>EXPIRED (%dh)", h)
+      and string.format("<firebrick>EXPIRED (%dh %dm)", h, r)
+      or  string.format("<firebrick>EXPIRED (%dh)", h)
   end
 
-  if minutes <= 0 then return "<orange>EXPIRING" end
-  if minutes < 60 then return string.format("<yellow>%dm", minutes) end
+  if minutes <= 0 then return "<coral>EXPIRING" end
+  if minutes < 60 then return string.format("<ansi_yellow>%dm", minutes) end
 
   local h, r = math.floor(minutes / 60), minutes % 60
   return r > 0
-    and string.format("<cyan>%dh %dm", h, r)
-    or  string.format("<cyan>%dh", h)
+    and string.format("<ansi_cyan>%dh %dm", h, r)
+    or  string.format("<ansi_cyan>%dh", h)
 end
 
 -- ============================================================================
@@ -309,10 +312,14 @@ function AffectsWindow.refreshDisplay()
 
     local ln = AffectsWindow.config.textLengthAffectName
     local lm = AffectsWindow.config.textLengthAffectMod
+    local c = Darkmists.getDefaultTextColor()
     AffectsWindow.console:cecho(string.format(
-      "<white>%-"..tostring(ln).."s<white> : <cyan>%-"..tostring(lm).."s <white>: %s\n",
+      "<%s>%-"..tostring(ln).."s<%s> : <slate_blue>%-"..tostring(lm).."s <%s>: %s\n",
+      c,
       affect.name:sub(1,ln),
+      c,
       mod:sub(1,lm),
+      c,
       dur
     ))
   end
@@ -332,14 +339,14 @@ function AffectsWindow.refreshDisplay()
     ))
 
     AffectsWindow.console:cechoLink(
-      "<red>[X]",
+      "<firebrick>[X]",
       [[AffectsWindow.removeExpiredAffect("]] .. name .. [[")]],
       "Remove expired affect",
       true
     )
 
     AffectsWindow.console:cecho(string.format(
-      "<dim_gray> : <gray>%-"..tostring(lm).."s <white>: %s\n",
+      "<dim_gray> : %-"..tostring(lm).."s : %s\n",
       mod:sub(1,lm),
       dur
     ))
@@ -356,12 +363,12 @@ function AffectsWindow.getAge()
   local mins = math.floor(((os.time() - AffectsWindow.lastUpdateTime)
                * AffectsWindow.config.timeRatio) / 60)
 
-  if mins == 0 then return "<green>Just updated" end
-  if mins < 60 then return string.format("<cyan>%dm", mins) end
+  if mins == 0 then return "<forest_green>Just updated" end
+  if mins < 60 then return string.format("<ansi_cyan>%dm", mins) end
 
   local h, r = math.floor(mins / 60), mins % 60
-  return r > 0 and string.format("<orange>%dh %dm", h, r)
-              or string.format("<orange>%dh", h)
+  return r > 0 and string.format("<coral>%dh %dm", h, r)
+              or string.format("<coral>%dh", h)
 end
 
 function AffectsWindow.startAgeTimer()
@@ -409,7 +416,7 @@ function AffectsWindow.registerTriggers()
     end
   )
 
-  cecho("\n<dim_gray>[<white>AffectsWindow<dim_gray>] <green>Triggers registered")
+  Darkmists.Log("AffectsWindow","Triggers registered")
 end
 
 -- ============================================================================
@@ -419,5 +426,5 @@ end
 tempTimer(0.5, function()
   AffectsWindow.create()
   AffectsWindow.registerTriggers()
-  cecho("\n<dim_gray>[<white>AffectsWindow<dim_gray>] <green>Initialized. Type 'aff' to capture affects!")
+  Darkmists.Log("AffectsWindow","Initialized. Type 'aff' to capture affects!")
 end)

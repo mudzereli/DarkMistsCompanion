@@ -49,7 +49,7 @@ ItemTracker = {
     tooltipBorderColor = {255, 255, 255, 255},
 
     -- MUD colors (see https://wiki.mudlet.org/images/c/c3/ShowColors.png)
-    itemLinkColor = Darkmists.GlobalSettings.itemTrackerLinkColor,
+    itemLinkColor = Darkmists.GlobalSettings.itemTrackerLinkColorDarkMode,
     tooltipItemNameColor = "black",
     tooltipItemDetailsColor = "white"
   },
@@ -66,6 +66,9 @@ ItemTracker = {
 
 -- Format color strings for use in cecho
 local s = ItemTracker.settings
+if Darkmists.GlobalSettings.lightMode then
+  s.itemLinkColor = Darkmists.GlobalSettings.itemTrackerLinkColorLightMode
+end
 s.itemLinkColor = string.format("<%s>", s.itemLinkColor)
 s.tooltipItemNameColor = string.format("<%s>", s.tooltipItemNameColor)
 s.tooltipItemDetailsColor = string.format("<%s>", s.tooltipItemDetailsColor)

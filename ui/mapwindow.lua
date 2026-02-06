@@ -8,18 +8,16 @@ MiniMapContainer =
     height = "66%",
 
     titleText = "Mini Map",
-    titleTxtColor = "white",
+    titleTxtColor = Darkmists.getDefaultTextColor(),
     padding = 10,
-    adjLabelstyle = [[
-      background-color: #111111;
-      border: 2px solid #666666;
-    ]],
+    adjLabelstyle = Darkmists.getDefaultAdjLabelstyle(),
     
     lockStyle = "border",
     locked = false,
     autoSave = true,
     autoLoad = true,
   })
+Darkmists.Log("MiniMapContainer","Container Created!")
 
 MiniMap =
   Geyser.Mapper:new({
@@ -28,7 +26,8 @@ MiniMap =
     width = "100%", height = "100%"
   }, MiniMapContainer)
 
-  tempTimer(2,function()
+  tempTimer(1,function()
+    Darkmists.Log("MiniMapContainer","MiniMap Created!")
     MiniMapContainer:show()
     MiniMapContainer:raiseAll()
   end)
