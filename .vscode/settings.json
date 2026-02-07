@@ -92,7 +92,10 @@
         "createBuffer",
         "exists",
         "cinsertText",
-        "Adjustable"
+        "Adjustable",
+        "getFgColor",
+        "getBgColor",
+        "hinsertText"
     ],
     "Lua.diagnostics.disable": [
         "deprecated"
