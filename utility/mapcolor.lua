@@ -307,7 +307,9 @@ MapColors.WordAssociations = {
   { "corner of * and *", MapColors.Terrain.STONY_PATH },
   { "*'s lane", MapColors.Terrain.STONY_PATH },
   { "dale market", MapColors.Terrain.STONE_WHITE },
+  { "market square", MapColors.Terrain.STONE_WHITE },
   { "market area", MapColors.Terrain.STONE_WHITE },
+  { "Plaza of the Silver Dragon", MapColors.Terrain.STONE_WHITE },
   { "over windreach", MapColors.Terrain.MISTY },
   { "river bank", MapColors.Terrain.MUDDY },
   { "the banks", MapColors.Terrain.MUDDY },
@@ -318,12 +320,12 @@ MapColors.WordAssociations = {
 MapColors.ConnectorWords = {
   "row", "cross", "landing", "intersection", "bend", "turn", "junction",
   "border", "lane", "boulevard", "causeway", "crossing", "culdesac",
-  "ramp", "end", "corner",
+  "ramp", "end", "corner", "point"
 }
 
 -- Connectors that should NOT be water-based
 MapColors.NonWaterConnectorWords = {
-  "row", "landing", "border", "lane", "boulevard", "culdesac", "ramp", "bank", "graveyard"
+  "row", "landing", "border", "lane", "boulevard", "culdesac", "ramp", "bank", "graveyard", "point"
 }
 
 -- Words to ignore during keyword extraction
@@ -888,7 +890,8 @@ function MapColors.ConnectorPass()
   for id, info in pairs(connectorRooms) do
     -- Skip if already WOODEN (e.g., "suspended walkway" or "bridge")
     local currentEnv = getRoomEnv(id)
-    if currentEnv ~= MapColors.TerrainToEnv[MapColors.Terrain.WOODEN] then
+    if currentEnv ~= MapColors.TerrainToEnv[MapColors.Terrain.WOODEN]
+      and currentEnv ~= MapColors.TerrainToEnv[MapColors.Terrain.STONE_WHITE] then
       local name = info.name
       local chosenTerrain = nil
     
