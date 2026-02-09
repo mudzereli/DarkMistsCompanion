@@ -665,7 +665,7 @@ function MapColors.FillInteriorPOI()
     end
   end
 
-  cecho(("\n<green>[FillInteriorPOI] filled %d rooms"):format(changes))
+  cecho(("\n<forest_green>[FillInteriorPOI] filled %d rooms"):format(changes))
 end
 
 -- ============================================================================
@@ -677,11 +677,12 @@ function MapColors.ReportUncoloredRooms()
   cecho("\n<red>[UNCOLORED ROOMS]\n")
   local count = 0
 
+  local c = Darkmists.getDefaultTextColorTag()
   for _, id in ipairs(MapColors._allRoomIds) do
     if getRoomEnv(id) == -1 then
       count = count + 1
       local data = MapColors._roomData[id]
-      cecho(("\n<red>%-30s  <white>(%s)"):format(data.name, data.areaName))
+      cecho(("\n<red>%-30s  %s(%s)"):format(data.name, c, data.areaName))
     end
   end
 
@@ -693,7 +694,7 @@ function MapColors.SuggestKeywordsForUncolored(minLen, minCount)
   minLen = minLen or 5
   minCount = minCount or 2
 
-  cecho("\n<cyan>[SUGGESTED KEYWORDS FOR UNCOLORED ROOMS]\n")
+  cecho("\n<ansi_cyan>[SUGGESTED KEYWORDS FOR UNCOLORED ROOMS]\n")
 
   local counts = {}
   local covered = {}
@@ -726,12 +727,13 @@ function MapColors.SuggestKeywordsForUncolored(minLen, minCount)
   table.sort(sorted, function(a, b) return a.count > b.count end)
 
   -- Display results
+  local c = Darkmists.getDefaultTextColorTag()
   for _, entry in ipairs(sorted) do
-    cecho(("\n<cyan>%-15s <white>→ would color <cyan>%d <white>rooms"):format(entry.word, entry.count))
+    cecho(("\n<ansi_cyan>%-15s %s→ would color <ansi_cyan>%d %srooms"):format(entry.word, c, entry.count, c))
   end
 
   if #sorted == 0 then
-    cecho("\n<gray>No useful keyword candidates found.")
+    cecho("\n<dim_gray>No useful keyword candidates found.")
   end
 
   echo("\n")
@@ -804,13 +806,14 @@ function MapColors.UpdateMapColors()
   end
 
   -- Display statistics
-  cecho("\n\n<cyan>Keyword Statistics:")
+  cecho("\n\n<ansi_cyan>Keyword Statistics:")
   local statCount = 0
   for word, stats in pairs(keywordStats) do
     if stats.count > 0 then
       statCount = statCount + 1
       if statCount <= 20 then  -- Only show top 20 to reduce output lag
-        local str = "\n<white>[<cword>%-12s<white>] room count → <cword>%d<white>"
+        local c = Darkmists.getDefaultTextColorTag()
+        local str = "\n"..c.."[<cword>%-12s"..c.."] room count → <cword>%d"..c
         str = decho2cecho(str:gsub("<cword>", getHColorString(stats.terrain)))
         cecho(str:format(word, stats.count))
       end
@@ -862,7 +865,7 @@ function MapColors.AdjacencyCorrection(minNeighbors)
     end
   end
 
-  cecho(("\n<green>[Adjacency pass] Colored %d rooms"):format(changes))
+  cecho(("\n<forest_green>[Adjacency pass] Colored %d rooms"):format(changes))
   return changes
 end
 
@@ -941,7 +944,7 @@ function MapColors.ConnectorPass()
     end
   end
 
-  cecho(("\n<green>[ConnectorPass] adjusted %d rooms"):format(changes))
+  cecho(("\n<forest_green>[ConnectorPass] adjusted %d rooms"):format(changes))
 end
 
 -- Color all remaining uncolored rooms as NOEXIT (fallback)
@@ -955,7 +958,7 @@ function MapColors.ColorRemainingRooms()
     end
   end
   
-  cecho(("\n<green>[ColorRemainingRooms] adjusted %d rooms"):format(changes))
+  cecho(("\n<forest_green>[ColorRemainingRooms] adjusted %d rooms"):format(changes))
 end
 
 -- Reset all rooms to uncolored state
@@ -986,7 +989,7 @@ function MapColors.FullUpdatePass()
   MapColors.FillInteriorPOI()  -- Run twice to fill gaps
   
   local elapsed = os.clock() - startTime
-  cecho(("\n<green>[FullUpdatePass] Completed in %.2f seconds"):format(elapsed))
+  cecho(("\n<forest_green>[FullUpdatePass] Completed in %.2f seconds"):format(elapsed))
 end
 
 -- Final cleanup pass (adjacency + fallback)
@@ -1000,7 +1003,7 @@ function MapColors.FinalUpdatePass()
   MapColors.ColorRemainingRooms()
   
   local elapsed = os.clock() - startTime
-  cecho(("\n<green>[FinalUpdatePass] Completed in %.2f seconds"):format(elapsed))
+  cecho(("\n<forest_green>[FinalUpdatePass] Completed in %.2f seconds"):format(elapsed))
 end
 
 -- ============================================================================
@@ -1048,12 +1051,13 @@ function MapColors.AuditAreaByRoomID(roomID)
   end
 
   -- Display results
-  cecho(string.format("<green>[Mapper Audit]\n<white>Area: <yellow>%s\n", areaName))
-  cecho(string.format("<white>Total unconnected exit stubs: <red>%d\n\n", stubCount))
+  local c = Darkmists.getDefaultTextColorTag()
+  cecho(string.format("<forest_green>[Mapper Audit]\n"..c.."Area: <dark_khaki>%s\n", areaName))
+  cecho(string.format(c.."Total unconnected exit stubs: <red>%d\n\n", stubCount))
 
   -- Show stub rooms
   if next(stubRooms) then
-    cecho("<white>Rooms With Exit Stubs:\n")
+    cecho(c.."Rooms With Exit Stubs:\n")
     for roomID, dirs in pairs(stubRooms) do
       cechoLink(
         string.format("  <blue_violet>%s (%d)", getRoomName(roomID), roomID),
@@ -1061,33 +1065,33 @@ function MapColors.AuditAreaByRoomID(roomID)
         string.format("Go to room %d", roomID),
         true
       )
-      cecho(string.format("<gray>  [%s]\n", table.concat(dirs, ", ")))
+      cecho(string.format("<dim_gray>  [%s]\n", table.concat(dirs, ", ")))
     end
     cecho("\n")
   else
-    cecho("<gray>No unconnected exit stubs found.\n\n")
+    cecho("<dim_gray>No unconnected exit stubs found.\n\n")
   end
 
   -- Show connected areas
   if next(connectedAreas) then
-    cecho("<white>Connected Areas:\n")
+    cecho(c.."Connected Areas:\n")
     for _, info in pairs(connectedAreas) do
       cechoLink(
-        string.format("<yellow>%s\n", info.name),
+        string.format("<dark_khaki>%s\n", info.name),
         string.format("MapColors.AuditAreaByRoomID(%d)", info.links[1].toRoom),
         string.format("Audit area %s", info.name),
         true
       )
       for _, link in ipairs(info.links) do
         cechoLink(
-          string.format("  <medium_spring_green>%-32s", string.format("%s (%s)", getRoomName(link.fromRoom), link.fromRoom)),
+          string.format("  <steel_blue>%-32s", string.format("%s (%s)", getRoomName(link.fromRoom), link.fromRoom)),
           string.format("gotoRoom(%d)", link.fromRoom),
           string.format("Go to room %d", link.fromRoom),
           true
         )
         cecho(string.format(" -[%-5s]-> ", link.direction))
         cechoLink(
-          string.format("<medium_spring_green>%s", getRoomAreaName(getRoomArea(link.toRoom))),
+          string.format("<steel_blue>%s", getRoomAreaName(getRoomArea(link.toRoom))),
           string.format("gotoRoom(%d)", link.toRoom),
           string.format("Go to room %d", link.toRoom),
           true
@@ -1096,7 +1100,7 @@ function MapColors.AuditAreaByRoomID(roomID)
       end
     end
   else
-    cecho("<gray>No external area connections found.\n")
+    cecho("<dim_gray>No external area connections found.\n")
   end
 end
 
@@ -1112,7 +1116,7 @@ end
 
 -- Audit all areas with exit stubs (global scan)
 function MapColors.AuditAllAreasWithStubs()
-  cecho("\n<green>[GLOBAL AREA STUB AUDIT]\n")
+  cecho("\n<forest_green>[GLOBAL AREA STUB AUDIT]\n")
 
   -- Areas to skip (known locked/inaccessible areas)
   local ignoreAreaIDs = {
@@ -1157,29 +1161,30 @@ function MapColors.AuditAllAreasWithStubs()
         end
 
         -- Only display areas with stubs
+        local c = Darkmists.getDefaultTextColorTag()
         if stubCount > 0 then
-          cecho(string.format("\n<yellow>%s <gray>(ID %d)\n", areaName, areaID))
-          cecho(string.format("<white>  Unconnected exit stubs: <red>%d\n", stubCount))
+          cecho(string.format("\n<dark_khaki>%s <dim_gray>(ID %d)\n", areaName, areaID))
+          cecho(string.format(c.."  Unconnected exit stubs: <red>%d\n", stubCount))
 
           if next(entryRooms) then
-            cecho("<white>  Entry points:\n")
+            cecho(c.."  Entry points:\n")
             for roomID in pairs(entryRooms) do
               cechoLink(
-                string.format("    <medium_spring_green>%s (%d)\n", getRoomName(roomID), roomID),
+                string.format("    <steel_blue>%s (%d)\n", getRoomName(roomID), roomID),
                 string.format("gotoRoom(%d)", roomID),
                 string.format("Go to room %d", roomID),
                 true
               )
             end
           else
-            cecho("<gray>  No entry points detected.\n")
+            cecho("<dim_gray>  No entry points detected.\n")
           end
         end
       end
     end
   end
 
-  cecho("\n<green>[Audit complete]\n")
+  cecho("\n<forest_green>[Audit complete]\n")
 end
 
 -- ============================================================================
