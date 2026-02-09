@@ -187,7 +187,7 @@ local MESSAGE_FORMATTERS = {
 
   house = function(m)
     return string.format(
-      "<dim_gray>[<"..maincolor..">%s<dim_gray>] <gray>[<dim_gray>%s<gray>] <"..blue..">%s<gray>: %s<"..maincolor..">\n",
+      "<dim_gray>[<"..maincolor..">%s<dim_gray>] <gray>[<dim_gray>%s<gray>] <"..blue..">%s<"..maincolor..">: %s<"..maincolor..">\n",
       m.timestamp, m.receiver, m.sender, m.message
     )
   end,
