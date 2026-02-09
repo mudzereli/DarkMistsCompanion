@@ -8,7 +8,7 @@ WhoWindow = WhoWindow or {}
 WhoWindow.config = {
   fontSize = Darkmists.GlobalSettings.fontSize,
   fontName = Darkmists.GlobalSettings.fontName,
-  deleteOriginalLines = true,
+  deleteOriginalLines = Darkmists.GlobalSettings.whoWindowDeleteOriginalLines,
   lastUpdated = 0
 }
 
@@ -32,7 +32,7 @@ function WhoWindow.create()
   WhoWindow.window = Adjustable.Container:new({
       name = "WhoWindow",
 
-      x = tostring(Darkmists.GlobalSettings.mainWindowPanelWidth).."%",
+      x = Darkmists.getDefaultXPosition(),
       width = tostring(100 - Darkmists.GlobalSettings.mainWindowPanelWidth).."%",
       y = "0%",
       height = "33.33%",
@@ -119,6 +119,29 @@ end
 -- ===================================================================
 -- CAPTURE LOGIC
 -- ===================================================================
+local function getLastCharColors(win)
+  -- select the whole line first so we know its length
+  selectCurrentLine(win)
+  local line = getSelection(win)
+  if not line or line == "" then
+    return nil
+  end
+
+  local lineNum = getLineNumber(win)
+  local lastPos = #line
+
+  -- select ONLY the last character
+  selectSection(win, lastPos, lineNum, lastPos, lineNum)
+
+  local fr, fg, fb = getFgColor(win)
+  local br, bg, bb = getBgColor(win)
+
+  return fr, fg, fb, br, bg, bb
+end
+
+local function rgbToHex(r, g, b)
+  return string.format("%02x%02x%02x", r, g, b)
+end
 
 --- Append pending continuation line to last line in temp buffer
 -- @param pendingLine string The continuation text to append
@@ -130,13 +153,21 @@ local function appendContinuationLine(pendingLine)
   local prevLineSelection = getSelection(WhoWindow.tempBufferName)
   local prevLineNumber = getLineNumber(WhoWindow.tempBufferName)
   
+  local t = WhoWindow.tempBufferName
+  selectSection(t,#getCurrentLine(t)-1,1)
+  local fr, fg, fb = getFgColor(t)
+  local br, bg, bb = getBgColor(t)
+  local f = string.format("%02X%02X%02X", fr, fg, fb)
+  local b = string.format("%02X%02X%02X", br, bg, bb)
+
   -- Move to end of previous line
   moveCursor(WhoWindow.tempBufferName, #prevLineSelection, prevLineNumber)
   
-  local txt = ("<%s:%s> %s"):format(Darkmists.getDefaultTextColor(),Darkmists.getDefaultBackgroundColor(),pendingLine)
-  cinsertText(WhoWindow.tempBufferName, txt)
+  local txt = ("#%s,%s %s"):format(f,b,pendingLine)
+  hinsertText(WhoWindow.tempBufferName, txt)
   moveCursorEnd(WhoWindow.tempBufferName)
 end
+
 
 --- Capture and display the player list
 function WhoWindow.capturePlayerList()
