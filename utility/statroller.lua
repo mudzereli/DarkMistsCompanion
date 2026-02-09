@@ -11,6 +11,14 @@ StatRoller = {
     leniency = Darkmists.GlobalSettings.statRollerLeniency,
     keepalive_interval = 20,   -- seconds between keepalive sends
     keepalive_command  = " ",  -- space = safest (Enter also works)
+    textColor = Darkmists.getDefaultTextColor(),
+    colors = {
+      green = "green",
+      gray = "gray",
+      cyan = "cyan",
+      yellow = "yellow",
+      red = "red"
+    }
   },
   state = {
     nRollsCompleted = 0,
@@ -24,9 +32,16 @@ StatRoller = {
   recent_totals = {},
   _spin = 0,
 }
+if Darkmists.GlobalSettings.lightMode then
+  StatRoller.settings.colors.green = "forest_green"
+  StatRoller.settings.colors.gray = "dim_gray"
+  StatRoller.settings.colors.cyan = "ansi_cyan"
+  StatRoller.settings.colors.yellow = "dark_khaki"
+  StatRoller.settings.colors.gray = "dim_gray"
+end
 
 -- ---------- utils ----------
-local function color(tag, s) return "<" .. tag .. ">" .. s .. "<white>" end
+local function color(tag, s) return "<" .. tag .. ">" .. s .. "<"..StatRoller.settings.textColor..">" end
 local function pad(n, w) return string.format("%" .. tostring(w) .. "d", n or 0) end
 local function getopt(k, default) local v = StatRoller.settings and StatRoller.settings[k]; return (v==nil) and default or v end
 local function now() return (getEpoch and getEpoch()) or os.time() end
@@ -36,17 +51,17 @@ local function progress_bar(cur, maxv, width, fg, bg)
   if width < 1 then width = 1 end
   cur  = tonumber(cur) or 0
   maxv = tonumber(maxv) or 0
-  if maxv <= 0 then return color("grey", string.rep("░", width)) end
+  if maxv <= 0 then return color(StatRoller.settings.colors.gray, string.rep("░", width)) end
   if cur < 0 then cur = 0 elseif cur > maxv then cur = maxv end
   local filled = math.floor((cur / maxv) * width + 0.5); if filled > width then filled = width end
-  return color(fg or "green", string.rep("█", filled)) .. color(bg or "grey", string.rep("░", width - filled))
+  return color(fg or StatRoller.settings.colors.green, string.rep("█", filled)) .. color(bg or StatRoller.settings.colors.gray, string.rep("░", width - filled))
 end
 
 local function fmt_delta(delta, maxv)
   delta = tonumber(delta) or 0
-  if delta == 0 then return color("green", "0") end
+  if delta == 0 then return color(StatRoller.settings.colors.green, "0") end
   local pct = (maxv and maxv > 0) and (delta / maxv) or 1
-  local tag = (pct <= 0.05) and "yellow" or "red"
+  local tag = (pct <= 0.05) and StatRoller.settings.colors.yellow or StatRoller.settings.colors.red
   return color(tag, tostring(delta))
 end
 
@@ -70,7 +85,7 @@ end
 local function sparkline(samples, minv, maxv, width)
   width = tonumber(width) or 1
   if width < 1 then width = 1 end
-  if #samples == 0 then return color("grey", string.rep("·", width)) end
+  if #samples == 0 then return color(StatRoller.settings.colors.gray, string.rep("·", width)) end
 
   local out = {}
   local start = math.max(1, #samples - width + 1)
@@ -82,7 +97,7 @@ local function sparkline(samples, minv, maxv, width)
   if maxv <= minv then
     -- flat series: draw a mid-level line
     local mid = math.max(1, math.min(#SPARKS, math.floor(#SPARKS / 2)))
-    return color("cyan", string.rep(SPARKS[mid], math.min(width, #samples - start + 1)))
+    return color(StatRoller.settings.colors.cyan, string.rep(SPARKS[mid], math.min(width, #samples - start + 1)))
   end
 
   for i = start, #samples do
@@ -92,7 +107,7 @@ local function sparkline(samples, minv, maxv, width)
     if idx < 1 then idx = 1 elseif idx > #SPARKS then idx = #SPARKS end
     out[#out+1] = SPARKS[idx]
   end
-  return color("cyan", table.concat(out))
+  return color(StatRoller.settings.colors.cyan, table.concat(out))
 end
 
 -- ---------- parsing ----------
@@ -126,7 +141,7 @@ local function update_records(stats)
   if stats.total > (StatRoller.best_total or 0) then
     StatRoller.best_total = stats.total
     StatRoller.best_stats = { str=stats.str, int=stats.int, wis=stats.wis, dex=stats.dex, con=stats.con, total=stats.total }
-    cecho("\n" .. color("green", "[SR] New best total: " .. stats.total .. "!"))
+    cecho("\n" .. color(StatRoller.settings.colors.green, "[SR] New best total: " .. stats.total .. "!"))
   end
 end
 
@@ -160,17 +175,17 @@ function StatRoller.echo_hud()
   local status, bar
   local bw = getopt("barWidth", 24)
   if calibrating then
-    status = color("yellow", ("CAL %d/%d"):format(rolls, N))
-    bar    = progress_bar(rolls, N, bw, "yellow", "grey")
+    status = color(StatRoller.settings.colors.yellow, ("CAL %d/%d"):format(rolls, N))
+    bar    = progress_bar(rolls, N, bw, StatRoller.settings.colors.yellow, StatRoller.settings.colors.gray)
   else
-    local phase = (cs.total >= ms.total and ms.total > 0) and color("green","READY") or color("yellow","ROLLING")
-    status = color("cyan", "LIVE ") .. color("grey", "• ") .. phase
-    bar    = progress_bar(cs.total, ms.total, bw, "green", "grey")
+    local phase = (cs.total >= ms.total and ms.total > 0) and color(StatRoller.settings.colors.green,"READY") or color(StatRoller.settings.colors.yellow,"ROLLING")
+    status = color(StatRoller.settings.colors.cyan, "LIVE ") .. color(StatRoller.settings.colors.gray, "• ") .. phase
+    bar    = progress_bar(cs.total, ms.total, bw, StatRoller.settings.colors.green, StatRoller.settings.colors.gray)
   end
 
   local totals = (cs.total >= ms.total and ms.total > 0)
-    and (color("green", pad(cs.total,2)) .. color("grey","/") .. color("green", pad(ms.total,2)))
-    or  (color("white", pad(cs.total,2)) .. color("grey","/") .. color("white", pad(ms.total,2)))
+    and (color(StatRoller.settings.colors.green, pad(cs.total,2)) .. color(StatRoller.settings.colors.gray,"/") .. color(StatRoller.settings.colors.green, pad(ms.total,2)))
+    or  (color(StatRoller.settings.textColor, pad(cs.total,2)) .. color(StatRoller.settings.colors.gray,"/") .. color(StatRoller.settings.textColor, pad(ms.total,2)))
 
   local rpm = roll_rate()
   local elapsed = 0
@@ -180,16 +195,16 @@ function StatRoller.echo_hud()
   local mm = math.floor(elapsed / 60); local ss = elapsed % 60
 
   local bestStr = StatRoller.best_total and StatRoller.best_total > 0
-    and color("green", tostring(StatRoller.best_total)) or color("grey","-")
+    and color(StatRoller.settings.colors.green, tostring(StatRoller.best_total)) or color(StatRoller.settings.colors.gray,"-")
 
   cecho(("\n%s %s %s  %s %s  %s %s  %s %s  %s %s  %s %s")
     :format(
-      color("grey","[SR]"), color("white", spin), status,
-      color("grey","Total"), totals,
-      color("grey","Δ"), fmt_delta(delta, ms.total),
-      color("grey","Rolls"), color("white", tostring(rolls)),
-      color("grey","RPM"), color("white", string.format("%.1f", rpm)),
-      color("grey","Elapsed"), color("white", string.format("%02d:%02d", mm, ss))
+      color(StatRoller.settings.colors.gray,"[SR]"), color(StatRoller.settings.textColor, spin), status,
+      color(StatRoller.settings.colors.gray,"Total"), totals,
+      color(StatRoller.settings.colors.gray,"Δ"), fmt_delta(delta, ms.total),
+      color(StatRoller.settings.colors.gray,"Rolls"), color(StatRoller.settings.textColor, tostring(rolls)),
+      color(StatRoller.settings.colors.gray,"RPM"), color(StatRoller.settings.textColor, string.format("%.1f", rpm)),
+      color(StatRoller.settings.colors.gray,"Elapsed"), color(StatRoller.settings.textColor, string.format("%02d:%02d", mm, ss))
     ))
 
   -- Trend sparkline scaled to recent MIN..MAX
@@ -199,20 +214,20 @@ function StatRoller.echo_hud()
     local sl = sparkline(StatRoller.recent_totals, minv, maxv, w)
     cecho(("  %s %s  %s %s")
       :format(
-        color("grey","Trend"),
+        color(StatRoller.settings.colors.gray,"Trend"),
         sl,
-        color("grey","Range"),
-        color("white", ("%d–%d"):format(minv, maxv))
+        color(StatRoller.settings.colors.gray,"Range"),
+        color(StatRoller.settings.textColor, ("%d–%d"):format(minv, maxv))
       ))
-    cecho(("  %s %s"):format(color("grey","Best"), bestStr))
+    cecho(("  %s %s"):format(color(StatRoller.settings.colors.gray,"Best"), bestStr))
   else
-    cecho(("  %s %s"):format(color("grey","Best"), bestStr))
+    cecho(("  %s %s"):format(color(StatRoller.settings.colors.gray,"Best"), bestStr))
   end
 
   if getopt("showDetails", true) then
     local function statPair(lbl, cur, maxv)
-      local curC = (maxv > 0 and cur >= maxv) and "green" or "white"
-      return color("grey", lbl) .. " " .. color(curC, pad(cur,2)) .. color("grey","/") .. color("white", pad(maxv,2))
+      local curC = (maxv > 0 and cur >= maxv) and StatRoller.settings.colors.green or StatRoller.settings.textColor
+      return color(StatRoller.settings.colors.gray, lbl) .. " " .. color(curC, pad(cur,2)) .. color(StatRoller.settings.colors.gray,"/") .. color(StatRoller.settings.textColor, pad(maxv,2))
     end
     cecho(("\n   %s  %s  %s  %s  %s")
       :format(
@@ -238,14 +253,14 @@ function StatRoller._start_keepalive()
     true
   )
 
-  cecho("\n<cyan>[SR] Keepalive enabled\n")
+  cecho("\n<"..StatRoller.settings.colors.cyan..">[SR] Keepalive enabled\n")
 end
 
 function StatRoller._stop_keepalive()
   if StatRoller._keepalive_timer then
     killTimer(StatRoller._keepalive_timer)
     StatRoller._keepalive_timer = nil
-    cecho("\n<yellow>[SR] Keepalive disabled\n")
+    cecho("\n<"..StatRoller.settings.colors.yellow..">[SR] Keepalive disabled\n")
   end
 end
 
