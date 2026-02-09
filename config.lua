@@ -1,3 +1,4 @@
+---@diagnostic disable: lowercase-global
 mpackage = [[DarkMistsCompanion]]
 author = [[Mudzereli]]
 icon = [[darkmists.PNG]]
