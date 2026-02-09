@@ -86,8 +86,52 @@ DMUtil.escape_pattern_lua = function(s)
   return s:gsub("([%^%$%(%)%%%.%[%]%*%+%-%?])", "%%%1")
 end
 
+-- Deeply Copy Table Values Into Another Table
+DMUtil.deep_copy_into = function(dest, src, seen)
+  if type(src) ~= "table" then
+    return dest
+  end
+
+  seen = seen or {}
+
+  if seen[src] then
+    return dest
+  end
+  seen[src] = true
+
+  for k, v in pairs(src) do
+    if type(v) == "table" then
+      dest[k] = dest[k] or {}
+      DMUtil.deep_copy_into(dest[k], v, seen)
+    else
+      dest[k] = v
+    end
+  end
+
+  return dest
+end
+
+-- Take an entire text file (Log) and run it through triggers... (Debug Purposes)
+DMUtil.replayFileToTriggers = function(path)
+  local f, err = io.open(path, "r")
+  if not f then
+    cecho("<red>Could not open file: " .. tostring(err) .. "\n")
+    return
+  end
+
+  cecho("<cyan>[Replay] Feeding lines from " .. path .. "\n")
+
+  for line in f:lines() do
+    line = "\n"..line
+    feedTriggers(line)
+  end
+
+  f:close()
+  cecho("<green>[Replay] Done\n")
+end
+
 -- Mudlet Helper Functions
-function DMUtil.registerAnonymousEventHandlerVerbose(e,h)
+DMUtil.registerAnonymousEventHandlerVerbose = function(e,h)
   local n = registerAnonymousEventHandler(e,h)
   local hSanitized = "unknown"
   if type(h) == "string" then
