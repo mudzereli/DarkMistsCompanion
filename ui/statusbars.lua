@@ -94,6 +94,13 @@ local function safeMax(value)
   return (value and value > 0) and value or 1
 end
 
+local function getBaseX()
+  if Darkmists.GlobalSettings.panelsOnLeft then
+    return 100 - StatusBar.config.totalWidth
+  end
+  return 0
+end
+
 -- ===================================================================
 -- CLEANUP
 -- ===================================================================
@@ -126,7 +133,9 @@ StatusBar.cleanup()  -- Clean up any existing instance
 -- ===================================================================
 function StatusBar.create()
   Darkmists.Log("StatusBars","Creating interface...")
-  
+
+  local baseX = getBaseX()
+
   local cfg = StatusBar.config
   local barY = calculateBarY()
   
@@ -136,9 +145,9 @@ function StatusBar.create()
   
   -- Create HP/MN/MV gauges (3 bars side-by-side, left-aligned)
   local vitalGauges = {
-    { name = "hpGauge", label = "StatusBar_HP", x = 0, width = barWidthPct, color = cfg.colors.hp },
-    { name = "mnGauge", label = "StatusBar_MN", x = barWidthPct + cfg.sideSpacing, width = barWidthPct, color = cfg.colors.mn },
-    { name = "mvGauge", label = "StatusBar_MV", x = (barWidthPct * 2) + (cfg.sideSpacing * 2), width = totalWidth - (barWidthPct * 2) - (cfg.sideSpacing * 2), color = cfg.colors.mv }
+    { name = "hpGauge", label = "StatusBar_HP", x = baseX, width = barWidthPct, color = cfg.colors.hp },
+    { name = "mnGauge", label = "StatusBar_MN", x = baseX + barWidthPct + cfg.sideSpacing, width = barWidthPct, color = cfg.colors.mn },
+    { name = "mvGauge", label = "StatusBar_MV", x = baseX + (barWidthPct * 2) + (cfg.sideSpacing * 2), width = totalWidth - (barWidthPct * 2) - (cfg.sideSpacing * 2), color = cfg.colors.mv }
   }
   
   for _, def in ipairs(vitalGauges) do
@@ -158,7 +167,7 @@ function StatusBar.create()
   -- Create XP gauge (bottom bar, 70% width, left-aligned)
   StatusBar.xpGauge = Geyser.Gauge:new({
     name = "StatusBar_XP",
-    x = "0%",
+    x = tostring(getBaseX()) .. "%",
     y = tostring(-cfg.bottomOffset - cfg.xpBarHeight) .. "px",
     width = tostring(totalWidth) .. "%",
     height = tostring(cfg.xpBarHeight) .. "px"
@@ -171,7 +180,7 @@ function StatusBar.create()
   -- Create enemy gauge (above vitals, 70% width, left-aligned)
   StatusBar.enemyGauge = Geyser.Gauge:new({
     name = "StatusBar_Enemy",
-    x = "0%",
+    x = tostring(getBaseX()) .. "%",
     y = tostring(barY - cfg.barHeight - cfg.barSpacing) .. "px",
     width = tostring(totalWidth) .. "%",
     height = tostring(cfg.barHeight) .. "px"
@@ -316,6 +325,7 @@ end
 -- Reposition bars (called when XP bar visibility changes)
 function StatusBar.repositionBars()
   local cfg = StatusBar.config
+  local baseX = getBaseX()
   local barY = calculateBarY()
 
   -- Calculate widths within the 70% constraint
@@ -329,14 +339,14 @@ function StatusBar.repositionBars()
   -- Move & resize HP bar
   if StatusBar.hpGauge then
     StatusBar.hpGauge:resize(tostring(hpWidth) .. "%", tostring(cfg.barHeight) .. "px")
-    StatusBar.hpGauge:move("0%", tostring(barY) .. "px")
+    StatusBar.hpGauge:move(tostring(baseX) .. "%", tostring(barY) .. "px")
   end
 
   -- Move & resize Mana bar
   if StatusBar.mnGauge then
     StatusBar.mnGauge:resize(tostring(mnWidth) .. "%", tostring(cfg.barHeight) .. "px")
     StatusBar.mnGauge:move(
-      tostring(hpWidth + cfg.sideSpacing) .. "%",
+      tostring(baseX + hpWidth + cfg.sideSpacing) .. "%",
       tostring(barY) .. "px"
     )
   end
@@ -345,7 +355,7 @@ function StatusBar.repositionBars()
   if StatusBar.mvGauge then
     StatusBar.mvGauge:resize(tostring(mvWidth) .. "%", tostring(cfg.barHeight) .. "px")
     StatusBar.mvGauge:move(
-      tostring(hpWidth + mnWidth + (cfg.sideSpacing * 2)) .. "%",
+      tostring(baseX + hpWidth + mnWidth + (cfg.sideSpacing * 2)) .. "%",
       tostring(barY) .. "px"
     )
   end
@@ -353,7 +363,7 @@ function StatusBar.repositionBars()
   -- Move enemy bar
   if StatusBar.enemyGauge then
     StatusBar.enemyGauge:move(
-      "0%",
+      tostring(baseX) .. "%",
       tostring(barY - cfg.barHeight - cfg.barSpacing) .. "px"
     )
   end
