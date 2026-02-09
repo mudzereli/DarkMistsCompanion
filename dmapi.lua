@@ -455,7 +455,7 @@ function parsers.mobCondition(line)
   for _, phrase in ipairs(dmapi.core.state.COMBAT_CONDITIONS) do
     if line:find(phrase, 1, true) then
       local mob, condition, hpPct = line:match(
-        "^(.+)%s+(" .. phrase .. ")[.!]%s+%((%d+)%%%)$"
+        "^(.+)%s+(" .. phrase .. ")[.!]%s+%((%d+%.?%d*)%%%)$"
       )
 
       if mob then
@@ -525,7 +525,7 @@ end
 -- @param level string Optional log level (info, warn, error)
 function dmapi.core.log(message, level)
   level = level or "info"
-  local color = "<light_pink>"
+  local color = "<dim_gray>"
   
   if level == "warn" then
     color = "<yellow>"
@@ -678,7 +678,29 @@ function dmapi.core.LineTrigger(line)
     return
   end
 
-  -- Say From Someone Else
+  -- Mental Projection From Someone Else
+  sender, message = line:match("^(.*) mentally projects, '(.*)'$")
+  if sender then
+    dmapi.core.raiseEvent("dmapi.communication.mpreceived", {
+      sender = sender,
+      message = message,
+      line = line
+    })
+    return
+  end
+  
+  -- Mental Projection From Player
+  message = line:match("^You mentally project, '(.*)'$")
+  if message then
+    dmapi.core.raiseEvent("dmapi.communication.mpsent", {
+      sender = "Player",
+      message = message,
+      line = line
+    })
+    return
+  end
+
+  -- GTell From Someone Else
   sender, message = line:match("^(.*) tells the group '(.*)'$")
   if sender then
     dmapi.core.raiseEvent("dmapi.communication.gtellreceived", {
@@ -688,7 +710,7 @@ function dmapi.core.LineTrigger(line)
     })
     return
   end
-  -- Say From Player
+  -- GTell From Player
   message = line:match("^You tell the group '(.*)'$")
   if message then
     dmapi.core.raiseEvent("dmapi.communication.gtellsent", {
