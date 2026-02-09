@@ -27,10 +27,10 @@ function ChatHistory.create()
   ChatHistory.window = Adjustable.Container:new({
       name = "ChatHistory",
 
-      x = Darkmists.getDefaultXPosition(),
-      width = tostring(100 - Darkmists.GlobalSettings.mainWindowPanelWidth).."%",
-      y = "33.33%",
-      height = "33.33%",
+      x = "0%",
+      width = "70%",
+      y = "0%",
+      height = "10%",
 
       titleText = "Chat History",
       titleTxtColor = Darkmists.getDefaultTextColor(),
