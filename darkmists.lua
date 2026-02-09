@@ -14,14 +14,24 @@
 --   - Persistence via append-only Lua files
 --   - Explicit > clever
 -- =============================================================================
+local saveFilePath = getMudletHomeDir() .. "/darkmists_global_settings.lua"
+local itemViewerPath = getMudletHomeDir() .. "/DarkMistsCompanion/assets/item-viewer.html"
+local dmapiDocPath = getMudletHomeDir() .. "/DarkMistsCompanion/assets/dmapi.html"
+local mapDatPath = getMudletHomeDir() .. "/DarkMistsCompanion/map.dat"
 
 Darkmists = {}
+Darkmists.NAME = "Dark Mists Companion"
+Darkmists.VERSION = "1.0.0"
 
-Darkmists.GlobalSettings = {
+Darkmists.DefaultSettings = {
   -- should we use light mode?
   lightMode = false,
-  -- what % of the screen should the main window take up
+  -- should the panels all be swapped?
+  panelsOnLeft = false,
+  -- what % of the screen width should the main window take up
   mainWindowPanelWidth = 70,
+  -- what % of the screen height should be reserve for the borders
+  borders = {top = 10, bottom = 0, left = 0, right = 0},
   -- Font Size for additional Information Windows (Chat History, Who List, Affects)
   fontSize = 11,
   -- Font Face for additional Information Windows (Chat History, Who List, Affects)
@@ -43,16 +53,21 @@ Darkmists.GlobalSettings = {
   -- How often Affects Window is Updated
   affectsWindowUpdateIntervalSeconds = 2,
   -- How many characters to cut off Affect Name At
-  affectsWindowAffectNameLength = 24,
+  affectsWindowAffectNameLength = 20,
   -- How many characters to cut off Affect Mod At
   affectsWindowAffectModLength = 16,
   -- Clickable Item Link Color (lua showColors(3) to see allowable colors)
   itemTrackerLinkColorDarkMode = "pale_goldenrod",
   -- Clickable Item Link Color (lua showColors(3) to see allowable colors)
   itemTrackerLinkColorLightMode = "dark_slate_blue",
+  -- Delete Original Affect Lines when typing Score / Affect
+  affectsWindowDeleteOriginalLines = false,
+  -- Delete Original Who Lines when typing Who
+  whoWindowDeleteOriginalLines = false,
   -- Stat Roller Leniancy (0 = Roll must be Max, 1 = Roll can be 1 lower than Max, etc)
   statRollerLeniency = 1
 }
+Darkmists.GlobalSettings = {}
 
 -- =============================================================================
 -- GLOBAL LINE DISPATCHER
@@ -78,24 +93,33 @@ end
 -- UI / HELPER STUFF
 -- =============================================================================
 
+Darkmists.LoadMapDat = function()
+  Darkmists.Log("Darkmists Core",("Loading Map from: %s"):format(mapDatPath))
+  loadMap(mapDatPath)
+end
+
 Darkmists.OpenItemViewer = function()
-  local base = getMudletHomeDir()
-  local path = base .. "/DarkMistsCompanion/assets/item-viewer.html"
-
-  -- normalize for Windows
-  path = path:gsub("\\", "/")
-
-  openUrl("file:///" .. path)
+  itemViewerPath = itemViewerPath:gsub("\\", "/")
+  openUrl("file:///" .. itemViewerPath)
 end
 
 Darkmists.OpenDMAPIDocs = function()
-  local base = getMudletHomeDir()
-  local path = base .. "/DarkMistsCompanion/assets/dmapi.html"
-
   -- normalize for Windows
-  path = path:gsub("\\", "/")
+  dmapiDocPath = dmapiDocPath:gsub("\\", "/")
 
-  openUrl("file:///" .. path)
+  openUrl("file:///" .. dmapiDocPath)
+end
+
+Darkmists.OpenSettingsFile = function()
+  -- normalize for Windows
+  saveFilePath = saveFilePath:gsub("\\", "/")
+
+  openUrl("file:///" .. saveFilePath)
+  Darkmists.Log("Darkmists Core","Settings File Opened. After Editing, you must use LOAD SETTINGS!")
+end
+
+Darkmists.OpenWebsite = function()
+  openUrl("https://darkmists.org")
 end
 
 Darkmists.getDefaultAdjLabelstyle = function()
@@ -120,6 +144,14 @@ Darkmists.getDefaultTextColor = function()
   end
 end
 
+Darkmists.getDefaultXPosition = function()
+  if Darkmists.GlobalSettings.panelsOnLeft then
+    return "0%"
+  else
+    return tostring(Darkmists.GlobalSettings.mainWindowPanelWidth).."%"
+  end
+end
+
 Darkmists.getDefaultBackgroundColor = function()
   if Darkmists.GlobalSettings.lightMode then
     return "white"
@@ -138,17 +170,88 @@ Darkmists.Log = function(pluginName,msg)
   cecho(output)
 end
 
+Darkmists.SaveSettings = function()
+  local settings = Darkmists.GlobalSettings
+---@diagnostic disable-next-line: undefined-field
+  table.save(saveFilePath,settings)
+  Darkmists.Log("Darkmists Core",("Settings Saved To: %s!"):format(saveFilePath))
+end
+
+Darkmists.LoadSettings = function()
+---@diagnostic disable-next-line: undefined-field
+  if io.exists(saveFilePath) then
+    local settings = {}
+    ---@diagnostic disable-next-line: undefined-field
+    table.load(saveFilePath,settings)
+    DMUtil.deep_copy_into(Darkmists.GlobalSettings,settings)
+    Darkmists.Log("Darkmists Core",("Settings Loaded From: %s!"):format(saveFilePath))
+    Darkmists.Log("Darkmists Core","You may need to Reload UI for changes to take effect!")
+  else
+    Darkmists.Log("Darkmists Core","No Pre-Existing Settings File Found!")
+  end
+end
+
+Darkmists.ApplyDefaultSettings = function()
+  DMUtil.deep_copy_into(Darkmists.GlobalSettings,Darkmists.DefaultSettings)
+  Darkmists.Log("Darkmists Core","Default Settings Applied!")
+end
+
+Darkmists.SetWindowBorderPercent = function(region,percent)
+  local mainWidth, mainHeight = getMainWindowSize()
+  if region == "top" or region == "bottom" then
+    local scaleHeight = ((percent / 100.0) * mainHeight)
+    if region == "top" then
+      Darkmists.GlobalSettings.borders.top = percent
+      setBorderTop(scaleHeight)
+    elseif region == "bottom" then
+      Darkmists.GlobalSettings.borders.bottom = percent
+      setBorderBottom(scaleHeight)
+    end
+  elseif region == "left" or region == "right" then
+    local scaleWidth = ((percent / 100.0) * mainWidth)
+    if region == "left" then
+      Darkmists.GlobalSettings.borders.left = percent
+      setBorderLeft(scaleWidth)
+    elseif region == "right" then
+      Darkmists.GlobalSettings.borders.right = percent
+      setBorderRight(scaleWidth)
+    end
+  end
+  Darkmists.Log("Darkmists Core","Window Borders Adjusted")
+end
+
+Darkmists.Init = function()
+  Darkmists.Log("Darkmists Core",("Loaded Darkmists Core v%s"):format(Darkmists.VERSION))
+  Darkmists.ApplyDefaultSettings()
+  Darkmists.LoadSettings()
+  for k, v in pairs(Darkmists.GlobalSettings.borders) do
+    Darkmists.SetWindowBorderPercent(k,v)
+  end
+  if Darkmists.GlobalSettings.panelsOnLeft then
+    Darkmists.SetWindowBorderPercent("left",30)
+    Darkmists.SetWindowBorderPercent("right",0)
+  else
+    Darkmists.SetWindowBorderPercent("left",0)
+    Darkmists.SetWindowBorderPercent("right",30)
+  end
+end
+
 -- =============================================================================
 -- LOAD ALL THE STUFF
 -- =============================================================================
+
 -- DMAPI first
 dofile(getMudletHomeDir() .. "/DarkMistsCompanion/utility/util.lua" )
 dofile(getMudletHomeDir() .. "/DarkMistsCompanion/dmapi.lua" )
+
+-- NOW Call Init
+Darkmists.Init()
 
 -- Utility Scripts that use DMAPI
 dofile(getMudletHomeDir() .. "/DarkMistsCompanion/utility/itemtracker.lua" )
 dofile(getMudletHomeDir() .. "/DarkMistsCompanion/utility/statroller.lua" )
 dofile(getMudletHomeDir() .. "/DarkMistsCompanion/utility/mapdestinations.lua" )
+dofile(getMudletHomeDir() .. "/DarkMistsCompanion/utility/skillups.lua" )
 dofile(getMudletHomeDir() .. "/DarkMistsCompanion/utility/mapcolor.lua" )
 
 -- UI Scripts
@@ -160,9 +263,5 @@ dofile(getMudletHomeDir() .. "/DarkMistsCompanion/ui/mapwindow.lua" )
 
 -- Meta Help / Command
 dofile(getMudletHomeDir() .. "/DarkMistsCompanion/dm_meta.lua" )
-
-local mainWidth, mainHeight = getMainWindowSize()
-local scaleWidth = (1.0-(Darkmists.GlobalSettings.mainWindowPanelWidth / 100.0)) * mainWidth
-setBorderRight(scaleWidth)
 
 echo("\nAll Scripts Loaded!\n")
