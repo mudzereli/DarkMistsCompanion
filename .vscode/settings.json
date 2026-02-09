@@ -95,7 +95,12 @@
         "Adjustable",
         "getFgColor",
         "getBgColor",
-        "hinsertText"
+        "hinsertText",
+        "setBorderLeft",
+        "setBorderRight",
+        "setBorderTop",
+        "dmapi",
+        "feedTriggers"
     ],
     "Lua.diagnostics.disable": [
         "deprecated"
