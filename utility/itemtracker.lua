@@ -68,7 +68,14 @@ ItemTracker = {
 local s = ItemTracker.settings
 if Darkmists.GlobalSettings.lightMode then
   s.itemLinkColor = Darkmists.GlobalSettings.itemTrackerLinkColorLightMode
+  s.tooltipItemDetailsColor = "black"
+  s.tooltipItemNameColor = "white"
+  s.tooltipHeaderBGColor = {0, 0, 0, 255}
+  s.tooltipTextColor = {0, 0, 0, 255}
+  s.tooltipBGColor = {255, 255, 255, 255}
+  s.tooltipBorderColor = {0, 0, 0, 255}
 end
+local defaultTextColor = Darkmists.getDefaultTextColorTag()
 s.itemLinkColor = string.format("<%s>", s.itemLinkColor)
 s.tooltipItemNameColor = string.format("<%s>", s.tooltipItemNameColor)
 s.tooltipItemDetailsColor = string.format("<%s>", s.tooltipItemDetailsColor)
@@ -291,7 +298,7 @@ end
 -- Load item data from JSON file and build indices
 function ItemTracker.load(path)
   cecho(string.format(
-    "<green>[ID] <white>Loading %s v%s by %s\n",
+    "<forest_green>[ID] "..defaultTextColor.."Loading %s v%s by %s\n",
     ItemTracker.name,
     ItemTracker.version,
     ItemTracker.author
@@ -353,7 +360,7 @@ function ItemTracker.load(path)
   end)
 
   cecho(string.format(
-    "<green>[ID]<white> Loaded %d items (%d dropped)\n",
+    "<forest_green>[ID]"..defaultTextColor.." Loaded %d items (%d dropped)\n",
     #ItemTracker.items, dropped
   ))
 
@@ -470,7 +477,7 @@ function ItemTracker.renderLineWithLinks(line)
   moveCursor(pos0, lineNo)
 
   cinsertLink(
-    ItemTracker.settings.itemLinkColor .. itemText .. "<white>",
+    ItemTracker.settings.itemLinkColor .. itemText .. defaultTextColor,
     function() ItemTracker.handleClick(itemText) end,
     "Click: tooltip | Shift+Click: full identify",
     true
@@ -487,17 +494,17 @@ end
 -- Display single item details in main window
 function ItemTracker.show(item)
   local s = ItemTracker.settings
-  cecho("\n" .. s.itemLinkColor .. "===[ " .. item.name .. " ]===<white>\n")
+  cecho("\n" .. s.itemLinkColor .. "===[ " .. item.name .. " ]==="..defaultTextColor.."\n")
 
   if item.details then
     for line in item.details:gmatch("[^\n]+") do
-      cecho("<white>" .. line .. "\n")
+      cecho(defaultTextColor .. line .. "\n")
     end
   else
-    cecho("<grey>(no details)<white>\n")
+    cecho("<dim_gray>(no details)"..defaultTextColor.."\n")
   end
 
-  cecho(s.itemLinkColor .. "===[ " .. item.name .. " ]===<white>\n\n")
+  cecho(s.itemLinkColor .. "===[ " .. item.name .. " ]==="..defaultTextColor.."\n\n")
 end
 
 -- Display all items matching exact name (handles duplicates)
