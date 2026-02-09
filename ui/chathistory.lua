@@ -27,7 +27,7 @@ function ChatHistory.create()
   ChatHistory.window = Adjustable.Container:new({
       name = "ChatHistory",
 
-      x = tostring(Darkmists.GlobalSettings.mainWindowPanelWidth).."%",
+      x = Darkmists.getDefaultXPosition(),
       width = tostring(100 - Darkmists.GlobalSettings.mainWindowPanelWidth).."%",
       y = "33.33%",
       height = "33.33%",
@@ -69,20 +69,28 @@ end
 -- MESSAGE FORMATTING
 -- ===================================================================
 
-local c = Darkmists.getDefaultTextColor()
+local maincolor = Darkmists.getDefaultTextColor()
+local yellow = "yellow"
+local blue = "steel_blue"
+local green = "spring_green"
+if Darkmists.GlobalSettings.lightMode then
+  yellow = "ansi_yellow"
+  blue = "midnight_blue"
+  green = "forest_green"
+end
 -- All message formatting lives here.
 -- Adding a new channel only requires adding one entry.
 local MESSAGE_FORMATTERS = {
   tell = {
     sent = function(m)
       return string.format(
-        "<dim_gray>[<"..c..">%s<dim_gray>] <"..c..">You tell <royal_blue>%s<"..c..">, '<forest_green>%s<"..c..">'\n",
+        "<dim_gray>[<"..maincolor..">%s<dim_gray>] <"..maincolor..">You tell <"..blue..">%s<"..maincolor..">, '<"..green..">%s<"..maincolor..">'\n",
         m.timestamp, m.receiver or "?", m.message
       )
     end,
     received = function(m)
       return string.format(
-        "<dim_gray>[<"..c..">%s<dim_gray>] <royal_blue>%s <"..c..">tells you, '<forest_green>%s<"..c..">'\n",
+        "<dim_gray>[<"..maincolor..">%s<dim_gray>] <"..blue..">%s <"..maincolor..">tells you, '<"..green..">%s<"..maincolor..">'\n",
         m.timestamp, m.sender, m.message
       )
     end,
@@ -91,13 +99,28 @@ local MESSAGE_FORMATTERS = {
   say = {
     sent = function(m)
       return string.format(
-        "<dim_gray>[<"..c..">%s<dim_gray>] <"..c..">You say, '<yellow>%s<"..c..">'\n",
+        "<dim_gray>[<"..maincolor..">%s<dim_gray>] <"..maincolor..">You say, '<"..yellow..">%s<"..maincolor..">'\n",
         m.timestamp, m.message
       )
     end,
     received = function(m)
       return string.format(
-        "<dim_gray>[<"..c..">%s<dim_gray>] <royal_blue>%s <"..c..">says, '<yellow>%s<"..c..">'\n",
+        "<dim_gray>[<"..maincolor..">%s<dim_gray>] <"..blue..">%s <"..maincolor..">says, '<"..yellow..">%s<"..maincolor..">'\n",
+        m.timestamp, m.sender, m.message
+      )
+    end,
+  },
+
+  mp = {
+    sent = function(m)
+      return string.format(
+        "<dim_gray>[<"..maincolor..">%s<dim_gray>] <"..maincolor..">You mentally project, '<"..yellow..">%s<"..maincolor..">'\n",
+        m.timestamp, m.message
+      )
+    end,
+    received = function(m)
+      return string.format(
+        "<dim_gray>[<"..maincolor..">%s<dim_gray>] <"..blue..">%s <"..maincolor..">mentally projects, '<"..yellow..">%s<"..maincolor..">'\n",
         m.timestamp, m.sender, m.message
       )
     end,
@@ -106,13 +129,13 @@ local MESSAGE_FORMATTERS = {
   yell = {
     sent = function(m)
       return string.format(
-        "<dim_gray>[<"..c..">%s<dim_gray>] <"..c..">You yell, '<sky_blue>%s<"..c..">'\n",
+        "<dim_gray>[<"..maincolor..">%s<dim_gray>] <"..maincolor..">You yell, '<sky_blue>%s<"..maincolor..">'\n",
         m.timestamp, m.message
       )
     end,
     received = function(m)
       return string.format(
-        "<dim_gray>[<"..c..">%s<dim_gray>] <royal_blue>%s <"..c..">yells, '<sky_blue>%s<"..c..">'\n",
+        "<dim_gray>[<"..maincolor..">%s<dim_gray>] <"..blue..">%s <"..maincolor..">yells, '<sky_blue>%s<"..maincolor..">'\n",
         m.timestamp, m.sender, m.message
       )
     end,
@@ -121,13 +144,13 @@ local MESSAGE_FORMATTERS = {
   gtell = {
     sent = function(m)
       return string.format(
-        "<dim_gray>[<"..c..">%s<dim_gray>] <"..c..">You tell the group '<purple>%s<"..c..">'\n",
+        "<dim_gray>[<"..maincolor..">%s<dim_gray>] <"..maincolor..">You tell the group '<purple>%s<"..maincolor..">'\n",
         m.timestamp, m.message
       )
     end,
     received = function(m)
       return string.format(
-        "<dim_gray>[<"..c..">%s<dim_gray>] <royal_blue>%s <"..c..">tells the group '<purple>%s<"..c..">'\n",
+        "<dim_gray>[<"..maincolor..">%s<dim_gray>] <"..blue..">%s <"..maincolor..">tells the group '<purple>%s<"..maincolor..">'\n",
         m.timestamp, m.sender, m.message
       )
     end,
@@ -135,14 +158,14 @@ local MESSAGE_FORMATTERS = {
 
   newbie = function(m)
     return string.format(
-      "<dim_gray>[<"..c..">%s<dim_gray>] <gray>[<dark_green>NEWBIE<gray>] <royal_blue>%s<gray>: %s<"..c..">\n",
+      "<dim_gray>[<"..maincolor..">%s<dim_gray>] <gray>[<dark_green>NEWBIE<gray>] <"..blue..">%s<gray>: %s<"..maincolor..">\n",
       m.timestamp, m.sender, m.message
     )
   end,
 
   newbiediscord = function(m)
     return string.format(
-      "<dim_gray>[<"..c..">%s<dim_gray>] <gray>[<dark_green>NEWBIE via Discord<gray>] <royal_blue>%s<gray>: %s<"..c..">\n",
+      "<dim_gray>[<"..maincolor..">%s<dim_gray>] <gray>[<dark_green>NEWBIE via Discord<gray>] <"..blue..">%s<gray>: %s<"..maincolor..">\n",
       m.timestamp, m.sender, m.message
     )
   end,
@@ -150,13 +173,13 @@ local MESSAGE_FORMATTERS = {
   ooc = {
     sent = function(m)
       return string.format(
-        "<dim_gray>[<"..c..">%s<dim_gray>] <ansi_cyan>[OOC] to %s: %s\n",
+        "<dim_gray>[<"..maincolor..">%s<dim_gray>] <ansi_cyan>[OOC] to %s: %s\n",
         m.timestamp, m.receiver or "?", m.message
       )
     end,
     received = function(m)
       return string.format(
-        "<dim_gray>[<"..c..">%s<dim_gray>] <ansi_cyan>[OOC] %s: %s\n",
+        "<dim_gray>[<"..maincolor..">%s<dim_gray>] <ansi_cyan>[OOC] %s: %s\n",
         m.timestamp, m.sender, m.message
       )
     end,
@@ -164,7 +187,7 @@ local MESSAGE_FORMATTERS = {
 
   house = function(m)
     return string.format(
-      "<dim_gray>[<"..c..">%s<dim_gray>] <gray>[<dim_gray>%s<gray>] <royal_blue>%s<gray>: %s<"..c..">\n",
+      "<dim_gray>[<"..maincolor..">%s<dim_gray>] <gray>[<dim_gray>%s<gray>] <"..blue..">%s<gray>: %s<"..maincolor..">\n",
       m.timestamp, m.receiver, m.sender, m.message
     )
   end,
@@ -236,6 +259,8 @@ function ChatHistory.registerEvents()
   bind("dmapi.communication.tellsent",     "tell", "You")
   bind("dmapi.communication.sayreceived",  "say")
   bind("dmapi.communication.saysent",      "say",  "You")
+  bind("dmapi.communication.mpreceived",  "mp")
+  bind("dmapi.communication.mpsent",      "mp",  "You")
   bind("dmapi.communication.yellreceived", "yell")
   bind("dmapi.communication.yellsent",     "yell", "You")
   bind("dmapi.communication.gtellreceived","gtell")
