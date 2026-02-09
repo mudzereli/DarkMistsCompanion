@@ -34,8 +34,8 @@ function WhoWindow.create()
 
       x = Darkmists.getDefaultXPosition(),
       width = tostring(100 - Darkmists.GlobalSettings.mainWindowPanelWidth).."%",
-      y = "0%",
-      height = "33.33%",
+      y = "40%",
+      height = "30%",
 
       titleText = "Who List",
       titleTxtColor = Darkmists.getDefaultTextColor(),
