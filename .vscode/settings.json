@@ -100,7 +100,8 @@
         "setBorderRight",
         "setBorderTop",
         "dmapi",
-        "feedTriggers"
+        "feedTriggers",
+        "loadMap"
     ],
     "Lua.diagnostics.disable": [
         "deprecated"
