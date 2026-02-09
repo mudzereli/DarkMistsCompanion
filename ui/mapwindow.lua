@@ -2,7 +2,7 @@ MiniMapContainer =
   Adjustable.Container:new({
     name = "MiniMapContainer",
 
-    x = tostring(Darkmists.GlobalSettings.mainWindowPanelWidth).."%",
+    x = Darkmists.getDefaultXPosition(),
     width = tostring(100 - Darkmists.GlobalSettings.mainWindowPanelWidth).."%",
     y = "0%",
     height = "66%",
