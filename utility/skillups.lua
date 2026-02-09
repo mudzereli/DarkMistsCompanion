@@ -39,13 +39,13 @@ end
 
 function SkillUps.display()
   if #SkillUps.history == 0 then
-    cecho("\n<yellow>No skill ups recorded yet!")
+    cecho("\n<dark_khaki>No skill ups recorded yet!")
     return
   end
   
-  cecho("\n<cyan>═══════════════════════════════════════════════════")
-  cecho("\n<"..Darkmists.getDefaultTextColor()..">Last <cyan>" .. #SkillUps.history .. " <"..Darkmists.getDefaultTextColor()..">Skill Improvements:")
-  cecho("\n<cyan>═══════════════════════════════════════════════════\n")
+  cecho("\n<ansi_cyan>═══════════════════════════════════════════════════")
+  cecho("\n<"..Darkmists.getDefaultTextColor()..">Last <ansi_cyan>" .. #SkillUps.history .. " <"..Darkmists.getDefaultTextColor()..">Skill Improvements:")
+  cecho("\n<ansi_cyan>═══════════════════════════════════════════════════\n")
   
   for i, skillup in ipairs(SkillUps.history) do
     local timeAgo = os.time() - skillup.time
@@ -62,14 +62,14 @@ function SkillUps.display()
     end
     
     cecho(string.format(
-      "<dim_gray>[<"..Darkmists.getDefaultTextColor()..">%s<dim_gray>] <green>%-30s <yellow>(%s)\n",
+      "<dim_gray>[<"..Darkmists.getDefaultTextColor()..">%s<dim_gray>] <green>%-30s <dark_khaki>(%s)\n",
       skillup.timestamp,
       skillup.skill,
       timeAgoStr
     ))
   end
   
-  cecho("<cyan>═══════════════════════════════════════════════════\n")
+  cecho("<ansi_cyan>═══════════════════════════════════════════════════\n")
 end
 
 -- ===================================================================
