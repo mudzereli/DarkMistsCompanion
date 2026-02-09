@@ -44,8 +44,8 @@ function AffectsWindow.create()
 
     x = Darkmists.getDefaultXPosition(),
     width = tostring(100 - Darkmists.GlobalSettings.mainWindowPanelWidth).."%",
-    y = "66.66%",
-    height = "33.33%",
+    y = "70%",
+    height = "30%",
 
     titleText = "Current Affects",
     titleTxtColor = Darkmists.getDefaultTextColor(),
