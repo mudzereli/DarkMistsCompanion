@@ -39,7 +39,7 @@ end
 
 function SkillUps.display()
   if #SkillUps.history == 0 then
-    cecho("\n<dark_khaki>No skill ups recorded yet!")
+    cecho("\n<ansi_cyan>SkillUp Tracker: No skill ups recorded yet!")
     return
   end
   
