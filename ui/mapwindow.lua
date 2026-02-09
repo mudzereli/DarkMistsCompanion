@@ -5,7 +5,7 @@ MiniMapContainer =
     x = Darkmists.getDefaultXPosition(),
     width = tostring(100 - Darkmists.GlobalSettings.mainWindowPanelWidth).."%",
     y = "0%",
-    height = "66%",
+    height = "40%",
 
     titleText = "Mini Map",
     titleTxtColor = Darkmists.getDefaultTextColor(),
