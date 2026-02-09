@@ -15,7 +15,7 @@ AffectsWindow.config = {
   updateInterval = Darkmists.GlobalSettings.affectsWindowUpdateIntervalSeconds,
   textLengthAffectName = Darkmists.GlobalSettings.affectsWindowAffectNameLength,
   textLengthAffectMod = Darkmists.GlobalSettings.affectsWindowAffectModLength,
-  deleteOriginalLines = false,
+  deleteOriginalLines = Darkmists.GlobalSettings.affectsWindowDeleteOriginalLines,
   timeRatio      = 30, -- 1 real second = 30 game seconds
 }
 
@@ -42,7 +42,7 @@ function AffectsWindow.create()
   AffectsWindow.window = Adjustable.Container:new({
     name = "AffectsWindow",
 
-    x = tostring(Darkmists.GlobalSettings.mainWindowPanelWidth).."%",
+    x = Darkmists.getDefaultXPosition(),
     width = tostring(100 - Darkmists.GlobalSettings.mainWindowPanelWidth).."%",
     y = "66.66%",
     height = "33.33%",
@@ -98,6 +98,10 @@ end
 -- End capture and expire missing affects
 function AffectsWindow.stopCaptureAndDisplay()
   if not AffectsWindow.capturing then return end
+  if AffectsWindow.config.deleteOriginalLines then
+    -- Acknowledge Captured Lines but only if we're deleting stuff
+    cecho("\n<coral>Affects List Captured.")
+  end
   AffectsWindow.capturing = false
 
   -- Expire any active affect whose key did not appear this snapshot
@@ -212,7 +216,14 @@ function AffectsWindow.copyCurrentLine()
   -- Not an affect line
   if not name then
     table.insert(AffectsWindow.affectsContent, line)
+    if AffectsWindow.config.deleteOriginalLines then
+      deleteLine()
+    end
     return
+  end
+
+  if AffectsWindow.config.deleteOriginalLines then
+    deleteLine()
   end
 
   -- Handle wrapped spell names
