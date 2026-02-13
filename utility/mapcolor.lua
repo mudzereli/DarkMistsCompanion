@@ -274,6 +274,7 @@ MapColors.WordAssociations = {
   { "alley", MapColors.Terrain.SHADOWY }, { "alleyway", MapColors.Terrain.SHADOWY },
   { "catacomb", MapColors.Terrain.CORRUPTED }, { "crypt", MapColors.Terrain.CORRUPTED },
   { "tomb", MapColors.Terrain.CORRUPTED }, { "sarcophagus", MapColors.Terrain.CORRUPTED },
+  { "antechamber", MapColors.Terrain.CORRUPTED },
   { "depth", MapColors.Terrain.CAVE }, { "stair*", MapColors.Terrain.VALLEY },
   --{ "stairwell", MapColors.Terrain.VALLEY }, { "staircase", MapColors.Terrain.VALLEY },
   { "tunnel", MapColors.Terrain.TUNNEL },
