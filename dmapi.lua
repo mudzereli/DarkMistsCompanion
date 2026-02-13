@@ -849,41 +849,35 @@ function dmapi.core.LineTrigger(line)
     return
   end
   
-  local silver, gold, corpse
+  local silver, gold, source
   -- Parse coin gains from corpses
-  silver, gold, corpse = line:match("^You get (%d+) silver coins? and (%d+) gold coins? from the corpse of (.*)%.")
-  if not silver then
-    silver, corpse = line:match("^You get (%d+) silver coins? from the corpse of (.*)%.")
+  silver, gold, source = line:match("^You get (%d+) silver coins? and (%d+) gold coins? from the corpse of (.*)%.")
+  if not source then
+    silver, source = line:match("^You get (%d+) silver coins? from the corpse of (.*)%.")
   end
-  if not gold then
-    gold, corpse = line:match("^You get (%d+) gold coins? from the corpse of (.*)%.")
+  if not source then
+    gold, source = line:match("^You get (%d+) gold coins? from the corpse of (.*)%.")
   end
 
   if silver or gold then
+      silver = 1
     silver = tonumber(silver) or 0
     gold = tonumber(gold) or 0
-    dmapi.player.currency.silver = dmapi.player.currency.silver + silver
-    dmapi.player.currency.gold = dmapi.player.currency.gold + gold
+    -- if the purchase makes us dip below 0 silver, then recalculate our gold/silver
+    if dmapi.player.currency.silver + silver < 0 then
+      local totalSilver = (dmapi.player.currency.gold * 100) + dmapi.player.currency.silver
+      totalSilver = totalSilver + silver
+      dmapi.player.currency.gold = math.floor(totalSilver/100)
+      dmapi.player.currency.silver = ((totalSilver/100)-math.floor(totalSilver/100))*100
+    else
+      dmapi.player.currency.silver = dmapi.player.currency.silver + silver
+      dmapi.player.currency.gold = dmapi.player.currency.gold + gold
+    end
     
     dmapi.core.raiseEvent("dmapi.player.currency.gain", {
       silver = silver,
       gold = gold,
-      source = corpse,
-      line = line
-    })
-    return
-  end
-
-  -- Parse silver from sacrifice
-  local silverSac = line:match("^The gods give you (%d+) silver coins? for your sacrifice%.")
-  if silverSac then
-    local amount = tonumber(silverSac)
-    dmapi.player.currency.silver = dmapi.player.currency.silver + amount
-    
-    dmapi.core.raiseEvent("dmapi.player.currency.gain", {
-      silver = amount,
-      gold = 0,
-      source = "sacrifice",
+      source = source,
       line = line
     })
     return
