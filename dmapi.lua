@@ -301,9 +301,74 @@ end
 -- @return table|nil Parsed prompt data
 function parsers.prompt(line)
   local hp, mn, mv, rg, tnl
-  
-  -- Try: <109hp 633mn 0%rg 192mv 20420tnl>
-  hp, mn, rg, mv, tnl = line:match("^<(%d+)hp%s+(%d+)mn%s+(%d+)%%rg%s+(%d+)mv%s+(%d+)tnl>")
+
+  -- =========================================================================
+  -- NEW NUMERIC PROMPT WITH REGEN SUPPORT
+  -- Examples:
+  -- <500hp(+25) 300mn(+10) 200mv(+5)>
+  -- <500hp 300mn(+10) 200mv>
+  -- <500hp(+25) 300mn(+10) 55%rg 200mv(+5)>
+  -- <500hp 300mn 55%rg 200mv 20420tnl>
+  -- =========================================================================
+
+  if line:match("^<%d+hp") then
+    local promptBody = line:match("^<(.*)>$")
+    if not promptBody then return nil end
+
+    local data = {
+      line = line,
+      tnl = -1
+    }
+
+    -- Helper: extract value and optional regen (HP/MN/MV only)
+    local function extractWithRegen(stat)
+      local value, regen = promptBody:match("(%d+)" .. stat .. "%(([-+]?%d+)%)")
+      if not value then
+        value = promptBody:match("(%d+)" .. stat)
+      end
+
+      if value then
+        return tonumber(value), regen and tonumber(regen) or 0
+      end
+
+      return nil, nil
+    end
+
+    -- HP
+    data.hp, data.hpRegen = extractWithRegen("hp")
+
+    -- MN
+    data.mn, data.mnRegen = extractWithRegen("mn")
+
+    -- MV
+    data.mv, data.mvRegen = extractWithRegen("mv")
+
+    -- Rage (percent, NO regen)
+    local rageVal = promptBody:match("(%d+)%%rg")
+    if rageVal then
+      data.rg = tonumber(rageVal)
+    end
+
+    -- TNL
+    local tnlVal = promptBody:match("(%d+)tnl")
+    if tnlVal then
+      data.tnl = tonumber(tnlVal)
+    end
+
+    -- Must at minimum have hp/mn/mv
+    if data.hp and data.mn and data.mv then
+      return data
+    end
+  end
+
+
+  -- =========================================================================
+  -- LEGACY NUMERIC FORMATS (unchanged)
+  -- =========================================================================
+
+  -- <109hp 633mn 0%rg 192mv 20420tnl>
+  hp, mn, rg, mv, tnl =
+    line:match("^<(%d+)hp%s+(%d+)mn%s+(%d+)%%rg%s+(%d+)mv%s+(%d+)tnl>")
   if hp then
     return {
       hp = tonumber(hp),
@@ -314,9 +379,10 @@ function parsers.prompt(line)
       line = line
     }
   end
-  
-  -- Try: <109hp 633mn 192mv 20420tnl>
-  hp, mn, mv, tnl = line:match("^<(%d+)hp%s+(%d+)mn%s+(%d+)mv%s+(%d+)tnl>")
+
+  -- <109hp 633mn 192mv 20420tnl>
+  hp, mn, mv, tnl =
+    line:match("^<(%d+)hp%s+(%d+)mn%s+(%d+)mv%s+(%d+)tnl>")
   if hp then
     return {
       hp = tonumber(hp),
@@ -326,9 +392,10 @@ function parsers.prompt(line)
       line = line
     }
   end
-  
-  -- Try: <109hp 633mn 192mv>
-  hp, mn, mv = line:match("^<(%d+)hp%s+(%d+)mn%s+(%d+)mv>")
+
+  -- <109hp 633mn 192mv>
+  hp, mn, mv =
+    line:match("^<(%d+)hp%s+(%d+)mn%s+(%d+)mv>")
   if hp then
     return {
       hp = tonumber(hp),
@@ -338,13 +405,16 @@ function parsers.prompt(line)
       line = line
     }
   end
-  
-  -- Try percentage format with rage: <75%hp 80%mn 50%rg 90%mv 1000tnl>
+
+
+  -- =========================================================================
+  -- PERCENT PROMPTS (UNCHANGED)
+  -- =========================================================================
+
   local hpPct, mnPct, rgPct, mvPct
-  hpPct, mnPct, rgPct, mvPct, tnl = line:match(
-    "^<(%d+)%%hp%s+(%d+)%%mn%s+(%d+)%%rg%s+(%d+)%%mv%s+(%d+)tnl>"
-  )
-  
+
+  hpPct, mnPct, rgPct, mvPct, tnl =
+    line:match("^<(%d+)%%hp%s+(%d+)%%mn%s+(%d+)%%rg%s+(%d+)%%mv%s+(%d+)tnl>")
   if hpPct then
     if dmapi.player.vitals.hpMax == 1 then
       dmapi.core.warn("Max HP = 1. Use 'dmapi setvitals <hp> <mn> <mv>' to set correct values")
@@ -359,12 +429,9 @@ function parsers.prompt(line)
       line = line
     }
   end
-  
-  -- Try percentage format: <75%hp 80%mn 90%mv 1000tnl>
-  hpPct, mnPct, mvPct, tnl = line:match(
-    "^<(%d+)%%hp%s+(%d+)%%mn%s+(%d+)%%mv%s+(%d+)tnl>"
-  )
-  
+
+  hpPct, mnPct, mvPct, tnl =
+    line:match("^<(%d+)%%hp%s+(%d+)%%mn%s+(%d+)%%mv%s+(%d+)tnl>")
   if hpPct then
     if dmapi.player.vitals.hpMax == 1 then
       dmapi.core.warn("Max HP = 1. Use 'dmapi setvitals <hp> <mn> <mv>' to set correct values")
@@ -378,9 +445,9 @@ function parsers.prompt(line)
       line = line
     }
   end
-  
-  -- Try percentage format without tnl: <75%hp 80%mn 90%mv>
-  hpPct, mnPct, mvPct = line:match("^<(%d+)%%hp%s+(%d+)%%mn%s+(%d+)%%mv>")
+
+  hpPct, mnPct, mvPct =
+    line:match("^<(%d+)%%hp%s+(%d+)%%mn%s+(%d+)%%mv>")
   if hpPct then
     if dmapi.player.vitals.hpMax == 1 then
       dmapi.core.warn("Max HP = 1. Use 'dmapi setvitals <hp> <mn> <mv>' to set correct values")
@@ -394,7 +461,7 @@ function parsers.prompt(line)
       line = line
     }
   end
-  
+
   return nil
 end
 
