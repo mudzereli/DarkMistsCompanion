@@ -157,6 +157,7 @@ dmapi.player = {
     active = false,
     round = 0,
     target = nil,
+    targetHpPct = 0,
     lastActivity = getEpoch(),
     kills = 0,
     deaths = 0
@@ -1100,6 +1101,7 @@ function dmapi.core.LineTrigger(line)
     end
     
     dmapi.player.combat.target = mobState.target
+    dmapi.player.combat.targetHpPct = mobState.hpPct
     dmapi.player.combat.lastActivity = getEpoch()
     dmapi.core.state.combatMissedPrompts = 0
     
@@ -1181,6 +1183,7 @@ function dmapi.player.reset()
   dmapi.player.combat.active = false
   dmapi.player.combat.round = 0
   dmapi.player.combat.target = nil
+  dmapi.player.combat.targetHpPct = 0
   dmapi.player.status.sleeping = false
   dmapi.player.status.resting = false
   dmapi.core.log("Player state reset")
@@ -1366,6 +1369,7 @@ registerNamedEventHandler(
         local target = dmapi.player.combat.target
         dmapi.player.combat.round = 0
         dmapi.player.combat.target = nil
+        dmapi.player.combat.targetHpPct = 0
         dmapi.core.state.combatMissedPrompts = 0
         
         dmapi.core.raiseEvent("dmapi.player.combat.end", {
