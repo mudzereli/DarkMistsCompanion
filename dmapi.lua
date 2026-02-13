@@ -858,9 +858,26 @@ function dmapi.core.LineTrigger(line)
   if not source then
     gold, source = line:match("^You get (%d+) gold coins? from the corpse of (.*)%.")
   end
-
-  if silver or gold then
+  if not source then
+    source, silver, gold = line:match("^You sell (.*) for (%d+) silver and (%d+) gold pieces%.")
+  end
+  if not source then
+    silver = line:match("^The gods give you (.*) silver coins? for your sacrifice%.")
+    if silver == "one" then
       silver = 1
+    end
+    if silver then
+      source = "sacrifice"
+    end
+  end
+  if not source then
+    source, silver = line:match("^You buy (.*) for (%d+) silver%.")
+    -- we want to make the silver negative since we're purchasing
+    if silver then
+      silver = silver * -1
+    end
+  end
+  if source then
     silver = tonumber(silver) or 0
     gold = tonumber(gold) or 0
     -- if the purchase makes us dip below 0 silver, then recalculate our gold/silver
