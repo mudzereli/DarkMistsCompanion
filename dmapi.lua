@@ -312,7 +312,7 @@ function parsers.prompt(line)
   -- =========================================================================
 
   if line:match("^<%d+hp") then
-    local promptBody = line:match("^<(.*)>$")
+    local promptBody = line:match("^<(.-)>")
     if not promptBody then return nil end
 
     local data = {
