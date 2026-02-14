@@ -141,6 +141,9 @@ dmapi.player = {
     hpMax = 1,
     mnMax = 1,
     mvMax = 1,
+    hpRegen = 0,
+    mnRegen = 0,
+    mvRegen = 0,
     practices = 0
   },
   
@@ -161,11 +164,6 @@ dmapi.player = {
     lastActivity = getEpoch(),
     kills = 0,
     deaths = 0
-  },
-  
-  equipment = {
-    weapon = nil,
-    shield = nil
   },
   
   -- Extensible state for custom modules
@@ -1079,6 +1077,16 @@ function dmapi.core.LineTrigger(line)
     dmapi.player.vitals.hp = vitals.hp
     dmapi.player.vitals.mn = vitals.mn
     dmapi.player.vitals.mv = vitals.mv
+
+    if vitals.hpRegen then
+      dmapi.player.vitals.hpRegen = vitals.hpRegen
+    end
+    if vitals.mnRegen then
+      dmapi.player.vitals.mnRegen = vitals.mnRegen
+    end
+    if vitals.mvRegen then
+      dmapi.player.vitals.mvRegen = vitals.mvRegen
+    end
     
     -- Auto-update max if current exceeds known max
     if dmapi.player.vitals.hp > dmapi.player.vitals.hpMax then
@@ -1247,12 +1255,49 @@ end
 
 --- Reset all player state
 function dmapi.player.reset()
-  dmapi.player.combat.active = false
-  dmapi.player.combat.round = 0
-  dmapi.player.combat.target = nil
-  dmapi.player.combat.targetHpPct = 0
-  dmapi.player.status.sleeping = false
-  dmapi.player.status.resting = false
+  dmapi.player.level = 0
+  dmapi.player.age = {
+    years = 0,
+    hours = 0
+  }
+  dmapi.player.currency = {
+    gold = 0,
+    silver = 0
+  }
+  dmapi.player.experience = {
+    total = 0,
+    tnl = 0,
+    lastGain = 0,
+    totalGained = 0
+  }
+  dmapi.player.vitals.hp = 0;
+  dmapi.player.vitals.mn = 0;
+  dmapi.player.vitals.mv = 0;
+  dmapi.player.vitals.rg = 0;  -- Rage percentage (if applicable)
+  dmapi.player.vitals.hpMax = 1;
+  dmapi.player.vitals.mnMax = 1;
+  dmapi.player.vitals.mvMax = 1;
+  dmapi.player.vitals.hpRegen = 0;
+  dmapi.player.vitals.mnRegen = 0;
+  dmapi.player.vitals.mvRegen = 0;
+  dmapi.player.vitals.practices = 0;
+  dmapi.player.status = {
+    sleeping = false,
+    resting = false,
+    hungry = 0,    -- -1=full, 0=not hungry, 1-4=increasing hunger
+    thirsty = 0,   -- 0=not thirsty, 1-4=increasing thirst
+    stunned = false,
+    position = "standing"  -- standing, resting, sleeping, fighting
+  }
+  dmapi.player.combat = {
+    active = false,
+    round = 0,
+    target = nil,
+    targetHpPct = 0,
+    lastActivity = getEpoch(),
+    kills = 0,
+    deaths = 0
+  }
   dmapi.core.log("Player state reset")
 end
 
@@ -1411,6 +1456,7 @@ registerNamedEventHandler(
   "dmapi.world.enter.reset",
   "dmapi.world.enter",
   function()
+    dmapi.player.reset()
     dmapi.player.vitals.hpMax = 1
     dmapi.player.vitals.mnMax = 1
     dmapi.player.vitals.mvMax = 1
