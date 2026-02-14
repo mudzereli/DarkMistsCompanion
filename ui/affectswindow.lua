@@ -2,7 +2,6 @@
 -- Affects Window (Geyser.UserWindow)
 -- Snapshot-based affects tracker with expiration
 -- ============================================================================
-
 AffectsWindow = AffectsWindow or {}
 
 -- ---------------------------------------------------------------------------
@@ -14,8 +13,8 @@ AffectsWindow.config = {
   fontName       = Darkmists.GlobalSettings.fontName,
   updateInterval = Darkmists.GlobalSettings.affectsWindowUpdateIntervalSeconds,
   textLengthAffectName = Darkmists.GlobalSettings.affectsWindowAffectNameLength,
-  textLengthAffectMod = Darkmists.GlobalSettings.affectsWindowAffectModLength,
-  deleteOriginalLines = Darkmists.GlobalSettings.affectsWindowDeleteOriginalLines,
+  textLengthAffectMod  = Darkmists.GlobalSettings.affectsWindowAffectModLength,
+  deleteOriginalLines  = Darkmists.GlobalSettings.affectsWindowDeleteOriginalLines,
   timeRatio      = 30, -- 1 real second = 30 game seconds
 }
 
@@ -195,10 +194,21 @@ function AffectsWindow.copyCurrentLine()
 
   local line = getCurrentLine()
 
-  -- Attempt to parse affect variants (explicit, Lua-safe)
+  if line == "You are affected by the following:" then return end
+
+  -- Exit if we get a condition line
+  -- This happens when you type AFF during combat.
+  for _,v in ipairs(dmapi.core.state.COMBAT_CONDITIONS) do
+    if line:match(v) then return end
+  end
+
+  -- Attempt to parse affect variants
+
+  -- Normal Line
   local name, mod, val, dur =
     line:match("^(.-)%s+:%s+modifies%s+(.-)%s+by%s+(.-)%s+for%s+about%s+(.+)$")
 
+  -- Expiring Next Tick
   if not name then
     name, mod, val = line:match(
       "^(.-)%s+:%s+modifies%s+(.-)%s+by%s+(.-)%s+for no time at all$"
@@ -206,11 +216,20 @@ function AffectsWindow.copyCurrentLine()
     dur = "0"
   end
 
+  -- Permanent Buff
   if not name then
     name, mod, val = line:match(
       "^(.-)%s+:%s+modifies%s+(.-)%s+by%s+(.-)%s+permanently$"
     )
     dur = "PERMANENT"
+  end
+
+  -- Unknown / Too Low Level to see Info
+  if not name then
+    name = line
+    mod = "none"
+    val = 0
+    dur = "UNKNOWN"
   end
 
   -- Not an affect line
@@ -398,18 +417,32 @@ end
 function AffectsWindow.registerTriggers()
   if AffectsWindow.affectHeaderTrigger then killTrigger(AffectsWindow.affectHeaderTrigger) end
   if AffectsWindow.affectLineTrigger   then killTrigger(AffectsWindow.affectLineTrigger)   end
+  if AffectsWindow.noAffectsTrigger    then killTrigger(AffectsWindow.noAffectsTrigger)   end
   if AffectsWindow.promptHandler       then killAnonymousEventHandler(AffectsWindow.promptHandler) end
 
+  -- If we have no effects, just capture an empty affect list
+  -- If we DONT do this, then EXPIRED effects will just show EXPIRING forever
+  AffectsWindow.affectHeaderTrigger = tempTrigger(
+    "You are not affected by anything.",
+    function()
+      AffectsWindow.startCapture()
+      AffectsWindow.stopCaptureAndDisplay()
+      AffectsWindow.refreshDisplay()
+    end
+  )
+
+  -- Start Capturing Normally when we see the header
   AffectsWindow.affectHeaderTrigger = tempTrigger(
     "You are affected by the following:",
     function()
       AffectsWindow.startCapture()
-      AffectsWindow.copyCurrentLine()
     end
   )
 
+  -- If we saw the header, capture/copy all incoming lines
   AffectsWindow.affectLineTrigger = tempRegexTrigger(
-    "^.+\\s+:\\s+modifies.+$",
+    --"^.+\\s+:\\s+modifies.+$",
+    ".*",
     function()
       if AffectsWindow.capturing then
         AffectsWindow.copyCurrentLine()
@@ -417,6 +450,7 @@ function AffectsWindow.registerTriggers()
     end
   )
 
+  -- Stop capturing once we hit a prompt.
   AffectsWindow.promptHandler = registerAnonymousEventHandler(
     "dmapi.world.prompt",
     function()
