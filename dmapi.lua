@@ -125,7 +125,13 @@ dmapi.player = {
     gold = 0,
     silver = 0
   },
-  
+
+  bank = {
+    gold = 0,
+    silver = 0,
+    house = 0
+  },
+
   experience = {
     total = 0,
     tnl = 0,
@@ -582,6 +588,98 @@ function parsers.mobKill(line)
   return mob
 end
 
+-- Parse Bank Balances
+function parsers.bankBalance(line)
+  local gold, silver =
+    line:match("^You have (%d+) gold coins and (%d+) silver in your account%.$")
+
+  if gold then
+    return {
+      gold = tonumber(gold),
+      silver = tonumber(silver),
+      line = line
+    }
+  end
+
+  if line:match("You have no account here!") then
+    return {
+      gold = 0,
+      silver = 0,
+      line = line
+    }
+  end
+
+  return nil
+end
+
+-- Parse House Balance
+function parsers.houseBalance(line)
+  local gold =
+    line:match("^Your house's account has (%d+) gold in it%.$")
+
+  if not gold then
+    gold = line:match("^Your house's balance is (%d+) gold%.$")
+  end
+
+  if gold then
+    return {
+      gold = tonumber(gold),
+      line = line
+    }
+  end
+
+  return nil
+end
+
+-- Parse Bank Deposits
+function parsers.bankDeposit(line)
+  local amount, currency =
+    line:match("^You deposit (%d+) (%a+)%.")
+
+  if amount and (currency == "gold" or currency == "silver") then
+    return {
+      amount = tonumber(amount),
+      currency = currency,
+      line = line
+    }
+  end
+
+  return nil
+end
+
+-- Parse Bank Withdrawals
+function parsers.bankWithdraw(line)
+  local amount, currency, fee, feeCurrency =
+    line:match("^You withdraw (%d+) (%a+) and were charged an additional fee of (%d+) (%a+)%.")
+
+  if amount
+     and (currency == "gold" or currency == "silver")
+     and (feeCurrency == "gold" or feeCurrency == "silver")
+  then
+    return {
+      amount = tonumber(amount),
+      currency = currency,
+      fee = tonumber(fee),
+      feeCurrency = feeCurrency,
+      total = tonumber(amount) + tonumber(fee),
+      line = line
+    }
+  end
+
+  return nil
+end
+
+function parsers.bankWithdrawFail(line)
+  if line:match("^Sorry, but you do not have that much (.*) in your account", 1, true)
+     or line:match("^Sorry, but you need (.*) in your account", 1, true)
+  then
+    return { line = line }
+  end
+
+  return nil
+end
+
+
 -- ============================================================================
 -- CORE UTILITY FUNCTIONS
 -- ============================================================================
@@ -966,6 +1064,62 @@ function dmapi.core.LineTrigger(line)
     return
   end
 
+  -- Bank Balance Updates
+  local bankBal = parsers.bankBalance(line)
+  if bankBal then
+    dmapi.player.bank.gold = bankBal.gold
+    dmapi.player.bank.silver = bankBal.silver
+
+    dmapi.core.raiseEvent("dmapi.player.bank.balance", bankBal)
+    return
+  end
+
+  -- House Balance Updates
+  local houseBal = parsers.houseBalance(line)
+  if houseBal then
+    dmapi.player.bank.house = houseBal.gold
+
+    dmapi.core.raiseEvent("dmapi.player.house.balance", houseBal)
+    return
+  end
+
+  -- Bank Deposits
+  local deposit = parsers.bankDeposit(line)
+  if deposit then
+    if deposit.currency == "gold" then
+      dmapi.player.currency.gold = dmapi.player.currency.gold - deposit.amount
+      dmapi.player.bank.gold = dmapi.player.bank.gold + deposit.amount
+    elseif deposit.currency == "silver" then
+      dmapi.player.currency.silver = dmapi.player.currency.silver - deposit.amount
+      dmapi.player.bank.silver = dmapi.player.bank.silver + deposit.amount
+    end
+
+    dmapi.core.raiseEvent("dmapi.player.bank.deposit", deposit)
+    return
+  end
+
+  -- Bank Withdrawals
+  local withdraw = parsers.bankWithdraw(line)
+  if withdraw then
+    if withdraw.currency == "gold" then
+      dmapi.player.currency.gold = dmapi.player.currency.gold + withdraw.amount
+      dmapi.player.bank.gold = dmapi.player.bank.gold - withdraw.amount - withdraw.fee
+    elseif withdraw.currency == "silver" then
+      dmapi.player.currency.silver = dmapi.player.currency.silver + withdraw.amount
+      dmapi.player.bank.silver = dmapi.player.bank.silver - withdraw.amount - withdraw.fee
+    end
+
+    dmapi.core.raiseEvent("dmapi.player.bank.withdraw", withdraw)
+    return
+  end
+
+  -- Bank Withdrawal Failure
+  local withdrawFail = parsers.bankWithdrawFail(line)
+  if withdrawFail then
+    dmapi.core.raiseEvent("dmapi.player.bank.withdraw.fail", withdrawFail)
+    return
+  end
+
   -- Parse equipment zapped
   local zappedItem = line:match("You are zapped by (.*) and drop it%.")
   if zappedItem then
@@ -1263,6 +1417,11 @@ function dmapi.player.reset()
   dmapi.player.currency = {
     gold = 0,
     silver = 0
+  }
+  dmapi.player.bank = {
+    gold = 0,
+    silver = 0,
+    house = 0
   }
   dmapi.player.experience = {
     total = 0,
