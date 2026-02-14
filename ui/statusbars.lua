@@ -206,16 +206,22 @@ function StatusBar.update()
   if not dmapi.player.vitals then return end
   
   local vitals = {
-    { gauge = StatusBar.hpGauge, current = dmapi.player.vitals.hp or 0, max = safeMax(dmapi.player.vitals.hpMax) },
-    { gauge = StatusBar.mnGauge, current = dmapi.player.vitals.mn or 0, max = safeMax(dmapi.player.vitals.mnMax) },
-    { gauge = StatusBar.mvGauge, current = dmapi.player.vitals.mv or 0, max = safeMax(dmapi.player.vitals.mvMax) }
+    { gauge = StatusBar.hpGauge, current = dmapi.player.vitals.hp or 0, max = safeMax(dmapi.player.vitals.hpMax), regen = dmapi.player.vitals.hpRegen },
+    { gauge = StatusBar.mnGauge, current = dmapi.player.vitals.mn or 0, max = safeMax(dmapi.player.vitals.mnMax), regen = dmapi.player.vitals.mnRegen },
+    { gauge = StatusBar.mvGauge, current = dmapi.player.vitals.mv or 0, max = safeMax(dmapi.player.vitals.mvMax), regen = dmapi.player.vitals.mvRegen }
   }
   
   for _, v in ipairs(vitals) do
     if v.gauge then
+      local adir = ""
+      if v.regen > 0 then
+        adir = (" (+%s)"):format(v.regen)
+      elseif v.regen < 0 then
+        adir = (" (-%s)"):format(v.regen)
+      end
       v.gauge:setValue(v.current, v.max, 
-        string.format("<center><span style='font-size: 11pt; color: rgb(%s); font-weight: bold;'>%d/%d</span></center>",
-                      StatusBar.config.fontColor,v.current, v.max))
+        string.format("<center><span style='font-size: 11pt; color: rgb(%s); font-weight: bold;'>%d/%d%s</span></center>",
+                      StatusBar.config.fontColor,v.current, v.max, adir))
     end
   end
   
