@@ -155,6 +155,7 @@ end
 
 function AffectsWindow.parseDuration(text)
   if text == "PERMANENT" then return math.huge end
+  if text == "UNKNOWN" then return -math.huge end
 
   local mins = 0
   mins = mins + (tonumber(text:match("(%d+)%s+hrs?")) or 0) * 60
@@ -164,6 +165,7 @@ end
 
 function AffectsWindow.formatDuration(minutes, expired)
   if minutes == math.huge then return "<forest_green>PERMANENT" end
+  if minutes == -math.huge then return "<forest_green>UNKNOWN" end
 
   if expired then
     local m = math.abs(minutes)
@@ -239,7 +241,7 @@ function AffectsWindow.copyCurrentLine()
     name = line:match("^%s*(.-)%s*$") -- trim
     mod  = "none"
     val  = 0
-    dur  = math.huge -- treat as permanent/unknown
+    dur  = "UNKNOWN"
   end
 
   -- Not an affect line
