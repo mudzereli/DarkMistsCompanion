@@ -224,12 +224,22 @@ function AffectsWindow.copyCurrentLine()
     dur = "PERMANENT"
   end
 
-  -- Unknown / Too Low Level to see Info
+  -- Low-level fallback: only accept simple spell-name lines
   if not name then
-    name = line
-    mod = "none"
-    val = 0
-    dur = "UNKNOWN"
+    -- Must NOT contain ":" or "modifies"
+    if line:find(":") or line:find("modifies") then
+      return
+    end
+
+    -- Must contain letters (not empty/whitespace)
+    if not line:match("%a") then
+      return
+    end
+
+    name = line:match("^%s*(.-)%s*$") -- trim
+    mod  = "none"
+    val  = 0
+    dur  = math.huge -- treat as permanent/unknown
   end
 
   -- Not an affect line
