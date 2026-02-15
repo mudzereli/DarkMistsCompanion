@@ -140,6 +140,7 @@ dmapi.player = {
   },
   
   vitals = {
+    estimated = false,
     hp = 0,
     mn = 0,
     mv = 0,
@@ -425,6 +426,7 @@ function parsers.prompt(line)
     end
     
     return {
+      estimated = true,
       hp = math.ceil(tonumber(hpPct) / 100 * dmapi.player.vitals.hpMax),
       mn = math.ceil(tonumber(mnPct) / 100 * dmapi.player.vitals.mnMax),
       rg = tonumber(rgPct),
@@ -442,6 +444,7 @@ function parsers.prompt(line)
     end
     
     return {
+      estimated = true,
       hp = math.ceil(tonumber(hpPct) / 100 * dmapi.player.vitals.hpMax),
       mn = math.ceil(tonumber(mnPct) / 100 * dmapi.player.vitals.mnMax),
       mv = math.ceil(tonumber(mvPct) / 100 * dmapi.player.vitals.mvMax),
@@ -458,6 +461,7 @@ function parsers.prompt(line)
     end
     
     return {
+      estimated = true,
       hp = math.ceil(tonumber(hpPct) / 100 * dmapi.player.vitals.hpMax),
       mn = math.ceil(tonumber(mnPct) / 100 * dmapi.player.vitals.mnMax),
       mv = math.ceil(tonumber(mvPct) / 100 * dmapi.player.vitals.mvMax),
@@ -1195,6 +1199,7 @@ function dmapi.core.LineTrigger(line)
   -- Parse vitals from score
   local vitalsFromScore = parsers.vitalsFromScore(line)
   if vitalsFromScore then
+    dmapi.player.vitals.estimated = false
     dmapi.player.vitals.hp = vitalsFromScore.hp
     dmapi.player.vitals.hpMax = vitalsFromScore.hpMax
     dmapi.player.vitals.mn = vitalsFromScore.mn
@@ -1269,6 +1274,7 @@ function dmapi.core.LineTrigger(line)
   -- Parse level up
   local levelUp = parsers.levelUp(line)
   if levelUp then
+    dmapi.player.vitals.estimated = false
     dmapi.player.vitals.hpMax = levelUp.hpMax
     dmapi.player.vitals.mnMax = levelUp.mnMax
     dmapi.player.vitals.mvMax = levelUp.mvMax
@@ -1564,7 +1570,8 @@ tempAlias([[^dmapi guessvitals\s+(\d+)$]], function()
   dmapi.player.vitals.hpMax = 15 * level
   dmapi.player.vitals.mnMax = 15 * level
   dmapi.player.vitals.mvMax = 15 * level
-  
+  dmapi.player.vitals.estimated = true 
+
   dmapi.core.log(string.format(
     "Vitals estimated for level %d - HP: %d | MN: %d | MV: %d",
     level,
