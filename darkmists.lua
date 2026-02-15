@@ -21,7 +21,7 @@ local mapDatPath = getMudletHomeDir() .. "/DarkMistsCompanion/map.dat"
 
 Darkmists = {}
 Darkmists.NAME = "Dark Mists Companion"
-Darkmists.VERSION = "1.1.0"
+Darkmists.VERSION = "1.1.1"
 
 Darkmists.DefaultSettings = {
   -- should we use light mode?
