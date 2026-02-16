@@ -261,12 +261,7 @@ tempAlias([[^sb(?:\s+(\w+))?$]], function()
   end
 
   if cmd == "recreate" then
-    StatusBar.cleanup()
-    tempTimer(0.5, function()
-      StatusBar.create()
-      StatusBar.registerEvents()
-    end)
-    cecho("\n<dim_grey>[sb] <dark_khaki>recreated\n")
+    StatusBar.recreate()
     return
   end
 

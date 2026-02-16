@@ -280,6 +280,15 @@ function StatusBar.updateEnemy(enemyData)
   StatusBar.setBorder(calculateTotalHeight(true))
 end
 
+function StatusBar.recreate()
+    StatusBar.cleanup()
+    tempTimer(0.5, function()
+      StatusBar.create()
+      StatusBar.registerEvents()
+    end)
+    Darkmists.Log("StatusBars","Status Bars Recreated")
+end
+
 -- ===================================================================
 -- VISIBILITY CONTROL
 -- ===================================================================
