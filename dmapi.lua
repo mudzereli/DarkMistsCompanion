@@ -411,63 +411,77 @@ function parsers.prompt(line)
     }
   end
 
-
   -- =========================================================================
-  -- PERCENT PROMPTS (UNCHANGED)
+  -- PERCENT PROMPTS WITH OPTIONAL REGEN SUPPORT
+  -- Examples:
+  -- <75%hp 60%mn 100%mv>
+  -- <75%hp(+3) 60%mn(+2) 100%mv(+1)>
+  -- <75%hp 60%mn 50%rg 100%mv 1200tnl>
   -- =========================================================================
 
-  local hpPct, mnPct, rgPct, mvPct
+  if line:match("^<%d+%%hp") then
+    local promptBody = line:match("^<(.-)>")
+    if not promptBody then return nil end
 
-  hpPct, mnPct, rgPct, mvPct, tnl =
-    line:match("^<(%d+)%%hp%s+(%d+)%%mn%s+(%d+)%%rg%s+(%d+)%%mv%s+(%d+)tnl>")
-  if hpPct then
-    if dmapi.player.vitals.hpMax == 1 then
-      dmapi.core.warn("Max HP = 1. Use 'dmapi setvitals <hp> <mn> <mv>' to set correct values")
-    end
-    
-    return {
+    local data = {
       estimated = true,
-      hp = math.ceil(tonumber(hpPct) / 100 * dmapi.player.vitals.hpMax),
-      mn = math.ceil(tonumber(mnPct) / 100 * dmapi.player.vitals.mnMax),
-      rg = tonumber(rgPct),
-      mv = math.ceil(tonumber(mvPct) / 100 * dmapi.player.vitals.mvMax),
-      tnl = tonumber(tnl),
-      line = line
+      line = line,
+      tnl = -1
     }
-  end
 
-  hpPct, mnPct, mvPct, tnl =
-    line:match("^<(%d+)%%hp%s+(%d+)%%mn%s+(%d+)%%mv%s+(%d+)tnl>")
-  if hpPct then
-    if dmapi.player.vitals.hpMax == 1 then
-      dmapi.core.warn("Max HP = 1. Use 'dmapi setvitals <hp> <mn> <mv>' to set correct values")
-    end
-    
-    return {
-      estimated = true,
-      hp = math.ceil(tonumber(hpPct) / 100 * dmapi.player.vitals.hpMax),
-      mn = math.ceil(tonumber(mnPct) / 100 * dmapi.player.vitals.mnMax),
-      mv = math.ceil(tonumber(mvPct) / 100 * dmapi.player.vitals.mvMax),
-      tnl = tonumber(tnl),
-      line = line
-    }
-  end
+    -- Helper for percent + optional regen
+    local function extractPercentWithRegen(stat)
+      local pct, regen = promptBody:match("(%d+)%%" .. stat .. "%(([-+]?%d+)%)")
+      if not pct then
+        pct = promptBody:match("(%d+)%%" .. stat)
+      end
 
-  hpPct, mnPct, mvPct =
-    line:match("^<(%d+)%%hp%s+(%d+)%%mn%s+(%d+)%%mv>")
-  if hpPct then
-    if dmapi.player.vitals.hpMax == 1 then
-      dmapi.core.warn("Max HP = 1. Use 'dmapi setvitals <hp> <mn> <mv>' to set correct values")
+      if pct then
+        return tonumber(pct), regen and tonumber(regen) or 0
+      end
+
+      return nil, nil
     end
-    
-    return {
-      estimated = true,
-      hp = math.ceil(tonumber(hpPct) / 100 * dmapi.player.vitals.hpMax),
-      mn = math.ceil(tonumber(mnPct) / 100 * dmapi.player.vitals.mnMax),
-      mv = math.ceil(tonumber(mvPct) / 100 * dmapi.player.vitals.mvMax),
-      tnl = -1,
-      line = line
-    }
+
+    -- HP
+    local hpPct, hpRegen = extractPercentWithRegen("hp")
+    if hpPct then
+      if dmapi.player.vitals.hpMax == 1 then
+        dmapi.core.warn("Max HP = 1. Use 'dmapi setvitals <hp> <mn> <mv>' to set correct values")
+      end
+      data.hp = math.ceil(hpPct / 100 * dmapi.player.vitals.hpMax)
+      data.hpRegen = hpRegen
+    end
+
+    -- MN
+    local mnPct, mnRegen = extractPercentWithRegen("mn")
+    if mnPct then
+      data.mn = math.ceil(mnPct / 100 * dmapi.player.vitals.mnMax)
+      data.mnRegen = mnRegen
+    end
+
+    -- MV
+    local mvPct, mvRegen = extractPercentWithRegen("mv")
+    if mvPct then
+      data.mv = math.ceil(mvPct / 100 * dmapi.player.vitals.mvMax)
+      data.mvRegen = mvRegen
+    end
+
+    -- Rage (no regen)
+    local rgPct = promptBody:match("(%d+)%%rg")
+    if rgPct then
+      data.rg = tonumber(rgPct)
+    end
+
+    -- TNL
+    local tnlVal = promptBody:match("(%d+)tnl")
+    if tnlVal then
+      data.tnl = tonumber(tnlVal)
+    end
+
+    if data.hp and data.mn and data.mv then
+      return data
+    end
   end
 
   return nil
