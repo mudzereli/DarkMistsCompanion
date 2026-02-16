@@ -426,25 +426,33 @@ end)
 -- walk COMMAND
 -- =============================================================================
 tempAlias("^walk(?:\\s+(.*))?$", function()
+  local c = DarkmistsMeta.colors.default
   local arg = matches[2] and matches[2]:trim() or ""
 
   -- HELP
   if arg == "" then
     cecho([[
+<ansi_cyan>Walk Module:
+    <dim_gray>The Walk module enables speedwalking between two known rooms 
+    using the default map speedwalk system. Both the starting room and 
+    destination must already be discovered, and the route must be clear. Paths 
+    that require traversing mazes are not supported.
+
 <ansi_cyan>Walk Commands:
-  ]]..DarkmistsMeta.colors.default..[[walk <name>
+  ]]..c..[[walk <name>
     <dim_gray>Navigate to a saved destination
 
-  ]]..DarkmistsMeta.colors.default..[[walk list
+  ]]..c..[[walk list
     <dim_gray>Show all saved destinations
 
-  ]]..DarkmistsMeta.colors.default..[[walk add <name> <roomid>
-    <dim_gray>Add a persistent destination
+  ]]..c..[[walk add <name> <roomid: optional>
+    <dim_gray>Add a persistent destination. If room id is omitted
+    then the current room is used (if known).
 
-  ]]..DarkmistsMeta.colors.default..[[walk rem <name>
+  ]]..c..[[walk rem <name>
     <dim_gray>Remove a destination (persistent)
 
-  ]]..DarkmistsMeta.colors.default..[[walk area <name>
+  ]]..c..[[walk area <name>
     <dim_gray>Navigate to the first room of a matching area
 ]])
     return
@@ -452,10 +460,9 @@ tempAlias("^walk(?:\\s+(.*))?$", function()
 
   -- LIST (grouped by area)
   if arg == "list" then
-    cecho("\n<ansi_cyan>[MAP] Destinations by Area:\n")
-
+    Darkmists.Log("WALK","Destinations by Area:")
     if not next(MapDestinations.list) then
-      cecho("  <dim_gray>(none)\n")
+      cecho("\n  <dim_gray>(none)")
       return
     end
 
@@ -469,12 +476,27 @@ tempAlias("^walk(?:\\s+(.*))?$", function()
 
     for _, areaName in ipairs(areaNames) do
       for _, entry in ipairs(grouped[areaName]) do
-        cecho(string.format(
-          "<dark_khaki>[%-16s] "..DarkmistsMeta.colors.default.."%-16s <dim_gray>→ room "..DarkmistsMeta.colors.default.."%d\n",
+        local roomName = getRoomName(entry.room)
+        if not roomName then 
+          roomName = "UNKNOWN"
+        end
+        cechoLink(string.format(
+          "\n<dark_khaki>[%s%-16s<dark_khaki>] %s%-23s <dim_gray>→ <dim_gray>[%s%5d<dim_gray>] %s%-32s",
+          c,
           DMUtil.cap(areaName, 16),
-          DMUtil.cap(entry.name, 16),
-          entry.room
-        ))
+          c,
+          -- Length Ends Up Being 23 (16+7)
+          ("<u>%s</u>"):format(DMUtil.cap(entry.name, 16)),
+          c,
+          entry.room,
+          c,
+          DMUtil.cap(roomName,32)
+        ),
+        function()
+          expandAlias(("walk %s"):format(entry.name))
+        end,
+        ("Click: walk %s"):format(entry.name),
+        true)
       end
     end
     return
@@ -482,15 +504,36 @@ tempAlias("^walk(?:\\s+(.*))?$", function()
 
   -- ADD
   do
+    local name = arg:match("^add%s+([%w_]+)$")
+    if name then
+      name = name:lower()
+      if name then
+        if map and map.currentRoom then
+          local room = map.currentRoom
+          local roomName = getRoomName(room)
+          if not roomName then 
+            roomName = "UNKNOWN"
+          end
+          MapDestinations.add(name, room)
+          MapDestinations.rewrite()
+          Darkmists.Log("WALK",("Added destination: %s%s<green> → <dim_gray>[%s%d<dim_gray>] %s%s"):format(c,name,c,room,c,roomName))
+        else
+          Darkmists.Log("WALK","<red>No Current Room found on Map")
+        end
+      end
+      return
+    end
+    
     local name, room = arg:match("^add%s+([%w_]+)%s+(%d+)$")
     if name and room then
       name = name:lower()
+      local roomName = getRoomName(room)
+      if not roomName then 
+        roomName = "UNKNOWN"
+      end
       MapDestinations.add(name, room)
       MapDestinations.rewrite()
-      cecho(string.format(
-        "\n<green>[MAP] Added destination "..DarkmistsMeta.colors.default.."%s<green> → room "..DarkmistsMeta.colors.default.."%s\n",
-        name, room
-      ))
+      Darkmists.Log("WALK",("Added destination: %s%s<green> → <dim_gray>[%s%d<dim_gray>] %s%s"):format(c,name,c,room,c,roomName))
       return
     end
   end
@@ -501,12 +544,12 @@ tempAlias("^walk(?:\\s+(.*))?$", function()
     if rem then
       rem = rem:lower()
       if not MapDestinations.list[rem] then
-        cecho("\n<red>[MAP] No destination named "..DarkmistsMeta.colors.default .. rem .. "\n")
+        Darkmists.Log("WALK",("<red>No destination named %s%s"):format(c,rem))
         return
       end
       MapDestinations.list[rem] = nil
       MapDestinations.rewrite()
-      cecho("\n<dark_khaki>[MAP] Removed destination "..DarkmistsMeta.colors.default .. rem .. "\n")
+      Darkmists.Log("WALK",("<dark_khaki>Removed destination %s%s"):format(c,rem))
       return
     end
   end
@@ -516,22 +559,22 @@ tempAlias("^walk(?:\\s+(.*))?$", function()
     local areaSearch = arg:match("^area%s+([%w_]+)$")
     if areaSearch then
       areaSearch = areaSearch:lower()
-
+      
       for name, id in pairs(getAreaTable()) do
         if name:lower():find(areaSearch, 1, true) then
-          cecho(("\n<green>[MAP] Found area "..DarkmistsMeta.colors.default.."%s\n"):format(name))
+          Darkmists.Log("WALK",("Found area %s%s"):format(c,name))
           local rooms = getAreaRooms(id)
           local firstRoom = rooms and rooms[0]
           if firstRoom then
             gotoRoom(firstRoom)
           else
-            cecho("<dark_khaki>[MAP] Area has no rooms indexed\n")
+          Darkmists.Log("WALK","<red>Area has no rooms indexed.")
           end
           return
         end
       end
 
-      cecho("\n<red>[MAP] No area matching "..DarkmistsMeta.colors.default .. areaSearch .. "\n")
+      Darkmists.Log("WALK",("<red>No area matching %s%s"):format(c,areaSearch))
       return
     end
   end
@@ -539,24 +582,29 @@ tempAlias("^walk(?:\\s+(.*))?$", function()
   -- NAVIGATE TO SAVED DESTINATION
   local dest = MapDestinations.list[arg:lower()]
   if not dest then
-    cecho("\n<red>[MAP] Unknown destination. Type "..DarkmistsMeta.colors.default.."walk<red> for help.\n")
+    Darkmists.Log("WALK",("<red>Unknown destination. Type %swalk <red>for help."):format(c))
     return
   end
 
   local current = getPlayerRoom()
   if not current then
-    cecho("<red>[MAP] Current room unknown\n")
+    Darkmists.Log("WALK","<red>Current Room Unknown!")
     return
   end
 
-  cecho(("<ansi_cyan>[MAP] Generating Path: "..DarkmistsMeta.colors.default.."%s<dim_gray> (room %d)\n")
-    :format(arg, dest))
+  if dest == current then
+    Darkmists.Log("WALK","<red>You are already there!")
+    return
+  end
+
+  local roomName = getRoomName(dest)
 
   local ok = getPath(current, dest)
-  if not ok or not speedWalkDir or #speedWalkDir == 0 then
-    cecho("<dark_khaki>[MAP] No known path for that destination\n")
+  if not ok or not speedWalkDir or #speedWalkDir == 0 or not dest or not roomName then
+    Darkmists.Log("WALK","<red>No known path for that destination!")
     return
   end
 
+  Darkmists.Log("WALK",("<ansi_cyan>Generating Path to %s%s <dim_gray>[%s%d<dim_gray>] %s%s"):format(c,arg,c,dest,c,roomName))
   gotoRoom(dest)
 end)
