@@ -213,16 +213,17 @@ function StatusBar.update()
   
   for _, v in ipairs(vitals) do
     if v.gauge then
+      local adir = ""
+      if v.regen > 0 then
+        adir = (" (+%s)"):format(v.regen)
+      elseif v.regen < 0 then
+        adir = (" (-%s)"):format(v.regen)
+      end
       local display
       if dmapi.player.vitals.estimated then
-        display = string.format("<center><span style='font-size: 11pt; color: rgb(%s); font-weight: bold;'>%d%%</span></center>",StatusBar.config.fontColor,v.pct)
+        display = string.format("<center><span style='font-size: 11pt; color: rgb(%s); font-weight: bold;'>%d%%%s</span></center>",
+                        StatusBar.config.fontColor,v.pct,adir)
       else
-        local adir = ""
-        if v.regen > 0 then
-          adir = (" (+%s)"):format(v.regen)
-        elseif v.regen < 0 then
-          adir = (" (-%s)"):format(v.regen)
-        end
         display = string.format("<center><span style='font-size: 11pt; color: rgb(%s); font-weight: bold;'>%d/%d%s</span></center>",
                         StatusBar.config.fontColor,v.current, v.max, adir)
       end
