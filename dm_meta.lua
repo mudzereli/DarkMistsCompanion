@@ -451,17 +451,25 @@ tempAlias("^walk(?:\\s+(.*))?$", function()
     then the current room is used (if known).
 
   ]]..c..[[walk rem <name>
-    <dim_gray>Remove a destination (persistent)
+    <dim_gray>Permanently remove a destination.
 
   ]]..c..[[walk area <name>
-    <dim_gray>Navigate to the first room of a matching area
+    <dim_gray>Navigate to the first room of a matching area.
+
+  ]]..c..[[walk stop
+    <dim_gray>Cancel a walk that is currently in progress.
 ]])
+    return
+  end
+
+  if arg == "stop" then
+    expandAlias("map stop")
+    Darkmists.Log("WALK","<red>Walking Stopped!")
     return
   end
 
   -- LIST (grouped by area)
   local listFilter = arg:match("^list%s+(%S+)$")
-
   if arg == "list" or listFilter then
     Darkmists.Log("WALK","Destinations by Area:")
     if not next(MapDestinations.list) then
