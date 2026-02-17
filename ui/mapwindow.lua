@@ -1,6 +1,6 @@
 DARKMISTS_MINIMAP_EVENT_HANDLERS = DARKMISTS_MINIMAP_EVENT_HANDLERS or {}
 
-DarkMistsMiniMap = {}
+DarkMistsMiniMap = DarkMistsMiniMap or {}
 DarkMistsMiniMap.container = nil
 DarkMistsMiniMap.header = nil
 DarkMistsMiniMap.minimap = nil
