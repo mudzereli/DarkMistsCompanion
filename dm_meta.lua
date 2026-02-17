@@ -442,8 +442,9 @@ tempAlias("^walk(?:\\s+(.*))?$", function()
   ]]..c..[[walk <name>
     <dim_gray>Navigate to a saved destination
 
-  ]]..c..[[walk list
-    <dim_gray>Show all saved destinations
+  ]]..c..[[walk list <filter: optional>
+    <dim_gray>Show all saved destinations. A filter argument can
+    be supplied to further refine the results.
 
   ]]..c..[[walk add <name> <roomid: optional>
     <dim_gray>Add a persistent destination. If room id is omitted
@@ -459,7 +460,9 @@ tempAlias("^walk(?:\\s+(.*))?$", function()
   end
 
   -- LIST (grouped by area)
-  if arg == "list" then
+  local listFilter = arg:match("^list%s+(%S+)$")
+
+  if arg == "list" or listFilter then
     Darkmists.Log("WALK","Destinations by Area:")
     if not next(MapDestinations.list) then
       cecho("\n  <dim_gray>(none)")
@@ -467,6 +470,8 @@ tempAlias("^walk(?:\\s+(.*))?$", function()
     end
 
     local grouped = MapDestinations.getDestinationsGroupedByArea()
+    local filter = listFilter and listFilter:lower()
+
     local areaNames = {}
 
     for areaName in pairs(grouped) do
@@ -476,29 +481,40 @@ tempAlias("^walk(?:\\s+(.*))?$", function()
 
     for _, areaName in ipairs(areaNames) do
       for _, entry in ipairs(grouped[areaName]) do
-        local roomName = getRoomName(entry.room)
-        if not roomName then 
-          roomName = "UNKNOWN"
+        local roomName = getRoomName(entry.room) or "UNKNOWN"
+        local areaMatchName = getRoomAreaName(getRoomArea(entry.room)) or areaName
+
+        local show = true
+        if filter then
+          local rn = roomName:lower()
+          local an = areaMatchName:lower()
+          local en = (entry.name):lower()
+          show = (rn:find(filter, 1, true) ~= nil)
+              or (an:find(filter, 1, true) ~= nil)
+              or (en:find(filter, 1, true) ~= nil)
         end
-        cechoLink(string.format(
-          "\n<dark_khaki>[%s%-16s<dark_khaki>] %s%-23s <dim_gray>→ <dim_gray>[%s%5d<dim_gray>] %s%-32s",
-          c,
-          DMUtil.cap(areaName, 16),
-          c,
-          -- Length Ends Up Being 23 (16+7)
-          ("<u>%s</u>"):format(DMUtil.cap(entry.name, 16)),
-          c,
-          entry.room,
-          c,
-          DMUtil.cap(roomName,32)
-        ),
-        function()
-          expandAlias(("walk %s"):format(entry.name))
-        end,
-        ("Click: walk %s"):format(entry.name),
-        true)
+
+        if show then
+          cechoLink(string.format(
+            "\n<dark_khaki>[%s%-16s<dark_khaki>] %s%-23s <dim_gray>→ <dim_gray>[%s%5d<dim_gray>] %s%-32s",
+            c,
+            DMUtil.cap(areaName, 16),
+            c,
+            ("<u>%s</u>"):format(DMUtil.cap(entry.name, 16)),
+            c,
+            entry.room,
+            c,
+            DMUtil.cap(roomName,32)
+          ),
+          function()
+            expandAlias(("walk %s"):format(entry.name))
+          end,
+          ("Click: walk %s"):format(entry.name),
+          true)
+        end
       end
     end
+
     return
   end
 
