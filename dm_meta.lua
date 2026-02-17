@@ -37,7 +37,7 @@ DarkmistsMeta.colors = {
 DarkmistsMeta.helpIndex = {
   dmc = {
     title = "Dark Mists Companion",
-    desc = "Central help hub for the Dark Mists Mudlet package.",
+    desc = "Central help hub for the Dark Mists Companion Mudlet package.",
     info  = [[
 Central help hub for the Dark Mists Mudlet package.
 
@@ -318,112 +318,113 @@ tempAlias([[^sb(?:\s+(\w+))?$]], function()
   cecho("  "..DarkmistsMeta.colors.default.."sb info      <dim_grey>- debug information\n")
 end)
 
-
 -- ============================================================================
 -- ITEM TRACKER Command Aliases
 -- ============================================================================
 
--- Main help command
-tempAlias(string.format("^%s$", ItemTracker.settings.alias), function()
-  local alias = ItemTracker.settings.alias
-  
-  cecho("\n<ansi_cyan>Item Tracker Commands:\n")
-  cecho("<dim_grey>Clickable item identification & lookup system\n\n")
+do
+  -- Main help command
+  tempAlias(string.format("^%s$", ItemTracker.settings.alias), function()
+    local alias = ItemTracker.settings.alias
+    
+    cecho("\n<ansi_cyan>Item Tracker Commands:\n")
+    cecho("<dim_grey>Clickable item identification & lookup system\n\n")
 
-  cecho(DarkmistsMeta.colors.default.."Usage:\n")
-  cecho(string.format("  <ansi_cyan>%s "..DarkmistsMeta.colors.default.."<item name or partial>\n\n", alias))
+    cecho(DarkmistsMeta.colors.default.."Usage:\n")
+    cecho(string.format("  <ansi_cyan>%s "..DarkmistsMeta.colors.default.."<item name or partial>\n\n", alias))
 
-  cecho(DarkmistsMeta.colors.default.."Examples:\n")
-  cecho(string.format("  <ansi_cyan>%s bracelet"..DarkmistsMeta.colors.default.."                – search for items containing 'bracelet'\n", alias))
-  cecho(string.format("  <ansi_cyan>%s an oversized lumber axe"..DarkmistsMeta.colors.default.." – exact name lookup\n\n", alias))
+    cecho(DarkmistsMeta.colors.default.."Examples:\n")
+    cecho(string.format("  <ansi_cyan>%s bracelet"..DarkmistsMeta.colors.default.."                – search for items containing 'bracelet'\n", alias))
+    cecho(string.format("  <ansi_cyan>%s an oversized lumber axe"..DarkmistsMeta.colors.default.." – exact name lookup\n\n", alias))
 
-  cecho(DarkmistsMeta.colors.default.."Area search:\n")
-  cecho(string.format("  <ansi_cyan>%s area "..DarkmistsMeta.colors.default.."<area name or partial>\n\n", alias))
+    cecho(DarkmistsMeta.colors.default.."Area search:\n")
+    cecho(string.format("  <ansi_cyan>%s area "..DarkmistsMeta.colors.default.."<area name or partial>\n\n", alias))
 
-  cecho(DarkmistsMeta.colors.default.."In-game interaction:\n")
-  cecho("  <ansi_cyan>• Click an item name"..DarkmistsMeta.colors.default.."       – show tooltip near your cursor\n")
-  cecho("  <ansi_cyan>• Shift + Click"..DarkmistsMeta.colors.default.."            – print full item details to chat\n")
-  cecho("  <ansi_cyan>• Click anywhere else"..DarkmistsMeta.colors.default.."      – close the tooltip\n\n")
+    cecho(DarkmistsMeta.colors.default.."In-game interaction:\n")
+    cecho("  <ansi_cyan>• Click an item name"..DarkmistsMeta.colors.default.."       – show tooltip near your cursor\n")
+    cecho("  <ansi_cyan>• Shift + Click"..DarkmistsMeta.colors.default.."            – print full item details to chat\n")
+    cecho("  <ansi_cyan>• Click anywhere else"..DarkmistsMeta.colors.default.."      – close the tooltip\n\n")
 
-  cecho(DarkmistsMeta.colors.default.."Detection rules:\n")
-  cecho("  <dim_grey>• Only matches item names at the END of a line\n")
-  cecho("  <dim_grey>• Longest names are matched first\n")
-  cecho("  <dim_grey>• Prevents false matches (e.g. 'egg' in 'leggings')\n\n")
+    cecho(DarkmistsMeta.colors.default.."Detection rules:\n")
+    cecho("  <dim_grey>• Only matches item names at the END of a line\n")
+    cecho("  <dim_grey>• Longest names are matched first\n")
+    cecho("  <dim_grey>• Prevents false matches (e.g. 'egg' in 'leggings')\n\n")
 
-  cecho(DarkmistsMeta.colors.default.."Notes:\n")
-  cecho("  <dim_grey>• Duplicate item names are supported and shown together\n")
-  cecho("  <dim_grey>• Tooltip size auto-adjusts to item details\n")
-  cecho("  <dim_grey>• Tooltip avoids covering status bars at bottom\n")
-  cecho("  <dim_grey>• Colors and layout can be customized in ItemTracker.settings\n\n")
-end)
+    cecho(DarkmistsMeta.colors.default.."Notes:\n")
+    cecho("  <dim_grey>• Duplicate item names are supported and shown together\n")
+    cecho("  <dim_grey>• Tooltip size auto-adjusts to item details\n")
+    cecho("  <dim_grey>• Tooltip avoids covering status bars at bottom\n")
+    cecho("  <dim_grey>• Colors and layout can be customized in ItemTracker.settings\n\n")
+  end)
 
--- Area search command
-tempAlias("^" .. ItemTracker.settings.alias .. "\\s+area\\s+(.*)$", function()
-  local query = matches[2]
-  local results = ItemTracker.listByArea(query)
+  -- Area search command
+  tempAlias("^" .. ItemTracker.settings.alias .. "\\s+area\\s+(.*)$", function()
+    local query = matches[2]
+    local results = ItemTracker.listByArea(query)
 
-  if not results or #results == 0 then
-    cecho("<red>[ID] No items found for area: " .. query .. "\n")
-    return
-  end
+    if not results or #results == 0 then
+      cecho("<red>[ID] No items found for area: " .. query .. "\n")
+      return
+    end
 
-  cecho(string.format(
-    "\n<light_goldenrod>[ID] Items in area matching '%s' (%d):"..DarkmistsMeta.colors.default.."\n",
-    query,
-    #results
-  ))
+    cecho(string.format(
+      "\n<light_goldenrod>[ID] Items in area matching '%s' (%d):"..DarkmistsMeta.colors.default.."\n",
+      query,
+      #results
+    ))
 
-  for i, item in ipairs(results) do
-    cecho(string.format("   "..DarkmistsMeta.colors.default.."%d) ", i))
-    local areaTag = item.area and ("[" .. item.area .. "] ") or ""
-    cechoLink(
-      "<dim_grey>" .. areaTag .. DarkmistsMeta.colors.default ..
-      ItemTracker.settings.itemLinkColor .. item.name .. DarkmistsMeta.colors.default.."\n",
-      function() ItemTracker.handleClick(item.name) end,
-      "Click: tooltip | Shift+Click: full identify",
-      true
-    )
-  end
-end)
+    for i, item in ipairs(results) do
+      cecho(string.format("   "..DarkmistsMeta.colors.default.."%d) ", i))
+      local areaTag = item.area and ("[" .. item.area .. "] ") or ""
+      cechoLink(
+        "<dim_grey>" .. areaTag .. DarkmistsMeta.colors.default ..
+        ItemTracker.settings.itemLinkColor .. item.name .. DarkmistsMeta.colors.default.."\n",
+        function() ItemTracker.handleClick(item.name) end,
+        "Click: tooltip | Shift+Click: full identify",
+        true
+      )
+    end
+  end)
 
--- Item search command
-tempAlias(string.format("^%s\\s+(.+)$", ItemTracker.settings.alias), function()
-  local query = matches[2]
+  -- Item search command
+  tempAlias(string.format("^%s\\s+(.+)$", ItemTracker.settings.alias), function()
+    local query = matches[2]
 
-  -- Prevent collision with area subcommand
-  if query:lower():match("^area%s+") then
-    return
-  end
+    -- Prevent collision with area subcommand
+    if query:lower():match("^area%s+") then
+      return
+    end
 
-  local results = ItemTracker.find(query)
+    local results = ItemTracker.find(query)
 
-  if not results or #results == 0 then
-    cecho("<red>[ID] No items found for: " .. query .. "\n")
-    return
-  end
+    if not results or #results == 0 then
+      cecho("<red>[ID] No items found for: " .. query .. "\n")
+      return
+    end
 
-  -- Single match: show immediately
-  if #results == 1 then
-    ItemTracker.show(results[1])
-    return
-  end
+    -- Single match: show immediately
+    if #results == 1 then
+      ItemTracker.show(results[1])
+      return
+    end
 
-  -- Multiple matches: show clickable list
-  cecho("<light_goldenrod>[ID] Multiple matches:"..DarkmistsMeta.colors.default.."\n")
-  for i, item in ipairs(results) do
-    cecho(string.format("   "..DarkmistsMeta.colors.default.."%d) ", i))
-    cechoLink(
-      ItemTracker.settings.itemLinkColor .. item.name .. DarkmistsMeta.colors.default.."\n",
-      function() ItemTracker.handleClick(item.name) end,
-      "Click: tooltip | Shift+Click: full identify",
-      true
-    )
-  end
-  cecho("<light_goldenrod>Refine your search."..DarkmistsMeta.colors.default.."\n")
-end)
+    -- Multiple matches: show clickable list
+    cecho("<light_goldenrod>[ID] Multiple matches:"..DarkmistsMeta.colors.default.."\n")
+    for i, item in ipairs(results) do
+      cecho(string.format("   "..DarkmistsMeta.colors.default.."%d) ", i))
+      cechoLink(
+        ItemTracker.settings.itemLinkColor .. item.name .. DarkmistsMeta.colors.default.."\n",
+        function() ItemTracker.handleClick(item.name) end,
+        "Click: tooltip | Shift+Click: full identify",
+        true
+      )
+    end
+    cecho("<light_goldenrod>Refine your search."..DarkmistsMeta.colors.default.."\n")
+  end)
+end
 
 -- =============================================================================
--- walk COMMAND
+-- WALK COMMAND
 -- =============================================================================
 tempAlias("^walk(?:\\s+(.*))?$", function()
   local c = DarkmistsMeta.colors.default

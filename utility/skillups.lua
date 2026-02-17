@@ -1,14 +1,18 @@
 -- ===================================================================
 -- Skill Ups Tracker - Simple skill improvement logger
 -- ===================================================================
+if SkillUps and SkillUps.eventHandler then
+  killAnonymousEventHandler(SkillUps.eventHandler)
+  Darkmists.Log("SkillUps",("Killed Anonymous Event Handler #%d"):format(SkillUps.eventHandler))
+end
 
-SkillUps = SkillUps or {}
-
-SkillUps.config = {
-  maxSkillUps = 20,  -- Keep last 20 skill ups
+SkillUps = {
+  config = {
+    maxSkillUps = 20,  -- Keep last 20 skill ups
+  },
+  history = {},
+  eventHandler = nil
 }
-
-SkillUps.history = {}
 
 -- ===================================================================
 -- TRACKING FUNCTION
@@ -29,8 +33,10 @@ function SkillUps.addSkillUp(skillName)
     table.remove(SkillUps.history)
   end
   
-  cecho(string.format("\n<green>[SKILLUP] <"..Darkmists.getDefaultTextColor()..">%s <dim_gray>improved at <"..Darkmists.getDefaultTextColor()..">%s", 
-    skillName, timestamp))
+  local c = Darkmists.getDefaultTextColorTag()
+  Darkmists.Log("SkillUps",string.format("%s%s <dim_gray>improved at %s%s!", 
+    c, skillName, 
+    c, timestamp))
 end
 
 -- ===================================================================
@@ -38,13 +44,14 @@ end
 -- ===================================================================
 
 function SkillUps.display()
+  local c = Darkmists.getDefaultTextColorTag()
   if #SkillUps.history == 0 then
-    cecho("\n<ansi_cyan>SkillUp Tracker: No skill ups recorded yet!")
+    Darkmists.Log("SkillUps","<red>No skill ups recorded yet!")
     return
   end
   
   cecho("\n<ansi_cyan>═══════════════════════════════════════════════════")
-  cecho("\n<"..Darkmists.getDefaultTextColor()..">Last <ansi_cyan>" .. #SkillUps.history .. " <"..Darkmists.getDefaultTextColor()..">Skill Improvements:")
+  cecho(("\n%sLast <ansi_cyan>%d %sSkill Improvements:"):format(c,#SkillUps.history,c))
   cecho("\n<ansi_cyan>═══════════════════════════════════════════════════\n")
   
   for i, skillup in ipairs(SkillUps.history) do
@@ -62,14 +69,19 @@ function SkillUps.display()
     end
     
     cecho(string.format(
-      "<dim_gray>[<"..Darkmists.getDefaultTextColor()..">%s<dim_gray>] <green>%-30s <dark_khaki>(%s)\n",
-      skillup.timestamp,
+      "<dim_gray>[%s%s<dim_gray>] <green>%-30s <dark_khaki>(%s)\n",
+      c,skillup.timestamp,
       skillup.skill,
       timeAgoStr
     ))
   end
   
   cecho("<ansi_cyan>═══════════════════════════════════════════════════\n")
+end
+
+function SkillUps.reset()
+  SkillUps.history = {}
+  Darkmists.Log("SkillUps","<red>Skill improvement history reset.")
 end
 
 -- ===================================================================
@@ -86,13 +98,36 @@ SkillUps.eventHandler = registerAnonymousEventHandler(
 -- ===================================================================
 -- ALIAS
 -- ===================================================================
+tempAlias([[^skillups?$]], function()
+  local c = Darkmists.getDefaultTextColorTag()
+  cecho([[
+    <ansi_cyan>SkillUps Module:
+        <dim_gray>The SkillUps module tracks recent skill improvements as they occur.
+        Each time a skill increases, a notification is displayed and the
+        improvement is recorded in the tracker history. Skill ups can be
+        viewed at any time using ']]..c..[[skillups list<dim_gray>', and
+        are visually highlighted within the practice screen for quick
+        reference.
 
-tempAlias([[^skillups$]], function()
+    <ansi_cyan>SkillUps Commands:
+      ]]..c..[[skillups list
+        <dim_gray>List all recent skill increases.
+
+      ]]..c..[[skillups reset
+        <dim_gray>Clear the skill increase history.
+    ]])
+  end)
+
+tempAlias([[^skillups? list$]], function()
   SkillUps.display()
+end)
+
+tempAlias([[^skillups? reset$]], function()
+  SkillUps.reset()
 end)
 
 -- ===================================================================
 -- INIT
 -- ===================================================================
 
-cecho("\n<dim_gray>[<"..Darkmists.getDefaultTextColor()..">SkillUps<dim_gray>] <green>Tracker initialized. Type '<"..Darkmists.getDefaultTextColor()..">skillups<green>' to view history.")
+Darkmists.Log("SkillUps",("<forest_green>Tracker initialized. Type '%sskillups<forest_green>' to view history."):format(Darkmists.getDefaultTextColorTag()))

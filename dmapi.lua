@@ -581,10 +581,10 @@ end
 -- @param line string The line to parse
 -- @return string|nil Skill name
 function parsers.skillImproved(line)
-  local skill = line:match("become better at ([%a%s']+)!$")
+  local skill = line:match("become better at ([%a%s'-]+)!$")
   if skill then return skill end
   
-  skill = line:match("You learn from your mistakes%, and your ([%a%s']+) (.*) improves%.$")
+  skill = line:match("^You learn from your mistakes%, and your ([%a%s'-]+) (.*) improves%.$")
   if skill then return skill end
   
   return nil
