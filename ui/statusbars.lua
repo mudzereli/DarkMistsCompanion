@@ -217,7 +217,7 @@ function StatusBar.update()
       if v.regen > 0 then
         adir = (" (+%s)"):format(v.regen)
       elseif v.regen < 0 then
-        adir = (" (-%s)"):format(v.regen)
+        adir = (" (%s)"):format(v.regen)
       end
       local display
       if dmapi.player.vitals.estimated then

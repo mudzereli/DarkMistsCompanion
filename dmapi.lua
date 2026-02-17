@@ -1252,13 +1252,13 @@ function dmapi.core.LineTrigger(line)
     dmapi.player.vitals.mv = vitals.mv
 
     if vitals.hpRegen then
-      dmapi.player.vitals.hpRegen = vitals.hpRegen
+      dmapi.player.vitals.hpRegen = tonumber(vitals.hpRegen)
     end
     if vitals.mnRegen then
-      dmapi.player.vitals.mnRegen = vitals.mnRegen
+      dmapi.player.vitals.mnRegen = tonumber(vitals.mnRegen)
     end
     if vitals.mvRegen then
-      dmapi.player.vitals.mvRegen = vitals.mvRegen
+      dmapi.player.vitals.mvRegen = tonumber(vitals.mvRegen)
     end
     
     -- Auto-update max if current exceeds known max
