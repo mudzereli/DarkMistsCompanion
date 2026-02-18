@@ -79,6 +79,7 @@ end
 
 -- Start a new snapshot capture
 function AffectsWindow.startCapture()
+  AffectsWindow.hasFullFormat = false
   AffectsWindow.capturing      = true
   AffectsWindow.lastUpdateTime = os.time()
   AffectsWindow.affectsContent = {}
@@ -226,8 +227,12 @@ function AffectsWindow.copyCurrentLine()
     dur = "PERMANENT"
   end
 
+  if name and dur then
+    AffectsWindow.hasFullFormat = true
+  end
+  
   -- Low-level fallback: only accept simple spell-name lines
-  if not name then
+  if not name and not AffectsWindow.hasFullFormat then
     -- Must NOT contain ":" or "modifies"
     if line:find(":") or line:find("modifies") then
       return
