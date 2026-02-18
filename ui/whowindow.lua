@@ -173,76 +173,77 @@ end
 function WhoWindow.capturePlayerList()
   if not WhoWindow.window then return end
   
-  -- Parse "Players found: N" line
-  local numPlayers = line:match("^Players found: (.*)")
+  -- Parse "Players found: N"
+  local numPlayers = line:match("^Players found:%s*(%d+)")
   if not numPlayers then return end
-  
   numPlayers = tonumber(numPlayers)
+
   local currentLine = getLineNumber()
-  
+
   -- Update state
   WhoWindow.config.lastUpdated = os.time()
   WhoWindow.playerCount = numPlayers
-  
-  -- Initialize temp buffer for formatted player lines
+
+  -- Prepare temp buffer
   if not exists(WhoWindow.tempBufferName, "buffer") then
     createBuffer(WhoWindow.tempBufferName)
   end
   clearWindow(WhoWindow.tempBufferName)
-  
-  -- Calculate lines to capture (header + 2 lines per player)
-  local linesToCapture = 1 + (2 * numPlayers)
+
+  local headerPattern = "^%[[^%]]-%s+[^%]]-%]"
+  local headersCaptured = 0
   local pendingLine = nil
-  
-  -- Process lines backward from current position
-  for i = 1, linesToCapture do
+  local i = 1
+
+  while headersCaptured < numPlayers do
     local targetLine = currentLine - i
-    if targetLine >= 0 then
-      moveCursor(0, targetLine)
-      selectCurrentLine()
-      local lineText = getCurrentLine()
-      
-      -- Skip blank lines
-      if lineText:match("^%s*$") then
-        if WhoWindow.config.deleteOriginalLines then
-          deleteLine()
-        end
-        
-      -- Player line starts with '['
-      elseif lineText:match("^%[") then
-        copy()
-        appendBuffer(WhoWindow.tempBufferName)
-        
-        -- If we have a continuation line, append it
-        if pendingLine then
-          appendContinuationLine(pendingLine)
-          pendingLine = nil
-          
-          if WhoWindow.config.deleteOriginalLines then
-            deleteLine() -- Delete continuation line too
-          end
-        end
-        
-        if WhoWindow.config.deleteOriginalLines then
-          deleteLine()
-        end
-        
-      -- Continuation line (doesn't start with '[')
-      else
-        pendingLine = lineText
+    if targetLine < 0 then break end
+
+    moveCursor(0, targetLine)
+    selectCurrentLine()
+    local lineText = getCurrentLine()
+
+    -- Player header line
+    if lineText:match(headerPattern) then
+      copy()
+      appendBuffer(WhoWindow.tempBufferName)
+      headersCaptured = headersCaptured + 1
+
+      -- Attach wrapped continuation if present
+      if pendingLine then
+        appendContinuationLine(pendingLine)
+        pendingLine = nil
+      end
+
+      if WhoWindow.config.deleteOriginalLines then
+        deleteLine()
+      end
+
+    -- Possible continuation (non-blank, non-header)
+    elseif not lineText:match("^%s*$") then
+      pendingLine = lineText
+      if WhoWindow.config.deleteOriginalLines then
+        deleteLine()
+      end
+
+    -- Blank line
+    else
+      if WhoWindow.config.deleteOriginalLines then
+        deleteLine()
       end
     end
+
+    i = i + 1
   end
-  
+
   moveCursorEnd()
-  
-  -- Clean up original output
+
   if WhoWindow.config.deleteOriginalLines then
     replaceLine("")
     cecho("\n<coral>Who List Captured.")
   end
-  
-  -- Display initial capture
+
+  -- Display
   WhoWindow.console:clear()
   displayHeader(0)
   copyPlayerLinesToWindow()
