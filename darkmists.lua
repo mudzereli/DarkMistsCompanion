@@ -5,9 +5,6 @@
 --
 -- Responsibilities:
 --   • Central line dispatcher
---   • Persistent map destinations + goto command
---   • Persistent post-death command system
---   • Death event hook
 --
 -- Design philosophy:
 --   - Dumb dispatcher, smart subsystems
@@ -21,7 +18,7 @@ local mapDatPath = getMudletHomeDir() .. "/DarkMistsCompanion/map.dat"
 
 Darkmists = {}
 Darkmists.NAME = "Dark Mists Companion"
-Darkmists.VERSION = "1.1.2"
+Darkmists.VERSION = "1.2.0"
 
 Darkmists.DefaultSettings = {
   -- should we use light mode?

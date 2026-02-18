@@ -1,9 +1,11 @@
 -- ===================================================================
 -- Who Window - Player list tracker with age display
 -- ===================================================================
-
+if WhoWindow and WhoWindow.promptHandler then
+  killAnonymousEventHandler(WhoWindow.promptHandler)
+  Darkmists.Log("WhoWindow",("<red>Killed Anonymous Event Handler #%d"):format(WhoWindow.promptHandler))
+end
 WhoWindow = WhoWindow or {}
-
 -- Configuration
 WhoWindow.config = {
   fontSize = Darkmists.GlobalSettings.fontSize,
