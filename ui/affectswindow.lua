@@ -338,12 +338,12 @@ function AffectsWindow.refreshDisplay()
 
   -- Active: soonest to expire first
   table.sort(activeAffects, function(a, b)
-    return a.mins < b.mins
-  end)
-
-  -- Expired: alphabetical
-  table.sort(expiredAffects, function(a, b)
-    return a.affect.name < b.affect.name
+    if a.mins ~= b.mins then
+      return a.mins < b.mins
+    end
+    if a.affect.name ~= b.affect.name then
+      return a.affect.name < b.affect.name
+    end
   end)
 
   -- Render active affects
