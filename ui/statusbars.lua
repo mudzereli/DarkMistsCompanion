@@ -309,6 +309,8 @@ function StatusBar.showAll()
     StatusBar.xpGauge:hide()
   end
   
+  StatusBar.repositionBars()
+
   StatusBar.setBorder(calculateTotalHeight(false))
   Darkmists.Log("StatusBars","Bars shown")
 end
