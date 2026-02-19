@@ -81,6 +81,21 @@ end
 -- All message formatting lives here.
 -- Adding a new channel only requires adding one entry.
 local MESSAGE_FORMATTERS = {
+  mptell = {
+    sent = function(m)
+      return string.format(
+        "<dim_gray>[<"..maincolor..">%s<dim_gray>] <"..maincolor..">You mentally project to <"..blue..">%s<"..maincolor..">, '<"..green..">%s<"..maincolor..">'\n",
+        m.timestamp, m.receiver or "?", m.message
+      )
+    end,
+    received = function(m)
+      return string.format(
+        "<dim_gray>[<"..maincolor..">%s<dim_gray>] <"..blue..">%s <"..maincolor..">mentally projects to you, '<"..green..">%s<"..maincolor..">'\n",
+        m.timestamp, m.sender, m.message
+      )
+    end,
+  },
+
   tell = {
     sent = function(m)
       return string.format(
@@ -111,7 +126,7 @@ local MESSAGE_FORMATTERS = {
     end,
   },
 
-  mp = {
+  mpsay = {
     sent = function(m)
       return string.format(
         "<dim_gray>[<"..maincolor..">%s<dim_gray>] <"..maincolor..">You mentally project, '<"..yellow..">%s<"..maincolor..">'\n",
@@ -259,8 +274,10 @@ function ChatHistory.registerEvents()
   bind("dmapi.communication.tellsent",     "tell", "You")
   bind("dmapi.communication.sayreceived",  "say")
   bind("dmapi.communication.saysent",      "say",  "You")
-  bind("dmapi.communication.mpreceived",  "mp")
-  bind("dmapi.communication.mpsent",      "mp",  "You")
+  bind("dmapi.communication.mpsayreceived",  "mpsay")
+  bind("dmapi.communication.mpsaysent",      "mpsay",  "You")
+  bind("dmapi.communication.mptellreceived", "mptell")
+  bind("dmapi.communication.mptellsent",     "mptell",  "You")
   bind("dmapi.communication.yellreceived", "yell")
   bind("dmapi.communication.yellsent",     "yell", "You")
   bind("dmapi.communication.gtellreceived","gtell")

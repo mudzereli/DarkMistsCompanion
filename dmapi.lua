@@ -863,7 +863,7 @@ function dmapi.core.LineTrigger(line)
   -- Mental Projection From Someone Else
   sender, message = line:match("^(.*) mentally projects, '(.*)'$")
   if sender then
-    dmapi.core.raiseEvent("dmapi.communication.mpreceived", {
+    dmapi.core.raiseEvent("dmapi.communication.mpsayreceived", {
       sender = sender,
       message = message,
       line = line
@@ -874,8 +874,32 @@ function dmapi.core.LineTrigger(line)
   -- Mental Projection From Player
   message = line:match("^You mentally project, '(.*)'$")
   if message then
-    dmapi.core.raiseEvent("dmapi.communication.mpsent", {
+    dmapi.core.raiseEvent("dmapi.communication.mpsaysent", {
       sender = "Player",
+      message = message,
+      line = line
+    })
+    return
+  end
+
+  local sender, message, receiver, channel
+  -- Parse tells: Someone tells you, 'message'
+  sender, message = line:match("^(.*) mentally projects to you, '(.*)'$")
+  if sender then
+    dmapi.core.raiseEvent("dmapi.communication.mptellreceived", {
+      sender = sender,
+      receiver = "Me",
+      message = message,
+      line = line
+    })
+    return
+  end
+  -- Parse tells: You tell someone, 'message'
+  receiver, message = line:match("^You mentally project to (.*), '(.*)'$")
+  if receiver then
+    dmapi.core.raiseEvent("dmapi.communication.mptellsent", {
+      sender = "Me",
+      receiver = receiver,
       message = message,
       line = line
     })
