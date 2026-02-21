@@ -55,6 +55,8 @@ dmapi.core = {
     combatMissedPrompts = 0,
     lastCombatRoundFired = getEpoch(),
     lastCommand = nil,
+    capturingRoom = false,
+    exitLineMarker = 0,
     
     -- Combat condition descriptions in order of severity
     COMBAT_CONDITIONS = {
@@ -223,12 +225,12 @@ dmapi.world = {
 -- PARSING FUNCTIONS
 -- ============================================================================
 
-local parsers = {}
+dmapi.parsers = {}
 
 --- Parse exits line: [Exits: north south east]
 -- @param line string The line to parse
 -- @return table|nil Array of exit directions
-function parsers.exits(line)
+function dmapi.parsers.exits(line)
   local exitsBlob = line:match("^%[Exits:%s*(.-)%s*%]$")
   if not exitsBlob then return nil end
 
@@ -243,7 +245,7 @@ end
 --- Parse currency/experience lines
 -- @param line string The line to parse
 -- @return table|nil Parsed currency and experience data
-function parsers.currency(line)
+function dmapi.parsers.currency(line)
   local gold, silver, xp, xpToLevel
   
   -- Try: You have X gold, Y silver, and Z experience (W exp to level)
@@ -281,7 +283,7 @@ end
 --- Parse level up line
 -- @param line string The line to parse
 -- @return table|nil Parsed level up data
-function parsers.levelUp(line)
+function dmapi.parsers.levelUp(line)
   local hp, hpMax, mn, mnMax, mv, mvMax, prac, pracTotal = line:match(
     "^You gain (%d+)/(%d+) hp, (%d+)/(%d+) mana, (%d+)/(%d+) move, and (%d+)/(%d+) practices%."
   )
@@ -304,7 +306,7 @@ end
 --- Parse prompt line with multiple format support
 -- @param line string The line to parse
 -- @return table|nil Parsed prompt data
-function parsers.prompt(line)
+function dmapi.parsers.prompt(line)
   local hp, mn, mv, rg, tnl
 
   -- =========================================================================
@@ -490,7 +492,7 @@ end
 --- Parse vitals from score output
 -- @param line string The line to parse
 -- @return table|nil Parsed vitals data
-function parsers.vitalsFromScore(line)
+function dmapi.parsers.vitalsFromScore(line)
   local hp, hpMax, mn, mnMax, mv, mvMax, rg
   
   -- Try with rage: You have 100/100 hit, 50/50 mana, 100/100 movement, 50% rage.
@@ -523,7 +525,7 @@ end
 --- Parse level information from score
 -- @param line string The line to parse
 -- @return table|nil Parsed level data
-function parsers.levelFromScore(line)
+function dmapi.parsers.levelFromScore(line)
   local level, years, hours = line:match(
     "^Level (%d+), (%d+) years old %((%d+) hours%)%. You are .+%.$"
   )
@@ -541,7 +543,7 @@ end
 --- Parse mob condition line (combat state)
 -- @param line string The line to parse
 -- @return table|nil Parsed mob state data
-function parsers.mobCondition(line)
+function dmapi.parsers.mobCondition(line)
   for _, phrase in ipairs(dmapi.core.state.COMBAT_CONDITIONS) do
     if line:find(phrase, 1, true) then
       local mob, condition, hpPct = line:match(
@@ -567,7 +569,7 @@ end
 --- Parse experience gain
 -- @param line string The line to parse
 -- @return number|nil Experience gained
-function parsers.experienceGain(line)
+function dmapi.parsers.experienceGain(line)
   local gain = line:match("You have earned (%d+) experience points!")
   if gain then return tonumber(gain) end
   
@@ -580,7 +582,7 @@ end
 --- Parse skill improvement
 -- @param line string The line to parse
 -- @return string|nil Skill name
-function parsers.skillImproved(line)
+function dmapi.parsers.skillImproved(line)
   local skill = line:match("become better at ([%a%s'-]+)!$")
   if skill then return skill end
   
@@ -593,7 +595,7 @@ end
 --- Parse death detection
 -- @param line string The line to parse
 -- @return boolean True if player death detected
-function parsers.playerDeath(line)
+function dmapi.parsers.playerDeath(line)
   return line:match("^You have been KILLED!!$") ~= nil
     or line:match("^You are DEAD!!$") ~= nil
 end
@@ -601,13 +603,13 @@ end
 --- Parse kill detection
 -- @param line string The line to parse
 -- @return string|nil Mob name if kill detected
-function parsers.mobKill(line)
+function dmapi.parsers.mobKill(line)
   local mob = line:match("^(.+) is DEAD!!$")
   return mob
 end
 
 -- Parse Bank Balances
-function parsers.bankBalance(line)
+function dmapi.parsers.bankBalance(line)
   local gold, silver =
     line:match("^You have (%d+) gold coins and (%d+) silver in your account%.$")
 
@@ -631,7 +633,7 @@ function parsers.bankBalance(line)
 end
 
 -- Parse House Balance
-function parsers.houseBalance(line)
+function dmapi.parsers.houseBalance(line)
   local gold =
     line:match("^Your house's account has (%d+) gold in it%.$")
 
@@ -650,7 +652,7 @@ function parsers.houseBalance(line)
 end
 
 -- Parse Bank Deposits
-function parsers.bankDeposit(line)
+function dmapi.parsers.bankDeposit(line)
   local amount, currency =
     line:match("^You deposit (%d+) (%a+)%.")
 
@@ -666,7 +668,7 @@ function parsers.bankDeposit(line)
 end
 
 -- Parse Bank Withdrawals
-function parsers.bankWithdraw(line)
+function dmapi.parsers.bankWithdraw(line)
   local amount, currency, fee, feeCurrency =
     line:match("^You withdraw (%d+) (%a+) and were charged an additional fee of (%d+) (%a+)%.")
 
@@ -687,7 +689,7 @@ function parsers.bankWithdraw(line)
   return nil
 end
 
-function parsers.bankWithdrawFail(line)
+function dmapi.parsers.bankWithdrawFail(line)
   if line:match("^Sorry, but you do not have that much (.*) in your account", 1, true)
      or line:match("^Sorry, but you need (.*) in your account", 1, true)
   then
@@ -697,6 +699,23 @@ function parsers.bankWithdrawFail(line)
   return nil
 end
 
+function dmapi.parsers.captureRoomName()
+  moveCursorEnd()
+  selectSection(0,1)
+  if isAnsiFgColor(7) then
+    dmapi.core.state.capturingRoom = true
+    dmapi.world.room.name = line
+    dmapi.core.raiseEvent("dmapi.world.room.name.updated",dmapi.world.room.name)
+  end
+end
+
+function dmapi.parsers.captureRoomNameContinued()
+  local state = dmapi.core.state
+  state.exitLineMarker = state.exitLineMarker + 1
+  if state.exitLineMarker == 2 then
+    state.capturingRoom = false
+  end
+end
 
 -- ============================================================================
 -- CORE UTILITY FUNCTIONS
@@ -1029,7 +1048,7 @@ function dmapi.core.LineTrigger(line)
   end
   
   -- Parse skill improvement
-  local skill = parsers.skillImproved(line)
+  local skill = dmapi.parsers.skillImproved(line)
   if skill then
     dmapi.core.raiseEvent("dmapi.player.skill.improved", {
       skill = skill,
@@ -1039,7 +1058,7 @@ function dmapi.core.LineTrigger(line)
   end
   
   -- Parse experience gain
-  local xpGain = parsers.experienceGain(line)
+  local xpGain = dmapi.parsers.experienceGain(line)
   if xpGain then
     dmapi.player.experience.lastGain = xpGain
     dmapi.player.experience.total = dmapi.player.experience.total + xpGain
@@ -1107,7 +1126,7 @@ function dmapi.core.LineTrigger(line)
   end
 
   -- Bank Balance Updates
-  local bankBal = parsers.bankBalance(line)
+  local bankBal = dmapi.parsers.bankBalance(line)
   if bankBal then
     dmapi.player.bank.gold = bankBal.gold
     dmapi.player.bank.silver = bankBal.silver
@@ -1117,7 +1136,7 @@ function dmapi.core.LineTrigger(line)
   end
 
   -- House Balance Updates
-  local houseBal = parsers.houseBalance(line)
+  local houseBal = dmapi.parsers.houseBalance(line)
   if houseBal then
     dmapi.player.bank.house = houseBal.gold
 
@@ -1126,7 +1145,7 @@ function dmapi.core.LineTrigger(line)
   end
 
   -- Bank Deposits
-  local deposit = parsers.bankDeposit(line)
+  local deposit = dmapi.parsers.bankDeposit(line)
   if deposit then
     if deposit.currency == "gold" then
       dmapi.player.currency.gold = dmapi.player.currency.gold - deposit.amount
@@ -1141,7 +1160,7 @@ function dmapi.core.LineTrigger(line)
   end
 
   -- Bank Withdrawals
-  local withdraw = parsers.bankWithdraw(line)
+  local withdraw = dmapi.parsers.bankWithdraw(line)
   if withdraw then
     if withdraw.currency == "gold" then
       dmapi.player.currency.gold = dmapi.player.currency.gold + withdraw.amount
@@ -1156,7 +1175,7 @@ function dmapi.core.LineTrigger(line)
   end
 
   -- Bank Withdrawal Failure
-  local withdrawFail = parsers.bankWithdrawFail(line)
+  local withdrawFail = dmapi.parsers.bankWithdrawFail(line)
   if withdrawFail then
     dmapi.core.raiseEvent("dmapi.player.bank.withdraw.fail", withdrawFail)
     return
@@ -1208,7 +1227,7 @@ function dmapi.core.LineTrigger(line)
   end
   
   -- Parse exits
-  local exits = parsers.exits(line)
+  local exits = dmapi.parsers.exits(line)
   if exits then
     dmapi.world.room.exits = exits
     dmapi.world.room.seenAt = getEpoch()
@@ -1220,7 +1239,7 @@ function dmapi.core.LineTrigger(line)
   end
   
   -- Parse currency
-  local currencyData = parsers.currency(line)
+  local currencyData = dmapi.parsers.currency(line)
   if currencyData then
     dmapi.player.currency.gold = currencyData.gold
     dmapi.player.currency.silver = currencyData.silver
@@ -1235,7 +1254,7 @@ function dmapi.core.LineTrigger(line)
   end
   
   -- Parse vitals from score
-  local vitalsFromScore = parsers.vitalsFromScore(line)
+  local vitalsFromScore = dmapi.parsers.vitalsFromScore(line)
   if vitalsFromScore then
     dmapi.player.vitals.estimated = false
     dmapi.player.vitals.hp = vitalsFromScore.hp
@@ -1254,7 +1273,7 @@ function dmapi.core.LineTrigger(line)
   end
   
   -- Parse level from score
-  local levelInfo = parsers.levelFromScore(line)
+  local levelInfo = dmapi.parsers.levelFromScore(line)
   if levelInfo then
     dmapi.player.level = levelInfo.level
     dmapi.player.age.years = levelInfo.years
@@ -1265,7 +1284,7 @@ function dmapi.core.LineTrigger(line)
   end
   
   -- Parse prompt
-  local vitals = parsers.prompt(line)
+  local vitals = dmapi.parsers.prompt(line)
   if vitals then
     if not dmapi.player.online then
       dmapi.player.online = true
@@ -1310,7 +1329,7 @@ function dmapi.core.LineTrigger(line)
   end
   
   -- Parse level up
-  local levelUp = parsers.levelUp(line)
+  local levelUp = dmapi.parsers.levelUp(line)
   if levelUp then
     dmapi.player.vitals.estimated = false
     dmapi.player.vitals.hpMax = levelUp.hpMax
@@ -1359,7 +1378,7 @@ function dmapi.core.LineTrigger(line)
   end
   
   -- Parse mob condition (combat state)
-  local mobState = parsers.mobCondition(line)
+  local mobState = dmapi.parsers.mobCondition(line)
   if mobState then
     -- Start combat if not already active
     if not dmapi.player.combat.active then
@@ -1384,7 +1403,7 @@ function dmapi.core.LineTrigger(line)
   end
   
   -- Parse player death
-  if parsers.playerDeath(line) then
+  if dmapi.parsers.playerDeath(line) then
     dmapi.player.combat.deaths = dmapi.player.combat.deaths + 1
     dmapi.core.raiseEvent("dmapi.player.death", {
       deaths = dmapi.player.combat.deaths,
@@ -1394,7 +1413,7 @@ function dmapi.core.LineTrigger(line)
   end
   
   -- Parse mob kill
-  local killedMob = parsers.mobKill(line)
+  local killedMob = dmapi.parsers.mobKill(line)
   if killedMob then
     dmapi.player.combat.kills = dmapi.player.combat.kills + 1
     dmapi.core.raiseEvent("dmapi.player.combat.kill", {
