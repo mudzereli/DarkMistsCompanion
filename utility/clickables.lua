@@ -3,27 +3,26 @@ DMClickables.settings = {
     lastCommand = ""
 }
 
-function DMClickables.ClickablePractices(line)
-    -- Ignore prompts
-    if line:sub(1,1) == "<" then return end
+function DMClickables.ClickablePractices()
+    local raw = getCurrentLine()
 
+    -- ignore empty lines
+    if not raw or raw == "" then return end
+
+    -- ignore prompty stuff
+    if raw:sub(1,1) == "<" then return end
+
+    -- only trigger off certain commands
+    if not command then return end
     local cmd = command:lower()
-    -- Only during practice / skill commands
-    if not (cmd and (
-        cmd:match("^prac")
-    or cmd:match("^sk")
-    or cmd:match("^sp")
-    or cmd:match("^$")
-    )) then return end
-
     if cmd:match("^prac")
         or cmd:match("^sk")
         or cmd:match("^sp") then
-
         DMClickables.settings.lastCommand = cmd
     end
 
-    local raw = line
+    -- if we just pressed enter but had a previous command then we should keep going
+    if not (DMClickables.settings.lastCommand or cmd:match("^$")) then return end
 
     -- capture optional "Level NN:" prefix
     local levelPrefix = raw:match("^(%s*Level%s+%d+:%s*)")
@@ -75,11 +74,14 @@ function DMClickables.ClickablePractices(line)
     end
     
     local c = "<steel_blue>"
+    local trimmed = skill:match("^%s*(.-)%s*$")
+
     if SkillUps and SkillUps.history then
-        for i, v in ipairs(SkillUps.history) do
-        if v.skill == skill:match("^%s*(.-)%s*$") then
-            c = "<dark_khaki>"
-        end
+        for _, v in ipairs(SkillUps.history) do
+            if v.skill == trimmed then
+                c = "<dark_khaki>"
+                break
+            end
         end
     end
     
