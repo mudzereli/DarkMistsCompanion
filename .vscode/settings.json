@@ -103,7 +103,8 @@
         "feedTriggers",
         "loadMap",
         "getMapSelection",
-        "command"
+        "command",
+        "isAnsiFgColor"
     ],
     "Lua.diagnostics.disable": [
         "deprecated"
