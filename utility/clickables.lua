@@ -1,6 +1,6 @@
 DMClickables = DMClickables or {}
 DMClickables.settings = {
-    lastCommand = ""
+    lastSkillCommand = ""
 }
 
 function DMClickables.ClickablePractices()
@@ -11,7 +11,7 @@ function DMClickables.ClickablePractices()
 
     -- ignore prompty stuff, and also trigger a command reset
     if raw:sub(1,1) == "<" then 
-        DMClickables.settings.lastCommand = ""
+        DMClickables.settings.lastSkillCommand = ""
         return 
     end
 
@@ -23,7 +23,7 @@ function DMClickables.ClickablePractices()
         or cmd:match("^sp")
 
     if match_prac_skill_spell then
-        DMClickables.settings.lastCommand = cmd
+        DMClickables.settings.lastSkillCommand = cmd
     end
 
     -- if we just pressed enter but had a previous command then we should keep going
@@ -68,7 +68,7 @@ function DMClickables.ClickablePractices()
 
     if levelPrefix then
         cecho(txtColor .. levelPrefix)
-    elseif (not DMClickables.settings.lastCommand:match("^prac")) then
+    elseif (not DMClickables.settings.lastSkillCommand:match("^prac")) then
         cecho(txtColor.."          ")
     end
 
