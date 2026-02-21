@@ -349,6 +349,7 @@ function AffectsWindow.refreshDisplay()
     if a.affect.name ~= b.affect.name then
       return a.affect.name < b.affect.name
     end
+    return false
   end)
 
   -- Render active affects
