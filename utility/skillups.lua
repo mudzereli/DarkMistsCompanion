@@ -101,20 +101,20 @@ SkillUps.eventHandler = registerAnonymousEventHandler(
 tempAlias([[^skillups?$]], function()
   local c = Darkmists.getDefaultTextColorTag()
   cecho([[
-    <ansi_cyan>SkillUps Module:
-        <dim_gray>The SkillUps module tracks recent skill improvements as they occur.
-        Each time a skill increases, a notification is displayed and the
-        improvement is recorded in the tracker history. Skill ups can be
-        viewed at any time using ']]..c..[[skillups list<dim_gray>', and
-        are visually highlighted within the practice screen for quick
-        reference.
+<ansi_cyan>SkillUps Module:
+    <dim_gray>The SkillUps module tracks recent skill improvements as they occur.
+    Each time a skill increases, a notification is displayed and the
+    improvement is recorded in the tracker history. Skill ups can be
+    viewed at any time using ']]..c..[[skillups list<dim_gray>', and
+    are visually highlighted within the practice screen for quick
+    reference.
 
-    <ansi_cyan>SkillUps Commands:
-      ]]..c..[[skillups list
-        <dim_gray>List all recent skill increases.
+<ansi_cyan>SkillUps Commands:
+  ]]..c..[[skillups list
+    <dim_gray>List all recent skill increases.
 
-      ]]..c..[[skillups reset
-        <dim_gray>Clear the skill increase history.
+  ]]..c..[[skillups reset
+    <dim_gray>Clear the skill increase history.
     ]])
   end)
 

@@ -178,7 +178,7 @@ function DMUtil.replayFileToTriggers(path)
   cecho("<cyan>[Replay] Feeding lines from " .. path .. "\n")
 
   for line in f:lines() do
-    feedTriggers("\n" .. line)
+    feedTriggers(line.."\n")
   end
 
   f:close()

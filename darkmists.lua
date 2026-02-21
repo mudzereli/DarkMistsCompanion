@@ -249,6 +249,7 @@ dofile(getMudletHomeDir() .. "/DarkMistsCompanion/utility/itemtracker.lua" )
 dofile(getMudletHomeDir() .. "/DarkMistsCompanion/utility/statroller.lua" )
 dofile(getMudletHomeDir() .. "/DarkMistsCompanion/utility/mapdestinations.lua" )
 dofile(getMudletHomeDir() .. "/DarkMistsCompanion/utility/skillups.lua" )
+dofile(getMudletHomeDir() .. "/DarkMistsCompanion/utility/clickables.lua" )
 dofile(getMudletHomeDir() .. "/DarkMistsCompanion/utility/mapcolor.lua" )
 
 -- UI Scripts
