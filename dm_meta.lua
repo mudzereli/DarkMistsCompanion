@@ -205,7 +205,7 @@ tempAlias("^dmc(?:\\s+help)?$", function()
       local info = DarkmistsMeta.helpIndex[key]
       if info then
         local cmd = (key == "dmc") and "dmc help" or ("dmc help " .. key)
-        dm_link(("  %s [%s]"):format(info.title,key), cmd)
+        dm_link(("  <u>%s [%s]</u>"):format(info.title,key), cmd)
         cecho("\n<dim_gray>    " .. info.desc .. "\n")
       end
     end
