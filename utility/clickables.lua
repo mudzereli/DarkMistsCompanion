@@ -9,20 +9,27 @@ function DMClickables.ClickablePractices()
     -- ignore empty lines
     if not raw or raw == "" then return end
 
-    -- ignore prompty stuff
-    if raw:sub(1,1) == "<" then return end
+    -- ignore prompty stuff, and also trigger a command reset
+    if raw:sub(1,1) == "<" then 
+        DMClickables.settings.lastCommand = ""
+        return 
+    end
 
     -- only trigger off certain commands
     if not command then return end
     local cmd = command:lower()
-    if cmd:match("^prac")
+    local match_prac_skill_spell = cmd:match("^prac")
         or cmd:match("^sk")
-        or cmd:match("^sp") then
+        or cmd:match("^sp")
+
+    if match_prac_skill_spell then
         DMClickables.settings.lastCommand = cmd
     end
 
     -- if we just pressed enter but had a previous command then we should keep going
-    if not (DMClickables.settings.lastCommand or cmd:match("^$")) then return end
+    if not (match_prac_skill_spell or cmd:match("^$")) then 
+        return 
+    end
 
     -- capture optional "Level NN:" prefix
     local levelPrefix = raw:match("^(%s*Level%s+%d+:%s*)")
