@@ -104,7 +104,8 @@
         "loadMap",
         "getMapSelection",
         "command",
-        "isAnsiFgColor"
+        "isAnsiFgColor",
+        "debugc"
     ],
     "Lua.diagnostics.disable": [
         "deprecated"

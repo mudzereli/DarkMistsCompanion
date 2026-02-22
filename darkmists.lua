@@ -43,10 +43,11 @@ Darkmists.DefaultSettings = {
   },
   -- Font Color used on Status Bars (expressed in RGB format)
   statusBarFontColor = "255,255,255",
-  -- Pixel Height for Status Bars
-  statusBarVitalsHeight = 32,
-  -- Pixel Height for XP Bar
-  statusBarXPHeight = 16,
+  -- Maximum Percentage of Screen Height to use for Status Bars
+  statusBarTotalHeightPercent = 10,
+  -- Put Status Bars in an Adjustable Container instead?
+  -- EXPERIMENTAL / FUTURE USAGE - DOES NOT WORK PROPERLY YET
+  statusBarsMoveable = false,
   -- How often Affects Window is Updated
   affectsWindowUpdateIntervalSeconds = 2,
   -- How many characters to cut off Affect Name At
@@ -167,6 +168,12 @@ Darkmists.Log = function(pluginName,msg)
   cecho(output)
 end
 
+Darkmists.LogDebug = function(pluginName,msg)
+  local output = "\n[%s] %s"
+  output = output:format(pluginName,msg)
+  debugc(output)
+end
+
 Darkmists.SaveSettings = function()
   local settings = Darkmists.GlobalSettings
 ---@diagnostic disable-next-line: undefined-field
@@ -214,7 +221,7 @@ Darkmists.SetWindowBorderPercent = function(region,percent)
       setBorderRight(scaleWidth)
     end
   end
-  Darkmists.Log("Darkmists Core","Window Borders Adjusted")
+  Darkmists.LogDebug("Darkmists Core","Window Borders Adjusted")
 end
 
 Darkmists.Init = function()
