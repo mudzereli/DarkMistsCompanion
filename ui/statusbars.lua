@@ -297,7 +297,6 @@ function StatusBar.reflow()
   local xpUnits = showXP and 1 or 0
 
   local totalUnits = enemyUnits + vitalUnits + xpUnits
-  cecho("total units = "..totalUnits)
   if totalUnits == 0 then 
     Darkmists.SetWindowBorderPercent("bottom", 0)
     return
