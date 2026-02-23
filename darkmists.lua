@@ -23,12 +23,10 @@ Darkmists.VERSION = "1.2.0"
 Darkmists.DefaultSettings = {
   -- should we use light mode?
   lightMode = false,
-  -- should the panels all be swapped?
-  panelsOnLeft = false,
   -- what % of the screen width should the main window take up
   mainWindowPanelWidth = 70,
   -- what % of the screen height should be reserve for the borders
-  borders = {top = 10, bottom = 0, left = 0, right = 0},
+  borders = {top = 10, bottom = 0, left = 0, right = 30},
   -- Font Size for additional Information Windows (Chat History, Who List, Affects)
   fontSize = 11,
   -- Font Face for additional Information Windows (Chat History, Who List, Affects)
@@ -146,7 +144,7 @@ Darkmists.getDefaultXPosition = function()
   if Darkmists.GlobalSettings.panelsOnLeft then
     return "0%"
   else
-    return tostring(Darkmists.GlobalSettings.mainWindowPanelWidth).."%"
+    return tostring(100 - Darkmists.GlobalSettings.borders.right) .. "%"
   end
 end
 
@@ -230,13 +228,6 @@ Darkmists.Init = function()
   Darkmists.LoadSettings()
   for k, v in pairs(Darkmists.GlobalSettings.borders) do
     Darkmists.SetWindowBorderPercent(k,v)
-  end
-  if Darkmists.GlobalSettings.panelsOnLeft then
-    Darkmists.SetWindowBorderPercent("left",30)
-    Darkmists.SetWindowBorderPercent("right",0)
-  else
-    Darkmists.SetWindowBorderPercent("left",0)
-    Darkmists.SetWindowBorderPercent("right",30)
   end
 end
 
