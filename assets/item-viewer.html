@@ -291,6 +291,13 @@ th.grouped {
                     </div>
                   </div>
                   <div class="col-6">
+                    <label class="form-label small">Item Value (in Silver)</label>
+                    <div class="d-flex gap-1 mb-2">
+                      <input id="minValue" type="number" class="form-control form-control-sm" placeholder="Min">
+                      <input id="maxValue" type="number" class="form-control form-control-sm" placeholder="Max">
+                    </div>
+                  </div>
+                  <div class="col-6">
                     <label class="form-label small">Material</label>
                     <div class="dropdown">
                       <button class="btn btn-sm btn-outline-secondary dropdown-toggle w-100 text-start" data-bs-toggle="dropdown" id="materialBtn">Material</button>
@@ -403,7 +410,7 @@ th.grouped {
       <table class="table table-hover table-striped table-sm mb-0">
         <thead>
           <tr id="groupedHeader">
-            <th colspan="6" class="grouped">General</th>
+            <th colspan="7" class="grouped">General</th>
             <th colspan="3" class="grouped">Combat</th>
             <th colspan="6" class="grouped">Character</th>
           </tr>
@@ -412,6 +419,7 @@ th.grouped {
             <th data-key="level" class="text-end">Lvl<span class="sort"></span></th>
             <th data-key="area">Area<span class="sort"></span></th>
             <th data-key="weight" class="text-end">Wt<span class="sort"></span></th>
+            <th data-key="value" class="text-end">Value<span class="sort"></span></th>
             <th data-key="material">Material<span class="sort"></span></th>
             <th data-key="wearSlot">Slot<span class="sort"></span></th>
             <th data-key="weaponType">Type<span class="sort"></span></th>
@@ -801,6 +809,7 @@ function parseItem(rawText) {
     type: rawText.match(/is\s+type\s+([a-zA-Z_]+)/)?.[1] ?? '',
     level: Number(rawText.match(/level is (\d+)/)?.[1] ?? 0),
     weight: weightMatch ? Number(weightMatch[1]) : null,
+    value: Number(rawText.match(/value is (\d+)/i)?.[1] ?? 0),
     weaponType: rawText.match(/Weapon type is ([^\.\n]+)/)?.[1] ?? '',
     weaponFlags: rawText.match(/Weapons flags: ([^\n]+)/)?.[1]?.split(/\s+/) ?? [],
     restrictFlags: rawText.match(/restrict flags ([^\n]+)./)?.[1]?.split(/\s+/).filter(f => f.toLowerCase() !== 'none') ?? [],
@@ -1002,7 +1011,9 @@ function getItemsMatchingFiltersExceptArea() {
   const minMana = Number($('minMana').value || 0);
   const minAC = Number($('minAC').value || 0);
   const maxAC = Number($('maxAC').value || Infinity);
-  
+  const minValue = Number($('minValue').value || 0);
+  const maxValue = Number($('maxValue').value || Infinity);
+
   return items.filter(item => {
     if (searchVal && !item.rawLower.includes(searchVal)) return false;
     if (wear.length && !wear.includes(item.wearSlot)) return false;
@@ -1019,6 +1030,7 @@ function getItemsMatchingFiltersExceptArea() {
     if (minSpell > 0 && (item.spellPower ?? 0) < minSpell) return false;
     if (minHoly > 0 && (item.holyPower ?? 0) < minHoly) return false;
     if (weaponTypes.length && !weaponTypes.includes(item.weaponType || '')) return false;
+    if (item.value < minValue || item.value > maxValue) return false;
     
     if (minAC > 0 || maxAC < -Infinity) {
       if (item.avgArmorClass == null) return false;
@@ -1050,7 +1062,7 @@ function updateTableHeaders() {
     if (!mainHeader.querySelector('[data-key="score"]')) {
       groupedHeader.innerHTML = `
         <th colspan="1" class="grouped">Score</th>
-        <th colspan="6" class="grouped">General</th>
+        <th colspan="7" class="grouped">General</th>
         <th colspan="3" class="grouped">Combat</th>
         <th colspan="6" class="grouped">Character</th>
       `;
@@ -1137,7 +1149,9 @@ function render() {
   const maxAC = Number($('maxAC').value || Infinity);
   const minWeight = Number($('minWeight').value || 0);
   const maxWeight = Number($('maxWeight').value || Infinity);
-  
+  const minValue = Number($('minValue').value || 0);
+  const maxValue = Number($('maxValue').value || Infinity);
+
   // Build active filter chips
   const chips = [];
   if (searchVal) chips.push(`Search: "${searchVal}"`);
@@ -1159,7 +1173,9 @@ function render() {
   if (maxAC && maxAC < Infinity) chips.push(`Max AC: ${maxAC}`);
   if (minWeight && minWeight > 0) chips.push(`Min Weight: ${minWeight}`);
   if (maxWeight && maxWeight < Infinity) chips.push(`Max Weight: ${maxWeight}`);
-  
+  if (minValue && minValue > 0) chips.push(`Min Value: ${minValue}`);
+  if (maxValue && maxValue < Infinity) chips.push(`Max Value: ${maxValue}`);
+
   $('activeFilters').innerHTML = chips
     .map(c => `<span class="badge text-bg-secondary me-1">${c}</span>`)
     .join('');
@@ -1177,7 +1193,7 @@ function render() {
     if (rflags.length && !rflags.every(f => item.restrictFlags.includes(f))) return false;
     if ((item.avgDamage ?? 0) < minAvg || (item.avgDamage ?? 0) > maxAvg) return false;
     if (item.level < minLvl || item.level > maxLvl) return false;
-    
+
     if (minAC > 0 || maxAC < Infinity) {
       if (item.avgArmorClass == null) return false;
       if (item.avgArmorClass < minAC) return false;
@@ -1188,6 +1204,12 @@ function render() {
       if (item.weight == null) return false;
       if (item.weight < minWeight) return false;
       if (item.weight > maxWeight) return false;
+    }
+    
+    if (minValue > 0 || maxValue < Infinity) {
+      if (item.value == null) return false;
+      if (item.value < minValue) return false;
+      if (item.value > maxValue) return false;
     }
     
     if (minHit > 0 && (item.hitRoll ?? 0) < minHit) return false;
@@ -1254,6 +1276,7 @@ function render() {
       `<td class="text-end">${item.level}</td>`,
       `<td>${item.area}</td>`,
       `<td class="text-end">${item.weight ?? ''}</td>`,
+      `<td class="text-end">${item.value ?? ''}</td>`,
       `<td class="meta">${item.material}</td>`,
       `<td class="meta">${item.wearSlot}</td>`,
       `<td>${item.weaponType}</td>`,
