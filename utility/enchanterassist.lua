@@ -26,6 +26,7 @@ EnchanterAssist.sleepType    = 1   -- 1 = sleep, 0 = consumables
 EnchanterAssist.drainItem    = "potion"
 EnchanterAssist.color        = "<cornflower_blue>"
 
+EnchanterAssist._lastVitalsCheck = 0
 EnchanterAssist._wrapped     = false
 EnchanterAssist._savePath    = getMudletHomeDir() .. "/ea_data.lua"
 
@@ -175,7 +176,7 @@ function EnchanterAssist.run()
   local picks = EnchanterAssist._pick(pool, EnchanterAssist.partCount)
   local key   = EnchanterAssist.partCount .. ":" .. table.concat(picks, "|")
 
-  local maxAttempts = 999999999999
+  local maxAttempts = math.huge
   local attempts = 0
 
   while EnchanterAssist._contains(EnchanterAssist.attempted, key) do
@@ -190,7 +191,6 @@ function EnchanterAssist.run()
       return
     end
 
-    print("Pool size:", #pool)
     picks = EnchanterAssist._pick(pool, EnchanterAssist.partCount)
     key   = EnchanterAssist.partCount .. ":" .. table.concat(picks, "|")
   end
@@ -294,6 +294,25 @@ function EnchanterAssist.reset()
   EnchanterAssist.missing = {}
   EnchanterAssist.save()
   Darkmists.Log(EnchanterAssist.color.."EnchanterAssist","<medium_sea_green>Reset complete, Attempts Preserved.")
+end
+
+function EnchanterAssist.statsMissing()
+
+  cecho("\n<cadet_blue>===== Missing Materials =====")
+
+  local count = 0
+  for mat,_ in pairs(EnchanterAssist.missing) do
+    count = count + 1
+    cecho("\n<dark_khaki>• <white>" .. mat)
+  end
+
+  if count == 0 then
+    cecho("\n<medium_sea_green>None")
+  else
+    cecho("\n<dim_gray>("..count.." total)")
+  end
+
+  cecho("\n")
 end
 
 -- ============================================================================
@@ -445,6 +464,14 @@ registerNamedEventHandler(
       return
     end
 
+    local now = getEpoch()
+
+    -- throttle to once every 3 seconds
+    if now - EnchanterAssist._lastVitalsCheck < 3 then
+      return
+    end
+
+    EnchanterAssist._lastVitalsCheck = now
     -------------------------------------------------
     -- IF LOW RESOURCES
     -------------------------------------------------
@@ -499,7 +526,7 @@ tempAlias("^ea(?:\\s+(.*))?$", function()
     cecho([[
 <ansi_cyan>EnchanterAssist Module:
     <dim_gray>Automation helper for enchantment workflow management.
-    Controls draining, sleeping, part counts, and execution flow.
+    Controls resting, part counts, and execution flow.
 
 <ansi_cyan>EA Module Commands:
   ]]..c..[[ea run
@@ -515,6 +542,9 @@ tempAlias("^ea(?:\\s+(.*))?$", function()
   ]]..c..[[ea stats
     <dim_gray>Display current session statistics.
 
+  ]]..c..[[ea missing
+    <dim_gray>Display missing material statistics.
+
   ]]..c..[[ea reset
     <dim_gray>Reset session statistics.
 
@@ -525,11 +555,11 @@ tempAlias("^ea(?:\\s+(.*))?$", function()
   ]]..c..[[ea set sleeper <name>
     <dim_gray>Set sleeper target.
 
-  ]]..c..[[ea set sleepmode <sleep|consume>
-    <dim_gray>Choose sleep behavior type.
+  ]]..c..[[ea set sleepmode <sleep|potion>
+    <dim_gray>Choose restoration behavior type.
 
-  ]]..c..[[ea set drain <item>
-    <dim_gray>Set item used for draining.
+  ]]..c..[[ea set potion <item>
+    <dim_gray>Set item used for quaffing.
 
 <ansi_cyan>Control:
   ]]..c..[[ea enable
@@ -557,6 +587,8 @@ tempAlias("^ea reset$", EnchanterAssist.reset)
 
 tempAlias("^ea stats$", EnchanterAssist.stats)
 
+tempAlias("^ea missing$", EnchanterAssist.statsMissing)
+
 -- ============================================================================
 -- CONFIG COMMANDS
 -- ============================================================================
@@ -575,8 +607,8 @@ tempAlias("^ea set sleeper (.+)$", function()
   Darkmists.Log(EnchanterAssist.color.."EnchanterAssist","Sleeper set to: " .. EnchanterAssist.sleeper)
 end)
 
--- ea set sleepmode <sleep|consume>
-tempAlias("^ea set sleepmode (sleep|consume)$", function()
+-- ea set sleepmode <sleep|potion>
+tempAlias("^ea set sleepmode (sleep|potion)$", function()
   if matches[2] == "sleep" then
     EnchanterAssist.sleepType = 1
   else
@@ -586,11 +618,11 @@ tempAlias("^ea set sleepmode (sleep|consume)$", function()
   Darkmists.Log(EnchanterAssist.color.."EnchanterAssist","Sleep mode set to: " .. matches[2])
 end)
 
--- ea set drain <item>
-tempAlias("^ea set drain (.+)$", function()
+-- ea set potion <item>
+tempAlias("^ea set potion (.+)$", function()
   EnchanterAssist.drainItem = matches[2]
   EnchanterAssist.save()
-  Darkmists.Log(EnchanterAssist.color.."EnchanterAssist","Drain item set to: " .. EnchanterAssist.drainItem)
+  Darkmists.Log(EnchanterAssist.color.."EnchanterAssist","potion item set to: " .. EnchanterAssist.drainItem)
 end)
 
 -- ea enable / disable
