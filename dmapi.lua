@@ -825,7 +825,7 @@ end
 -- @param line string The line to parse
 function dmapi.core.LineTrigger(line)
   -- Raise generic line event (opt-in for performance)
-  -- raiseEvent("dmapi.core.line", {line = line})
+  raiseEvent("dmapi.core.line", {line = line})
   
   -- Check one-line event mappings
   local oneLineEvent = dmapi.core.oneLineEvents[line]
