@@ -15,6 +15,7 @@ local saveFilePath = getMudletHomeDir() .. "/darkmists_global_settings.lua"
 local itemViewerPath = getMudletHomeDir() .. "/DarkMistsCompanion/assets/item-viewer.html"
 local dmapiDocPath = getMudletHomeDir() .. "/DarkMistsCompanion/assets/dmapi.html"
 local mapDatPath = getMudletHomeDir() .. "/DarkMistsCompanion/map.dat"
+local eaConverterPath = getMudletHomeDir() .. "/DarkMistsCompanion/assets/ea-save-converter.html"
 
 Darkmists = {}
 Darkmists.NAME = "Dark Mists Companion"
@@ -92,6 +93,11 @@ end
 Darkmists.LoadMapDat = function()
   Darkmists.Log("Darkmists Core",("Loading Map from: %s"):format(mapDatPath))
   loadMap(mapDatPath)
+end
+
+Darkmists.OpenEAConverter = function()
+  eaConverterPath = eaConverterPath:gsub("\\", "/")
+  openUrl("file:///" .. eaConverterPath)
 end
 
 Darkmists.OpenItemViewer = function()
