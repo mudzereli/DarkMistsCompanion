@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>CMUD EA → Mudlet EA Trial Converter</title>
+<style>
+  body { font-family: monospace; background:#111; color:#ddd; padding:20px; }
+  textarea { width:100%; height:220px; margin-bottom:15px; background:#222; color:#0f0; }
+  button { padding:10px 20px; font-size:16px; margin-bottom:15px; margin-right:10px; cursor:pointer; }
+  a { color:#4da6ff; }
+  .info { margin-bottom:20px; padding:10px; background:#1a1a1a; border-left:4px solid #4da6ff; }
+</style>
+</head>
+<body>
+
+<h2>CMUD EA → Mudlet EA Trial Converter</h2>
+
+<input type="file" id="fileInput" accept=".xml">
+<button onclick="convert()">Convert</button>
+<button onclick="downloadLua()">Download ea_data.lua</button>
+
+<p>Lua Output:</p>
+<textarea id="luaOutput"></textarea>
+
+
+<details style="margin-bottom:20px; background:#1a1a1a; padding:10px; border-left:4px solid #4da6ff;">
+  <summary style="cursor:pointer; font-weight:bold;">
+    How do I use this?
+  </summary>
+
+  <div style="margin-top:10px;">
+    1. Select your <strong>CMUD EA XML file</strong> using the file picker above.<br><br>
+    2. Click <strong>Convert</strong> to generate the Mudlet trial data.<br><br>
+    3. Click <strong>Download ea_data.lua</strong>.<br><br>
+    4. Place the downloaded <code>ea_data.lua</code> into your Mudlet profile directory.<br><br>
+    5. Reload Mudlet (or reload your EA script).
+  </div>
+</details>
+
+<details style="margin-bottom:20px; background:#1a1a1a; padding:10px; border-left:4px solid #4da6ff;">
+  <summary style="cursor:pointer; font-weight:bold;">
+    What file do I use for input?
+  </summary>
+
+  <div style="margin-top:10px;">
+    Use your <strong>CMUD EA XML save file</strong> — the one that contains your
+    <code>AttemptedSet</code> trial data.<br><br>
+
+    This is typically your CMUD profile export or script file that includes
+    the Enchanter Assistant class and its saved variables.<br><br>
+
+    The converter reads the <code>AttemptedSet</code> variable from that file
+    and converts it into a Mudlet-compatible <code>ea_data.lua</code>.
+  </div>
+</details>
+
+<details style="margin-bottom:20px; background:#1a1a1a; padding:10px; border-left:4px solid #4da6ff;">
+  <summary style="cursor:pointer; font-weight:bold;">
+    Where do I put ea_data.lua?
+  </summary>
+
+  <div style="margin-top:10px;">
+    Copy the downloaded <code>ea_data.lua</code> into your Mudlet profile directory:<br><br>
+
+    <code>Mudlet → Profiles → YourProfileName → ea_data.lua</code><br><br>
+
+    <strong>Windows:</strong><br>
+    <code>C:\Users\YourName\AppData\Roaming\Mudlet\profiles\YourProfileName\</code><br><br>
+
+    <strong>macOS:</strong><br>
+    <code>~/Library/Application Support/Mudlet/profiles/YourProfileName/</code><br><br>
+
+    <strong>Linux:</strong><br>
+    <code>~/.config/mudlet/profiles/YourProfileName/</code><br><br>
+
+    After placing the file, reload Mudlet or your script.
+  </div>
+</details>
+
+<script>
+
+let xmlText = "";
+
+document.getElementById("fileInput").addEventListener("change", function(e) {
+  const reader = new FileReader();
+  reader.onload = function(evt) {
+    xmlText = evt.target.result;
+  };
+  reader.readAsText(e.target.files[0]);
+});
+
+function convert() {
+
+  if (!xmlText.trim()) {
+    alert("Select CMUD XML file first.");
+    return;
+  }
+
+  const parser = new DOMParser();
+  const xmlDoc = parser.parseFromString(xmlText, "text/xml");
+
+  const attemptedVar = [...xmlDoc.getElementsByTagName("var")]
+    .find(v => v.getAttribute("name") === "AttemptedSet");
+
+  if (!attemptedVar) {
+    alert("AttemptedSet not found.");
+    return;
+  }
+
+  const raw = attemptedVar.textContent || "";
+  const matches = raw.match(/"([^"]+)"/g) || [];
+  const attemptedEntries = matches.map(m => m.slice(1, -1));
+
+  let attemptedBlock = "{";
+  attemptedEntries.forEach(key => {
+    attemptedBlock += `[ [[${key}]] ] = true,`;
+  });
+  attemptedBlock += "}";
+
+  let missingBlock = "{}";
+
+  let configBlock =
+    "{[ [[sleeper]] ] = [[bedroll]]," +
+    "[ [[sleepType]] ] = 1," +
+    "[ [[partCount]] ] = 4," +
+    "[ [[drainItem]] ] = [[potion]]," +
+    "[ [[container]] ] = [[backpack]],}";
+
+  let indexBlock =
+    "{[ [[missing]] ] = {2}," +
+    "[ [[config]] ] = {3}," +
+    "[ [[attempted]] ] = {4},},";
+
+  const lua =
+`return {
+${indexBlock}
+${missingBlock},
+${configBlock},
+${attemptedBlock},
+}`;
+
+  document.getElementById("luaOutput").value = lua;
+}
+
+function downloadLua() {
+  const content = document.getElementById("luaOutput").value;
+  if (!content.trim()) {
+    alert("Nothing to download.");
+    return;
+  }
+
+  const element = document.createElement("a");
+  element.setAttribute(
+    "href",
+    "data:text/plain;charset=utf-8," + encodeURIComponent(content)
+  );
+  element.setAttribute("download", "ea_data.lua");
+
+  document.body.appendChild(element);
+  element.click();
+  document.body.removeChild(element);
+}
+
+</script>
+</body>
+</html>
