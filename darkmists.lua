@@ -19,8 +19,9 @@ local eaConverterPath = getMudletHomeDir() .. "/DarkMistsCompanion/assets/ea-sav
 
 Darkmists = {}
 Darkmists.NAME = "DarkMistsCompanion"
-Darkmists.VERSION = "1.3.3"
+Darkmists.VERSION = "1.3.4"
 Darkmists.GITHUB_URL = "https://github.com/mudzereli/DarkMistsCompanion/releases/latest/download/DarkMistsCompanion.mpackage"
+Darkmists.IS_DEV_BUILD = true
 
 Darkmists.DefaultSettings = {
   -- should we use light mode?
@@ -126,6 +127,11 @@ Darkmists.OpenWebsite = function()
 end
 
 Darkmists.UpdateFromGitHub = function()
+  if Darkmists.IS_DEV_BUILD then
+    Darkmists.Log("Darkmists Core", "<red>Can not update DEV BUILD from GitHub!")
+    return
+  end
+  
   Darkmists.Log("Darkmists Core", "Updating Dark Mists Companion from GitHub...")
 
   if table.contains(getPackages(), Darkmists.NAME) then
