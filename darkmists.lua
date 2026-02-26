@@ -18,8 +18,9 @@ local mapDatPath = getMudletHomeDir() .. "/DarkMistsCompanion/map.dat"
 local eaConverterPath = getMudletHomeDir() .. "/DarkMistsCompanion/assets/ea-save-converter.html"
 
 Darkmists = {}
-Darkmists.NAME = "Dark Mists Companion"
-Darkmists.VERSION = "1.2.0"
+Darkmists.NAME = "DarkMistsCompanion"
+Darkmists.VERSION = "1.3.3"
+Darkmists.GITHUB_URL = "https://github.com/mudzereli/DarkMistsCompanion/releases/latest/download/DarkMistsCompanion.mpackage"
 
 Darkmists.DefaultSettings = {
   -- should we use light mode?
@@ -122,6 +123,20 @@ end
 
 Darkmists.OpenWebsite = function()
   openUrl("https://darkmists.org")
+end
+
+Darkmists.UpdateFromGitHub = function()
+  Darkmists.Log("Darkmists Core", "Updating Dark Mists Companion from GitHub...")
+
+  if table.contains(getPackages(), Darkmists.NAME) then
+    uninstallPackage(Darkmists.NAME)
+
+    tempTimer(2, function()
+      installPackage(Darkmists.GITHUB_URL)
+    end)
+  else
+    installPackage(Darkmists.GITHUB_URL)
+  end
 end
 
 Darkmists.getDefaultAdjLabelstyle = function()
