@@ -105,9 +105,12 @@
         "getMapSelection",
         "command",
         "isAnsiFgColor",
-        "debugc"
+        "debugc",
+        "uninstallPackage",
+        "installPackage"
     ],
     "Lua.diagnostics.disable": [
-        "deprecated"
+        "deprecated",
+        "undefined-field"
     ]
 }
