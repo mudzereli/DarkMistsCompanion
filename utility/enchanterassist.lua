@@ -208,7 +208,7 @@ function EnchanterAssist.run()
     killTimer(EnchanterAssist.pendingTimer)
   end
 
-  EnchanterAssist.pendingTimer = tempTimer(8, function()
+  EnchanterAssist.pendingTimer = tempTimer(10, function()
 
     if EnchanterAssist.inProgress
       and EnchanterAssist.sawFlare
@@ -394,7 +394,7 @@ function EnchanterAssist.on_line(ln)
       EnchanterAssist.pendingTimer = nil
     end
     if EnchanterAssist.inProgress and not EnchanterAssist._contains(EnchanterAssist.attempted, EnchanterAssist.pendingKey) then
-      local msg = "Formula Discovered! <white>%s <dim_gray>(<white>%s<dim_gray)"
+      local msg = "Formula Discovered! <white>%s <dim_gray>(<white>%s<dim_gray>)"
       Darkmists.Log(EnchanterAssist.color.."EnchanterAssist",msg:format(formula,EnchanterAssist.pendingKey))
       dmapi.core.send("alc info",formula)
       EnchanterAssist._add(EnchanterAssist.attempted, EnchanterAssist.pendingKey)
@@ -622,7 +622,7 @@ end)
 tempAlias("^ea set potion (.+)$", function()
   EnchanterAssist.drainItem = matches[2]
   EnchanterAssist.save()
-  Darkmists.Log(EnchanterAssist.color.."EnchanterAssist","potion item set to: " .. EnchanterAssist.drainItem)
+  Darkmists.Log(EnchanterAssist.color.."EnchanterAssist","Potion item set to: " .. EnchanterAssist.drainItem)
 end)
 
 -- ea enable / disable
