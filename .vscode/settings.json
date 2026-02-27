@@ -107,7 +107,9 @@
         "isAnsiFgColor",
         "debugc",
         "uninstallPackage",
-        "installPackage"
+        "installPackage",
+        "fg",
+        "getPackages"
     ],
     "Lua.diagnostics.disable": [
         "deprecated",
