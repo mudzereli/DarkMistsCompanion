@@ -19,7 +19,7 @@ local eaConverterPath = getMudletHomeDir() .. "/DarkMistsCompanion/assets/ea-sav
 
 Darkmists = {}
 Darkmists.NAME = "DarkMistsCompanion"
-Darkmists.VERSION = "1.3.4"
+Darkmists.VERSION = "1.3.5"
 Darkmists.GITHUB_URL = "https://github.com/mudzereli/DarkMistsCompanion/releases/latest/download/DarkMistsCompanion.mpackage"
 Darkmists.IS_DEV_BUILD = true
 

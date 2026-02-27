@@ -67,10 +67,10 @@ Fully interactable Mudlet world map with ~15,000 rooms.
     ]],
   },
 
-  ea = {
+  es = {
     title = "Enchanter Assist",
-    command = "ea",
-    desc = "Track and complete Alchemy trial combinations"
+    command = "es",
+    desc = "Track and complete Alchemy trial combinations."
   },
   
   ch = {
@@ -150,7 +150,7 @@ local helpSections = {
   },
   {
     title = "Character",
-    keys  = { "skillups", "statroll" },
+    keys  = { "skillups", "statroll", "es" },
   },
 }
 

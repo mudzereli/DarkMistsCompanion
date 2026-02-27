@@ -515,9 +515,9 @@ registerNamedEventHandler(
 -- ALIASES
 -- ============================================================================
 -- =============================================================================
--- ENCHANTER ASSIST (EA) COMMAND
+-- ENCHANTER ASSIST (ES) COMMAND
 -- =============================================================================
-tempAlias("^ea(?:\\s+(.*))?$", function()
+tempAlias("^es(?:\\s+(.*))?$", function()
   local c = DarkmistsMeta.colors.default
   local arg = matches[2] and matches[2]:trim() or ""
 
@@ -529,86 +529,86 @@ tempAlias("^ea(?:\\s+(.*))?$", function()
     Controls resting, part counts, and execution flow.
 
 <ansi_cyan>EA Module Commands:
-  ]]..c..[[ea run
+  ]]..c..[[es run
     <dim_gray>Execute a single enchantment cycle.
 
-  ]]..c..[[ea auto
+  ]]..c..[[es auto
     <dim_gray>Toggle automatic running mode.
 
-  ]]..c..[[ea 1-5
+  ]]..c..[[es 1-5
     <dim_gray>Set enchantment part count (1–5),
     save configuration, and immediately run.
 
-  ]]..c..[[ea stats
+  ]]..c..[[es stats
     <dim_gray>Display current session statistics.
 
-  ]]..c..[[ea missing
+  ]]..c..[[es missing
     <dim_gray>Display missing material statistics.
 
-  ]]..c..[[ea reset
+  ]]..c..[[es reset
     <dim_gray>Reset session statistics.
 
 <ansi_cyan>Configuration Commands:
-  ]]..c..[[ea set container <name>
+  ]]..c..[[es set container <name>
     <dim_gray>Set container holding enchantment items.
 
-  ]]..c..[[ea set sleeper <name>
+  ]]..c..[[es set sleeper <name>
     <dim_gray>Set sleeper target.
 
-  ]]..c..[[ea set sleepmode <sleep|potion>
+  ]]..c..[[es set sleepmode <sleep|potion>
     <dim_gray>Choose restoration behavior type.
 
-  ]]..c..[[ea set potion <item>
+  ]]..c..[[es set potion <item>
     <dim_gray>Set item used for quaffing.
 
 <ansi_cyan>Control:
-  ]]..c..[[ea enable
-  ]]..c..[[ea disable
+  ]]..c..[[es enable
+  ]]..c..[[es disable
     <dim_gray>Enable or disable EnchanterAssist entirely.
 ]])
     return
   end
 end)
 
-tempAlias("^ea run$", function() EnchanterAssist.run() end)
+tempAlias("^es run$", function() EnchanterAssist.run() end)
 
-tempAlias("^ea auto$", function()
+tempAlias("^es auto$", function()
   EnchanterAssist.autoRun = not EnchanterAssist.autoRun
   Darkmists.Log(EnchanterAssist.color.."EnchanterAssist","AutoRun: " .. tostring(EnchanterAssist.autoRun))
 end)
 
-tempAlias("^ea 1$", function() EnchanterAssist.partCount = 1 EnchanterAssist.save() EnchanterAssist.run() end)
-tempAlias("^ea 2$", function() EnchanterAssist.partCount = 2 EnchanterAssist.save() EnchanterAssist.run() end)
-tempAlias("^ea 3$", function() EnchanterAssist.partCount = 3 EnchanterAssist.save() EnchanterAssist.run() end)
-tempAlias("^ea 4$", function() EnchanterAssist.partCount = 4 EnchanterAssist.save() EnchanterAssist.run() end)
-tempAlias("^ea 5$", function() EnchanterAssist.partCount = 5 EnchanterAssist.save() EnchanterAssist.run() end)
+tempAlias("^es 1$", function() EnchanterAssist.partCount = 1 EnchanterAssist.save() EnchanterAssist.run() end)
+tempAlias("^es 2$", function() EnchanterAssist.partCount = 2 EnchanterAssist.save() EnchanterAssist.run() end)
+tempAlias("^es 3$", function() EnchanterAssist.partCount = 3 EnchanterAssist.save() EnchanterAssist.run() end)
+tempAlias("^es 4$", function() EnchanterAssist.partCount = 4 EnchanterAssist.save() EnchanterAssist.run() end)
+tempAlias("^es 5$", function() EnchanterAssist.partCount = 5 EnchanterAssist.save() EnchanterAssist.run() end)
 
-tempAlias("^ea reset$", EnchanterAssist.reset)
+tempAlias("^es reset$", EnchanterAssist.reset)
 
-tempAlias("^ea stats$", EnchanterAssist.stats)
+tempAlias("^es stats$", EnchanterAssist.stats)
 
-tempAlias("^ea missing$", EnchanterAssist.statsMissing)
+tempAlias("^es missing$", EnchanterAssist.statsMissing)
 
 -- ============================================================================
 -- CONFIG COMMANDS
 -- ============================================================================
 
--- ea set container <name>
-tempAlias("^ea set container (.+)$", function()
+-- es set container <name>
+tempAlias("^es set container (.+)$", function()
   EnchanterAssist.container = matches[2]
   EnchanterAssist.save()
   Darkmists.Log(EnchanterAssist.color.."EnchanterAssist","Container set to: " .. EnchanterAssist.container)
 end)
 
--- ea set sleeper <name>
-tempAlias("^ea set sleeper (.+)$", function()
+-- es set sleeper <name>
+tempAlias("^es set sleeper (.+)$", function()
   EnchanterAssist.sleeper = matches[2]
   EnchanterAssist.save()
   Darkmists.Log(EnchanterAssist.color.."EnchanterAssist","Sleeper set to: " .. EnchanterAssist.sleeper)
 end)
 
--- ea set sleepmode <sleep|potion>
-tempAlias("^ea set sleepmode (sleep|potion)$", function()
+-- es set sleepmode <sleep|potion>
+tempAlias("^es set sleepmode (sleep|potion)$", function()
   if matches[2] == "sleep" then
     EnchanterAssist.sleepType = 1
   else
@@ -618,15 +618,15 @@ tempAlias("^ea set sleepmode (sleep|potion)$", function()
   Darkmists.Log(EnchanterAssist.color.."EnchanterAssist","Sleep mode set to: " .. matches[2])
 end)
 
--- ea set potion <item>
-tempAlias("^ea set potion (.+)$", function()
+-- es set potion <item>
+tempAlias("^es set potion (.+)$", function()
   EnchanterAssist.drainItem = matches[2]
   EnchanterAssist.save()
   Darkmists.Log(EnchanterAssist.color.."EnchanterAssist","Potion item set to: " .. EnchanterAssist.drainItem)
 end)
 
--- ea enable / disable
-tempAlias("^ea (enable|disable)$", function()
+-- es enable / disable
+tempAlias("^es (enable|disable)$", function()
   if matches[2] == "enable" then
     EnchanterAssist.enabled = true
   else
