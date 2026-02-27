@@ -4,13 +4,20 @@
 -- Global glue file for Dark Mists automation.
 --
 -- Responsibilities:
+--   • Bootstrapping / load order orchestration
+--   • Global settings management
 --   • Central line dispatcher
+--   • High-level utility entry points
 --
 -- Design philosophy:
 --   - Dumb dispatcher, smart subsystems
 --   - Persistence via append-only Lua files
 --   - Explicit > clever
 -- =============================================================================
+
+-- Load foundational utilities first (no dependencies)
+dofile(getMudletHomeDir() .. "/DarkMistsCompanion/utility/util.lua" )
+
 local saveFilePath = getMudletHomeDir() .. "/darkmists_global_settings.lua"
 local itemViewerPath = getMudletHomeDir() .. "/DarkMistsCompanion/assets/item-viewer.html"
 local dmapiDocPath = getMudletHomeDir() .. "/DarkMistsCompanion/assets/dmapi.html"
@@ -19,16 +26,16 @@ local eaConverterPath = getMudletHomeDir() .. "/DarkMistsCompanion/assets/ea-sav
 
 Darkmists = {}
 Darkmists.NAME = "DarkMistsCompanion"
-Darkmists.VERSION = "1.3.5"
+Darkmists.VERSION = "1.3.6"
 Darkmists.GITHUB_URL = "https://github.com/mudzereli/DarkMistsCompanion/releases/latest/download/DarkMistsCompanion.mpackage"
 Darkmists.IS_DEV_BUILD = true
 
 Darkmists.DefaultSettings = {
-  -- should we use light mode?
+  -- Use light mode UI theme?
   lightMode = false,
-  -- what % of the screen width should the main window take up
+  -- Percentage of screen width allocated to the main window
   mainWindowPanelWidth = 70,
-  -- what % of the screen height should be reserve for the borders
+  -- Percentage of screen space reserved for each border region
   borders = {top = 10, bottom = 0, left = 0, right = 30},
   -- Font Size for additional Information Windows (Chat History, Who List, Affects)
   fontSize = 11,
@@ -46,8 +53,7 @@ Darkmists.DefaultSettings = {
   statusBarFontColor = "255,255,255",
   -- Maximum Percentage of Screen Height to use for Status Bars
   statusBarTotalHeightPercent = 10,
-  -- Put Status Bars in an Adjustable Container instead?
-  -- EXPERIMENTAL / FUTURE USAGE - DOES NOT WORK PROPERLY YET
+  -- Place status bars inside an adjustable container
   statusBarsMoveable = false,
   -- How often Affects Window is Updated
   affectsWindowUpdateIntervalSeconds = 2,
@@ -59,14 +65,22 @@ Darkmists.DefaultSettings = {
   itemTrackerLinkColorDarkMode = "pale_goldenrod",
   -- Clickable Item Link Color (lua showColors(3) to see allowable colors)
   itemTrackerLinkColorLightMode = "dark_slate_blue",
-  -- Delete Original Affect Lines when typing Score / Affect
+  -- Delete original Affect lines when running Score/Affect commands
   affectsWindowDeleteOriginalLines = false,
-  -- Delete Original Who Lines when typing Who
+  -- Delete original Who lines when running Who command
   whoWindowDeleteOriginalLines = false,
   -- Stat Roller Leniancy (0 = Roll must be Max, 1 = Roll can be 1 lower than Max, etc)
   statRollerLeniency = 1
 }
 Darkmists.GlobalSettings = {}
+
+-- =============================================================================
+-- LOCAL HELPER FUNCTIONS
+-- =============================================================================
+
+local function ifLight(light, dark)
+  return Darkmists.GlobalSettings.lightMode and light or dark
+end
 
 -- =============================================================================
 -- GLOBAL LINE DISPATCHER
@@ -92,33 +106,25 @@ end
 -- UI / HELPER STUFF
 -- =============================================================================
 
-Darkmists.LoadMapDat = function()
+function Darkmists.LoadMapDat()
   Darkmists.Log("Darkmists Core",("Loading Map from: %s"):format(mapDatPath))
   loadMap(mapDatPath)
 end
 
-Darkmists.OpenEAConverter = function()
-  eaConverterPath = eaConverterPath:gsub("\\", "/")
-  openUrl("file:///" .. eaConverterPath)
+function Darkmists.OpenEAConverter()
+  DMUtil.openLocalFile(eaConverterPath)
 end
 
-Darkmists.OpenItemViewer = function()
-  itemViewerPath = itemViewerPath:gsub("\\", "/")
-  openUrl("file:///" .. itemViewerPath)
+function Darkmists.OpenItemViewer()
+  DMUtil.openLocalFile(itemViewerPath)
 end
 
-Darkmists.OpenDMAPIDocs = function()
-  -- normalize for Windows
-  dmapiDocPath = dmapiDocPath:gsub("\\", "/")
-
-  openUrl("file:///" .. dmapiDocPath)
+function Darkmists.OpenDMAPIDocs()
+  DMUtil.openLocalFile(dmapiDocPath)
 end
 
-Darkmists.OpenSettingsFile = function()
-  -- normalize for Windows
-  saveFilePath = saveFilePath:gsub("\\", "/")
-
-  openUrl("file:///" .. saveFilePath)
+function Darkmists.OpenSettingsFile()
+  DMUtil.openLocalFile(saveFilePath)
   Darkmists.Log("Darkmists Core","Settings File Opened. After Editing, you must use LOAD SETTINGS!")
 end
 
@@ -146,41 +152,22 @@ Darkmists.UpdateFromGitHub = function()
 end
 
 Darkmists.getDefaultAdjLabelstyle = function()
-  if Darkmists.GlobalSettings.lightMode then
-    return [[
-        background-color: #EEEEEE;
-        border: 2px solid #111111;
-    ]]
-  else
-    return [[
-        background-color: #111111;
-        border: 2px solid #666666;
-    ]]
-  end
+  return ifLight(
+    [[background-color: #EEEEEE; border: 2px solid #111111;]],
+    [[background-color: #111111; border: 2px solid #666666;]]
+  )
 end
 
 Darkmists.getDefaultTextColor = function()
-  if Darkmists.GlobalSettings.lightMode then
-    return "black"
-  else
-    return "white"
-  end
-end
-
-Darkmists.getDefaultXPosition = function()
-  if Darkmists.GlobalSettings.panelsOnLeft then
-    return "0%"
-  else
-    return tostring(100 - Darkmists.GlobalSettings.borders.right) .. "%"
-  end
+  return ifLight("black", "white")
 end
 
 Darkmists.getDefaultBackgroundColor = function()
-  if Darkmists.GlobalSettings.lightMode then
-    return "white"
-  else
-    return "black"
-  end
+  return ifLight("white", "black")
+end
+
+Darkmists.getDefaultXPosition = function()
+  return tostring(100 - Darkmists.GlobalSettings.borders.right) .. "%"
 end
 
 Darkmists.getDefaultTextColorTag = function()
@@ -225,28 +212,25 @@ Darkmists.ApplyDefaultSettings = function()
   Darkmists.Log("Darkmists Core","Default Settings Applied!")
 end
 
-Darkmists.SetWindowBorderPercent = function(region,percent)
+Darkmists.SetWindowBorderPercent = function(region, percent)
   local mainWidth, mainHeight = getMainWindowSize()
-  if region == "top" or region == "bottom" then
-    local scaleHeight = ((percent / 100.0) * mainHeight)
-    if region == "top" then
-      Darkmists.GlobalSettings.borders.top = percent
-      setBorderTop(scaleHeight)
-    elseif region == "bottom" then
-      Darkmists.GlobalSettings.borders.bottom = percent
-      setBorderBottom(scaleHeight)
-    end
-  elseif region == "left" or region == "right" then
-    local scaleWidth = ((percent / 100.0) * mainWidth)
-    if region == "left" then
-      Darkmists.GlobalSettings.borders.left = percent
-      setBorderLeft(scaleWidth)
-    elseif region == "right" then
-      Darkmists.GlobalSettings.borders.right = percent
-      setBorderRight(scaleWidth)
-    end
+  -- Determine whether we're working with height or width
+  local isVertical = (region == "top" or region == "bottom")
+  local baseSize = isVertical and mainHeight or mainWidth
+  local scaledSize = (percent / 100) * baseSize
+  -- Persist the percent value
+  Darkmists.GlobalSettings.borders[region] = percent
+  -- Apply the border
+  if region == "top" then
+    setBorderTop(scaledSize)
+  elseif region == "bottom" then
+    setBorderBottom(scaledSize)
+  elseif region == "left" then
+    setBorderLeft(scaledSize)
+  elseif region == "right" then
+    setBorderRight(scaledSize)
   end
-  Darkmists.LogDebug("Darkmists Core","Window Borders Adjusted")
+  Darkmists.LogDebug("Darkmists Core", "Window Borders Adjusted")
 end
 
 Darkmists.Init = function()
@@ -259,11 +243,10 @@ Darkmists.Init = function()
 end
 
 -- =============================================================================
--- LOAD ALL THE STUFF
+-- MODULE LOAD ORDER
 -- =============================================================================
 
 -- DMAPI first
-dofile(getMudletHomeDir() .. "/DarkMistsCompanion/utility/util.lua" )
 dofile(getMudletHomeDir() .. "/DarkMistsCompanion/dmapi.lua" )
 
 -- NOW Call Init
