@@ -71,8 +71,8 @@ function MapDestinations.add(name, room)
 end
 
 -- Returns:
---   true on success
---   false, errorMessage on failure
+--   true, "REMOVED", name on success
+--   false, errorMessage, name on failure
 function MapDestinations.remove(name)
   name = name:lower()
 
