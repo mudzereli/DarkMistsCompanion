@@ -72,6 +72,26 @@ function EnchanterAssist._pick(pool, count)
   return result
 end
 
+function EnchanterAssist._ensureSleepTimer()
+
+  if not dmapi.player.status.sleeping then
+    return
+  end
+
+  if EnchanterAssist.sleepRefreshTimer then
+    return
+  end
+
+  EnchanterAssist.sleepRefreshTimer = tempTimer(30, function()
+    if dmapi.player.status.sleeping then
+      send("")  -- refresh prompt/stats
+    else
+      EnchanterAssist.sleepRefreshTimer = nil
+    end
+  end, true)
+
+end
+
 function EnchanterAssist._nextCombination(indices, n, r)
     -- indices = current combination (1-based)
     -- n = pool size
@@ -195,56 +215,67 @@ function EnchanterAssist.run()
     return
   end
 
-  EnchanterAssist.state = "brewing"
-
   local pool = EnchanterAssist._buildPool()
+  local n = #pool
+  local r = EnchanterAssist.partCount
 
-  if #pool < EnchanterAssist.partCount then
-    Darkmists.Log(EnchanterAssist.color.."EnchanterAssist","<dark_khaki>Not enough materials available.")
-    EnchanterAssist.autoRun = false
-    EnchanterAssist.state = "idle"
-    return
-  end
-
-  local picks = EnchanterAssist._pick(pool, EnchanterAssist.partCount)
-  local key   = EnchanterAssist.partCount .. ":" .. table.concat(picks, "|")
-
-  -- calculate total possible combinations for this mode
-  local totalCombos = math.huge-- EnchanterAssist._nCr(#pool, EnchanterAssist.partCount)
-
-  -- count attempted combos for this mode
-  local attemptedCount = 0
-  for k,_ in pairs(EnchanterAssist.attempted) do
-      if k:match("^"..EnchanterAssist.partCount..":") then
-          attemptedCount = attemptedCount + 1
-      end
-  end
-
-  -- if mathematically exhausted, stop
-  if attemptedCount >= totalCombos then
+  if n < r then
       Darkmists.Log(
         EnchanterAssist.color.."EnchanterAssist",
-        "<red>No new combinations remain for "..EnchanterAssist.partCount.."-part."
+        "<dark_khaki>Not enough materials available."
       )
-      EnchanterAssist.autoRun = false
-      EnchanterAssist.state = "idle"
       return
   end
 
-  -- otherwise, keep picking until we hit a fresh one
-  while EnchanterAssist._contains(EnchanterAssist.attempted, key) do
-      picks = EnchanterAssist._pick(pool, EnchanterAssist.partCount)
-      key   = EnchanterAssist.partCount .. ":" .. table.concat(picks, "|")
+  -- initialize indices if needed
+  if not EnchanterAssist._comboIndices then
+      EnchanterAssist._comboIndices = {}
+      for i = 1, r do
+          EnchanterAssist._comboIndices[i] = i
+      end
   end
 
-  EnchanterAssist.pendingKey   = key
-  EnchanterAssist.sawFlare     = false
+  local indices = EnchanterAssist._comboIndices
 
-  Darkmists.Log(EnchanterAssist.color.."EnchanterAssist","<dim_gray>TRY <white>" .. key.."\n")
+  while indices do
+      -- build key from indices
+      local picks = {}
+      for i = 1, r do
+          table.insert(picks, pool[indices[i]])
+      end
+      table.sort(picks)
 
-  dmapi.core.send("get", "key", EnchanterAssist.container)
-  dmapi.core.send("alchemy", "key", table.concat(picks, " "))
-  dmapi.core.send("alchemy essence")  -- sync barrier
+      local key = r .. ":" .. table.concat(picks, "|")
+
+      if not EnchanterAssist.attempted[key] then
+          -- store next state for future call
+          EnchanterAssist._comboIndices =
+              EnchanterAssist._nextCombination(indices, n, r)
+
+          EnchanterAssist.pendingKey = key
+          EnchanterAssist.sawFlare = false
+
+          Darkmists.Log(EnchanterAssist.color.."EnchanterAssist",
+              "<dim_gray>TRY <white>" .. key .. "\n")
+
+          EnchanterAssist.state = "brewing"
+          dmapi.core.send("get", "key", EnchanterAssist.container)
+          dmapi.core.send("alchemy", "key", table.concat(picks, " "))
+          dmapi.core.send("alchemy essence")
+          return
+      end
+
+      indices = EnchanterAssist._nextCombination(indices, n, r)
+      EnchanterAssist._comboIndices = indices
+  end
+
+  -- exhausted
+  Darkmists.Log(
+      EnchanterAssist.color.."EnchanterAssist",
+      "<red>No new combinations remain for "..r.."-part."
+  )
+  EnchanterAssist.autoRun = false
+  EnchanterAssist.state = "idle"
 end
 
 function EnchanterAssist.finishAttempt()
@@ -303,6 +334,7 @@ function EnchanterAssist.stats()
 end
 
 function EnchanterAssist.reset()
+  EnchanterAssist._comboIndices = nil
   EnchanterAssist.autoRun = false
   EnchanterAssist.state = "idle"
   EnchanterAssist.pendingKey = nil
@@ -382,23 +414,38 @@ function EnchanterAssist.on_line(ln)
 
   if ln:match("^You are too tired to complete the process") then
 
-    if EnchanterAssist.autoRun then
-      -- automation mode: go to resting
-      EnchanterAssist.forceRest = true
-      EnchanterAssist.state = "resting"
+    -- Do NOT mark attempt
+    -- Do NOT advance combo index
+    -- Keep pendingKey intact so it retries after rest
 
-      Darkmists.Log(
-        EnchanterAssist.color.."EnchanterAssist",
-        "<medium_sea_green>Too tired — Resting"
-      )
+    EnchanterAssist.state = "resting"
+
+    Darkmists.Log(
+      EnchanterAssist.color.."EnchanterAssist",
+      "<medium_sea_green>Too tired — Forcing Rest"
+    )
+
+    local v = dmapi.player.vitals
+    local manaPct = v.mnPct or 0
+    local movePct = v.mvPct or 0
+
+    if EnchanterAssist.sleepType == 1 then
+      -- Sleep mode
+      dmapi.core.send("get", EnchanterAssist.sleeper, EnchanterAssist.container)
+      dmapi.core.send("drop", EnchanterAssist.sleeper)
+      dmapi.core.send("sleep", EnchanterAssist.sleeper)
+      tempTimer(3, EnchanterAssist._ensureSleepTimer)
     else
-      -- manual mode: just reset cleanly
-      EnchanterAssist.state = "idle"
+      -- Potion mode (match vitals logic exactly)
+      if manaPct < 90 then
+        dmapi.core.send("get", EnchanterAssist.drainItem, EnchanterAssist.container)
+        dmapi.core.send("quaff", EnchanterAssist.drainItem)
+      end
 
-      Darkmists.Log(
-        EnchanterAssist.color.."EnchanterAssist",
-        "<dark_khaki>Too tired — returning to Idle"
-      )
+      if movePct < 90 then
+        dmapi.core.send("get", "refreshment", EnchanterAssist.container)
+        dmapi.core.send("recite", "refreshment", "self")
+      end
     end
 
     return
@@ -409,6 +456,7 @@ function EnchanterAssist.on_line(ln)
     Darkmists.Log(EnchanterAssist.color.."EnchanterAssist","<dark_khaki>Missing Essence: <white>"..m)
     dmapi.core.send("put", "key", EnchanterAssist.container)
     EnchanterAssist._add(EnchanterAssist.missing, string.lower(m))
+    EnchanterAssist._comboIndices = nil
     EnchanterAssist.save()
     --EnchanterAssist.finishAttempt()
     return
@@ -487,15 +535,7 @@ registerNamedEventHandler(
     if dmapi.player.status.sleeping then
 
       -- Start refresh timer if not running
-      if not EnchanterAssist.sleepRefreshTimer then
-        EnchanterAssist.sleepRefreshTimer = tempTimer(30, function()
-          if dmapi.player.status.sleeping then
-            send("")  -- refresh prompt/stats
-          else
-            EnchanterAssist.sleepRefreshTimer = nil
-          end
-        end,true)
-      end
+      EnchanterAssist._ensureSleepTimer()
 
       -- Wake when fully recovered
       if high then
@@ -542,6 +582,11 @@ registerNamedEventHandler(
 
       -- Never interrupt brewing
       if EnchanterAssist.state == "brewing" then
+        return
+      end
+
+      -- Already trying to rest? Don't resend commands
+      if EnchanterAssist.state == "resting" then
         return
       end
 
@@ -634,11 +679,11 @@ tempAlias("^es auto$", function()
   Darkmists.Log(EnchanterAssist.color.."EnchanterAssist","AutoRun: " .. tostring(EnchanterAssist.autoRun))
 end)
 
-tempAlias("^es 1$", function() EnchanterAssist.partCount = 1 EnchanterAssist.save() EnchanterAssist.run() end)
-tempAlias("^es 2$", function() EnchanterAssist.partCount = 2 EnchanterAssist.save() EnchanterAssist.run() end)
-tempAlias("^es 3$", function() EnchanterAssist.partCount = 3 EnchanterAssist.save() EnchanterAssist.run() end)
-tempAlias("^es 4$", function() EnchanterAssist.partCount = 4 EnchanterAssist.save() EnchanterAssist.run() end)
-tempAlias("^es 5$", function() EnchanterAssist.partCount = 5 EnchanterAssist.save() EnchanterAssist.run() end)
+tempAlias("^es 1$", function() EnchanterAssist.partCount = 1 EnchanterAssist._comboIndices = nil EnchanterAssist.save() EnchanterAssist.run() end)
+tempAlias("^es 2$", function() EnchanterAssist.partCount = 2 EnchanterAssist._comboIndices = nil EnchanterAssist.save() EnchanterAssist.run() end)
+tempAlias("^es 3$", function() EnchanterAssist.partCount = 3 EnchanterAssist._comboIndices = nil EnchanterAssist.save() EnchanterAssist.run() end)
+tempAlias("^es 4$", function() EnchanterAssist.partCount = 4 EnchanterAssist._comboIndices = nil EnchanterAssist.save() EnchanterAssist.run() end)
+tempAlias("^es 5$", function() EnchanterAssist.partCount = 5 EnchanterAssist._comboIndices = nil EnchanterAssist.save() EnchanterAssist.run() end)
 
 tempAlias("^es reset$", EnchanterAssist.reset)
 
