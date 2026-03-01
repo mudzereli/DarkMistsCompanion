@@ -414,7 +414,16 @@ function EnchanterAssist.on_line(ln)
   end
 
   if ln:match("^You are too tired to complete the process") then
-
+    -- If autorun is OFF, do not force rest.
+    if not EnchanterAssist.autoRun then
+        Darkmists.Log(
+          EnchanterAssist.color.."EnchanterAssist",
+          "<dark_khaki>Too tired — Manual mode, not forcing rest."
+        )
+        EnchanterAssist.state = "idle"
+        return
+    end
+    
     -- Do NOT mark attempt
     -- Do NOT advance combo index
     -- Keep pendingKey intact so it retries after rest
