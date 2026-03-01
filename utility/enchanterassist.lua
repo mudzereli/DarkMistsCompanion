@@ -263,7 +263,7 @@ function EnchanterAssist.run()
           dmapi.core.send("get", "key", EnchanterAssist.container)
           dmapi.core.send("alchemy", "key", table.concat(picks, " "))
           dmapi.core.send("alchemy essence")
-          dmapi.core.send("")
+          dmapi.core.send("\t")
           return
       end
 
