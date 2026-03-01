@@ -432,6 +432,47 @@ end
 -- =============================================================================
 -- WALK COMMAND
 -- =============================================================================
+local function renderWalkList(filter)
+  local c = DarkmistsMeta.colors.default
+
+  Darkmists.Log("WALK","Destinations by Area:")
+
+  local grouped = MapDestinations.getGroupedFiltered(filter)
+  if not next(grouped) then
+    cecho("\n  <dim_gray>(none)")
+    return
+  end
+
+  local areaNames = {}
+  for areaName in pairs(grouped) do
+    table.insert(areaNames, areaName)
+  end
+  table.sort(areaNames)
+
+  for _, areaName in ipairs(areaNames) do
+    for _, entry in ipairs(grouped[areaName]) do
+      local roomName = getRoomName(entry.room) or "UNKNOWN"
+
+      cechoLink(string.format(
+        "\n<dark_khaki>[%s%-16s<dark_khaki>] %s%-23s <dim_gray>→ <dim_gray>[%s%5d<dim_gray>] %s%-32s",
+        c,
+        DMUtil.cap(areaName, 16),
+        c,
+        ("<u>%s</u>"):format(DMUtil.cap(entry.name, 16)),
+        c,
+        entry.room,
+        c,
+        DMUtil.cap(roomName,32)
+      ),
+      function()
+        expandAlias(("walk %s"):format(entry.name))
+      end,
+      ("Click: walk %s"):format(entry.name),
+      true)
+    end
+  end
+end
+
 tempAlias("^walk(?:\\s+(.*))?$", function()
   local c = DarkmistsMeta.colors.default
   local arg = matches[2] and matches[2]:trim() or ""
@@ -470,7 +511,7 @@ tempAlias("^walk(?:\\s+(.*))?$", function()
   end
 
   if arg == "stop" then
-    expandAlias("map stop")
+    MapDestinations.stop()
     Darkmists.Log("WALK","<red>Walking Stopped!")
     return
   end
@@ -478,58 +519,7 @@ tempAlias("^walk(?:\\s+(.*))?$", function()
   -- LIST (grouped by area)
   local listFilter = arg:match("^list%s+(%S+)$")
   if arg == "list" or listFilter then
-    Darkmists.Log("WALK","Destinations by Area:")
-    if not next(MapDestinations.list) then
-      cecho("\n  <dim_gray>(none)")
-      return
-    end
-
-    local grouped = MapDestinations.getDestinationsGroupedByArea()
-    local filter = listFilter and listFilter:lower()
-
-    local areaNames = {}
-
-    for areaName in pairs(grouped) do
-      table.insert(areaNames, areaName)
-    end
-    table.sort(areaNames)
-
-    for _, areaName in ipairs(areaNames) do
-      for _, entry in ipairs(grouped[areaName]) do
-        local roomName = getRoomName(entry.room) or "UNKNOWN"
-        local areaMatchName = getRoomAreaName(getRoomArea(entry.room)) or areaName
-
-        local show = true
-        if filter then
-          local rn = roomName:lower()
-          local an = areaMatchName:lower()
-          local en = (entry.name):lower()
-          show = (rn:find(filter, 1, true) ~= nil)
-              or (an:find(filter, 1, true) ~= nil)
-              or (en:find(filter, 1, true) ~= nil)
-        end
-
-        if show then
-          cechoLink(string.format(
-            "\n<dark_khaki>[%s%-16s<dark_khaki>] %s%-23s <dim_gray>→ <dim_gray>[%s%5d<dim_gray>] %s%-32s",
-            c,
-            DMUtil.cap(areaName, 16),
-            c,
-            ("<u>%s</u>"):format(DMUtil.cap(entry.name, 16)),
-            c,
-            entry.room,
-            c,
-            DMUtil.cap(roomName,32)
-          ),
-          function()
-            expandAlias(("walk %s"):format(entry.name))
-          end,
-          ("Click: walk %s"):format(entry.name),
-          true)
-        end
-      end
-    end
-
+    renderWalkList(listFilter)
     return
   end
 
@@ -537,105 +527,139 @@ tempAlias("^walk(?:\\s+(.*))?$", function()
   do
     local name = arg:match("^add%s+([%w_]+)$")
     if name then
-      name = name:lower()
-      if name then
-        if map and map.currentRoom then
-          local room = map.currentRoom
-          local roomName = getRoomName(room)
-          if not roomName then 
-            roomName = "UNKNOWN"
-          end
-          MapDestinations.add(name, room)
-          MapDestinations.rewrite()
-          Darkmists.Log("WALK",("Added destination: %s%s<green> → <dim_gray>[%s%d<dim_gray>] %s%s"):format(c,name,c,room,c,roomName))
-        else
+      local ok, a, b, cRoomName = MapDestinations.addDestination(name)
+
+      if not ok then
+        if a == "NO_CURRENT_ROOM" then
           Darkmists.Log("WALK","<red>No Current Room found on Map")
+        elseif a == "INVALID_NAME" then
+          Darkmists.Log("WALK","<red>Invalid destination name")
         end
+        return
       end
+
+      local destName, roomId = a, b
+
+      Darkmists.Log("WALK",
+        ("Added destination: %s%s<green> → <dim_gray>[%s%d<dim_gray>] %s%s")
+          :format(c, destName, c, roomId, c, cRoomName)
+      )
+
       return
     end
     
     local name, room = arg:match("^add%s+([%w_]+)%s+(%d+)$")
     if name and room then
-      name = name:lower()
-      local roomName = getRoomName(room)
-      if not roomName then 
-        roomName = "UNKNOWN"
+      local ok, a, b, roomName = MapDestinations.addDestination(name, room)
+
+      if not ok then
+        if a == "INVALID_NAME" then
+          Darkmists.Log("WALK","<red>Invalid destination name")
+        elseif a == "INVALID_ROOM" then
+          Darkmists.Log("WALK","<red>Invalid room id")
+        elseif a == "ROOM_MISSING" then
+          Darkmists.Log("WALK",
+            ("<red>Room does not exist: <white>%s%d"):format(c, b)
+          )
+        end
+        return
       end
-      MapDestinations.add(name, room)
-      MapDestinations.rewrite()
-      Darkmists.Log("WALK",("Added destination: %s%s<green> → <dim_gray>[%s%d<dim_gray>] %s%s"):format(c,name,c,room,c,roomName))
+
+      local destName, roomId = a, b
+
+      Darkmists.Log("WALK",
+        ("Added destination: %s%s<green> → <dim_gray>[%s%d<dim_gray>] %s%s")
+          :format(c, destName, c, roomId, c, roomName)
+      )
+
       return
     end
   end
 
   -- REMOVE
-  do
-    local rem = arg:match("^rem%s+([%w_]+)$")
-    if rem then
-      rem = rem:lower()
-      if not MapDestinations.list[rem] then
-        Darkmists.Log("WALK",("<red>No destination named %s%s"):format(c,rem))
-        return
+  local rem = arg:match("^rem%s+([%w_]+)$")
+  if rem then
+    local ok, code, data = MapDestinations.remove(rem)
+
+    if not ok then
+      if code == "NOT_FOUND" then
+        Darkmists.Log("WALK",
+          ("<red>No destination named %s%s"):format(c, data)
+        )
       end
-      MapDestinations.list[rem] = nil
-      MapDestinations.rewrite()
-      Darkmists.Log("WALK",("<dark_khaki>Removed destination %s%s"):format(c,rem))
-      return
+    else
+      Darkmists.Log("WALK",
+        ("<dark_khaki>Removed destination %s%s"):format(c, data)
+      )
     end
+    return
   end
 
   -- AREA SEARCH (accepts underscores, case-insensitive)
   do
     local areaSearch = arg:match("^area%s+([%w_]+)$")
     if areaSearch then
-      areaSearch = areaSearch:lower()
-      
-      for name, id in pairs(getAreaTable()) do
-        if name:lower():find(areaSearch, 1, true) then
-          Darkmists.Log("WALK",("Found area %s%s"):format(c,name))
-          local rooms = getAreaRooms(id)
-          local firstRoom = rooms and rooms[0]
-          if firstRoom then
-            gotoRoom(firstRoom)
-          else
-          Darkmists.Log("WALK","<red>Area has no rooms indexed.")
-          end
-          return
+      local ok, code, data = MapDestinations.navigateToArea(areaSearch)
+
+      if not ok then
+        if code == "ALREADY_IN_AREA" then
+          Darkmists.Log("WALK",
+            ("<dark_khaki>You are already in %s%s"):format(c, data)
+          )
+        elseif code == "AREA_NOT_FOUND" then
+          Darkmists.Log("WALK",
+            ("<red>No area matching %s%s"):format(c, data)
+          )
+        elseif code == "AREA_EMPTY" then
+          Darkmists.Log("WALK",
+            ("<red>Area has no indexed rooms: %s%s"):format(c, data)
+          )
+        elseif code == "INVALID_SEARCH" then
+          Darkmists.Log("WALK","<red>Invalid area search.")
+        elseif code == "NO_AREAS" then
+          Darkmists.Log("WALK","<red>Area table unavailable.")
         end
+        return
       end
 
-      Darkmists.Log("WALK",("<red>No area matching %s%s"):format(c,areaSearch))
+      Darkmists.Log("WALK",
+        ("<ansi_cyan>Walking to area %s%s <dim_gray>[%s%d<dim_gray>]")
+          :format(c, data, c, code)
+      )
       return
     end
   end
 
   -- NAVIGATE TO SAVED DESTINATION
-  local dest = MapDestinations.list[arg:lower()]
-  if not dest then
-    Darkmists.Log("WALK",("<red>Unknown destination. Type %swalk <red>for help."):format(c))
+  local ok, a, b = MapDestinations.navigate(arg)
+
+  if not ok then
+    if a == "NOT_FOUND" then
+      Darkmists.Log("WALK",
+        ("<red>No destination named %s%s"):format(c, b)
+      )
+    elseif a == "INVALID_NAME" then
+      Darkmists.Log("WALK","<red>Invalid name given!")
+    elseif a == "NO_CURRENT_ROOM" then
+      Darkmists.Log("WALK","<red>Current room unknown!")
+    elseif a == "ALREADY_THERE" then
+      Darkmists.Log("WALK",
+        ("<red>You are already at %s%s"):format(c, b)
+      )
+    elseif a == "ROOM_MISSING" then
+      Darkmists.Log("WALK",
+        ("<red>Destination room no longer exists for %s%s"):format(c, b)
+      )
+    elseif a == "NO_PATH" then
+      Darkmists.Log("WALK",
+        ("<red>No known path to %s%s"):format(c, b)
+      )
+    end
     return
   end
 
-  local current = getPlayerRoom()
-  if not current then
-    Darkmists.Log("WALK","<red>Current Room Unknown!")
-    return
-  end
-
-  if dest == current then
-    Darkmists.Log("WALK","<red>You are already there!")
-    return
-  end
-
-  local roomName = getRoomName(dest)
-
-  local ok = getPath(current, dest)
-  if not ok or not speedWalkDir or #speedWalkDir == 0 or not dest or not roomName then
-    Darkmists.Log("WALK","<red>No known path for that destination!")
-    return
-  end
-
-  Darkmists.Log("WALK",("<ansi_cyan>Generating Path to %s%s <dim_gray>[%s%d<dim_gray>] %s%s"):format(c,arg,c,dest,c,roomName))
-  gotoRoom(dest)
+  Darkmists.Log("WALK",
+    ("<ansi_cyan>Generating path to %s%s <dim_gray>[%s%d<dim_gray>] %s%s")
+      :format(c, arg, c, a, c, b)
+  )
 end)
