@@ -142,6 +142,7 @@ local highlightMap = {
   ["^(.*) glows a sickly green%."] = {"olive_drab", "(CURSE)"},
   ["^(.*) seems heavier%."] = {"dim_gray", "(DOUBLE WEIGHT)"},
   ["^(.*) is less sturdy%."] = {"light_coral", "(+AC)"},
+  ["^(.*) is more resistant to fire%."] = {"coral", "(BURN PROOF)"},
   ["^(.*) almost escapes your grasp%."] = {"ansi_magenta", "(FLYING)"},
   ["^(.*) looks a bit more expensive in quality%."] = {"dark_khaki", "(ADDED VALUE)"},
   ["^(.*) fades out and back into existence%."] = {"light_cyan", "(INVIS)"},
