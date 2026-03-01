@@ -759,7 +759,7 @@ end
 -- @param cmd string The base command
 -- @param ... Additional arguments to append
 function dmapi.core.send(cmd, ...)
-  if not cmd or cmd == "" then return end
+  if not cmd then return end
   
   local args = {...}
   if #args > 0 then
