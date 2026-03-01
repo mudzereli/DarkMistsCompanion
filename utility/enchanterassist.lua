@@ -263,6 +263,7 @@ function EnchanterAssist.run()
           dmapi.core.send("get", "key", EnchanterAssist.container)
           dmapi.core.send("alchemy", "key", table.concat(picks, " "))
           dmapi.core.send("alchemy essence")
+          dmapi.core.send("")
           return
       end
 
@@ -423,7 +424,7 @@ function EnchanterAssist.on_line(ln)
         EnchanterAssist.state = "idle"
         return
     end
-    
+
     -- Do NOT mark attempt
     -- Do NOT advance combo index
     -- Keep pendingKey intact so it retries after rest
