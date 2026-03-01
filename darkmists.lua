@@ -27,7 +27,7 @@ local eaFormulaParser = getMudletHomeDir() .. "/DarkMistsCompanion/assets/alchem
 
 Darkmists = {}
 Darkmists.NAME = "DarkMistsCompanion"
-Darkmists.VERSION = "1.3.6"
+Darkmists.VERSION = "1.3.7"
 Darkmists.GITHUB_URL = "https://github.com/mudzereli/DarkMistsCompanion/releases/latest/download/DarkMistsCompanion.mpackage"
 Darkmists.IS_DEV_BUILD = true
 
