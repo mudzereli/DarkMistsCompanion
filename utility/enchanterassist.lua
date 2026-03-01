@@ -387,7 +387,7 @@ function EnchanterAssist.on_line(ln)
     end
   end
 
-  if ln == "Your stored essences (cap: 225 per material):" then
+  if ln:match("^Your stored essences %(cap: %d+ per material%):$") then
       if EnchanterAssist.state == "brewing" then
 
           -- silent-known case
