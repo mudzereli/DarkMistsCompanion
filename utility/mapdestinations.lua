@@ -82,7 +82,7 @@ function MapDestinations.remove(name)
 
   MapDestinations.list[name] = nil
   MapDestinations.rewrite()
-  return true, name
+  return true, "REMOVED", name
 end
 
 -- Stop current walk (delegates to Mudlet map alias).
@@ -105,7 +105,7 @@ function MapDestinations.navigate(name)
   if not name then
     return false, "INVALID_NAME"
   end
-  
+
   name = name:lower()
 
   local dest = MapDestinations.list[name]
