@@ -23,6 +23,7 @@ local itemViewerPath = getMudletHomeDir() .. "/DarkMistsCompanion/assets/item-vi
 local dmapiDocPath = getMudletHomeDir() .. "/DarkMistsCompanion/assets/dmapi.html"
 local mapDatPath = getMudletHomeDir() .. "/DarkMistsCompanion/map.dat"
 local eaConverterPath = getMudletHomeDir() .. "/DarkMistsCompanion/assets/ea-save-converter.html"
+local eaFormulaParser = getMudletHomeDir() .. "/DarkMistsCompanion/assets/alchemy-formula-parser.html"
 
 Darkmists = {}
 Darkmists.NAME = "DarkMistsCompanion"
@@ -113,6 +114,10 @@ end
 
 function Darkmists.OpenEAConverter()
   DMUtil.openLocalFile(eaConverterPath)
+end
+
+function Darkmists.OpenEAFormulaParser()
+  DMUtil.openLocalFile(eaFormulaParser)
 end
 
 function Darkmists.OpenItemViewer()
