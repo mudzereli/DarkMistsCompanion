@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Alchemy Formula Parser</title>
+
+<style>
+body {
+    font-family: Arial, sans-serif;
+    background: #1e1e1e;
+    color: #eee;
+    padding: 20px;
+}
+
+textarea {
+    width: 100%;
+    height: 250px;
+    background: #111;
+    color: #0f0;
+    font-family: monospace;
+    padding: 10px;
+}
+
+button {
+    padding: 10px 20px;
+    margin: 10px 0;
+    cursor: pointer;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+th, td {
+    border: 1px solid #444;
+    padding: 6px;
+    text-align: left;
+}
+
+th {
+    cursor: pointer;
+    background: #333;
+}
+
+tr:nth-child(even) {
+    background: #2a2a2a;
+}
+</style>
+</head>
+
+<body>
+
+<h2>Alchemy Formula Parser</h2>
+
+<textarea id="input"></textarea>
+<br>
+<button onclick="parseData()">Parse</button>
+<button onclick="clearTable()">Clear Table</button>
+<input type="text" id="filterInput" placeholder="Filter formulas..."
+       onkeyup="filterTable()"
+       style="width:100%; padding:8px; margin-top:10px;">
+<div id="summary" style="margin-top:15px; font-weight:bold;">
+    1-Part: 0 |
+    2-Part: 0 |
+    3-Part: 0 |
+    4-Part: 0 |
+    5-Part: 0
+</div>
+
+<table id="table">
+<thead>
+<tr>
+    <th onclick="sortTable(0)">Formula Name</th>
+    <th onclick="sortTable(1)">Materials</th>
+    <th onclick="sortTable(2)">Stats (Full)</th>
+    <th onclick="sortTable(3)">Stat Count</th>
+</tr>
+</thead>
+<tbody></tbody>
+</table>
+
+<script>
+function filterTable() {
+    const input = document.getElementById("filterInput");
+    const filter = input.value.toLowerCase();
+    const table = document.getElementById("table");
+    const rows = table.getElementsByTagName("tr");
+
+    for (let i = 1; i < rows.length; i++) {
+        let rowText = rows[i].innerText.toLowerCase();
+
+        if (rowText.includes(filter)) {
+            rows[i].style.display = "";
+        } else {
+            rows[i].style.display = "none";
+        }
+    }
+}
+
+function parseData() {
+    const raw = document.getElementById("input").value;
+    const lines = raw.split(/\r?\n/);
+    const tbody = document.querySelector("#table tbody");
+
+    // Track existing formulas
+    let existingNames = new Set();
+    for (let row of tbody.rows) {
+        existingNames.add(row.cells[0].innerText.toLowerCase());
+    }
+
+    // Counters
+    let partCounts = {
+        1: 0,
+        2: 0,
+        3: 0,
+        4: 0,
+        5: 0
+    };
+
+    let inSection = false;
+    let currentFormula = null;
+
+    for (let i = 0; i < lines.length; i++) {
+        let line = lines[i];
+        if (!line) continue;
+
+        let trimmed = line.trim();
+
+        // Start section
+        if (/You have discovered\s+\d+\s+of\s+\d+\s+alchemy formulas\./i.test(line)) {
+            inSection = true;
+            currentFormula = null;
+            continue;
+        }
+
+        // End section on prompt
+        if (/^</.test(trimmed)) {
+            inSection = false;
+            currentFormula = null;
+            continue;
+        }
+
+        if (!inSection) continue;
+
+        // Skip junk
+        if (!trimmed) continue;
+        if (line.includes("[Hit Return")) continue;
+        if (/^Page/i.test(trimmed)) continue;
+        if (/^\d+\s*$/.test(trimmed)) continue;
+
+        // Material line (indented)
+        if (/^\s+/.test(line)) {
+            if (!currentFormula) continue;
+            if (existingNames.has(currentFormula.name.toLowerCase())) {
+                currentFormula = null;
+                continue;
+            }
+
+            let materials = trimmed;
+
+            // Count materials (split by comma)
+            let materialArray = materials
+                .split(",")
+                .map(m => m.trim())
+                .filter(m => m.length > 0);
+
+            let materialCount = materialArray.length;
+
+            if (materialCount >= 1 && materialCount <= 5) {
+                partCounts[materialCount]++;
+            }
+
+            let row = tbody.insertRow();
+            row.insertCell(0).innerText = currentFormula.name;
+            row.insertCell(1).innerText = materials;
+            row.insertCell(2).innerText = currentFormula.stats;
+            row.insertCell(3).innerText = currentFormula.statCount;
+
+            existingNames.add(currentFormula.name.toLowerCase());
+            currentFormula = null;
+        }
+        else {
+            // Formula line
+            let parts = trimmed.split(/\s{2,}/);
+            if (parts.length < 2) continue;
+
+            let name = parts[0].trim();
+            let stats = parts.slice(1).join(" ").trim();
+
+            let statArray = stats
+                .split(",")
+                .map(s => s.trim())
+                .filter(s => s.length > 0);
+
+            currentFormula = {
+                name: name,
+                stats: stats,
+                statCount: statArray.length
+            };
+        }
+    }
+
+    // Update summary display
+    document.getElementById("summary").innerText =
+        `1-Part: ${partCounts[1]} | ` +
+        `2-Part: ${partCounts[2]} | ` +
+        `3-Part: ${partCounts[3]} | ` +
+        `4-Part: ${partCounts[4]} | ` +
+        `5-Part: ${partCounts[5]}`;
+
+    document.getElementById("input").value = "";
+}
+
+function sortTable(columnIndex) {
+    const table = document.getElementById("table");
+    let switching = true;
+    let direction = "asc";
+
+    while (switching) {
+        switching = false;
+        let rows = table.rows;
+
+        for (let i = 1; i < rows.length - 1; i++) {
+            let x = rows[i].getElementsByTagName("TD")[columnIndex];
+            let y = rows[i + 1].getElementsByTagName("TD")[columnIndex];
+
+            let shouldSwitch = false;
+
+            if (direction === "asc") {
+                if (x.innerText.toLowerCase() > y.innerText.toLowerCase()) {
+                    shouldSwitch = true;
+                    break;
+                }
+            } else {
+                if (x.innerText.toLowerCase() < y.innerText.toLowerCase()) {
+                    shouldSwitch = true;
+                    break;
+                }
+            }
+        }
+
+        if (shouldSwitch) {
+            rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+            switching = true;
+        } else {
+            if (direction === "asc") {
+                direction = "desc";
+                switching = true;
+            }
+        }
+    }
+}
+
+function clearTable() {
+    const tbody = document.querySelector("#table tbody");
+    tbody.innerHTML = "";
+}
+</script>
+
+</body>
+</html>
