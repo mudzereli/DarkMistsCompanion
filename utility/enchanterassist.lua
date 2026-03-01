@@ -15,10 +15,9 @@ EnchanterAssist.attempted    = {}
 EnchanterAssist.missing      = {}
 
 EnchanterAssist.pendingKey   = nil
-EnchanterAssist.pendingTimer = nil
 EnchanterAssist.sleepRefreshTimer = nil
 EnchanterAssist.sawFlare     = false
-EnchanterAssist.inProgress   = false
+EnchanterAssist.state        = "idle"
 
 EnchanterAssist.container    = "bag"
 EnchanterAssist.sleeper      = "bedroll"
@@ -27,6 +26,7 @@ EnchanterAssist.drainItem    = "potion"
 EnchanterAssist.color        = "<cornflower_blue>"
 
 EnchanterAssist._lastVitalsCheck = 0
+EnchanterAssist._comboIndices = nil
 EnchanterAssist._wrapped     = false
 EnchanterAssist._savePath    = getMudletHomeDir() .. "/ea_data.lua"
 
@@ -70,6 +70,29 @@ function EnchanterAssist._pick(pool, count)
   end
   table.sort(result)
   return result
+end
+
+function EnchanterAssist._nextCombination(indices, n, r)
+    -- indices = current combination (1-based)
+    -- n = pool size
+    -- r = partCount
+
+    local i = r
+    while i > 0 and indices[i] == n - r + i do
+        i = i - 1
+    end
+
+    if i == 0 then
+        return nil -- exhausted
+    end
+
+    indices[i] = indices[i] + 1
+
+    for j = i + 1, r do
+        indices[j] = indices[j - 1] + 1
+    end
+
+    return indices
 end
 
 function EnchanterAssist._nCr(n, r)
@@ -127,7 +150,7 @@ function EnchanterAssist.save()
   }
 
   table.save(EnchanterAssist._savePath, data)
-  Darkmists.Log(EnchanterAssist.color.."EnchanterAssist","Data saved to: <white>"..EnchanterAssist._savePath)
+  Darkmists.Log(EnchanterAssist.color.."EnchanterAssist","<dim_gray>Data saved to: <white>"..EnchanterAssist._savePath)
 end
 
 function EnchanterAssist.load()
@@ -154,92 +177,84 @@ end
 function EnchanterAssist.run()
   if not EnchanterAssist.enabled then return end
 
-  if EnchanterAssist.inProgress then
-    Darkmists.Log(
-      EnchanterAssist.color.."EnchanterAssist",
-      "<dark_khaki>Waiting on current attempt..."
-    )
+  if EnchanterAssist.state ~= "idle" then
+    local msg = "<dark_khaki>Waiting — "
+
+    if EnchanterAssist.state == "brewing" then
+      msg = msg .. "<orange>Brewing"
+      if EnchanterAssist.pendingKey then
+        msg = msg .. " <dim_gray>(<white>"..EnchanterAssist.pendingKey.."<dim_gray>)"
+      end
+    elseif EnchanterAssist.state == "resting" then
+      msg = msg .. "<medium_sea_green>Resting"
+    else
+      msg = msg .. "<white>"..EnchanterAssist.state
+    end
+
+    Darkmists.Log(EnchanterAssist.color.."EnchanterAssist", msg)
     return
   end
 
-  EnchanterAssist.inProgress = true
+  EnchanterAssist.state = "brewing"
 
   local pool = EnchanterAssist._buildPool()
 
   if #pool < EnchanterAssist.partCount then
     Darkmists.Log(EnchanterAssist.color.."EnchanterAssist","<dark_khaki>Not enough materials available.")
-    EnchanterAssist.inProgress = false
     EnchanterAssist.autoRun = false
+    EnchanterAssist.state = "idle"
     return
   end
 
   local picks = EnchanterAssist._pick(pool, EnchanterAssist.partCount)
   local key   = EnchanterAssist.partCount .. ":" .. table.concat(picks, "|")
 
-  local maxAttempts = math.huge
-  local attempts = 0
+  -- calculate total possible combinations for this mode
+  local totalCombos = math.huge-- EnchanterAssist._nCr(#pool, EnchanterAssist.partCount)
 
-  while EnchanterAssist._contains(EnchanterAssist.attempted, key) do
-    attempts = attempts + 1
-    if attempts >= maxAttempts or #pool <= 1 then
+  -- count attempted combos for this mode
+  local attemptedCount = 0
+  for k,_ in pairs(EnchanterAssist.attempted) do
+      if k:match("^"..EnchanterAssist.partCount..":") then
+          attemptedCount = attemptedCount + 1
+      end
+  end
+
+  -- if mathematically exhausted, stop
+  if attemptedCount >= totalCombos then
       Darkmists.Log(
         EnchanterAssist.color.."EnchanterAssist",
         "<red>No new combinations remain for "..EnchanterAssist.partCount.."-part."
       )
-      EnchanterAssist.inProgress = false
       EnchanterAssist.autoRun = false
+      EnchanterAssist.state = "idle"
       return
-    end
+  end
 
-    picks = EnchanterAssist._pick(pool, EnchanterAssist.partCount)
-    key   = EnchanterAssist.partCount .. ":" .. table.concat(picks, "|")
+  -- otherwise, keep picking until we hit a fresh one
+  while EnchanterAssist._contains(EnchanterAssist.attempted, key) do
+      picks = EnchanterAssist._pick(pool, EnchanterAssist.partCount)
+      key   = EnchanterAssist.partCount .. ":" .. table.concat(picks, "|")
   end
 
   EnchanterAssist.pendingKey   = key
   EnchanterAssist.sawFlare     = false
 
-  Darkmists.Log(EnchanterAssist.color.."EnchanterAssist","TRY <white>" .. key.."\n")
+  Darkmists.Log(EnchanterAssist.color.."EnchanterAssist","<dim_gray>TRY <white>" .. key.."\n")
 
   dmapi.core.send("get", "key", EnchanterAssist.container)
   dmapi.core.send("alchemy", "key", table.concat(picks, " "))
-
-  -- Start fallback completion timer
-  if EnchanterAssist.pendingTimer then
-    killTimer(EnchanterAssist.pendingTimer)
-  end
-
-  EnchanterAssist.pendingTimer = tempTimer(10, function()
-
-    if EnchanterAssist.inProgress
-      and EnchanterAssist.sawFlare
-      and not EnchanterAssist._contains(
-          EnchanterAssist.attempted,
-          EnchanterAssist.pendingKey) then
-
-      Darkmists.Log(
-        EnchanterAssist.color.."EnchanterAssist",
-        "<medium_sea_green>Already Known Formula: <white>"..EnchanterAssist.pendingKey
-      )
-
-      EnchanterAssist._add(
-        EnchanterAssist.attempted,
-        EnchanterAssist.pendingKey
-      )
-      
-      EnchanterAssist.save()
-
-      dmapi.core.send("alc", "extract", "key")
-    end
-    EnchanterAssist.finishAttempt()
-  end)
+  dmapi.core.send("alchemy essence")  -- sync barrier
 end
 
 function EnchanterAssist.finishAttempt()
-  EnchanterAssist.sawFlare     = false
-  EnchanterAssist.inProgress   = false
+  EnchanterAssist.sawFlare   = false
+  EnchanterAssist.pendingKey = nil
+
+  EnchanterAssist.state = "idle"
 
   if EnchanterAssist.autoRun then
-    tempTimer(1, EnchanterAssist.run)
+      EnchanterAssist.run()
   end
 end
 
@@ -289,8 +304,9 @@ end
 
 function EnchanterAssist.reset()
   EnchanterAssist.autoRun = false
+  EnchanterAssist.state = "idle"
   EnchanterAssist.pendingKey = nil
-  EnchanterAssist.inProgress = false
+  EnchanterAssist.sawFlare = false
   EnchanterAssist.missing = {}
   EnchanterAssist.save()
   Darkmists.Log(EnchanterAssist.color.."EnchanterAssist","<medium_sea_green>Reset complete, Attempts Preserved.")
@@ -330,70 +346,101 @@ function EnchanterAssist.on_line(ln)
       resetFormat()
 
       -- mark that we saw a flare during this attempt
-      if EnchanterAssist.inProgress then
+      if EnchanterAssist.state == "brewing" then
         EnchanterAssist.sawFlare = true
       end
       return
     end
   end
 
+  if ln == "Your stored essences (cap: 225 per material):" then
+      if EnchanterAssist.state == "brewing" then
+
+          -- silent-known case
+          if EnchanterAssist.sawFlare
+            and not EnchanterAssist._contains(
+                  EnchanterAssist.attempted,
+                  EnchanterAssist.pendingKey) then
+
+              Darkmists.Log(
+                EnchanterAssist.color.."EnchanterAssist",
+                "<medium_sea_green>Already Known Formula: <white>"..EnchanterAssist.pendingKey
+              )
+
+              EnchanterAssist._add(
+                EnchanterAssist.attempted,
+                EnchanterAssist.pendingKey
+              )
+
+              EnchanterAssist.save()
+          end
+
+          EnchanterAssist.finishAttempt()
+      end
+      return
+  end
+
+  if ln:match("^You are too tired to complete the process") then
+
+    if EnchanterAssist.autoRun then
+      -- automation mode: go to resting
+      EnchanterAssist.forceRest = true
+      EnchanterAssist.state = "resting"
+
+      Darkmists.Log(
+        EnchanterAssist.color.."EnchanterAssist",
+        "<medium_sea_green>Too tired — Resting"
+      )
+    else
+      -- manual mode: just reset cleanly
+      EnchanterAssist.state = "idle"
+
+      Darkmists.Log(
+        EnchanterAssist.color.."EnchanterAssist",
+        "<dark_khaki>Too tired — returning to Idle"
+      )
+    end
+
+    return
+  end
+
   local m = ln:match("^You do not have essence of (%w+)%.")
   if m then
-    if EnchanterAssist.pendingTimer then
-      killTimer(EnchanterAssist.pendingTimer)
-      EnchanterAssist.pendingTimer = nil
-    end
     Darkmists.Log(EnchanterAssist.color.."EnchanterAssist","<dark_khaki>Missing Essence: <white>"..m)
     dmapi.core.send("put", "key", EnchanterAssist.container)
     EnchanterAssist._add(EnchanterAssist.missing, string.lower(m))
     EnchanterAssist.save()
-    EnchanterAssist.finishAttempt()
+    --EnchanterAssist.finishAttempt()
     return
   end
 
   if ln:match("^You lack the materials")
   or ln:match("^You must only use raw materials")
   or ln:match("^Alchemy only needs one of each kind of ingredient") then
-    if EnchanterAssist.pendingTimer then
-      killTimer(EnchanterAssist.pendingTimer)
-      EnchanterAssist.pendingTimer = nil
-    end
     Darkmists.Log(EnchanterAssist.color.."EnchanterAssist","<red>Bad Materials")
-    EnchanterAssist.finishAttempt()
+    --EnchanterAssist.finishAttempt()
     return
   end
   
   if  ln:match("^You botch the brew, and your alchemy process") then
-    if EnchanterAssist.pendingTimer then
-      killTimer(EnchanterAssist.pendingTimer)
-      EnchanterAssist.pendingTimer = nil
-      EnchanterAssist.finishAttempt()
-    end
+    --EnchanterAssist.finishAttempt()
     Darkmists.Log(EnchanterAssist.color.."EnchanterAssist","<red>Skill check failed.")
     return
   end
 
   if ln:match("^Your alchemy process results in a gooey mess") then
-    if EnchanterAssist.pendingTimer then
-      killTimer(EnchanterAssist.pendingTimer)
-      EnchanterAssist.pendingTimer = nil
-    end
-    if EnchanterAssist.inProgress and not EnchanterAssist._contains(EnchanterAssist.attempted, EnchanterAssist.pendingKey) then
+    if EnchanterAssist.state == "brewing" and not EnchanterAssist._contains(EnchanterAssist.attempted, EnchanterAssist.pendingKey) then
       Darkmists.Log(EnchanterAssist.color.."EnchanterAssist","<dark_khaki>No formula from: <white>"..EnchanterAssist.pendingKey)
       EnchanterAssist._add(EnchanterAssist.attempted, EnchanterAssist.pendingKey)
       EnchanterAssist.save()
     end
-    EnchanterAssist.finishAttempt()
+    --EnchanterAssist.finishAttempt()
     return
   end
 
   local formula = ln:match("^You have discovered the alchemy formula (.*)!")
   if formula then
-    if EnchanterAssist.pendingTimer then
-      killTimer(EnchanterAssist.pendingTimer)
-      EnchanterAssist.pendingTimer = nil
-    end
-    if EnchanterAssist.inProgress and not EnchanterAssist._contains(EnchanterAssist.attempted, EnchanterAssist.pendingKey) then
+    if EnchanterAssist.state == "brewing" and not EnchanterAssist._contains(EnchanterAssist.attempted, EnchanterAssist.pendingKey) then
       local msg = "Formula Discovered! <white>%s <dim_gray>(<white>%s<dim_gray>)"
       Darkmists.Log(EnchanterAssist.color.."EnchanterAssist",msg:format(formula,EnchanterAssist.pendingKey))
       dmapi.core.send("alc info",formula)
@@ -401,7 +448,7 @@ function EnchanterAssist.on_line(ln)
       EnchanterAssist.save()
     end
     dmapi.core.send("alc", "extract", "key")
-    EnchanterAssist.finishAttempt()
+    --EnchanterAssist.finishAttempt()
     return
   end
 end
@@ -457,8 +504,14 @@ registerNamedEventHandler(
           EnchanterAssist.sleepRefreshTimer = nil
         end
 
+        EnchanterAssist.state = "idle"
         dmapi.core.send("wake")
-        tempTimer(1, EnchanterAssist.run)
+
+        tempTimer(0.3, function()
+          if EnchanterAssist.autoRun and EnchanterAssist.state == "idle" then
+            EnchanterAssist.run()
+          end
+        end)
       end
 
       return
@@ -467,29 +520,33 @@ registerNamedEventHandler(
     local now = getEpoch()
 
     -- throttle to once every 3 seconds
-    if now - EnchanterAssist._lastVitalsCheck < 3 then
+    if EnchanterAssist.state ~= "resting"
+      and now - EnchanterAssist._lastVitalsCheck < 3 then
       return
     end
 
     EnchanterAssist._lastVitalsCheck = now
+    -- Exit resting (potion mode support)
+    if high and EnchanterAssist.state == "resting" and not dmapi.player.status.sleeping then
+      EnchanterAssist.state = "idle"
+      tempTimer(0.2, function()
+        if EnchanterAssist.autoRun then
+          EnchanterAssist.run()
+        end
+      end)
+    end
     -------------------------------------------------
     -- IF LOW RESOURCES
     -------------------------------------------------
     if low then
 
-      -- Cancel any active trial immediately
-      if EnchanterAssist.inProgress then
-        if EnchanterAssist.pendingTimer then
-          killTimer(EnchanterAssist.pendingTimer)
-          EnchanterAssist.pendingTimer = nil
-        end
-
-        EnchanterAssist.inProgress = false
-        EnchanterAssist.sawFlare   = false
-        EnchanterAssist.pendingKey = nil
+      -- Never interrupt brewing
+      if EnchanterAssist.state == "brewing" then
+        return
       end
 
-      -- Start sleep cycle
+      EnchanterAssist.state = "resting"
+
       if EnchanterAssist.sleepType == 1 then
         dmapi.core.send("get", EnchanterAssist.sleeper, EnchanterAssist.container)
         dmapi.core.send("drop", EnchanterAssist.sleeper)
