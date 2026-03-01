@@ -548,7 +548,7 @@ tempAlias("^walk(?:\\s+(.*))?$", function()
       return
     end
     
-    local name, room = arg:match("^add%s+([%w_]+)%s+(%d+)$")
+    local name, room = arg:match("^add%s+([%w_]+)%s+(%S+)$")
     if name and room then
       local ok, a, b, roomName = MapDestinations.addDestination(name, room)
 
