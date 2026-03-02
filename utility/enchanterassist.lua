@@ -18,6 +18,8 @@ EnchanterAssist.pendingKey   = nil
 EnchanterAssist.sleepRefreshTimer = nil
 EnchanterAssist.sawFlare     = false
 EnchanterAssist.state        = "idle"
+EnchanterAssist.sessionTrials     = 0
+EnchanterAssist.sessionDiscovered = 0
 
 EnchanterAssist.container    = "bag"
 EnchanterAssist.sleeper      = "bedroll"
@@ -70,6 +72,14 @@ function EnchanterAssist._pick(pool, count)
   end
   table.sort(result)
   return result
+end
+
+function EnchanterAssist._shuffleMaterials()
+  local t = EnchanterAssist.allmats
+  for i = #t, 2, -1 do
+    local j = math.random(i)
+    t[i], t[j] = t[j], t[i]
+  end
 end
 
 function EnchanterAssist._ensureSleepTimer()
@@ -255,6 +265,7 @@ function EnchanterAssist.run()
 
           EnchanterAssist.pendingKey = key
           EnchanterAssist.sawFlare = false
+          EnchanterAssist.sessionTrials = EnchanterAssist.sessionTrials + 1
 
           Darkmists.Log(EnchanterAssist.color.."EnchanterAssist",
               "<dim_gray>TRY <white>" .. key .. "\n")
@@ -333,6 +344,20 @@ function EnchanterAssist.stats()
       )
     )
   end
+
+  cecho("\n<cadet_blue>-------- Session Statistics --------")
+
+  cecho(string.format(
+    "\n<white>Trials Attempted:    <medium_sea_green>%5d",
+    EnchanterAssist.sessionTrials
+  ))
+
+  cecho(string.format(
+    "\n<white>Formulas Discovered: <cornflower_blue>%5d",
+    EnchanterAssist.sessionDiscovered
+  ))
+  
+  cecho("\n<cadet_blue>====================================")
 end
 
 function EnchanterAssist.reset()
@@ -341,7 +366,13 @@ function EnchanterAssist.reset()
   EnchanterAssist.state = "idle"
   EnchanterAssist.pendingKey = nil
   EnchanterAssist.sawFlare = false
+  EnchanterAssist.sessionTrials     = 0
+  EnchanterAssist.sessionDiscovered = 0
   EnchanterAssist.missing = {}
+
+  math.randomseed(os.time())   -- seed once per session
+  EnchanterAssist._shuffleMaterials()
+
   EnchanterAssist.save()
   Darkmists.Log(EnchanterAssist.color.."EnchanterAssist","<medium_sea_green>Reset complete, Attempts Preserved.")
 end
@@ -500,6 +531,7 @@ function EnchanterAssist.on_line(ln)
   local formula = ln:match("^You have discovered the alchemy formula (.*)!")
   if formula then
     if EnchanterAssist.state == "brewing" and not EnchanterAssist._contains(EnchanterAssist.attempted, EnchanterAssist.pendingKey) then
+      EnchanterAssist.sessionDiscovered = EnchanterAssist.sessionDiscovered + 1
       local msg = "Formula Discovered! <white>%s <dim_gray>(<white>%s<dim_gray>)"
       Darkmists.Log(EnchanterAssist.color.."EnchanterAssist",msg:format(formula,EnchanterAssist.pendingKey))
       dmapi.core.send("alc info",formula)
@@ -753,5 +785,7 @@ end)
 -- ============================================================================
 
 EnchanterAssist.load()
+math.randomseed(os.time())   -- seed once per session
+EnchanterAssist._shuffleMaterials()
 EnchanterAssist.stats()
 Darkmists.Log(EnchanterAssist.color.."EnchanterAssist","Ready for Usage!")
