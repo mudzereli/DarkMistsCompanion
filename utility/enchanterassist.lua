@@ -18,8 +18,8 @@ EnchanterAssist.pendingKey   = nil
 EnchanterAssist.sleepRefreshTimer = nil
 EnchanterAssist.sawFlare     = false
 EnchanterAssist.state        = "idle"
-EnchanterAssist.sessionTrials     = 0
-EnchanterAssist.sessionDiscovered = 0
+EnchanterAssist.sessionTrials   = 0
+EnchanterAssist.sessionFormulas = {}
 
 EnchanterAssist.container    = "bag"
 EnchanterAssist.sleeper      = "bedroll"
@@ -291,6 +291,41 @@ function EnchanterAssist.run()
   EnchanterAssist.state = "idle"
 end
 
+function EnchanterAssist.showSessionFormulas()
+
+  local count = 0
+  for _ in pairs(EnchanterAssist.sessionFormulas) do
+    count = count + 1
+  end
+
+  if count == 0 then
+    cecho("\n<dark_khaki>No formulas discovered this session.\n")
+    return
+  end
+
+  cecho("\n<cadet_blue>===== Session Formulas =====\n")
+
+  local list = {}
+  for name in pairs(EnchanterAssist.sessionFormulas) do
+    table.insert(list, name)
+  end
+
+  table.sort(list)
+
+  for _, name in ipairs(list) do
+    cechoLink(
+      string.format("<cornflower_blue>• <white>%s\n", name),
+      function()
+        send("alch info " .. name)
+      end,
+      "Click to view formula info",
+      true
+    )
+  end
+
+  cecho("<cadet_blue>============================\n")
+end
+
 function EnchanterAssist.finishAttempt()
   EnchanterAssist.sawFlare   = false
   EnchanterAssist.pendingKey = nil
@@ -348,14 +383,30 @@ function EnchanterAssist.stats()
   cecho("\n<cadet_blue>-------- Session Statistics --------")
 
   cecho(string.format(
-    "\n<white>Trials Attempted:    <medium_sea_green>%5d",
+    "\n<white>Trials Attempted:    <medium_sea_green>%4d",
     EnchanterAssist.sessionTrials
   ))
 
+  local discoveredCount = 0
+  for _ in pairs(EnchanterAssist.sessionFormulas) do
+    discoveredCount = discoveredCount + 1
+  end
+
   cecho(string.format(
-    "\n<white>Formulas Discovered: <cornflower_blue>%5d",
-    EnchanterAssist.sessionDiscovered
+    "\n<white>Formulas Discovered: <cornflower_blue>%4d ",
+    discoveredCount
   ))
+
+  if discoveredCount > 0 then
+    cechoLink(
+      "<dark_khaki>[View All]\n",
+      function()
+        EnchanterAssist.showSessionFormulas()
+      end,
+      "Show all discovered formulas",
+      true
+    )
+  end
   
   cecho("\n<cadet_blue>====================================")
 end
@@ -367,7 +418,7 @@ function EnchanterAssist.reset()
   EnchanterAssist.pendingKey = nil
   EnchanterAssist.sawFlare = false
   EnchanterAssist.sessionTrials     = 0
-  EnchanterAssist.sessionDiscovered = 0
+  EnchanterAssist.sessionFormulas = {}
   EnchanterAssist.missing = {}
 
   math.randomseed(os.time())   -- seed once per session
@@ -531,7 +582,7 @@ function EnchanterAssist.on_line(ln)
   local formula = ln:match("^You have discovered the alchemy formula (.*)!")
   if formula then
     if EnchanterAssist.state == "brewing" and not EnchanterAssist._contains(EnchanterAssist.attempted, EnchanterAssist.pendingKey) then
-      EnchanterAssist.sessionDiscovered = EnchanterAssist.sessionDiscovered + 1
+      EnchanterAssist.sessionFormulas[formula] = true
       local msg = "Formula Discovered! <white>%s <dim_gray>(<white>%s<dim_gray>)"
       Darkmists.Log(EnchanterAssist.color.."EnchanterAssist",msg:format(formula,EnchanterAssist.pendingKey))
       dmapi.core.send("alc info",formula)
