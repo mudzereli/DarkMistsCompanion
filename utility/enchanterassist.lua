@@ -9,6 +9,7 @@ EnchanterAssist = EnchanterAssist or {}
 
 EnchanterAssist.enabled      = true
 EnchanterAssist.autoRun      = false
+EnchanterAssist.playSoundOnDiscover = true
 EnchanterAssist.partCount    = 5
 
 EnchanterAssist.attempted    = {}
@@ -102,6 +103,23 @@ function EnchanterAssist._ensureSleepTimer()
 
 end
 
+function EnchanterAssist._playDiscoverSound()
+  if not EnchanterAssist.playSoundOnDiscover then return end
+
+  local soundPath = getMudletHomeDir() ..
+    "/DarkMistsCompanion/assets/sounds/double-beep.mp3"
+
+  -- Normalize slashes (safety for Windows)
+  soundPath = soundPath:gsub("\\", "/")
+
+  playSoundFile({
+    name = soundPath,
+    volume = 75,
+    priority = 75,
+    tag = "ea_discover"
+  })
+end
+
 function EnchanterAssist._nextCombination(indices, n, r)
     -- indices = current combination (1-based)
     -- n = pool size
@@ -175,6 +193,7 @@ function EnchanterAssist.save()
       sleeper   = EnchanterAssist.sleeper,
       sleepType = EnchanterAssist.sleepType,
       drainItem = EnchanterAssist.drainItem,
+      playSoundOnDiscover = EnchanterAssist.playSoundOnDiscover,
     },
     attempted = EnchanterAssist.attempted,
     missing   = EnchanterAssist.missing
@@ -196,6 +215,7 @@ function EnchanterAssist.load()
     EnchanterAssist.partCount = data.config.partCount or 5
     EnchanterAssist.container = data.config.container or "bag"
     EnchanterAssist.sleeper   = data.config.sleeper or "bedroll"
+    EnchanterAssist.playSoundOnDiscover = data.config.playSoundOnDiscover ~= false
     EnchanterAssist.sleepType = data.config.sleepType or 1
     EnchanterAssist.drainItem = data.config.drainItem or "potion"
   end
@@ -585,6 +605,7 @@ function EnchanterAssist.on_line(ln)
       EnchanterAssist.sessionFormulas[formula] = true
       local msg = "Formula Discovered! <white>%s <dim_gray>(<white>%s<dim_gray>)"
       Darkmists.Log(EnchanterAssist.color.."EnchanterAssist",msg:format(formula,EnchanterAssist.pendingKey))
+      EnchanterAssist._playDiscoverSound()
       dmapi.core.send("alc info",formula)
       EnchanterAssist._add(EnchanterAssist.attempted, EnchanterAssist.pendingKey)
       EnchanterAssist.save()
@@ -757,6 +778,9 @@ tempAlias("^es(?:\\s+(.*))?$", function()
   ]]..c..[[es set potion <item>
     <dim_gray>Set item used for quaffing.
 
+  ]]..c..[[  es sound
+    <dim_gray>Toggle formula discovery sound
+
 <ansi_cyan>Control:
   ]]..c..[[es enable
   ]]..c..[[es disable
@@ -829,6 +853,17 @@ tempAlias("^es (enable|disable)$", function()
     EnchanterAssist.enabled = false
   end
   Darkmists.Log(EnchanterAssist.color.."EnchanterAssist","Status: " .. tostring(EnchanterAssist.enabled))
+end)
+
+tempAlias("^es sound$", function()
+  EnchanterAssist.playSoundOnDiscover =
+    not EnchanterAssist.playSoundOnDiscover
+  EnchanterAssist.save()
+  Darkmists.Log(
+    EnchanterAssist.color.."EnchanterAssist",
+    "Play sound on discover: " ..
+      tostring(EnchanterAssist.playSoundOnDiscover)
+  )
 end)
 
 -- ============================================================================
