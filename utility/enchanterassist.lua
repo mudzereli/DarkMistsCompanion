@@ -399,7 +399,7 @@ function EnchanterAssist.stats()
 
   if discoveredCount > 0 then
     cechoLink(
-      "<dark_khaki>[View All]\n",
+      "<dark_khaki>[View All]",
       function()
         EnchanterAssist.showSessionFormulas()
       end,
