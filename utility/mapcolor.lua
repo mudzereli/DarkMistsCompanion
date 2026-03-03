@@ -180,6 +180,20 @@ MapColors.WordAssociations = {
   { "cemetary", MapColors.Terrain.SHADOWY }, { "cemetery", MapColors.Terrain.SHADOWY },
   { "corpse", MapColors.Terrain.SHADOWY },
 
+  -- Large civic structures
+  { "courtyard", MapColors.Terrain.STONE_WHITE }, { "turret", MapColors.Terrain.STONY },
+  { "abattoir", MapColors.Terrain.SHADOWY }, { "castle", MapColors.Terrain.STONY },
+  { "ruins", MapColors.Terrain.CAVE }, { "citadel", MapColors.Terrain.STONE_WHITE },
+  { "palace", MapColors.Terrain.STONE_WHITE }, { "aisle", MapColors.Terrain.STONY },
+  { "alcove", MapColors.Terrain.STONY }, { "platform", MapColors.Terrain.STONY },
+  { "promenade", MapColors.Terrain.STONE_WHITE }, { "ladder", MapColors.Terrain.STONY_PATH },
+  { "grounds", MapColors.Terrain.ENCAMPMENT }, { "encampment", MapColors.Terrain.ENCAMPMENT },
+  { "camp", MapColors.Terrain.ENCAMPMENT }, { "settlement", MapColors.Terrain.ENCAMPMENT },
+  { "village", MapColors.Terrain.ENCAMPMENT }, { "compound", MapColors.Terrain.ENCAMPMENT },
+  { "cave", MapColors.Terrain.CAVE }, { "cavern", MapColors.Terrain.CAVE }, { "den", MapColors.Terrain.CAVE },
+  { "crater", MapColors.Terrain.CAVE }, { "dungeon", MapColors.Terrain.CAVE },
+  { "tent", MapColors.Terrain.HOLY },
+
   -- Castle/city structural elements
   { "ramparts", MapColors.Terrain.STONY }, { "battlement", MapColors.Terrain.STONY },
   { "hallway", MapColors.Terrain.STONY }, { "walkway", MapColors.Terrain.STONY },
@@ -187,9 +201,10 @@ MapColors.WordAssociations = {
   { "corridor", MapColors.Terrain.STONY }, { "basement", MapColors.Terrain.STONY },
   { "pews", MapColors.Terrain.WOODEN }, { "suspended walkway", MapColors.Terrain.WOODEN },
   { "gallery", MapColors.Terrain.INTERIOR }, { "roof", MapColors.Terrain.WOODEN },
+  { "dark hallway", MapColors.Terrain.SHADOWY },
 
   -- Fortified rooms
-  { "gate", MapColors.Terrain.METAL }, { "cell", MapColors.Terrain.METAL },
+  { "gate", MapColors.Terrain.METAL }, { "cell", MapColors.Terrain.SHADOWY },
   { "stall", MapColors.Terrain.METAL }, { "chamber", MapColors.Terrain.METAL },
 
   -- Generic interior rooms
@@ -226,20 +241,6 @@ MapColors.WordAssociations = {
   { "guard post", MapColors.Terrain.STONY }, { "guardpost", MapColors.Terrain.STONY },
   { "arena", MapColors.Terrain.STONY }, { "barracks", MapColors.Terrain.STONY },
   { "outpost", MapColors.Terrain.STONY }, { "stands", MapColors.Terrain.WOODEN },
-
-  -- Large civic structures
-  { "courtyard", MapColors.Terrain.STONE_WHITE }, { "turret", MapColors.Terrain.STONY },
-  { "abattoir", MapColors.Terrain.SHADOWY }, { "castle", MapColors.Terrain.STONY },
-  { "ruins", MapColors.Terrain.CAVE }, { "citadel", MapColors.Terrain.STONE_WHITE },
-  { "palace", MapColors.Terrain.STONE_WHITE }, { "aisle", MapColors.Terrain.STONY },
-  { "alcove", MapColors.Terrain.STONY }, { "platform", MapColors.Terrain.STONY },
-  { "promenade", MapColors.Terrain.STONE_WHITE }, { "ladder", MapColors.Terrain.STONY_PATH },
-  { "grounds", MapColors.Terrain.ENCAMPMENT }, { "encampment", MapColors.Terrain.ENCAMPMENT },
-  { "camp", MapColors.Terrain.ENCAMPMENT }, { "settlement", MapColors.Terrain.ENCAMPMENT },
-  { "village", MapColors.Terrain.ENCAMPMENT }, { "compound", MapColors.Terrain.ENCAMPMENT },
-  { "cave", MapColors.Terrain.CAVE }, { "cavern", MapColors.Terrain.CAVE }, { "den", MapColors.Terrain.CAVE },
-  { "crater", MapColors.Terrain.CAVE }, { "dungeon", MapColors.Terrain.CAVE },
-  { "tent", MapColors.Terrain.HOLY },
 
   -- Shops/points of interest (high visibility)
   { "market", MapColors.Terrain.INTERIOR_POI }, { "shop", MapColors.Terrain.INTERIOR_POI },
@@ -308,6 +309,8 @@ MapColors.WordAssociations = {
   { "corner of * and *", MapColors.Terrain.STONY_PATH },
   { "*'s lane", MapColors.Terrain.STONY_PATH },
   { "dale market", MapColors.Terrain.STONE_WHITE },
+  { "white stone", MapColors.Terrain.STONE_WHITE },
+  { "castle's", MapColors.Terrain.STONE_WHITE },
   { "market square", MapColors.Terrain.STONE_WHITE },
   { "market area", MapColors.Terrain.STONE_WHITE },
   { "Plaza of the Silver Dragon", MapColors.Terrain.STONE_WHITE },
