@@ -1021,7 +1021,11 @@ function dmapi.core.LineTrigger(line)
     or channel == "OUTLAW"
     or channel == "JUSTICAR"
     or channel == "DEPRAVED"
-    or channel == "ANCIENT" then
+    or channel == "ANCIENT"
+    or channel == "GAR"
+    or channel == "GML"
+    or channel == "SG"
+    or channel == "DRE" then
       dmapi.core.raiseEvent("dmapi.communication.housechannel", {
         sender = sender,
         receiver = channel,
