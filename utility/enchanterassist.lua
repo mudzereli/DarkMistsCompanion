@@ -313,26 +313,16 @@ end
 
 function EnchanterAssist.showSessionFormulas()
 
-  local count = 0
-  for _ in pairs(EnchanterAssist.sessionFormulas) do
-    count = count + 1
-  end
+  local discoveredCount = #EnchanterAssist.sessionFormulas
 
-  if count == 0 then
+  if discoveredCount == 0 then
     cecho("\n<dark_khaki>No formulas discovered this session.\n")
     return
   end
 
   cecho("\n<cadet_blue>===== Session Formulas =====\n")
 
-  local list = {}
-  for name in pairs(EnchanterAssist.sessionFormulas) do
-    table.insert(list, name)
-  end
-
-  table.sort(list)
-
-  for _, name in ipairs(list) do
+  for _, name in ipairs(EnchanterAssist.sessionFormulas) do
     cechoLink(
       string.format("<cornflower_blue>• <white>%s\n", name),
       function()
@@ -347,6 +337,8 @@ function EnchanterAssist.showSessionFormulas()
 end
 
 function EnchanterAssist.finishAttempt()
+  dmapi.core.send("save")
+
   EnchanterAssist.sawFlare   = false
   EnchanterAssist.pendingKey = nil
 
@@ -407,10 +399,7 @@ function EnchanterAssist.stats()
     EnchanterAssist.sessionTrials
   ))
 
-  local discoveredCount = 0
-  for _ in pairs(EnchanterAssist.sessionFormulas) do
-    discoveredCount = discoveredCount + 1
-  end
+  local discoveredCount = #EnchanterAssist.sessionFormulas
 
   cecho(string.format(
     "\n<white>Formulas Discovered: <cornflower_blue>%4d ",
@@ -489,7 +478,7 @@ function EnchanterAssist.on_line(ln)
     end
   end
 
-  if ln:match("^Your stored essences %(cap: %d+ per material%):$") then
+  if ln:match("^Total:%s+%d+ essences stored across %d+ materials %(%d+/%d+ total known%)$") then
       if EnchanterAssist.state == "brewing" then
 
           -- silent-known case
@@ -602,7 +591,7 @@ function EnchanterAssist.on_line(ln)
   local formula = ln:match("^You have discovered the alchemy formula (.*)!")
   if formula then
     if EnchanterAssist.state == "brewing" and not EnchanterAssist._contains(EnchanterAssist.attempted, EnchanterAssist.pendingKey) then
-      EnchanterAssist.sessionFormulas[formula] = true
+      table.insert(EnchanterAssist.sessionFormulas, formula)
       local msg = "Formula Discovered! <white>%s <dim_gray>(<white>%s<dim_gray>)"
       Darkmists.Log(EnchanterAssist.color.."EnchanterAssist",msg:format(formula,EnchanterAssist.pendingKey))
       EnchanterAssist._playDiscoverSound()
@@ -778,7 +767,7 @@ tempAlias("^es(?:\\s+(.*))?$", function()
   ]]..c..[[es set potion <item>
     <dim_gray>Set item used for quaffing.
 
-  ]]..c..[[  es sound
+  ]]..c..[[es sound
     <dim_gray>Toggle formula discovery sound
 
 <ansi_cyan>Control:
