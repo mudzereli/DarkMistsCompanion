@@ -862,5 +862,5 @@ end)
 EnchanterAssist.load()
 math.randomseed(os.time())   -- seed once per session
 EnchanterAssist._shuffleMaterials()
-EnchanterAssist.stats()
+--EnchanterAssist.stats()
 Darkmists.Log(EnchanterAssist.color.."EnchanterAssist","Ready for Usage!")
