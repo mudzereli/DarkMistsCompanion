@@ -124,3 +124,71 @@ function DMClickables.ClickablePractices()
     cecho(string.format("%s%3s%s  ", color, pct, entry.suffix))
     end
 end
+
+DMClickables.essence = DMClickables.essence or {
+  active = false,
+  cap = 225
+}
+
+function DMClickables.ClickableEssences()
+
+  local raw = getCurrentLine()
+
+  if not raw or raw == "" then return end
+
+  -- START BLOCK
+  if raw:match("^Your stored essences %(cap:%s*(%d+) per material%):$") then
+    local cap = raw:match("%(cap:%s*(%d+)")
+    if cap then
+      DMClickables.essence.cap = tonumber(cap)
+    end
+    DMClickables.essence.active = true
+    return
+  end
+
+  -- END BLOCK
+  if DMClickables.essence.active and raw:match("^Total:%s+%d+ essences stored across") then
+    DMClickables.essence.active = false
+    return
+  end
+
+  -- ignore everything outside block
+  if not DMClickables.essence.active then return end
+
+  -- skip pager
+  if raw:match("^%[Hit Return to continue%]") then return end
+
+    -- if line doesn't contain essence pairs, block was interrupted
+  if not raw:match("([%a]+)%s+(%d+)") then
+    DMClickables.essence.active = false
+    return
+  end
+  
+  local output = {}
+  local cap = DMClickables.essence.cap
+
+  for mat, num in raw:gmatch("([%a]+)%s+(%d+)") do
+    local n = tonumber(num)
+    local pct = n / cap
+    local color = "<red>"
+
+    if pct >= 1 then
+      color = "<dark_green>"
+    elseif pct >= .9 then
+      color = "<green>"
+    elseif pct >= .75 then
+      color = "<dark_khaki>"
+    elseif pct >= .5 then
+      color = "<coral>"
+    end
+
+    table.insert(output,
+      string.format("<steel_blue>%-15s %s%3d<reset>", mat, color, n)
+    )
+  end
+
+  if #output == 0 then return end
+
+  replaceLine("")
+  cecho("   " .. table.concat(output, "      "))
+end
