@@ -5,60 +5,196 @@
 <title>Alchemy Formula Parser</title>
 
 <style>
+
 body {
-    font-family: Arial, sans-serif;
-    background: #1e1e1e;
-    color: #eee;
-    padding: 20px;
+    font-family: "Segoe UI", Arial, sans-serif;
+    background: linear-gradient(180deg,#1b1b1b,#121212);
+    color: #ddd;
+    padding: 24px;
 }
+
+/* ---------- title ---------- */
+
+h2 {
+    color: #7fd4ff;
+    margin-bottom: 10px;
+    letter-spacing: .5px;
+}
+
+/* ---------- textarea ---------- */
 
 textarea {
     width: 100%;
-    height: 120px; /* Smaller but still resizable */
+    height: 120px;
     resize: vertical;
-    background: #111;
-    color: #0f0;
+    background: #0e0e0e;
+    color: #8cffb5;
     font-family: monospace;
     padding: 10px;
+    border: 1px solid #333;
+    border-radius: 6px;
 }
+
+/* ---------- buttons ---------- */
 
 button {
     padding: 8px 16px;
-    margin: 5px 5px 5px 0;
+    margin: 5px 6px 5px 0;
     cursor: pointer;
+    background: #2b2b2b;
+    color: #eee;
+    border: 1px solid #444;
+    border-radius: 6px;
+    transition: all .15s ease;
 }
 
-#inputContainer {
-    margin-bottom: 15px;
+button:hover {
+    background: #3a3a3a;
+    border-color: #6aa8ff;
 }
+
+/* ---------- filters ---------- */
+
+input {
+    background: #111;
+    border: 1px solid #333;
+    color: #ddd;
+    border-radius: 6px;
+    outline: none;
+}
+
+input:focus {
+    border-color: #6aa8ff;
+    box-shadow: 0 0 6px #1f4aff55;
+}
+
+/* ---------- instructions ---------- */
 
 #instructions {
     font-size: 13px;
-    color: #bbb;
-    margin-bottom: 8px;
+    color: #9aa;
+    margin-bottom: 10px;
 }
+
+/* ---------- summary ---------- */
+
+#summary {
+    margin-top: 15px;
+    font-weight: bold;
+    color: #7fc8ff;
+}
+
+/* ---------- table ---------- */
 
 table {
     width: 100%;
     border-collapse: collapse;
     margin-top: 20px;
+    font-size: 14px;
 }
 
-th, td {
-    border: 1px solid #444;
-    padding: 6px;
-    text-align: left;
-}
+/* header */
 
 th {
     cursor: pointer;
-    background: #333;
+    background: #232323;
+    color: #7fd4ff;
+    border-bottom: 2px solid #444;
+    padding: 7px;
 }
 
-tr:nth-child(even) {
-    background: #2a2a2a;
+/* cells */
+
+th, td {
+    border-right: 1px solid #222;
 }
+
+tbody tr:hover td {
+    border-right: 1px solid #333;
+}
+
+th:last-child,
+td:last-child {
+    border-right: none;
+}
+
+/* Right-align numeric stat columns */
+td:nth-child(n+5):not(:last-child) {
+    text-align: right;
+    font-family: monospace;
+}
+
+/* Center FLAGS column */
+td:last-child,
+th:last-child {
+    text-align: center;
+}
+
+thead th {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+}
+
+/* row striping */
+
+tbody tr:nth-child(even) {
+    background: #181818;
+}
+
+tbody tr:nth-child(odd) {
+    background: #141414;
+}
+
+/* hover */
+
+tbody tr:hover {
+    background: #222;
+}
+
+/* ---------- stat colors ---------- */
+
+/* HP */
+td:nth-child(5) {
+    color: #7cff7c;
+}
+
+/* MANA */
+td:nth-child(6) {
+    color: #7caeff;
+}
+
+/* HITROLL / DAMROLL */
+td:nth-child(7),
+td:nth-child(8) {
+    color: #ffc36e;
+}
+
+/* SPELL / HOLY */
+td:nth-child(9),
+td:nth-child(10) {
+    color: #c58cff;
+}
+
+/* AC */
+td:nth-child(11) {
+    color: #ff9c9c;
+}
+
+/* SAVES */
+td:nth-child(12) {
+    color: #6ed9ff;
+}
+
+/* FLAGS */
+td:last-child {
+    color: #aaa;
+    font-style: italic;
+}
+
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql-wasm.js"></script>
+
 </head>
 
 <body>
@@ -77,11 +213,20 @@ tr:nth-child(even) {
     <textarea id="input"></textarea><br>
     <button onclick="parseData()">Parse</button>
     <button onclick="clearAll()">Clear</button>
+    <button onclick="exportSQLite()">Export SQLite</button>
 </div>
 
 <input type="text" id="filterInput" placeholder="Filter formulas..."
        onkeyup="filterTable()"
        style="width:100%; padding:8px; margin-top:10px;">
+<input type="text" id="statFilter"
+    placeholder="Filter: hp>10 spellpower flag:slow"
+    onkeyup="filterTable()"
+    style="width:100%; padding:8px; margin-top:6px;">
+<div style="font-size:12px;color:#aaa;margin-top:4px">
+    Use stat names, comparisons, or flags. Multiple filters are ANDed.<br>
+    Examples: hp, hp>=12, str>=2, fly, hp>=5 str>=2
+</div>
 
 <div id="summary" style="margin-top:15px; font-weight:bold;">
     1-Part: 0 |
@@ -93,17 +238,91 @@ tr:nth-child(even) {
 
 <table id="table">
 <thead>
-<tr>
-    <th onclick="sortTable(0)">Formula Name</th>
-    <th onclick="sortTable(1)">Materials</th>
-    <th onclick="sortTable(2)">Stats (Full)</th>
-    <th onclick="sortTable(3)">Stat Count</th>
+<tr id="headerRow">
+<th onclick="sortTable(0)">Formula Name</th>
+<th onclick="sortTable(1)">Materials</th>
+<th onclick="sortTable(2)">Stats</th>
+<th onclick="sortTable(3)">Count</th>
 </tr>
 </thead>
 <tbody></tbody>
 </table>
 
 <script>
+const STAT_COLUMNS = [
+"hp","mana",
+"hitroll","damroll","spellpower","holypower",
+"ac","saves"
+]
+
+let allStats = new Set()
+
+async function exportSQLite() {
+    const SQL = await initSqlJs({
+        locateFile: file => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/${file}`
+    });
+
+    const db = new SQL.Database();
+
+    // Create table
+    db.run(`
+        CREATE TABLE formulas (
+            name TEXT,
+            materials TEXT,
+            stats TEXT,
+            stat_count INTEGER,
+            hp INTEGER,
+            mana INTEGER,
+            hitroll INTEGER,
+            damroll INTEGER,
+            spellpower INTEGER,
+            holypower INTEGER,
+            ac INTEGER,
+            saves INTEGER,
+            flags TEXT
+        );
+    `);
+
+    const rows = document.querySelectorAll("#table tbody tr");
+
+    const stmt = db.prepare(`
+        INSERT INTO formulas VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)
+    `);
+
+    rows.forEach(row => {
+        const stats = row._stats || {};
+        const flags = (row._flags || []).join(", ");
+
+        stmt.run([
+            row.cells[0].innerText,
+            row.cells[1].innerText,
+            row.cells[2].innerText,
+            Number(row.cells[3].innerText) || 0,
+            stats.hp || 0,
+            stats.mana || 0,
+            stats.hitroll || 0,
+            stats.damroll || 0,
+            stats.spellpower || 0,
+            stats.holypower || 0,
+            stats.ac || 0,
+            stats.saves || 0,
+            flags
+        ]);
+    });
+
+    stmt.free();
+
+    const binaryArray = db.export();
+    const blob = new Blob([binaryArray], {type: "application/octet-stream"});
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "alchemy_formulas.sqlite";
+    a.click();
+
+    URL.revokeObjectURL(url);
+}
 
 function toggleInput() {
     const container = document.getElementById("inputContainer");
@@ -118,14 +337,179 @@ function toggleInput() {
     }
 }
 
+function buildStatColumns() {
+    const header = document.getElementById("headerRow")
+
+    STAT_COLUMNS.forEach(stat => {
+
+        const th = document.createElement("th")
+        th.innerText = stat.toUpperCase()
+
+        th.addEventListener("click", function() {
+            const index = Array.from(this.parentNode.children).indexOf(this)
+            sortTable(index)
+        })
+
+        header.appendChild(th)
+
+    })
+
+    const flagHeader = document.createElement("th")
+    flagHeader.innerText = "FLAGS"
+
+    flagHeader.addEventListener("click", function(){
+        const index = Array.from(this.parentNode.children).indexOf(this)
+        sortTable(index)
+    })
+
+    header.appendChild(flagHeader)
+}
+
 function filterTable() {
-    const input = document.getElementById("filterInput");
-    const filter = input.value.toLowerCase();
-    const rows = document.querySelectorAll("#table tbody tr");
+
+    const textFilter =
+        document.getElementById("filterInput")
+        .value
+        .toLowerCase()
+
+    const query =
+        document.getElementById("statFilter")
+        .value
+        .toLowerCase()
+        .trim()
+
+    const conditions =
+        query ? query.split(/\s+/) : []
+
+    const rows =
+        document.querySelectorAll("#table tbody tr")
 
     rows.forEach(row => {
-        row.style.display = row.innerText.toLowerCase().includes(filter) ? "" : "none";
-    });
+
+        let show = true
+
+        const stats = row._stats || {}
+        const flags = row._flags || []
+
+        /* ---------- text search ---------- */
+
+        if (textFilter) {
+
+            const name =
+                row.cells[0].innerText.toLowerCase()
+
+            const mats =
+                row.cells[1].innerText.toLowerCase()
+
+            const statsText =
+                row.cells[2].innerText.toLowerCase()
+
+            show =
+                name.includes(textFilter) ||
+                mats.includes(textFilter) ||
+                statsText.includes(textFilter) ||
+                flags.join(",").includes(textFilter)
+
+        }
+
+        /* ---------- stat conditions ---------- */
+
+        if (show && conditions.length) {
+
+            for (let cond of conditions) {
+
+                let matched = false
+
+                const flagMatch =
+                    cond.match(/^flag:(.+)$/)
+
+                if (flagMatch) {
+
+                    const flag = flagMatch[1]
+
+                    matched =
+                        flags.some(f => f.includes(flag))
+
+                } else {
+
+                    const cmp = cond.match(/^([a-z_]+)(>=|<=|>|<|=)(-?\d+)$/)
+
+                    if (cmp) {
+
+                        const name = cmp[1]
+                        const op = cmp[2]
+                        const val = Number(cmp[3])
+                        const statVal = stats[name] || 0
+
+                        if (op === ">") matched = statVal > val
+                        if (op === "<") matched = statVal < val
+                        if (op === ">=") matched = statVal >= val
+                        if (op === "<=") matched = statVal <= val
+                        if (op === "=") matched = statVal == val
+
+                    } else {
+
+                        matched =
+                            stats.hasOwnProperty(cond) ||
+                            flags.includes(cond)
+
+                    }
+
+                }
+
+                if (!matched) {
+                    show = false
+                    break
+                }
+
+            }
+
+        }
+
+        row.style.display = show ? "" : "none"
+
+    })
+
+}
+
+function parseStats(statString) {
+
+    const stats = {}
+    const flags = []
+
+    if (!statString) return {stats, flags}
+
+    const parts = statString
+        .split(",")
+        .map(s => s.trim())
+        .filter(Boolean)
+
+    parts.forEach(p => {
+
+        const match = p.match(/(.+?)\s*([+-]?\d+)/)
+
+        if (match) {
+
+            let name = match[1]
+                .toLowerCase()
+                .replace(/\s+/g, "_")
+
+            let value = Number(match[2])
+
+            stats[name] = value
+
+        } else {
+
+            flags.push(
+                p.toLowerCase()
+                .replace(/\s+/g, "_")
+            )
+
+        }
+
+    })
+
+    return {stats, flags}
 }
 
 function parseData() {
@@ -181,27 +565,89 @@ function parseData() {
                 partCounts[materialCount]++;
             }
 
-            let row = tbody.insertRow();
-            row.insertCell(0).innerText = currentFormula.name;
-            row.insertCell(1).innerText = materials;
-            row.insertCell(2).innerText = currentFormula.stats;
-            row.insertCell(3).innerText = currentFormula.statCount;
+            let row = tbody.insertRow()
+
+            row._stats = currentFormula.parsedStats || {}
+            row._flags = currentFormula.parsedFlags || []
+
+            row.insertCell(0).innerText = currentFormula.name
+            row.insertCell(1).innerText = materials
+            row.insertCell(2).innerText = currentFormula.stats
+            row.insertCell(3).innerText = currentFormula.statCount
+
+            STAT_COLUMNS.forEach(stat => {
+
+                let val = ""
+
+                if (stat === "saves") {
+
+                    let total = 0
+
+                    for (let key in currentFormula.parsedStats) {
+
+                        if (key === "saves" || key.startsWith("saves_vs_")) {
+                            total += currentFormula.parsedStats[key]
+                        }
+
+                    }
+
+                    if (total !== 0) val = total
+
+                } else {
+
+                    val = currentFormula.parsedStats?.[stat] ?? ""
+
+                }
+
+                row.insertCell(-1).innerText = val
+
+            })
+
+            row.insertCell(-1).innerText =
+            (currentFormula.parsedFlags || []).join(", ")
 
             existingNames.add(currentFormula.name.toLowerCase());
             currentFormula = null;
         } else {
-            let parts = trimmed.split(/\s{2,}/);
-            if (parts.length < 2) continue;
 
-            let name = parts[0].trim();
-            let stats = parts.slice(1).join(" ").trim();
-            let statArray = stats.split(",").map(s=>s.trim()).filter(Boolean);
+            let match = line.match(/^([a-z]+)\s{2,}(.*)$/i)
 
-            currentFormula = {
-                name: name,
-                stats: stats,
-                statCount: statArray.length
-            };
+            if (match) {
+
+                // SAFETY: finalize previous formula if it somehow didn't close
+                if (currentFormula && !existingNames.has(currentFormula.name.toLowerCase())) {
+                    // do nothing — just keep it until its material line
+                }
+
+                let name = match[1]
+                let stats = match[2]
+
+                currentFormula = {
+                    name: name,
+                    stats: stats,
+                    parsedStats: {},
+                    parsedFlags: [],
+                    statCount: 0
+                }
+
+                let parsed = parseStats(stats)
+
+                currentFormula.parsedStats = parsed.stats
+                currentFormula.parsedFlags = parsed.flags
+                currentFormula.statCount = Object.keys(parsed.stats).length
+            }
+            else if (currentFormula) {
+
+                // STAT CONTINUATION
+                currentFormula.stats += " " + trimmed
+
+                let parsed = parseStats(currentFormula.stats)
+
+                currentFormula.parsedStats = parsed.stats
+                currentFormula.parsedFlags = parsed.flags
+                currentFormula.statCount = Object.keys(parsed.stats).length
+            }
+
         }
     }
 
@@ -216,20 +662,40 @@ function parseData() {
 }
 
 function sortTable(columnIndex) {
-    const table = document.getElementById("table");
-    let rows = Array.from(table.rows).slice(1);
-    let asc = table.getAttribute("data-sort-dir") !== "asc";
+    const table = document.getElementById("table")
+    const tbody = table.tBodies[0]
+
+    let rows = Array.from(tbody.rows)
+
+    let asc =
+        table.getAttribute("data-sort-dir") !== "asc"
 
     rows.sort((a,b)=>{
-        let x = a.cells[columnIndex].innerText.toLowerCase();
-        let y = b.cells[columnIndex].innerText.toLowerCase();
-        return asc ? x.localeCompare(y) : y.localeCompare(x);
-    });
 
-    table.setAttribute("data-sort-dir", asc ? "asc" : "desc");
+        let x = a.cells[columnIndex].innerText
+        let y = b.cells[columnIndex].innerText
 
-    rows.forEach(row => table.tBodies[0].appendChild(row));
+        let nx = Number(x)
+        let ny = Number(y)
+
+        if(!isNaN(nx) && !isNaN(ny)){
+            return asc ? nx - ny : ny - nx
+        }
+
+        return asc
+            ? x.localeCompare(y)
+            : y.localeCompare(x)
+
+    })
+
+    table.setAttribute(
+        "data-sort-dir",
+        asc ? "asc" : "desc"
+    )
+
+    rows.forEach(row => tbody.appendChild(row))
 }
+
 
 function clearAll() {
     document.querySelector("#table tbody").innerHTML = "";
@@ -238,6 +704,7 @@ function clearAll() {
         "1-Part: 0 | 2-Part: 0 | 3-Part: 0 | 4-Part: 0 | 5-Part: 0";
 }
 
+buildStatColumns()
 </script>
 
 </body>
