@@ -313,6 +313,7 @@ MapColors.WordAssociations = {
   { "castle's", MapColors.Terrain.STONE_WHITE },
   { "market square", MapColors.Terrain.STONE_WHITE },
   { "market area", MapColors.Terrain.STONE_WHITE },
+  { "Archives of the Harvester", MapColors.Terrain.SHADOWY},
   { "Plaza of the Silver Dragon", MapColors.Terrain.STONE_WHITE },
   { "over windreach", MapColors.Terrain.MISTY },
   { "river bank", MapColors.Terrain.MUDDY },
