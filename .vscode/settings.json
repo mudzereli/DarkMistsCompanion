@@ -110,7 +110,8 @@
         "installPackage",
         "fg",
         "getPackages",
-        "playSoundFile"
+        "playSoundFile",
+        "resetProfile"
     ],
     "Lua.diagnostics.disable": [
         "deprecated",
