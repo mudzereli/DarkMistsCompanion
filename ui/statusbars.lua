@@ -434,14 +434,17 @@ function StatusBar.registerEvents()
     function(event, data) StatusBar.updateEnemy(data) end)
   StatusBar.combatEndHandler = registerAnonymousEventHandler("dmapi.player.combat.end", StatusBar.hideEnemy)
   
-  -- Show bars on login and restore border height
-  StatusBar.loginHandler = registerAnonymousEventHandler("dmapi.world.enter", function()
-    tempTimer(0.5, function()
-      Darkmists.Log("StatusBars","Login detected - showing bars...")
-      StatusBar.showAll()
-      StatusBar.reflow()
-    end)
-  end)
+  -- First vitals packet = safe to show bars
+  StatusBar.firstVitalsHandler =
+    registerAnonymousEventHandler(
+      "dmapi.player.vitals.updated",
+      function()
+        Darkmists.Log("StatusBars","Vitals received — showing bars")
+        StatusBar.showAll()
+        StatusBar.reflow()
+      end,
+      true
+    )
   
   -- Disconnect handlers
   StatusBar.disconnectHandler = registerAnonymousEventHandler("dmapi.world.exit", function()
@@ -463,5 +466,5 @@ end
 tempTimer(0.5, function()
   StatusBar.create()
   StatusBar.registerEvents()
-  Darkmists.Log("StatusBars","Status Bar Loaded")
+  Darkmists.Log("StatusBars","Status Bar Loaded (UI Ready)")
 end)
