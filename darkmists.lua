@@ -27,11 +27,13 @@ local eaFormulaParser = getMudletHomeDir() .. "/DarkMistsCompanion/assets/alchem
 
 Darkmists = {}
 Darkmists.NAME = "DarkMistsCompanion"
-Darkmists.VERSION = "1.3.9"
+Darkmists.VERSION = "1.3.10"
 Darkmists.GITHUB_URL = "https://github.com/mudzereli/DarkMistsCompanion/releases/latest/download/DarkMistsCompanion.mpackage"
 Darkmists.IS_DEV_BUILD = true
+Darkmists.UI_LOADED = false
 
 Darkmists.DefaultSettings = {
+  minimalMode = true, -- start with no extra UI
   -- Use light mode UI theme?
   lightMode = false,
   -- Percentage of screen width allocated to the main window
@@ -242,9 +244,63 @@ Darkmists.Init = function()
   Darkmists.Log("Darkmists Core",("Loaded Darkmists Core v%s"):format(Darkmists.VERSION))
   Darkmists.ApplyDefaultSettings()
   Darkmists.LoadSettings()
+  if not Darkmists.GlobalSettings.minimalMode then
+    for k, v in pairs(Darkmists.GlobalSettings.borders) do
+      Darkmists.SetWindowBorderPercent(k,v)
+    end
+  else
+    setBorderTop(0)
+    setBorderBottom(0)
+    setBorderLeft(0)
+    setBorderRight(0)
+  end
+end
+
+function Darkmists.LoadUIScripts()
+  if Darkmists.UI_LOADED then return end
+
+  dofile(getMudletHomeDir() .. "/DarkMistsCompanion/ui/statusbars.lua")
+  dofile(getMudletHomeDir() .. "/DarkMistsCompanion/ui/whowindow.lua")
+  dofile(getMudletHomeDir() .. "/DarkMistsCompanion/ui/chathistory.lua")
+  dofile(getMudletHomeDir() .. "/DarkMistsCompanion/ui/affectswindow.lua")
+  dofile(getMudletHomeDir() .. "/DarkMistsCompanion/ui/mapwindow.lua")
+  dofile(getMudletHomeDir() .. "/DarkMistsCompanion/utility/mapcolor.lua" )
+
+  Darkmists.UI_LOADED = true
+  Darkmists.Log("Darkmists Core", "UI Scripts Loaded")
+end
+
+function Darkmists.EnableUI()
+  if not Darkmists.GlobalSettings.minimalMode then return end
+
+  Darkmists.GlobalSettings.minimalMode = false
+  Darkmists.SaveSettings()
+
+  -- Load UI if not already loaded
+  Darkmists.LoadUIScripts()
+
+  -- Apply borders
   for k, v in pairs(Darkmists.GlobalSettings.borders) do
     Darkmists.SetWindowBorderPercent(k,v)
   end
+
+  Darkmists.Log("Darkmists Core", "UI Enabled")
+end
+
+function Darkmists.DisableUI()
+  Darkmists.GlobalSettings.minimalMode = true
+  Darkmists.SaveSettings()
+
+  if DarkMistsMiniMap and DarkMistsMiniMap.container then
+    DarkMistsMiniMap.container:hide()
+    DarkMistsMiniMap.container:delete()
+    DarkMistsMiniMap.container = nil
+  end
+
+  Darkmists.Log("Darkmists Core", "Switching to Minimal UI...")
+  tempTimer(0.5, function()
+    resetProfile()
+  end)
 end
 
 -- =============================================================================
@@ -264,14 +320,11 @@ dofile(getMudletHomeDir() .. "/DarkMistsCompanion/utility/mapdestinations.lua" )
 dofile(getMudletHomeDir() .. "/DarkMistsCompanion/utility/enchanterassist.lua" )
 dofile(getMudletHomeDir() .. "/DarkMistsCompanion/utility/skillups.lua" )
 dofile(getMudletHomeDir() .. "/DarkMistsCompanion/utility/clickables.lua" )
-dofile(getMudletHomeDir() .. "/DarkMistsCompanion/utility/mapcolor.lua" )
 
 -- UI Scripts
-dofile(getMudletHomeDir() .. "/DarkMistsCompanion/ui/statusbars.lua" )
-dofile(getMudletHomeDir() .. "/DarkMistsCompanion/ui/whowindow.lua" )
-dofile(getMudletHomeDir() .. "/DarkMistsCompanion/ui/chathistory.lua" )
-dofile(getMudletHomeDir() .. "/DarkMistsCompanion/ui/affectswindow.lua" )
-dofile(getMudletHomeDir() .. "/DarkMistsCompanion/ui/mapwindow.lua" )
+if not Darkmists.GlobalSettings.minimalMode then
+  Darkmists.LoadUIScripts()
+end
 
 -- Meta Help / Command
 dofile(getMudletHomeDir() .. "/DarkMistsCompanion/dm_meta.lua" )
