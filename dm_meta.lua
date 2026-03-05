@@ -54,6 +54,21 @@ Includes:
     desc    = "Saved destinations and map-based navigation",
   },
 
+  ui = {
+    title   = "UI Mode",
+    desc    = "Toggle between Full UI and Minimal UI layouts",
+    info  = [[
+  Switch between interface layouts.
+
+  • dmc ui       — Toggle UI mode
+  • dmc ui on    — Enable Full UI
+  • dmc ui off   — Enable Minimal UI
+
+  Minimal UI removes borders and extra windows.
+  Full UI restores all interface panels.
+    ]],
+  },
+
   map = {
     title = "World Map",
     desc = "Fully interactable Mudlet world map with ~15,000 rooms.",
@@ -142,7 +157,7 @@ local helpSections = {
   },
   {
     title = "Interface",
-    keys  = { "ch", "sb", "dmid", "who", "affects" },
+    keys  = {"ui", "ch", "sb", "dmid", "who", "affects" },
   },
   {
     title = "Travel & Map",
@@ -171,6 +186,47 @@ local function dm_link(label, command)
     true
   )
 end
+
+-- ===================================================================
+-- UI MODE COMMANDS
+-- ===================================================================
+
+tempAlias([[^dmc\s+ui(?:\s+(on|off))?$]], function()
+  local state = matches[2]
+
+  -- Explicit ON
+  if state == "on" then
+    if not Darkmists.GlobalSettings.minimalMode then
+      cecho("\n<dim_gray>[UI] "..DarkmistsMeta.colors.default.."Already in <green>FULL UI<dim_gray> mode.\n")
+      return
+    end
+
+    cecho("\n<dim_gray>[UI] "..DarkmistsMeta.colors.default.."Enabling <green>FULL UI<dim_gray> mode...\n")
+    Darkmists.EnableUI()
+    return
+  end
+
+  -- Explicit OFF
+  if state == "off" then
+    if Darkmists.GlobalSettings.minimalMode then
+      cecho("\n<dim_gray>[UI] "..DarkmistsMeta.colors.default.."Already in <yellow>MINIMAL UI<dim_gray> mode.\n")
+      return
+    end
+
+    cecho("\n<dim_gray>[UI] "..DarkmistsMeta.colors.default.."Switching to <yellow>MINIMAL UI<dim_gray> mode...\n")
+    Darkmists.DisableUI()
+    return
+  end
+
+  -- Toggle
+  if Darkmists.GlobalSettings.minimalMode then
+    cecho("\n<dim_gray>[UI] "..DarkmistsMeta.colors.default.."Enabling <green>FULL UI<dim_gray> mode...\n")
+    Darkmists.EnableUI()
+  else
+    cecho("\n<dim_gray>[UI] "..DarkmistsMeta.colors.default.."Switching to <yellow>MINIMAL UI<dim_gray> mode...\n")
+    Darkmists.DisableUI()
+  end
+end)
 
 -- =============================================================================
 -- dm help
