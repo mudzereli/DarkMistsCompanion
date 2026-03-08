@@ -195,7 +195,7 @@ Darkmists.createTabPanel = function(id, title, tabName)
     padding = 8,
     adjLabelstyle = Darkmists.getDefaultAdjLabelstyle(),
 
-    lockStyle = "window",
+    lockStyle = "full",
     locked    = true,
     autoSave  = false,
     autoLoad  = false,
@@ -366,6 +366,7 @@ dofile(getMudletHomeDir() .. "/DarkMistsCompanion/utility/mapdestinations.lua" )
 dofile(getMudletHomeDir() .. "/DarkMistsCompanion/utility/enchanterassist.lua" )
 dofile(getMudletHomeDir() .. "/DarkMistsCompanion/utility/skillups.lua" )
 dofile(getMudletHomeDir() .. "/DarkMistsCompanion/utility/clickables.lua" )
+dofile(getMudletHomeDir() .. "/DarkMistsCompanion/ui/buttonbar.lua" )
 
 -- UI Scripts
 if not Darkmists.GlobalSettings.minimalMode then
