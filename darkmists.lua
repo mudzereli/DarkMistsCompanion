@@ -181,6 +181,27 @@ Darkmists.getDefaultTextColorTag = function()
   return ("<%s>"):format(Darkmists.getDefaultTextColor())
 end
 
+Darkmists.createTabPanel = function(id, title, tabName)
+  return Adjustable.Container:new({
+    name = id,
+
+    x = 0,
+    y = 0,
+    width  = "100%",
+    height = "100%",
+
+    titleText = title,
+    titleTxtColor = Darkmists.getDefaultTextColor(),
+    padding = 8,
+    adjLabelstyle = Darkmists.getDefaultAdjLabelstyle(),
+
+    lockStyle = "window",
+    locked    = true,
+    autoSave  = false,
+    autoLoad  = false,
+  }, DMTabs[tabName.."center"])
+end
+
 Darkmists.Log = function(pluginName,msg)
   local output = "\n<dim_gray>[<%s>%s<dim_gray>] <green>%s"
   output = output:format(Darkmists.getDefaultTextColor(),pluginName,msg)
