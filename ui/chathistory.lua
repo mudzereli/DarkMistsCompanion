@@ -24,24 +24,7 @@ ChatHistory.window   = nil
 function ChatHistory.create()
   if ChatHistory.window and ChatHistory.console then return end
 
-  ChatHistory.window = Adjustable.Container:new({
-      name = "ChatHistory",
-
-      x = "0%",
-      width = "70%",
-      y = "0%",
-      height = "10%",
-
-      titleText = "Chat History",
-      titleTxtColor = Darkmists.getDefaultTextColor(),
-      padding = 10,
-      adjLabelstyle = Darkmists.getDefaultAdjLabelstyle(),
-
-      lockStyle = "border",
-      locked = false,
-      autoSave = true,
-      autoLoad = true,
-    })
+  ChatHistory.window = Darkmists.createTabPanel("ChatHistory","Chat History","Chat")
 
   ChatHistory.console = Geyser.MiniConsole:new({
       name   = "ChatHistoryConsole",
@@ -297,8 +280,6 @@ end
 -- INIT
 -- ===================================================================
 
-tempTimer(0.5, function()
-  ChatHistory.create()
-  ChatHistory.registerEvents()
-  ChatHistory.refresh()
-end)
+ChatHistory.create()
+ChatHistory.registerEvents()
+ChatHistory.refresh()
