@@ -38,24 +38,7 @@ AffectsWindow.currentKeys    = {}   -- Snapshot keys for current capture
 function AffectsWindow.create()
   if AffectsWindow.window then return end
 
-  AffectsWindow.window = Adjustable.Container:new({
-    name = "AffectsWindow",
-
-    x = Darkmists.getDefaultXPosition(),
-    width = tostring(100 - Darkmists.GlobalSettings.mainWindowPanelWidth).."%",
-    y = "70%",
-    height = "30%",
-
-    titleText = "Current Affects",
-    titleTxtColor = Darkmists.getDefaultTextColor(),
-    padding = 10,
-    adjLabelstyle = Darkmists.getDefaultAdjLabelstyle(),
-
-    lockStyle = "border",
-    locked = false,
-    autoSave = true,
-    autoLoad = true,
-  })
+  AffectsWindow.window = Darkmists.createTabPanel("AffectsWindow","Current Affects","Affects")
     
   AffectsWindow.console = Geyser.MiniConsole:new({
     name   = "AffectsWindowConsole",
@@ -486,8 +469,6 @@ end
 -- INIT
 -- ============================================================================
 
-tempTimer(0.5, function()
-  AffectsWindow.create()
-  AffectsWindow.registerTriggers()
-  Darkmists.Log("AffectsWindow","Initialized. Type 'aff' to capture affects!")
-end)
+AffectsWindow.create()
+AffectsWindow.registerTriggers()
+Darkmists.Log("AffectsWindow","Initialized. Type 'aff' to capture affects!")
