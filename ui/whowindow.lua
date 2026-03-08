@@ -63,15 +63,24 @@ end
 local function displayHeader(age)
   local disp
   if Darkmists.GlobalSettings.lightMode then
-    disp = "<dark_green>Players Online: <black>%d <black>| <ansi_yellow>Age: <black>%ds\n\n"
+    disp = "<dark_green>Players Online: <black>%d <black>| <ansi_yellow>Age: <black>%ds <black>| "
   else
-    disp = "<green:black>Players Online: <white>%d <dim_gray>| <light_goldenrod>Age: <white>%ds\n\n"
+    disp = "<green:black>Players Online: <white>%d <dim_gray>| <light_goldenrod>Age: <white>%ds <dim_gray>| <white>"
   end
   WhoWindow.console:cecho(string.format(
     disp,
     WhoWindow.playerCount,
     age
   ))
+  resetFormat()
+  WhoWindow.console:cechoLink(
+    "<u>Refresh",
+    function() send("who") end,
+    "Refresh player list",
+    true
+  )
+  
+  WhoWindow.console:cecho("\n\n")
 end
 
 --- Copy all player lines from temp buffer to main window
