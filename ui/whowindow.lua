@@ -31,24 +31,7 @@ WhoWindow.tempBufferName = "WhoWindow_temp"
 function WhoWindow.create()
   if WhoWindow.window and WhoWindow.console then return end
 
-  WhoWindow.window = Adjustable.Container:new({
-      name = "WhoWindow",
-
-      x = Darkmists.getDefaultXPosition(),
-      width = tostring(100 - Darkmists.GlobalSettings.mainWindowPanelWidth).."%",
-      y = "40%",
-      height = "30%",
-
-      titleText = "Who List",
-      titleTxtColor = Darkmists.getDefaultTextColor(),
-      padding = 10,
-      adjLabelstyle = Darkmists.getDefaultAdjLabelstyle(),
-
-      lockStyle = "border",
-      locked = false,
-      autoSave = true,
-      autoLoad = true
-    })
+  WhoWindow.window = Darkmists.createTabPanel("WhoWindow", "Who List", "Who")
 
   WhoWindow.console = Geyser.MiniConsole:new({
       name   = "WhoWindowConsole",
@@ -276,8 +259,6 @@ WhoWindow.promptHandler = registerAnonymousEventHandler(
 )
 
 --- Initialize window and triggers
-tempTimer(0.5, function()
-  WhoWindow.create()
-  WhoWindow.registerTriggers()
-  Darkmists.Log("WhoWindow","Initialized")
-end)
+WhoWindow.create()
+WhoWindow.registerTriggers()
+Darkmists.Log("WhoWindow","Initialized")
