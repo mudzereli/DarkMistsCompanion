@@ -5,6 +5,8 @@
 
 Adjustable = Adjustable or {}
 Adjustable.TabWindow = Adjustable.TabWindow or Geyser.Container:new({name = "AdjustableTabWindowClass"})
+Adjustable.TabWindow.blockNextFloat = false
+
 local tab_pos = nil
 
 function Adjustable.TabWindow:createBaseContainers()
@@ -290,18 +292,18 @@ end
 -- handles double click event on getAreaTable
 -- activates the tab overlay
 function Adjustable.TabWindow:onDoubleClick(tab, event)
-    -- Prevent windows to float
-    self[tab.."tab"].container = self.header
-    Adjustable.TabWindow.currentWindow = self
-    Adjustable.TabWindow.doubleClick = true
-    Adjustable.TabWindow.clickedTab = self[tab.."tab"]
-    self[tab.."tab"].adjLabel:setStyleSheet(self.chosenTabStyle)
-    for k,v in pairs(Adjustable.TabWindow.all) do
-        v.overlay:show()
-        v.overlay:raise()
-        v.overlay:setStyleSheet(v.overlayStyle)
+    if self[tab] and self[tab].floating then
+        -- Block any float logic triggered by mouse release
+        Adjustable.TabWindow.blockNextFloat = true
+        tempTimer(0.25, function()
+            Adjustable.TabWindow.blockNextFloat = false
+        end)
+
+        -- Force immediate dock
+        self:restoreTab(tab, self)
+        self:activateTab(tab)
+        self:raiseAll()
     end
-    Adjustable.TabWindow.overlayTimer = Adjustable.TabWindow.overlayTimer or tempTimer(15, function() resetOverlay(v) end )
 end
 
 -- transforms the tab to a window
@@ -425,7 +427,11 @@ function Adjustable.TabWindow:onRelease(tab, event, position)
         myWindow:raiseAll()
     end
     
-    if event.button == "LeftButton" and not(Adjustable.TabWindow.currentWindow) and not floating then
+    if event.button == "LeftButton"
+    and not Adjustable.TabWindow.currentWindow
+    and not floating
+    and not Adjustable.TabWindow.blockNextFloat
+    then
         self:transformTabContainer(tab)
         self[tab.."tab"]:onRelease(self[tab.."tab"].adjLabel, event)
     end
