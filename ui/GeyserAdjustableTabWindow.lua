@@ -719,14 +719,7 @@ function Adjustable.TabWindow:new(cons, container)
     qproperty-alignment: 'AlignTop';
     ]]
     
-    me.chosenTabStyle = me.chosenTabStyle or [[
-    background-color: rgba(255,30,0,60%);
-    border-top-left-radius: 10px;
-    border-top-right-radius: 10px;
-    margin-right: 1px;
-    margin-left: 1px;
-    qproperty-alignment: 'AlignTop';
-    ]]
+    me.chosenTabStyle = me.activeTabStyle
     
     me.containerStyle = me.containerStyle or [[
     background-color: ]]..me.color1..[[;
