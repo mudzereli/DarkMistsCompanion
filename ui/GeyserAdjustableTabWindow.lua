@@ -51,7 +51,7 @@ function Adjustable.TabWindow:createTabs()
         },self.footer)
         
         self[v]:setStyleSheet(self.containerStyle)
-        self[v].tabText = self[v].tabText or "<center>"..v
+        self[v].tabText = self[v].tabText or ("<center>"..v)
         
         self[v.."tab"] = self[v.."tab"] or Adjustable.Container:new({
             name = v.."tab",
@@ -608,63 +608,6 @@ function Adjustable.TabWindow:load()
     end
 end
 
-function Adjustable.TabWindow:transferEMCO(emco)
-  emco:hide()
-  local emco_tabs = emco.tabs
-  local emco_tabwindows = table.keys(emco.mc)
-  local emco_windows = emco.mc
-  local myXEcho = 
-  function(s, tabName, message, xtype, excludeAll)
-    s.currentTab = self.current        
-    if s.blink and tabName ~= s.currentTab then
-      if not (s.allTabName == s.currentTab and not s.blinkFromAll) then
-        s.tabsToBlink[tabName] = true
-      end
-    end   
-    EMCO.xEcho(s, tabName, message, xtype, excludeAll)
-   end
-  
-  local myFlash = 
-  function(s)
-    Geyser.Container.flash(s) 
-    raiseWindow(s.name .."_dimensions_flash")
-  end
-  
-  local myDoBlink =
-  function(s)
-    s.currentTab = self.current
-    if s.blink then
-      if s.allTab and (s.currentTab == s.allTabName or self[s.allTabName].hidden == false) then
-        s.tabsToBlink = {}
-      elseif s.tabsToBlink[s.currentTab] then
-        s.tabsToBlink[s.currentTab] = nil
-      end
-    end    
-    for tab,_ in pairs(s.tabsToBlink) do
-      if not self[tab].floating and self[tab].hidden then
-        s.tabs[tab]:flash()
-      else
-        s.tabsToBlink[tab] = nil
-      end
-    end
-  end
-
-  self.tabs = table.n_union(self.tabs, emco_tabwindows)
-  self:createTabs()
-  for k,v in ipairs(emco_tabwindows) do
-    emco_windows[v]:show()
-    emco_windows[v]:changeContainer(self[v.."center"])
-    emco_tabs[v]:changeContainer(self[v.."tab"])
-    emco_tabs[v]:move(0,0)
-    emco_tabs[v]:resize("100%","100%")
-    emco_tabs[v]:hide()
-    emco_tabs[v].flash = myFlash
-  end
-  emco.xEcho = myXEcho
-  emco.doBlink = myDoBlink
-end
-
-
 -- Save a reference to our parent constructor
 Adjustable.TabWindow.parent = Geyser.Container
 -- Create table to put every Adjustable.TabWindow in it
@@ -686,19 +629,19 @@ function Adjustable.TabWindow:new(cons, container)
     me.color1 = me.color1 or "rgb(0,0,100)"
     me.color2 = me.color2 or "rgb(0,0,70)"
     me.tabBarHeight = me.tabBarHeight or "10%"
-    me.footerStyle = me.footerStyle or [[
+    me.footerStyle = me.footerStyle or ([[
     background-color: ]]..me.color1..[[;
     border-bottom-left-radius: 10px;
     border-bottom-right-radius: 10px;
-    ]]
+    ]])
     
-    me.centerStyle = me.centerStyle or [[
+    me.centerStyle = me.centerStyle or ([[
     background-color: ]]..me.color2..[[;
     border-radius: 10px;
     margin: 5px;
-    ]]
+    ]])
     
-    me.inactiveTabStyle = me.inactiveTabStyle or [[QLabel::hover{
+    me.inactiveTabStyle = me.inactiveTabStyle or ([[QLabel::hover{
         background-color: ]]..me.color1..[[;
         border-top-left-radius: 10px;
         border-top-right-radius: 10px;
@@ -714,26 +657,26 @@ function Adjustable.TabWindow:new(cons, container)
         margin-left: 1px;
         qproperty-alignment: 'AlignTop';
     }
-    ]]
+    ]])
     
-    me.activeTabStyle = me.activeTabStyle or [[
+    me.activeTabStyle = me.activeTabStyle or ([[
     background-color: ]]..me.color1..[[;
     border-top-left-radius: 10px;
     border-top-right-radius: 10px;
     margin-right: 1px;
     margin-left: 1px;
     qproperty-alignment: 'AlignTop';
-    ]]
+    ]])
     
     me.chosenTabStyle = me.activeTabStyle
     
-    me.containerStyle = me.containerStyle or [[
+    me.containerStyle = me.containerStyle or ([[
     background-color: ]]..me.color1..[[;
     border-top-left-radius: 10px;
     border-top-right-radius: 10px;
     margin-right: 1px;
     margin-left: 1px;
-    ]]
+    ]])
     
     me.overlayStyle = me.overlayStyle or [[
     background-color: rgba(0,0,0,0%);
