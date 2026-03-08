@@ -259,12 +259,23 @@ end
 function Darkmists.LoadUIScripts()
   if Darkmists.UI_LOADED then return end
 
+  dofile(getMudletHomeDir() .. "/DarkMistsCompanion/ui/GeyserAdjustableTabWindow.lua")
+  dofile(getMudletHomeDir() .. "/DarkMistsCompanion/ui/tabwindow.lua")
   dofile(getMudletHomeDir() .. "/DarkMistsCompanion/ui/statusbars.lua")
   dofile(getMudletHomeDir() .. "/DarkMistsCompanion/ui/whowindow.lua")
   dofile(getMudletHomeDir() .. "/DarkMistsCompanion/ui/chathistory.lua")
   dofile(getMudletHomeDir() .. "/DarkMistsCompanion/ui/affectswindow.lua")
+  dofile(getMudletHomeDir() .. "/DarkMistsCompanion/ui/scorepanel.lua")
   dofile(getMudletHomeDir() .. "/DarkMistsCompanion/ui/mapwindow.lua")
   dofile(getMudletHomeDir() .. "/DarkMistsCompanion/utility/mapcolor.lua" )
+
+  if DMTabs.current then
+    DMTabs:deactivateTab()
+    DMTabs:activateTab(DMTabs.current)
+  else
+    DMTabs:deactivateTab()
+    DMTabs:activateTab("Chat") -- default fallback
+  end
 
   Darkmists.UI_LOADED = true
   Darkmists.Log("Darkmists Core", "UI Scripts Loaded")
