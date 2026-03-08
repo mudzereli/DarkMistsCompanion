@@ -111,7 +111,9 @@
         "fg",
         "getPackages",
         "playSoundFile",
-        "resetProfile"
+        "resetProfile",
+        "raiseWindow",
+        "lfs"
     ],
     "Lua.diagnostics.disable": [
         "deprecated",
