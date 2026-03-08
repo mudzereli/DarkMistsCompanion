@@ -28,10 +28,10 @@ function ChatHistory.create()
 
   ChatHistory.console = Geyser.MiniConsole:new({
       name   = "ChatHistoryConsole",
-      x      = 0,
-      y      = 0,
-      width  = "100%",
-      height = "100%",
+      x      = "1%",
+      y      = "1%",
+      width  = "98%",
+      height = "98%",
       color = Darkmists.getDefaultBackgroundColor()
     }, ChatHistory.window)
 

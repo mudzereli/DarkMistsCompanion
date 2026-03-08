@@ -42,10 +42,10 @@ function AffectsWindow.create()
     
   AffectsWindow.console = Geyser.MiniConsole:new({
     name   = "AffectsWindowConsole",
-    x      = 0,
-    y      = 0,
-    width  = "100%",
-    height = "100%",
+    x      = "1%",
+    y      = "1%",
+    width  = "98%",
+    height = "98%",
     color = Darkmists.getDefaultBackgroundColor()
   }, AffectsWindow.window)
   AffectsWindow.console:setFontSize(AffectsWindow.config.fontSize)

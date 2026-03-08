@@ -8,17 +8,23 @@ local StatusIcons = {
     text = {[0]="Satisfied",[1]="Thirsty",[2]="Parched",[3]="Dehydrating",[4]="Dying"}
   }
 }
-local DIVIDER_WIDTH = 48  -- adjust to taste
+local function getDividerWidth()
+  local w,_ = getUserWindowSize("ScorePanelConsole")
+  local charW,_ = calcFontSize(AffectsWindow.config.fontSize)
+  return math.floor(w / charW) - 4
+end
 
 local function line(fmt, ...)
   cecho("ScorePanelConsole", fmt:format(...))
 end
 
 local function section(title)
+  local width = getDividerWidth()
   local cleanTitle = " "..title.." "
-  local remaining = DIVIDER_WIDTH - #cleanTitle
+  local remaining = width - #cleanTitle
   if remaining < 0 then remaining = 0 end
   local right = string.rep("━", remaining)
+
   cecho("ScorePanelConsole",
     ("\n<slate_gray>━━%s%s<reset>\n"):format(cleanTitle, right))
 end
@@ -33,10 +39,10 @@ ScorePanel.create = function()
 
   ScorePanel.console = Geyser.MiniConsole:new({
     name   = "ScorePanelConsole",
-    x      = 0,
-    y      = 0,
-    width  = "100%",
-    height = "100%",
+    x      = "1%",
+    y      = "1%",
+    width  = "98%",
+    height = "98%",
     color = Darkmists.getDefaultBackgroundColor()
   }, ScorePanel.window)
   ScorePanel.console:setFontSize(AffectsWindow.config.fontSize)
@@ -73,16 +79,16 @@ ScorePanel.refresh = function()
     P.level, P.age.years, P.age.hours)
 
   section("Vitals")
-  line("<red>%d/%d  <blue>%d/%d  <yellow>%d/%d\n",
-    P.vitals.hp, P.vitals.hpMax,
-    P.vitals.mn, P.vitals.mnMax,
-    P.vitals.mv, P.vitals.mvMax)
+  line("<red>HP <white>%-7s  <blue>MN <white>%-7s  <yellow>MV <white>%-7s\n",
+    P.vitals.hp.."/"..P.vitals.hpMax,
+    P.vitals.mn.."/"..P.vitals.mnMax,
+    P.vitals.mv.."/"..P.vitals.mvMax)
 
   section("Condition")
-  line("<white>%s %s   %s %s\n",
+  line("<dim_gray>Hunger <white>%s %s   <dim_gray>Thirst <white>%s %s\n",
     StatusIcons.hunger.icon[h], StatusIcons.hunger.text[h],
     StatusIcons.thirst.icon[t], StatusIcons.thirst.text[t])
-
+    
   section("Wealth")
   line("<dim_gray>On Hand  <yellow>%6dg  <slate_gray>%6ds\n",
     P.currency.gold, P.currency.silver)
