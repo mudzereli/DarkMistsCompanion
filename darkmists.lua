@@ -36,8 +36,6 @@ Darkmists.DefaultSettings = {
   minimalMode = true, -- start with no extra UI
   -- Use light mode UI theme?
   lightMode = false,
-  -- Percentage of screen width allocated to the main window
-  mainWindowPanelWidth = 70,
   -- Percentage of screen space reserved for each border region
   borders = {top = 10, bottom = 0, left = 0, right = 30},
   -- Font Size for additional Information Windows (Chat History, Who List, Affects)
@@ -173,12 +171,30 @@ Darkmists.getDefaultBackgroundColor = function()
   return ifLight("white", "black")
 end
 
-Darkmists.getDefaultXPosition = function()
-  return tostring(100 - Darkmists.GlobalSettings.borders.right) .. "%"
-end
-
 Darkmists.getDefaultTextColorTag = function()
   return ("<%s>"):format(Darkmists.getDefaultTextColor())
+end
+
+function Darkmists.getSmartDockGeometry()
+  local borders = Darkmists.GlobalSettings.borders
+  local left  = borders.left  or 0
+  local right = borders.right or 0
+
+  if right >= left then
+    -- Dock Right
+    return {
+      side  = "right",
+      x     = tostring(100 - right) .. "%",
+      width = tostring(right) .. "%"
+    }
+  else
+    -- Dock Left
+    return {
+      side  = "left",
+      x     = "0%",
+      width = tostring(left) .. "%"
+    }
+  end
 end
 
 Darkmists.createTabPanel = function(id, title, tabName)
