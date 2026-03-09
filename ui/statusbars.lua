@@ -7,6 +7,7 @@
 -- - Auto-shows on login, hides on disconnect
 -- - Persistent border height across reconnects
 -- ===================================================================
+DARKMISTS_STATUSBAR_EVENT_HANDLERS = DARKMISTS_STATUSBAR_EVENT_HANDLERS or {}
 
 StatusBar = StatusBar or {}
 
@@ -62,6 +63,15 @@ local function shouldShowVitals()
      and safeMax(dmapi.player.vitals.hpMax) > 1
 end
 
+local function registerFirstVitalsHandler()
+  table.insert(DARKMISTS_STATUSBAR_EVENT_HANDLERS,
+    registerAnonymousEventHandler("dmapi.player.vitals.updated", function()
+      Darkmists.Log("StatusBars","Vitals received — showing bars")
+      StatusBar.showAll()
+      StatusBar.reflow()
+    end, true))
+end
+
 -- ===================================================================
 -- CLEANUP
 -- ===================================================================
@@ -75,14 +85,10 @@ function StatusBar.cleanup()
   end
   
   -- Kill all event handlers
-  for _, name in ipairs({"vitalUpdateHandler", "levelUpHandler", "levelHandler", "xpGainHandler",
-                         "promptHandler", "mobStateHandler", "combatEndHandler", "loginHandler",
-                         "disconnectHandler", "sysDisconnectHandler"}) do
-    if StatusBar[name] then
-      killAnonymousEventHandler(StatusBar[name])
-      StatusBar[name] = nil
-    end
+  for _, id in ipairs(DARKMISTS_STATUSBAR_EVENT_HANDLERS) do
+    killAnonymousEventHandler(id)
   end
+  DARKMISTS_STATUSBAR_EVENT_HANDLERS = {}
   
   if StatusBar.container then
     StatusBar.container:hide()
@@ -399,65 +405,79 @@ end
 -- EVENT HANDLERS
 -- ===================================================================
 function StatusBar.registerEvents()
-  -- Update vitals bars when HP/MN/MV change
-  StatusBar.vitalUpdateHandler = registerAnonymousEventHandler("dmapi.player.vitals.updated", StatusBar.update)
-  
-  -- Reset XP tracking on level up
-  StatusBar.levelUpHandler = registerAnonymousEventHandler("dmapi.player.levelup", function()
-    StatusBar.update()
-    StatusBar.maxTnl = nil
-    StatusBar.lastTnl = nil
-    StatusBar.updateXP()
-    StatusBar.reflow()
-  end)
-  
-  -- Hide XP bar when reaching max level
-  StatusBar.levelHandler = registerAnonymousEventHandler("dmapi.player.level.updated", function()
-    local showXP = shouldShowXP()
-    if (not showXP) and StatusBar.xpGauge and (not StatusBar.xpGauge.hidden) then
-      StatusBar.xpGauge:hide()
+  -- kill old handlers
+  for _, id in ipairs(DARKMISTS_STATUSBAR_EVENT_HANDLERS) do
+    killAnonymousEventHandler(id)
+    Darkmists.Log("StatusBars",("Killing Event Handler #%d"):format(id))
+  end
+  DARKMISTS_STATUSBAR_EVENT_HANDLERS = {}
+
+  -- vitals updates
+  table.insert(DARKMISTS_STATUSBAR_EVENT_HANDLERS,
+    registerAnonymousEventHandler("dmapi.player.vitals.updated", StatusBar.update))
+
+  -- level up
+  table.insert(DARKMISTS_STATUSBAR_EVENT_HANDLERS,
+    registerAnonymousEventHandler("dmapi.player.levelup", function()
+      StatusBar.update()
+      StatusBar.maxTnl = nil
+      StatusBar.lastTnl = nil
+      StatusBar.updateXP()
       StatusBar.reflow()
-      Darkmists.Log("StatusBars","<yellow>XP bar hidden (max level reached)")
-    elseif (showXP) and StatusBar.xpGauge and StatusBar.xpGauge.hidden then
-      StatusBar.xpGauge:show()
-      StatusBar.reflow()
-      Darkmists.Log("StatusBars","<yellow>XP bar hidden (max level reached)")
-    end
-  end)
-  
-  -- Update XP bar on experience gain and prompt
-  StatusBar.xpGainHandler = registerAnonymousEventHandler("dmapi.player.experience.gain", StatusBar.updateXP)
-  StatusBar.promptHandler = registerAnonymousEventHandler("dmapi.world.prompt", StatusBar.updateXP)
-  
-  -- Show/hide enemy bar during combat
-  StatusBar.mobStateHandler = registerAnonymousEventHandler("dmapi.player.combat.mobstate", 
-    function(event, data) StatusBar.updateEnemy(data) end)
-  StatusBar.combatEndHandler = registerAnonymousEventHandler("dmapi.player.combat.end", StatusBar.hideEnemy)
-  
-  -- First vitals packet = safe to show bars
-  StatusBar.firstVitalsHandler =
-    registerAnonymousEventHandler(
-      "dmapi.player.vitals.updated",
-      function()
-        Darkmists.Log("StatusBars","Vitals received — showing bars")
-        StatusBar.showAll()
+    end))
+
+  -- level change
+  table.insert(DARKMISTS_STATUSBAR_EVENT_HANDLERS,
+    registerAnonymousEventHandler("dmapi.player.level.updated", function()
+      local showXP = shouldShowXP()
+      if (not showXP) and StatusBar.xpGauge and (not StatusBar.xpGauge.hidden) then
+        StatusBar.xpGauge:hide()
         StatusBar.reflow()
-      end,
-      true
-    )
-  
-  -- Disconnect handlers
-  StatusBar.disconnectHandler = registerAnonymousEventHandler("dmapi.world.exit", function()
-    StatusBar.hideAll()
-    Darkmists.Log("StatusBars","<yellow>Disconnect detected")
-  end)
-  
-  StatusBar.sysDisconnectHandler = registerAnonymousEventHandler("sysDisconnectionEvent", function()
-    StatusBar.hideAll()
-    Darkmists.Log("StatusBars","<red>System disconnect - hiding bars")
-  end)
-  
-  Darkmists.Log("StatusBars","Event handlers registered")
+        Darkmists.Log("StatusBars","<yellow>XP bar hidden (max level reached)")
+      elseif (showXP) and StatusBar.xpGauge and StatusBar.xpGauge.hidden then
+        StatusBar.xpGauge:show()
+        StatusBar.reflow()
+        Darkmists.Log("StatusBars","<yellow>XP bar shaown (max level not reached)")
+      end
+    end))
+
+  -- xp updates
+  table.insert(DARKMISTS_STATUSBAR_EVENT_HANDLERS,
+    registerAnonymousEventHandler("dmapi.player.experience.gain", StatusBar.updateXP))
+
+  table.insert(DARKMISTS_STATUSBAR_EVENT_HANDLERS,
+    registerAnonymousEventHandler("dmapi.world.prompt", StatusBar.updateXP))
+
+  -- combat mob updates
+  table.insert(DARKMISTS_STATUSBAR_EVENT_HANDLERS,
+    registerAnonymousEventHandler("dmapi.player.combat.mobstate", function(_, data)
+      StatusBar.updateEnemy(data)
+    end))
+
+  table.insert(DARKMISTS_STATUSBAR_EVENT_HANDLERS,
+    registerAnonymousEventHandler("dmapi.player.combat.end", StatusBar.hideEnemy))
+
+  -- disconnects
+  table.insert(DARKMISTS_STATUSBAR_EVENT_HANDLERS,
+    registerAnonymousEventHandler("dmapi.world.exit", function()
+      StatusBar.hideAll()
+      Darkmists.Log("StatusBars","<yellow>Disconnect detected")
+    end))
+
+  table.insert(DARKMISTS_STATUSBAR_EVENT_HANDLERS,
+    registerAnonymousEventHandler("sysDisconnectionEvent", function()
+      StatusBar.hideAll()
+      Darkmists.Log("StatusBars","<red>System disconnect - hiding bars")
+    end))
+
+  -- first vitals (oneshot)
+  table.insert(DARKMISTS_STATUSBAR_EVENT_HANDLERS,
+    registerAnonymousEventHandler("dmapi.world.enter", function()
+      Darkmists.Log("StatusBars","World entered — awaiting vitals")
+      registerFirstVitalsHandler()
+    end))
+
+  Darkmists.Log("StatusBars","Events Registered!")
 end
 
 -- ===================================================================
