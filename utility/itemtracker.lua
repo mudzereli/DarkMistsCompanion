@@ -63,6 +63,7 @@ ItemTracker = {
     header = nil,
     width = 0,
     height = 0,
+    clickHandler = nil
   },
 }
 
@@ -165,6 +166,10 @@ function ItemTracker.hideTooltip()
   hideWindow(t.header)
   hideWindow(t.border)
   hideWindow(t.win)
+  if t.clickHandler then
+    killAnonymousEventHandler(t.clickHandler)
+    t.clickHandler = nil
+  end
 end
 
 function ItemTracker.showTooltip(name)
@@ -257,7 +262,15 @@ function ItemTracker.showTooltip(name)
   showWindow(t.header)
   showWindow(t.win)
 
-  registerAnonymousEventHandler("sysWindowMousePressEvent", "ItemTracker.hideTooltip")
+  if t.clickHandler then
+    killAnonymousEventHandler(t.clickHandler)
+    t.clickHandler = nil
+  end
+
+  t.clickHandler = registerAnonymousEventHandler(
+    "sysWindowMousePressEvent",
+    "ItemTracker.hideTooltip"
+  )
 end
 
 -- ============================================================================
@@ -265,14 +278,15 @@ end
 -- ============================================================================
 
 function ItemTracker.load(path)
-  cecho(string.format(
-    "<forest_green>[ID] "..defaultTextColor.."Loading %s v%s by %s\n",
-    ItemTracker.name, ItemTracker.version, ItemTracker.author
-  ))
+  Darkmists.Log("ItemTracker",
+    string.format("<forest_green>Loading %s v%s by %s",
+      ItemTracker.name, ItemTracker.version, ItemTracker.author
+    )
+  )
 
   local f, err = io.open(path, "r")
   if not f then
-    cecho("<red>[ID] Failed to open JSON: " .. tostring(err) .. "\n")
+    Darkmists.Log("ItemTracker", "<red>Failed to open JSON: " .. tostring(err))
     return false
   end
 
@@ -280,7 +294,7 @@ function ItemTracker.load(path)
   f:close()
 
   if type(data) ~= "table" then
-    cecho("<red>[ID] JSON root is not a list\n")
+    Darkmists.Log("ItemTracker", "<red>JSON root is not a list")
     return false
   end
 
@@ -319,10 +333,9 @@ function ItemTracker.load(path)
 
   table.sort(ItemTracker.sorted_names, function(a, b) return #a > #b end)
 
-  cecho(string.format(
-    "<forest_green>[ID]"..defaultTextColor.." Loaded %d items (%d dropped)\n",
-    #ItemTracker.items, dropped
-  ))
+  Darkmists.Log("ItemTracker",
+    string.format("<white>Loaded <green>%d<white> items (<yellow>%d dropped<white>)", #ItemTracker.items, dropped)
+  )
 
   return true
 end
