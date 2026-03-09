@@ -11,6 +11,7 @@
 --   • Click → tooltip | Shift+Click → full output | Any click → hide tooltip
 --   • Tooltip avoids covering status bars at bottom
 -- ============================================================================
+
 local WHO_HEADER_PATTERN = "^%[[^%]]-%s+[^%]]-%]"
 
 ItemTracker = {
@@ -19,15 +20,15 @@ ItemTracker = {
   author = "mudzereli",
 
   -- Runtime item data
-  items = {},          -- Flat list of all items
-  by_name = {},        -- lower(name) → {item, item, ...}
-  by_area = {},        -- lower(area) → {item, item, ...}
-  sorted_names = {},   -- Lowercase names, longest-first for matching
+  items = {},
+  by_name = {},
+  by_area = {},
+  sorted_names = {},
 
   -- User configuration (safe to modify)
   settings = {
     alias = "dmid",
-    
+
     -- Font sizes
     tooltipHeaderFontSize = 14,
     tooltipFontSize = 12,
@@ -39,9 +40,9 @@ ItemTracker = {
     wrapWidth = 400,
 
     -- Positioning
-    cursorOffset = 15,        -- Distance from mouse cursor
-    screenMargin = 10,        -- Clamp margin from screen edges
-    statusBarHeight = 110,    -- Reserved space at bottom for status bars
+    cursorOffset = 15,
+    screenMargin = 10,
+    statusBarHeight = 110,
 
     -- Colors (RGBA)
     tooltipHeaderBGColor = {255, 255, 255, 255},
@@ -49,7 +50,7 @@ ItemTracker = {
     tooltipBGColor = {0, 0, 0, 255},
     tooltipBorderColor = {255, 255, 255, 255},
 
-    -- MUD colors (see https://wiki.mudlet.org/images/c/c3/ShowColors.png)
+    -- MUD colors
     itemLinkColor = Darkmists.GlobalSettings.itemTrackerLinkColorDarkMode,
     tooltipItemNameColor = "black",
     tooltipItemDetailsColor = "white"
@@ -65,39 +66,44 @@ ItemTracker = {
   },
 }
 
--- Format color strings for use in cecho
-local s = ItemTracker.settings
+-- ============================================================================
+-- Settings Initialization
+-- ============================================================================
+
+local settings = ItemTracker.settings
+
+-- Apply light mode overrides
 if Darkmists.GlobalSettings.lightMode then
-  s.itemLinkColor = Darkmists.GlobalSettings.itemTrackerLinkColorLightMode
-  s.tooltipItemDetailsColor = "black"
-  s.tooltipItemNameColor = "white"
-  s.tooltipHeaderBGColor = {0, 0, 0, 255}
-  s.tooltipTextColor = {0, 0, 0, 255}
-  s.tooltipBGColor = {255, 255, 255, 255}
-  s.tooltipBorderColor = {0, 0, 0, 255}
+  settings.itemLinkColor = Darkmists.GlobalSettings.itemTrackerLinkColorLightMode
+  settings.tooltipItemDetailsColor = "black"
+  settings.tooltipItemNameColor = "white"
+  settings.tooltipHeaderBGColor = {0, 0, 0, 255}
+  settings.tooltipTextColor = {0, 0, 0, 255}
+  settings.tooltipBGColor = {255, 255, 255, 255}
+  settings.tooltipBorderColor = {0, 0, 0, 255}
 end
+
 local defaultTextColor = Darkmists.getDefaultTextColorTag()
-s.itemLinkColor = string.format("<%s>", s.itemLinkColor)
-s.tooltipItemNameColor = string.format("<%s>", s.tooltipItemNameColor)
-s.tooltipItemDetailsColor = string.format("<%s>", s.tooltipItemDetailsColor)
+
+-- Pre-format cecho color tags once
+settings.itemLinkColor          = string.format("<%s>", settings.itemLinkColor)
+settings.tooltipItemNameColor   = string.format("<%s>", settings.tooltipItemNameColor)
+settings.tooltipItemDetailsColor= string.format("<%s>", settings.tooltipItemDetailsColor)
 
 -- ============================================================================
 -- Utility Functions
 -- ============================================================================
 
--- Trim whitespace from string
 local function trim(str)
   return str:gsub("^%s+", ""):gsub("%s+$", "")
 end
 
--- Validate item name (must be 2+ chars with at least one letter)
 local function is_valid_item_name(name)
   if type(name) ~= "string" then return false end
   name = trim(name)
   return #name >= 2 and name:match("%a") ~= nil
 end
 
--- Extract area from details string (expects "Area: <name>" on first line)
 local function extract_area(details)
   if type(details) ~= "string" then return nil end
   local firstLine = details:match("([^\n]+)")
@@ -105,29 +111,11 @@ local function extract_area(details)
   return firstLine:match("^Area:%s*(.+)$")
 end
 
--- Move "extra flags ..." to its own indented line for better tooltip formatting
 local function indent_extra_flags(details)
   if type(details) ~= "string" then return details end
   return details:gsub(",%s*extra flags%s+", ",\n  extra flags ")
 end
 
--- Calculate tooltip dimensions from text lines
-local function calc_tooltip_size(lines, fontSize, minChars, maxChars)
-  local longest = minChars
-  
-  for _, line in ipairs(lines) do
-    longest = math.max(longest, #line)
-  end
-  
-  if maxChars then
-    longest = math.min(longest, maxChars)
-  end
-  
-  local charW, charH = calcFontSize(fontSize)
-  return longest * charW, #lines * charH
-end
-
--- Get length of longest line in character count
 local function get_longest_line_chars(lines)
   local longest = 0
   for _, line in ipairs(lines) do
@@ -136,30 +124,33 @@ local function get_longest_line_chars(lines)
   return longest
 end
 
+local function calc_tooltip_size(lines, fontSize, minChars, maxChars)
+  local longest = math.max(minChars, get_longest_line_chars(lines))
+  if maxChars then longest = math.min(longest, maxChars) end
+  local charW, charH = calcFontSize(fontSize)
+  return longest * charW, #lines * charH
+end
+
 -- ============================================================================
 -- Tooltip Management
 -- ============================================================================
 
--- Initialize tooltip windows (border, header, content)
 function ItemTracker.initTooltip()
-  local s = ItemTracker.settings
+  local s = settings
   local t = ItemTracker.tooltip
-  
-  -- Create border window
+
   t.border = "itemTooltipBorder"
   createMiniConsole(t.border, 0, 0, 1, 1)
   setBackgroundColor(t.border, unpack(s.tooltipBorderColor))
   hideWindow(t.border)
-  
-  -- Create header window
+
   t.header = "itemTooltipHeader"
   createMiniConsole(t.header, 0, 0, 1, 1)
   setMiniConsoleFontSize(t.header, s.tooltipHeaderFontSize)
   setBackgroundColor(t.header, unpack(s.tooltipHeaderBGColor))
   setFgColor(t.header, 255, 255, 255)
   hideWindow(t.header)
-  
-  -- Create content window
+
   t.win = "itemTooltip"
   createMiniConsole(t.win, s.tooltipBorderSize, s.tooltipBorderSize, 1, 1)
   setMiniConsoleFontSize(t.win, s.tooltipFontSize)
@@ -169,7 +160,6 @@ function ItemTracker.initTooltip()
   hideWindow(t.win)
 end
 
--- Hide all tooltip windows
 function ItemTracker.hideTooltip()
   local t = ItemTracker.tooltip
   hideWindow(t.header)
@@ -177,137 +167,96 @@ function ItemTracker.hideTooltip()
   hideWindow(t.win)
 end
 
--- Display tooltip for given item name(s)
 function ItemTracker.showTooltip(name)
   local list = ItemTracker.by_name[name:lower()]
   if not list then return end
 
-  local s = ItemTracker.settings
+  local s = settings
   local t = ItemTracker.tooltip
-  
-  -- Calculate header height
+
   local _, headerCharH = calcFontSize(s.tooltipHeaderFontSize)
   local headerHeight = headerCharH
 
-  -- Build preview text to calculate if indentation is needed
   local preview_raw = {}
   for idx, item in ipairs(list) do
     if item.details then
       for line in item.details:gmatch("[^\n]+") do
-        table.insert(preview_raw, line)
+        preview_raw[#preview_raw+1] = line
       end
     end
-    if idx < #list then
-      table.insert(preview_raw, "\n")
-    end
+    if idx < #list then preview_raw[#preview_raw+1] = "\n" end
   end
 
-  -- Determine if we need to indent extra flags for better formatting
-  local longestChars = get_longest_line_chars(preview_raw)
-  local needsIndent = s.tooltipMaxChars and longestChars > s.tooltipMaxChars
+  local needsIndent = s.tooltipMaxChars
+    and get_longest_line_chars(preview_raw) > s.tooltipMaxChars
 
-  -- Build final preview with proper formatting
   local preview = {}
   for idx, item in ipairs(list) do
     if item.details then
       local text = needsIndent and indent_extra_flags(item.details) or item.details
       for line in text:gmatch("[^\n]+") do
-        table.insert(preview, line)
+        preview[#preview+1] = line
       end
     end
-    if idx < #list then
-      table.insert(preview, "\n")
-    end
+    if idx < #list then preview[#preview+1] = "\n" end
   end
 
-  -- Calculate final dimensions
   local contentW, contentH = calc_tooltip_size(
-    preview,
-    s.tooltipFontSize,
-    s.tooltipMinChars,
-    s.tooltipMaxChars
+    preview, s.tooltipFontSize, s.tooltipMinChars, s.tooltipMaxChars
   )
-  
-  local totalWidth = contentW + (s.tooltipBorderSize * 2)
+
+  local totalWidth  = contentW + (s.tooltipBorderSize * 2)
   local totalHeight = headerHeight + contentH + (s.tooltipBorderSize * 2)
 
-  -- Resize all windows
   resizeWindow(t.border, totalWidth, totalHeight)
   resizeWindow(t.header, contentW, headerHeight)
   resizeWindow(t.win, contentW, contentH)
-  
-  t.width = totalWidth
-  t.height = totalHeight
 
-  -- Populate content
+  t.width, t.height = totalWidth, totalHeight
+
   clearWindow(t.win)
-  
+
   for idx, item in ipairs(list) do
     clearWindow(t.header)
     cecho(t.header, s.tooltipItemNameColor .. item.name)
-    
+
     if item.details then
       local text = needsIndent and indent_extra_flags(item.details) or item.details
       cecho(t.win, s.tooltipItemDetailsColor .. text .. "\n")
     end
-    
-    if idx < #list then
-      cecho(t.win, "\n")
-    end
+
+    if idx < #list then cecho(t.win, "\n") end
   end
 
-  -- Position tooltip relative to cursor, avoiding status bars
   local mx, my = getMousePosition()
   local winW, winH = getMainWindowSize()
-  
+
   local px = mx + s.cursorOffset
   local py = my + s.cursorOffset
-  
-  -- Respect ALL dynamic UI borders (top/bottom/left/right)
+
   local borders = Darkmists.GlobalSettings.borders or {}
 
-  local leftPixels   = ((borders.left   or 0) / 100) * winW
-  local rightPixels  = ((borders.right  or 0) / 100) * winW
-  local topPixels    = ((borders.top    or 0) / 100) * winH
-  local bottomPixels = ((borders.bottom or 0) / 100) * winH
+  local safeLeft   = ((borders.left   or 0) / 100) * winW + s.screenMargin
+  local safeRight  = winW - ((borders.right  or 0) / 100) * winW - s.screenMargin
+  local safeTop    = ((borders.top    or 0) / 100) * winH + s.screenMargin
+  local safeBottom = winH - ((borders.bottom or 0) / 100) * winH - s.screenMargin
 
-  -- Safe drawing region inside borders
-  local safeLeft   = leftPixels + s.screenMargin
-  local safeRight  = winW - rightPixels  - s.screenMargin
-  local safeTop    = topPixels + s.screenMargin
-  local safeBottom = winH - bottomPixels - s.screenMargin
+  if px + t.width > safeRight then px = safeRight - t.width end
+  if px < safeLeft then px = safeLeft end
 
-  -- If tooltip would overflow right border, move left
-  if px + t.width > safeRight then
-    px = safeRight - t.width
-  end
-
-  -- Clamp to left border
-  if px < safeLeft then
-    px = safeLeft
-  end
-
-  -- If tooltip would overflow bottom border, show above cursor
   if py + t.height > safeBottom or my > safeBottom then
     py = my - t.height - s.cursorOffset
   end
+  if py < safeTop then py = safeTop end
 
-  -- Clamp to top border
-  if py < safeTop then
-    py = safeTop
-  end
-  
-  -- Position all windows (border → header → content)
   moveWindow(t.border, px, py)
   moveWindow(t.header, px + s.tooltipBorderSize, py + s.tooltipBorderSize)
   moveWindow(t.win, px + s.tooltipBorderSize, py + s.tooltipBorderSize + headerHeight)
-  
-  -- Show all windows
+
   showWindow(t.border)
   showWindow(t.header)
   showWindow(t.win)
 
-  -- Register click handler to hide tooltip
   registerAnonymousEventHandler("sysWindowMousePressEvent", "ItemTracker.hideTooltip")
 end
 
@@ -315,16 +264,12 @@ end
 -- Data Loading and Indexing
 -- ============================================================================
 
--- Load item data from JSON file and build indices
 function ItemTracker.load(path)
   cecho(string.format(
     "<forest_green>[ID] "..defaultTextColor.."Loading %s v%s by %s\n",
-    ItemTracker.name,
-    ItemTracker.version,
-    ItemTracker.author
+    ItemTracker.name, ItemTracker.version, ItemTracker.author
   ))
 
-  -- Read JSON file
   local f, err = io.open(path, "r")
   if not f then
     cecho("<red>[ID] Failed to open JSON: " .. tostring(err) .. "\n")
@@ -339,45 +284,40 @@ function ItemTracker.load(path)
     return false
   end
 
-  -- Reset all indices
-  ItemTracker.items = {}
-  ItemTracker.by_name = {}
-  ItemTracker.by_area = {}
-  ItemTracker.sorted_names = {}
+  ItemTracker.items, ItemTracker.by_name, ItemTracker.by_area, ItemTracker.sorted_names =
+    {}, {}, {}, {}
 
   local dropped = 0
 
-  -- Process each item
   for _, item in ipairs(data) do
     if is_valid_item_name(item.name) then
       item.name = trim(item.name)
       local key = item.name:lower()
 
-      -- Add to flat list
-      table.insert(ItemTracker.items, item)
-      
-      -- Add to name index (supports duplicates)
-      ItemTracker.by_name[key] = ItemTracker.by_name[key] or {}
-      table.insert(ItemTracker.by_name[key], item)
-      table.insert(ItemTracker.sorted_names, key)
+      ItemTracker.items[#ItemTracker.items+1] = item
 
-      -- Add to area index
+      local nameList = ItemTracker.by_name[key]
+      if not nameList then
+        nameList = {}
+        ItemTracker.by_name[key] = nameList
+        ItemTracker.sorted_names[#ItemTracker.sorted_names+1] = key
+      end
+      nameList[#nameList+1] = item
+
       local area = extract_area(item.details)
       if area then
         item.area = area
         local akey = area:lower()
-        ItemTracker.by_area[akey] = ItemTracker.by_area[akey] or {}
-        table.insert(ItemTracker.by_area[akey], item)
+        local areaList = ItemTracker.by_area[akey] or {}
+        areaList[#areaList+1] = item
+        ItemTracker.by_area[akey] = areaList
       end
     else
       dropped = dropped + 1
     end
   end
 
-  -- Sort names by length (longest first) to prevent partial matching issues
-  table.sort(ItemTracker.sorted_names, function(a, b)
-    return #a > #b
-  end)
+  table.sort(ItemTracker.sorted_names, function(a, b) return #a > #b end)
 
   cecho(string.format(
     "<forest_green>[ID]"..defaultTextColor.." Loaded %d items (%d dropped)\n",
