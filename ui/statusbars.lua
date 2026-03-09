@@ -27,6 +27,7 @@ StatusBar.config = {
 -- UTILITY FUNCTIONS
 -- ===================================================================
 
+-- Generate CSS stylesheet for Geyser gauge (front and back)
 local function createBarStyle(colorConfig)
   local function parseRGBA(rgba)
     local r, g, b, a = rgba:match("(%d+),(%d+),(%d+),(%d+)")
@@ -41,22 +42,26 @@ local function createBarStyle(colorConfig)
          string.format(template, backdropColor.r, backdropColor.g, backdropColor.b, backdropColor.a)
 end
 
+-- Check if XP bar should be visible (below max level)
 local function shouldShowXP()
   return dmapi.player.level
      and dmapi.player.level < StatusBar.config.maxLevel
      and dmapi.player.online
 end
 
+-- Determine if enemy bar should be visible
 local function shouldShowEnemy()
   return dmapi.player.combat
      and dmapi.player.combat.active
      and dmapi.player.online
 end
 
+-- Ensure gauge max value is never 0 (Geyser requirement)
 local function safeMax(value)
   return (value and value > 0) and value or 1
 end
 
+-- Vitals must be valid and meaningful before showing bars
 local function shouldShowVitals()
   return dmapi.player
      and dmapi.player.vitals
@@ -64,11 +69,12 @@ local function shouldShowVitals()
      and safeMax(dmapi.player.vitals.hpMax) > 1
 end
 
+-- One-shot handler that waits for the first valid vitals packet
 local function registerFirstVitalsHandler()
   table.insert(DARKMISTS_STATUSBAR_EVENT_HANDLERS,
     registerAnonymousEventHandler("dmapi.player.vitals.updated", function()
       Darkmists.Log("StatusBars","Vitals received — showing bars")
-      StatusBar.showAll()
+      StatusBar.showAll()  -- state transition: hidden → visible
       StatusBar.reflow()
     end, true))
 end
@@ -77,14 +83,16 @@ end
 -- CLEANUP
 -- ===================================================================
 function StatusBar.cleanup()
+  -- Destroy all gauges
   for _, name in ipairs({"hpGauge", "mnGauge", "mvGauge", "enemyGauge", "xpGauge"}) do
     local gauge = StatusBar[name]
     if gauge then
       gauge:hide()
-      StatusBar[name] = nil
+      StatusBar[name] = nil -- clear reference for GC
     end
   end
 
+  -- Kill all event handlers owned by this module
   for _, id in ipairs(DARKMISTS_STATUSBAR_EVENT_HANDLERS) do
     killAnonymousEventHandler(id)
   end
@@ -99,7 +107,7 @@ function StatusBar.cleanup()
   Darkmists.SetWindowBorderPercent("bottom",0)
 end
 
-StatusBar.cleanup()
+StatusBar.cleanup()  -- ensure reload safety
 
 -- ===================================================================
 -- GAUGE CREATION
@@ -109,6 +117,7 @@ function StatusBar.create()
 
   local cfg = StatusBar.config
 
+  -- Create HP/MN/MV gauges (3 bars side-by-side, left-aligned)
   local vitalGauges = {
     { name = "hpGauge", label = "StatusBar_HP", x = 0,     width = 33.33, color = cfg.colors.hp },
     { name = "mnGauge", label = "StatusBar_MN", x = 33.33, width = 33.33, color = cfg.colors.mn },
@@ -139,6 +148,7 @@ function StatusBar.create()
 
   StatusBar.container:show()
 
+  -- Gauge Factory
   local function newGauge(def)
     local gauge = Geyser.Gauge:new({
       name = def.label,
@@ -156,6 +166,7 @@ function StatusBar.create()
     StatusBar[def.key] = gauge
   end
 
+  -- All 3 Vitals (use existing table)
   for _, def in ipairs(vitalGauges) do
     newGauge({
       key = def.name,
@@ -168,6 +179,7 @@ function StatusBar.create()
     })
   end
 
+  -- XP Gauge
   newGauge({
     key = "xpGauge",
     label = "StatusBar_XP",
@@ -176,6 +188,7 @@ function StatusBar.create()
     color = cfg.colors.xp
   })
 
+  -- Enemy Gauge
   newGauge({
     key = "enemyGauge",
     label = "StatusBar_Enemy",
@@ -196,6 +209,8 @@ end
 -- ===================================================================
 -- UPDATE FUNCTIONS
 -- ===================================================================
+
+-- Update HP/MN/MV bars with current values
 function StatusBar.update()
   local vitals = dmapi.player.vitals
   if not vitals then return end
@@ -203,6 +218,7 @@ function StatusBar.update()
   local function setVital(gauge, cur, max, pct, regen)
     if not gauge then return end
 
+    -- regen indicator formatting
     local adir = regen and regen ~= 0
       and (regen > 0 and (" (+"..regen..")") or (" ("..regen..")"))
       or ""
@@ -220,12 +236,14 @@ function StatusBar.update()
   setVital(StatusBar.mnGauge, vitals.mn, vitals.mnMax, vitals.mnPct, vitals.mnRegen)
   setVital(StatusBar.mvGauge, vitals.mv, vitals.mvMax, vitals.mvPct, vitals.mvRegen)
 
+  -- first valid vitals packet reveals bars
   if StatusBar.hpGauge and StatusBar.hpGauge.hidden and safeMax(vitals.hpMax) > 1 then
     StatusBar.showAll()
     StatusBar.reflow()
   end
 end
 
+-- Update XP bar with progress to next level
 function StatusBar.updateXP()
   if not StatusBar.xpGauge or not dmapi.player.experience then return end
   if not shouldShowXP() then
@@ -235,6 +253,7 @@ function StatusBar.updateXP()
 
   local xpTnl = tonumber(dmapi.player.experience.tnl) or 1000
 
+  -- track highest TNL seen to invert bar direction
   if not StatusBar.lastTnl or StatusBar.lastTnl < xpTnl then
     StatusBar.maxTnl = xpTnl
   end
@@ -249,6 +268,7 @@ function StatusBar.updateXP()
       :format(StatusBar.config.fontColor, xpTnl, xpPct))
 end
 
+-- Update enemy HP bar during combat
 function StatusBar.updateEnemy(enemyData)
   if not StatusBar.enemyGauge then return end
 
@@ -288,6 +308,7 @@ function StatusBar.reflow()
   local showEnemy = StatusBar.enemyGauge and not StatusBar.enemyGauge.hidden
   local showXP = StatusBar.xpGauge and not StatusBar.xpGauge.hidden and shouldShowXP()
 
+  -- Unit weights (enemy=2, vitals=2, xp=1)
   local enemyUnits = showEnemy and 2 or 0
   local vitalUnits = shouldShowVitals() and 2 or 0
   local xpUnits = showXP and 1 or 0
@@ -441,7 +462,7 @@ function StatusBar.registerEvents()
   table.insert(DARKMISTS_STATUSBAR_EVENT_HANDLERS,
     registerAnonymousEventHandler("dmapi.world.enter", function()
       Darkmists.Log("StatusBars","World entered — awaiting vitals")
-      registerFirstVitalsHandler()
+      registerFirstVitalsHandler() -- reset oneshot lifecycle on reconnect
     end))
 
   Darkmists.Log("StatusBars","Events Registered!")
