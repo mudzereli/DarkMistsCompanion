@@ -380,4 +380,4 @@ end
 -- Meta Help / Command
 dofile(getMudletHomeDir() .. "/DarkMistsCompanion/dm_meta.lua")
 
-echo("\nAll Scripts Loaded!\n")
+Darkmists.Log("Darkmists Core", "All Scripts Loaded!")
