@@ -16,16 +16,16 @@
 -- =============================================================================
 
 -- Load foundational utilities first (no dependencies)
-dofile(getMudletHomeDir() .. "/DarkMistsCompanion/utility/util.lua" )
+dofile(getMudletHomeDir() .. "/DarkMistsCompanion/utility/util.lua")
 
-local saveFilePath = getMudletHomeDir() .. "/darkmists_global_settings.lua"
-local itemViewerPath = getMudletHomeDir() .. "/DarkMistsCompanion/assets/item-viewer.html"
-local dmapiDocPath = getMudletHomeDir() .. "/DarkMistsCompanion/assets/dmapi.html"
-local mapDatPath = getMudletHomeDir() .. "/DarkMistsCompanion/map.dat"
-local eaConverterPath = getMudletHomeDir() .. "/DarkMistsCompanion/assets/ea-save-converter.html"
-local eaFormulaParser = getMudletHomeDir() .. "/DarkMistsCompanion/assets/alchemy-formula-parser.html"
+local saveFilePath     = getMudletHomeDir() .. "/darkmists_global_settings.lua"
+local itemViewerPath   = getMudletHomeDir() .. "/DarkMistsCompanion/assets/item-viewer.html"
+local dmapiDocPath     = getMudletHomeDir() .. "/DarkMistsCompanion/assets/dmapi.html"
+local mapDatPath       = getMudletHomeDir() .. "/DarkMistsCompanion/map.dat"
+local eaConverterPath  = getMudletHomeDir() .. "/DarkMistsCompanion/assets/ea-save-converter.html"
+local eaFormulaParser  = getMudletHomeDir() .. "/DarkMistsCompanion/assets/alchemy-formula-parser.html"
 
-Darkmists = {}
+Darkmists = Darkmists or {}
 Darkmists.NAME = "DarkMistsCompanion"
 Darkmists.VERSION = "1.3.10"
 Darkmists.GITHUB_URL = "https://github.com/mudzereli/DarkMistsCompanion/releases/latest/download/DarkMistsCompanion.mpackage"
@@ -37,18 +37,18 @@ Darkmists.DefaultSettings = {
   -- Use light mode UI theme?
   lightMode = false,
   -- Percentage of screen space reserved for each border region
-  borders = {top = 10, bottom = 0, left = 0, right = 30},
+  borders = { top = 10, bottom = 0, left = 0, right = 30 },
   -- Font Size for additional Information Windows (Chat History, Who List, Affects)
   fontSize = 11,
   -- Font Face for additional Information Windows (Chat History, Who List, Affects)
   fontName = "Lucida Console",
   -- Colors for Status Bars (these are expressed in RGBA format which allows a wider variety of colors)
   statusBarColors = {
-    hp = { bar = "128,0,0,255", backdrop = "32,0,0,255" },
-    mn = { bar = "0,0,128,255", backdrop = "0,0,32,255" },
-    mv = { bar = "128,128,0,255", backdrop = "32,32,0,255" },
-    enemy = { bar = "128,0,0,255", backdrop = "32,0,0,255" },
-    xp = { bar = "128,64,0,255", backdrop = "32,16,0,255" }
+    hp    = { bar = "128,0,0,255",   backdrop = "32,0,0,255" },
+    mn    = { bar = "0,0,128,255",   backdrop = "0,0,32,255" },
+    mv    = { bar = "128,128,0,255", backdrop = "32,32,0,255" },
+    enemy = { bar = "128,0,0,255",   backdrop = "32,0,0,255" },
+    xp    = { bar = "128,64,0,255",  backdrop = "32,16,0,255" }
   },
   -- Font Color used on Status Bars (expressed in RGB format)
   statusBarFontColor = "255,255,255",
@@ -73,7 +73,8 @@ Darkmists.DefaultSettings = {
   -- Stat Roller Leniancy (0 = Roll must be Max, 1 = Roll can be 1 lower than Max, etc)
   statRollerLeniency = 1
 }
-Darkmists.GlobalSettings = {}
+
+Darkmists.GlobalSettings = Darkmists.GlobalSettings or {}
 
 -- =============================================================================
 -- LOCAL HELPER FUNCTIONS
@@ -87,7 +88,7 @@ end
 -- GLOBAL LINE DISPATCHER
 -- =============================================================================
 
-Darkmists.OnNewLine = function()
+function Darkmists.OnNewLine()
   -- Stat parsing (HP/mana/etc)
   if StatRoller and StatRoller.on_line then
     StatRoller.on_line(line)
@@ -100,7 +101,6 @@ Darkmists.OnNewLine = function()
   if dmapi and dmapi.core and dmapi.core.LineTrigger then
     dmapi.core.LineTrigger(line)
   end
-  
 end
 
 -- =============================================================================
@@ -108,7 +108,7 @@ end
 -- =============================================================================
 
 function Darkmists.LoadMapDat()
-  Darkmists.Log("Darkmists Core",("Loading Map from: %s"):format(mapDatPath))
+  Darkmists.Log("Darkmists Core", ("Loading Map from: %s"):format(mapDatPath))
   loadMap(mapDatPath)
 end
 
@@ -133,21 +133,20 @@ function Darkmists.OpenSettingsFile()
   Darkmists.Log("Darkmists Core","Settings File Opened. After Editing, you must use LOAD SETTINGS!")
 end
 
-Darkmists.OpenWebsite = function()
+function Darkmists.OpenWebsite()
   openUrl("https://darkmists.org")
 end
 
-Darkmists.UpdateFromGitHub = function()
+function Darkmists.UpdateFromGitHub()
   if Darkmists.IS_DEV_BUILD then
     Darkmists.Log("Darkmists Core", "<red>Can not update DEV BUILD from GitHub!")
     return
   end
-  
+
   Darkmists.Log("Darkmists Core", "Updating Dark Mists Companion from GitHub...")
 
   if table.contains(getPackages(), Darkmists.NAME) then
     uninstallPackage(Darkmists.NAME)
-
     tempTimer(2, function()
       installPackage(Darkmists.GITHUB_URL)
     end)
@@ -156,22 +155,22 @@ Darkmists.UpdateFromGitHub = function()
   end
 end
 
-Darkmists.getDefaultAdjLabelstyle = function()
+function Darkmists.getDefaultAdjLabelstyle()
   return ifLight(
     [[background-color: #EEEEEE; border: 2px solid #111111;]],
     [[background-color: #111111; border: 2px solid #666666;]]
   )
 end
 
-Darkmists.getDefaultTextColor = function()
+function Darkmists.getDefaultTextColor()
   return ifLight("black", "white")
 end
 
-Darkmists.getDefaultBackgroundColor = function()
+function Darkmists.getDefaultBackgroundColor()
   return ifLight("white", "black")
 end
 
-Darkmists.getDefaultTextColorTag = function()
+function Darkmists.getDefaultTextColorTag()
   return ("<%s>"):format(Darkmists.getDefaultTextColor())
 end
 
@@ -197,73 +196,67 @@ function Darkmists.getSmartDockGeometry()
   end
 end
 
-Darkmists.createTabPanel = function(id, title, tabName)
+function Darkmists.createTabPanel(id, title, tabName)
   return Adjustable.Container:new({
     name = id,
-
-    x = 0,
-    y = 0,
-    width  = "100%",
-    height = "100%",
-
+    x = 0, y = 0,
+    width = "100%", height = "100%",
     titleText = title,
     titleTxtColor = Darkmists.getDefaultTextColor(),
     padding = 8,
     adjLabelstyle = Darkmists.getDefaultAdjLabelstyle(),
-
     lockStyle = "full",
-    locked    = true,
-    autoSave  = false,
-    autoLoad  = false,
-  }, DMTabs[tabName.."center"])
+    locked = true,
+    autoSave = false,
+    autoLoad = false,
+  }, DMTabs[tabName .. "center"])
 end
 
-Darkmists.Log = function(pluginName,msg)
+function Darkmists.Log(pluginName, msg)
   local output = "\n<dim_gray>[<%s>%s<dim_gray>] <green>%s"
-  output = output:format(Darkmists.getDefaultTextColor(),pluginName,msg)
-  cecho(output)
+  cecho(output:format(Darkmists.getDefaultTextColor(), pluginName, msg))
 end
 
-Darkmists.LogDebug = function(pluginName,msg)
-  local output = "\n[%s] %s"
-  output = output:format(pluginName,msg)
-  debugc(output)
+function Darkmists.LogDebug(pluginName, msg)
+  debugc(("\n[%s] %s"):format(pluginName, msg))
 end
 
-Darkmists.SaveSettings = function()
+function Darkmists.SaveSettings()
   local settings = Darkmists.GlobalSettings
 ---@diagnostic disable-next-line: undefined-field
-  table.save(saveFilePath,settings)
-  Darkmists.Log("Darkmists Core",("Settings Saved To: %s!"):format(saveFilePath))
+  table.save(saveFilePath, settings)
+  Darkmists.Log("Darkmists Core", ("Settings Saved To: %s!"):format(saveFilePath))
 end
 
-Darkmists.LoadSettings = function()
+function Darkmists.LoadSettings()
 ---@diagnostic disable-next-line: undefined-field
   if io.exists(saveFilePath) then
     local settings = {}
-    ---@diagnostic disable-next-line: undefined-field
-    table.load(saveFilePath,settings)
-    DMUtil.deep_copy_into(Darkmists.GlobalSettings,settings)
-    Darkmists.Log("Darkmists Core",("Settings Loaded From: %s!"):format(saveFilePath))
+---@diagnostic disable-next-line: undefined-field
+    table.load(saveFilePath, settings)
+    DMUtil.deep_copy_into(Darkmists.GlobalSettings, settings)
+    Darkmists.Log("Darkmists Core", ("Settings Loaded From: %s!"):format(saveFilePath))
     Darkmists.Log("Darkmists Core","You may need to Reload UI for changes to take effect!")
   else
     Darkmists.Log("Darkmists Core","No Pre-Existing Settings File Found!")
   end
 end
 
-Darkmists.ApplyDefaultSettings = function()
-  DMUtil.deep_copy_into(Darkmists.GlobalSettings,Darkmists.DefaultSettings)
+function Darkmists.ApplyDefaultSettings()
+  DMUtil.deep_copy_into(Darkmists.GlobalSettings, Darkmists.DefaultSettings)
   Darkmists.Log("Darkmists Core","Default Settings Applied!")
 end
 
-Darkmists.SetWindowBorderPercent = function(region, percent)
+function Darkmists.SetWindowBorderPercent(region, percent)
   local mainWidth, mainHeight = getMainWindowSize()
   -- Determine whether we're working with height or width
   local isVertical = (region == "top" or region == "bottom")
   local baseSize = isVertical and mainHeight or mainWidth
   local scaledSize = (percent / 100) * baseSize
+
   -- Persist the percent value
   Darkmists.GlobalSettings.borders[region] = percent
+
   -- Apply the border
   if region == "top" then
     setBorderTop(scaledSize)
@@ -274,22 +267,21 @@ Darkmists.SetWindowBorderPercent = function(region, percent)
   elseif region == "right" then
     setBorderRight(scaledSize)
   end
+
   Darkmists.LogDebug("Darkmists Core", "Window Borders Adjusted")
 end
 
-Darkmists.Init = function()
-  Darkmists.Log("Darkmists Core",("Loaded Darkmists Core v%s"):format(Darkmists.VERSION))
+function Darkmists.Init()
+  Darkmists.Log("Darkmists Core", ("Loaded Darkmists Core v%s"):format(Darkmists.VERSION))
   Darkmists.ApplyDefaultSettings()
   Darkmists.LoadSettings()
+
   if not Darkmists.GlobalSettings.minimalMode then
     for k, v in pairs(Darkmists.GlobalSettings.borders) do
-      Darkmists.SetWindowBorderPercent(k,v)
+      Darkmists.SetWindowBorderPercent(k, v)
     end
   else
-    setBorderTop(0)
-    setBorderBottom(0)
-    setBorderLeft(0)
-    setBorderRight(0)
+    setBorderTop(0); setBorderBottom(0); setBorderLeft(0); setBorderRight(0)
   end
 end
 
@@ -304,10 +296,9 @@ function Darkmists.LoadUIScripts()
   dofile(getMudletHomeDir() .. "/DarkMistsCompanion/ui/affectswindow.lua")
   dofile(getMudletHomeDir() .. "/DarkMistsCompanion/ui/scorepanel.lua")
   dofile(getMudletHomeDir() .. "/DarkMistsCompanion/ui/mapwindow.lua")
-  dofile(getMudletHomeDir() .. "/DarkMistsCompanion/utility/mapcolor.lua" )
+  dofile(getMudletHomeDir() .. "/DarkMistsCompanion/utility/mapcolor.lua")
 
   tempTimer(0.2, function()
-
     -- Hide every tab panel completely
     for _, tabName in ipairs(DMTabs.tabs) do
       if DMTabs[tabName] then
@@ -325,7 +316,6 @@ function Darkmists.LoadUIScripts()
     end
 
     DMTabs:activateTab(target)
-
   end)
 
   Darkmists.UI_LOADED = true
@@ -343,7 +333,7 @@ function Darkmists.EnableUI()
 
   -- Apply borders
   for k, v in pairs(Darkmists.GlobalSettings.borders) do
-    Darkmists.SetWindowBorderPercent(k,v)
+    Darkmists.SetWindowBorderPercent(k, v)
   end
 
   Darkmists.Log("Darkmists Core", "UI Enabled")
@@ -360,9 +350,7 @@ function Darkmists.DisableUI()
   end
 
   Darkmists.Log("Darkmists Core", "Switching to Minimal UI...")
-  tempTimer(0.5, function()
-    resetProfile()
-  end)
+  tempTimer(0.5, function() resetProfile() end)
 end
 
 -- =============================================================================
@@ -370,19 +358,19 @@ end
 -- =============================================================================
 
 -- DMAPI first
-dofile(getMudletHomeDir() .. "/DarkMistsCompanion/dmapi.lua" )
+dofile(getMudletHomeDir() .. "/DarkMistsCompanion/dmapi.lua")
 
 -- NOW Call Init
 Darkmists.Init()
 
 -- Utility Scripts that use DMAPI
-dofile(getMudletHomeDir() .. "/DarkMistsCompanion/utility/itemtracker.lua" )
-dofile(getMudletHomeDir() .. "/DarkMistsCompanion/utility/statroller.lua" )
-dofile(getMudletHomeDir() .. "/DarkMistsCompanion/utility/mapdestinations.lua" )
-dofile(getMudletHomeDir() .. "/DarkMistsCompanion/utility/enchanterassist.lua" )
-dofile(getMudletHomeDir() .. "/DarkMistsCompanion/utility/skillups.lua" )
-dofile(getMudletHomeDir() .. "/DarkMistsCompanion/utility/clickables.lua" )
-dofile(getMudletHomeDir() .. "/DarkMistsCompanion/ui/buttonbar.lua" )
+dofile(getMudletHomeDir() .. "/DarkMistsCompanion/utility/itemtracker.lua")
+dofile(getMudletHomeDir() .. "/DarkMistsCompanion/utility/statroller.lua")
+dofile(getMudletHomeDir() .. "/DarkMistsCompanion/utility/mapdestinations.lua")
+dofile(getMudletHomeDir() .. "/DarkMistsCompanion/utility/enchanterassist.lua")
+dofile(getMudletHomeDir() .. "/DarkMistsCompanion/utility/skillups.lua")
+dofile(getMudletHomeDir() .. "/DarkMistsCompanion/utility/clickables.lua")
+dofile(getMudletHomeDir() .. "/DarkMistsCompanion/ui/buttonbar.lua")
 
 -- UI Scripts
 if not Darkmists.GlobalSettings.minimalMode then
@@ -390,6 +378,6 @@ if not Darkmists.GlobalSettings.minimalMode then
 end
 
 -- Meta Help / Command
-dofile(getMudletHomeDir() .. "/DarkMistsCompanion/dm_meta.lua" )
+dofile(getMudletHomeDir() .. "/DarkMistsCompanion/dm_meta.lua")
 
 echo("\nAll Scripts Loaded!\n")
