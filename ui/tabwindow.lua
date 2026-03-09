@@ -68,12 +68,32 @@ DMTabs = Adjustable.TabWindow:new({
 
   inactiveTabStyle = inactiveStyle,
   activeTabStyle   = activeStyle,
+  tabBarHeight = "7%",
   footerStyle = [[
     background-color: ]] .. Darkmists.getDefaultBackgroundColor() .. [[;
   ]],
   centerStyle = [[
     background-color: ]] .. Darkmists.getDefaultBackgroundColor() .. [[;
-    border-radius: 6px;
-    margin: 4px;
+    border-radius: 0px;
   ]]
 })
+
+function DMTabs:queueLayoutSave()
+  if not self.__layoutSaveQueued then
+    self.__layoutSaveQueued = true
+    tempTimer(0.8, function()
+      if DMTabs then DMTabs:save() end
+      if DMTabs then DMTabs.__layoutSaveQueued = nil end
+    end)
+  end
+end
+
+registerAnonymousEventHandler("sysProfileSaveStarted", function()
+  DMTabs:queueLayoutSave()
+end)
+
+tempTimer(120, function()
+  if DMTabs then DMTabs:save() end
+end, true)
+
+DMTabs:load()
