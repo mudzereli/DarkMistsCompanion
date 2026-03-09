@@ -113,7 +113,11 @@
         "playSoundFile",
         "resetProfile",
         "raiseWindow",
-        "lfs"
+        "lfs",
+        "setUserWindowTitle",
+        "disableMapInfo",
+        "scrollTo",
+        "loadWindowLayout"
     ],
     "Lua.diagnostics.disable": [
         "deprecated",
