@@ -5,6 +5,7 @@ DarkMistsMiniMap.container = nil
 DarkMistsMiniMap.header = nil
 DarkMistsMiniMap.minimap = nil
 
+-- Geometry snapshot at load time (intentional: matches original behavior)
 local dock = Darkmists.getSmartDockGeometry()
 
 -- -------------------------------------------------------------------
@@ -43,7 +44,7 @@ function DarkMistsMiniMap.create()
   header:setFont(Darkmists.GlobalSettings.fontName)
   header:setFontSize(Darkmists.GlobalSettings.fontSize)
 
-  DarkMistsMiniMap.header = header
+  DarkMistsMiniMap.header = header -- store reference for updates
 
   -- Mapper
   DarkMistsMiniMap.minimap = Geyser.Mapper:new({
@@ -68,24 +69,27 @@ function DarkMistsMiniMap.update()
     if id then
       name = getRoomName(id)
       if name then
+        -- Only resolve area if room name resolved successfully
         area = getRoomAreaName(getRoomArea(id))
       end
     end
   end
 
-  -- Fallback to current room
+  -- Fallback to current room if any selection data missing
   if not (name and id and area) and map.currentRoom then
     name = map.currentName
     id = map.currentRoom
     area = getRoomAreaName(map.currentArea)
   end
 
-  -- Defaults
+  -- Defaults ensure stable UI even if mapper data unavailable
   name = name or "unknown"
   id = id or "?"
   area = area or "unknown"
 
   local disp = ("%s / %s (%s)"):format(name, tostring(id), area)
+
+  -- Header may briefly be nil during reload race; assume exists as original did
   DarkMistsMiniMap.header:clear()
   DarkMistsMiniMap.header:echo(disp)
 end
@@ -94,10 +98,10 @@ end
 -- Event Management
 -- -------------------------------------------------------------------
 function DarkMistsMiniMap.registerEvents()
-  -- Remove existing handlers
-  for _, id in ipairs(DARKMISTS_MINIMAP_EVENT_HANDLERS) do
-    killAnonymousEventHandler(id)
-    Darkmists.Log("MiniMapContainer", ("Killing Event Handler #%d"):format(id))
+  -- Remove existing handlers owned by this module
+  for _, handlerId in ipairs(DARKMISTS_MINIMAP_EVENT_HANDLERS) do
+    killAnonymousEventHandler(handlerId)
+    Darkmists.Log("MiniMapContainer", ("Killing Event Handler #%d"):format(handlerId))
   end
   DARKMISTS_MINIMAP_EVENT_HANDLERS = {}
 
