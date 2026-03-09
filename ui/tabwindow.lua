@@ -1,4 +1,5 @@
 local isLight = Darkmists.GlobalSettings.lightMode
+local dock = Darkmists.getSmartDockGeometry()
 
 local inactiveStyle = isLight and [[
   QLabel {
@@ -55,8 +56,8 @@ or [[
 DMTabs = Adjustable.TabWindow:new({
   name = "DMTabs",
 
-  x = Darkmists.getDefaultXPosition(),
-  width  = tostring(100 - Darkmists.GlobalSettings.mainWindowPanelWidth).."%",
+  x = dock.x,
+  width  = dock.width,
   y = "50%",
   height = "50%",
 

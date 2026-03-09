@@ -5,13 +5,15 @@ DarkMistsMiniMap.container = nil
 DarkMistsMiniMap.header = nil
 DarkMistsMiniMap.minimap = nil
 
+local dock = Darkmists.getSmartDockGeometry()
+
 DarkMistsMiniMap.create = function()
   -- create main container
   DarkMistsMiniMap.container = Adjustable.Container:new({
     name = "MiniMapContainer",
 
-    x = Darkmists.getDefaultXPosition(),
-    width = tostring(100 - Darkmists.GlobalSettings.mainWindowPanelWidth).."%",
+    x = dock.x,
+    width = dock.width,
     y = "0%",
     height = "50%",
 
