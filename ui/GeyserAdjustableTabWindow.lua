@@ -334,12 +334,16 @@ function Adjustable.TabWindow:transformTabContainer(tab)
     else 
         myWindow.current = nil
     end
+    if DMTabs and DMTabs.queueLayoutSave then
+        DMTabs:queueLayoutSave()
+    end
 end
 
 --restores the window to be a tab again
 function Adjustable.TabWindow:restoreTab(tab, myWindow)
     myWindow = myWindow or self
     local container = self[tab.."tab"]
+    container:attachToBorder("none")
     container.container:remove(container)
     container:remove(self[tab])
     container:setPadding(0)
@@ -348,6 +352,11 @@ function Adjustable.TabWindow:restoreTab(tab, myWindow)
     self:changeTabContainer(tab, myWindow)
     self[tab].floating = false
     container.raiseOnClick = false
+    scrollTo(-10)
+    tempTimer(0,function() scrollTo() end,true)
+    if DMTabs and DMTabs.queueLayoutSave then
+        DMTabs:queueLayoutSave()
+    end
 end
 
 -- function to make a gap where the tab can be dropped in
@@ -408,6 +417,9 @@ function Adjustable.TabWindow:changeTabContainer(tab, myWindow, position)
         self.current = nil
     end
     myWindow:activateTab(tab)
+    if DMTabs and DMTabs.queueLayoutSave then
+        DMTabs:queueLayoutSave()
+    end
 end
 
 -- handles the release event
@@ -524,6 +536,9 @@ function Adjustable.TabWindow:addTab(name, pos)
     
     table.insert(self.header.windows, pos, self[name.."tab"].name)
     self.header:organize()
+    if DMTabs and DMTabs.queueLayoutSave then
+        DMTabs:queueLayoutSave()
+    end
     return true
 end
 
@@ -537,7 +552,6 @@ function Adjustable.TabWindow:save()
     for k,v in pairs(Adjustable.TabWindow.all) do
         mytable[k] = {}
         mytable[k].tabs = v.tabs
-        mytable[k].current = v.current
     end
     -- save floating tabs and tabText
     for k,v in pairs(Adjustable.TabWindow.allTabs) do
@@ -583,12 +597,6 @@ function Adjustable.TabWindow:load()
                 myWindow:addTab(v1,k1)
             end
         end
-	if myWindow then
-	    myWindow:deactivateTab()
-	    myWindow.current = v.current
-	    tempTimer(0, function() myWindow:activateTab(v.current) end)
-	    myWindow:raiseAll() 
-	end
         -- load floating Tabs
         if v.floatingTabs then
             for k1, v1 in pairs(v.floatingTabs) do
