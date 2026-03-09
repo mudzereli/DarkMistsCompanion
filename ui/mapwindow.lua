@@ -109,13 +109,11 @@ DarkMistsMiniMap.registerEvents = function()
 
   -- update on map window mouse press event
   table.insert(DARKMISTS_MINIMAP_EVENT_HANDLERS,
-    registerAnonymousEventHandler("sysMapWindowMousePressEvent",
-      function() DarkMistsMiniMap.update() end))
+    registerAnonymousEventHandler("sysMapWindowMousePressEvent", DarkMistsMiniMap.update))
 
   -- update on room exit updated
   table.insert(DARKMISTS_MINIMAP_EVENT_HANDLERS,
-    registerAnonymousEventHandler("dmapi.world.prompt",
-      function() DarkMistsMiniMap.update() end))
+    registerAnonymousEventHandler("dmapi.world.prompt", DarkMistsMiniMap.update))
   Darkmists.Log("MiniMapContainer","Events Registered!")
 end
 
