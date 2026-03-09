@@ -1,11 +1,15 @@
 -- ===================================================================
 -- Who Window - Player list tracker with age display
 -- ===================================================================
+
+-- Clean up previous prompt handler if reloading
 if WhoWindow and WhoWindow.promptHandler then
   killAnonymousEventHandler(WhoWindow.promptHandler)
-  Darkmists.Log("WhoWindow",("<red>Killed Anonymous Event Handler #%d"):format(WhoWindow.promptHandler))
+  Darkmists.Log("WhoWindow", ("<red>Killed Anonymous Event Handler #%d"):format(WhoWindow.promptHandler))
 end
+
 WhoWindow = WhoWindow or {}
+
 -- Configuration
 WhoWindow.config = {
   fontSize = Darkmists.GlobalSettings.fontSize,
@@ -16,6 +20,7 @@ WhoWindow.config = {
 
 -- State
 WhoWindow.window = nil
+WhoWindow.console = WhoWindow.console or nil
 WhoWindow.playerCount = 0
 WhoWindow.tempBufferName = "WhoWindow_temp"
 
@@ -24,10 +29,6 @@ WhoWindow.tempBufferName = "WhoWindow_temp"
 -- ===================================================================
 
 --- Create the Who window (only if it doesn't exist)
--- ===================================================================
--- WINDOW MANAGEMENT (Adjustable.Container)
--- ===================================================================
-
 function WhoWindow.create()
   if WhoWindow.window and WhoWindow.console then return end
 
@@ -51,7 +52,7 @@ function WhoWindow.create()
   -- attach & show
   WhoWindow.window:show()
   WhoWindow.window:raiseAll()
-  Darkmists.Log("WhoWindow","Container Created!")
+  Darkmists.Log("WhoWindow", "Container Created!")
 end
 
 -- ===================================================================
@@ -67,43 +68,44 @@ local function displayHeader(age)
   else
     disp = "<green:black>Players Online: <white>%d <dim_gray>| <light_goldenrod>Age: <white>%ds <dim_gray>| <white>"
   end
-  WhoWindow.console:cecho(string.format(
-    disp,
-    WhoWindow.playerCount,
-    age
-  ))
+
+  WhoWindow.console:cecho(string.format(disp, WhoWindow.playerCount, age))
   resetFormat()
+
+  local linkColor = Darkmists.getDefaultTextColorTag()
+
   WhoWindow.console:cechoLink(
-    "<u>Refresh",
+    linkColor .. "<u>[Refresh]",
     function() send("who") end,
     "Refresh player list",
     true
   )
-  
+
   WhoWindow.console:cecho("\n\n")
 end
 
 --- Copy all player lines from temp buffer to main window
 local function copyPlayerLinesToWindow()
-  local lineCount = getLineCount(WhoWindow.tempBufferName)
+  local bufferName = WhoWindow.tempBufferName
+  local lineCount = getLineCount(bufferName)
   if lineCount == 0 then return end
-  
+
   for i = 0, lineCount - 1 do
-    moveCursor(WhoWindow.tempBufferName, 0, i)
-    selectCurrentLine(WhoWindow.tempBufferName)
-    copy(WhoWindow.tempBufferName)
+    moveCursor(bufferName, 0, i)
+    selectCurrentLine(bufferName)
+    copy(bufferName)
     appendBuffer("WhoWindowConsole")
   end
-  
-  moveCursorEnd(WhoWindow.tempBufferName)
+
+  moveCursorEnd(bufferName)
 end
 
 --- Update age display and refresh window
 function WhoWindow.updateAge()
   if not WhoWindow.window or WhoWindow.config.lastUpdated == 0 then return end
-  
+
   local secondsSinceUpdated = os.time() - WhoWindow.config.lastUpdated
-  
+
   -- Rebuild display
   WhoWindow.console:clear()
   displayHeader(secondsSinceUpdated)
@@ -113,13 +115,12 @@ end
 -- ===================================================================
 -- CAPTURE LOGIC
 -- ===================================================================
+
 local function getLastCharColors(win)
   -- select the whole line first so we know its length
   selectCurrentLine(win)
   local line = getSelection(win)
-  if not line or line == "" then
-    return nil
-  end
+  if not line or line == "" then return nil end
 
   local lineNum = getLineNumber(win)
   local lastPos = #line
@@ -140,33 +141,34 @@ end
 --- Append pending continuation line to last line in temp buffer
 -- @param pendingLine string The continuation text to append
 local function appendContinuationLine(pendingLine)
-  moveCursorEnd(WhoWindow.tempBufferName)
-  moveCursorUp(WhoWindow.tempBufferName, 1)
-  selectCurrentLine(WhoWindow.tempBufferName)
-  
-  local prevLineSelection = getSelection(WhoWindow.tempBufferName)
-  local prevLineNumber = getLineNumber(WhoWindow.tempBufferName)
-  
-  local t = WhoWindow.tempBufferName
-  selectSection(t,#getCurrentLine(t)-1,1)
-  local fr, fg, fb = getFgColor(t)
-  local br, bg, bb = getBgColor(t)
+  local bufferName = WhoWindow.tempBufferName
+
+  moveCursorEnd(bufferName)
+  moveCursorUp(bufferName, 1)
+  selectCurrentLine(bufferName)
+
+  local prevLineSelection = getSelection(bufferName)
+  local prevLineNumber = getLineNumber(bufferName)
+
+  selectSection(bufferName, #getCurrentLine(bufferName) - 1, 1)
+  local fr, fg, fb = getFgColor(bufferName)
+  local br, bg, bb = getBgColor(bufferName)
+
   local f = string.format("%02X%02X%02X", fr, fg, fb)
   local b = string.format("%02X%02X%02X", br, bg, bb)
 
   -- Move to end of previous line
-  moveCursor(WhoWindow.tempBufferName, #prevLineSelection, prevLineNumber)
-  
-  local txt = ("#%s,%s %s"):format(f,b,pendingLine)
-  hinsertText(WhoWindow.tempBufferName, txt)
-  moveCursorEnd(WhoWindow.tempBufferName)
-end
+  moveCursor(bufferName, #prevLineSelection, prevLineNumber)
 
+  local txt = ("#%s,%s %s"):format(f, b, pendingLine)
+  hinsertText(bufferName, txt)
+  moveCursorEnd(bufferName)
+end
 
 --- Capture and display the player list
 function WhoWindow.capturePlayerList()
   if not WhoWindow.window then return end
-  
+
   -- Parse "Players found: N"
   local numPlayers = line:match("^Players found:%s*(%d+)")
   if not numPlayers then return end
@@ -179,10 +181,11 @@ function WhoWindow.capturePlayerList()
   WhoWindow.playerCount = numPlayers
 
   -- Prepare temp buffer
-  if not exists(WhoWindow.tempBufferName, "buffer") then
-    createBuffer(WhoWindow.tempBufferName)
+  local bufferName = WhoWindow.tempBufferName
+  if not exists(bufferName, "buffer") then
+    createBuffer(bufferName)
   end
-  clearWindow(WhoWindow.tempBufferName)
+  clearWindow(bufferName)
 
   local headerPattern = "^%[[^%]]-%s+[^%]]-%]"
   local headersCaptured = 0
@@ -200,7 +203,7 @@ function WhoWindow.capturePlayerList()
     -- Player header line
     if lineText:match(headerPattern) then
       copy()
-      appendBuffer(WhoWindow.tempBufferName)
+      appendBuffer(bufferName)
       headersCaptured = headersCaptured + 1
 
       -- Attach wrapped continuation if present
@@ -249,16 +252,16 @@ end
 
 --- Register trigger for "Players found:" line
 function WhoWindow.registerTriggers()
-  if WhoWindow.playersFoundTrigger then 
-    killTrigger(WhoWindow.playersFoundTrigger) 
+  if WhoWindow.playersFoundTrigger then
+    killTrigger(WhoWindow.playersFoundTrigger)
   end
-  
+
   WhoWindow.playersFoundTrigger = tempTrigger(
     "Players found:",
     WhoWindow.capturePlayerList
   )
-  
-  Darkmists.Log("WhoWindow","Trigger Registered")
+
+  Darkmists.Log("WhoWindow", "Trigger Registered")
 end
 
 --- Register prompt event handler for age updates
@@ -270,4 +273,4 @@ WhoWindow.promptHandler = registerAnonymousEventHandler(
 --- Initialize window and triggers
 WhoWindow.create()
 WhoWindow.registerTriggers()
-Darkmists.Log("WhoWindow","Initialized")
+Darkmists.Log("WhoWindow", "Initialized")
