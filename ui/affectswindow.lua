@@ -127,14 +127,26 @@ function AffectsWindow.displayHeader()
 
   local disp
   if Darkmists.GlobalSettings.lightMode then
-    disp = "<ansi_yellow>Age: <black>%ss <dim_gray>(%s<dim_gray>)\n\n"
+    disp = "<ansi_yellow>Age: <black>%ss <dim_gray>(%s<dim_gray>)"
   else
-    disp = "<yellow>Age: <white>%ss <dim_gray>(%s<dim_gray>)\n\n"
+    disp = "<yellow>Age: <white>%ss <dim_gray>(%s<dim_gray>)"
   end
-  AffectsWindow.console:cecho(
-    string.format(disp,
-      realElapsed, age)
+
+  AffectsWindow.console:cecho(string.format(disp, realElapsed, age))
+  resetFormat()
+
+  -- Added separator + themed refresh link
+  local linkColor = Darkmists.getDefaultTextColorTag()
+
+  AffectsWindow.console:cecho(" | ")
+  AffectsWindow.console:cechoLink(
+    linkColor .. "<u>[Refresh]",
+    function() send("affects") end,
+    "Refresh affects list",
+    true
   )
+
+  AffectsWindow.console:cecho("\n\n")
 end
 
 function AffectsWindow.parseDuration(text)
