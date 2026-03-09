@@ -11,6 +11,7 @@
 --   • Click → tooltip | Shift+Click → full output | Any click → hide tooltip
 --   • Tooltip avoids covering status bars at bottom
 -- ============================================================================
+local WHO_HEADER_PATTERN = "^%[[^%]]-%s+[^%]]-%]"
 
 ItemTracker = {
   name = "DM Item Tracker",
@@ -262,20 +263,39 @@ function ItemTracker.showTooltip(name)
   local px = mx + s.cursorOffset
   local py = my + s.cursorOffset
   
-  -- Reserve space for status bars at bottom
-  local bottomThreshold = winH - s.statusBarHeight
-  
-  -- Horizontal clamping
-  if px + t.width > winW then
-    px = winW - t.width - s.screenMargin
+  -- Respect ALL dynamic UI borders (top/bottom/left/right)
+  local borders = Darkmists.GlobalSettings.borders or {}
+
+  local leftPixels   = ((borders.left   or 0) / 100) * winW
+  local rightPixels  = ((borders.right  or 0) / 100) * winW
+  local topPixels    = ((borders.top    or 0) / 100) * winH
+  local bottomPixels = ((borders.bottom or 0) / 100) * winH
+
+  -- Safe drawing region inside borders
+  local safeLeft   = leftPixels + s.screenMargin
+  local safeRight  = winW - rightPixels  - s.screenMargin
+  local safeTop    = topPixels + s.screenMargin
+  local safeBottom = winH - bottomPixels - s.screenMargin
+
+  -- If tooltip would overflow right border, move left
+  if px + t.width > safeRight then
+    px = safeRight - t.width
   end
-  px = math.max(px, s.screenMargin)
-  
-  -- Vertical positioning: show above cursor if near bottom or would overlap status bar
-  if py + t.height > bottomThreshold or my > bottomThreshold then
+
+  -- Clamp to left border
+  if px < safeLeft then
+    px = safeLeft
+  end
+
+  -- If tooltip would overflow bottom border, show above cursor
+  if py + t.height > safeBottom or my > safeBottom then
     py = my - t.height - s.cursorOffset
   end
-  py = math.max(py, s.screenMargin)
+
+  -- Clamp to top border
+  if py < safeTop then
+    py = safeTop
+  end
   
   -- Position all windows (border → header → content)
   moveWindow(t.border, px, py)
@@ -435,10 +455,17 @@ function ItemTracker.findFirstItemInLine(line)
   -- Try each item name (longest first)
   for _, name in ipairs(ItemTracker.sorted_names) do
     local nlen = #name
-    if nlen <= #phrase and phrase:sub(-nlen) == name then
-      local s = offset + (#phrase - nlen) + 1
-      local e = offset + #phrase
-      return name, s, e
+    if nlen <= #phrase then
+      local candidate = phrase:sub(-nlen)
+      if candidate == name then
+        local prev = phrase:sub(-(nlen + 1), -(nlen + 1))
+        -- Ensure start boundary (space or punctuation or start of string)
+        if prev == "" or prev:match("[%s%p]") then
+          local s = offset + (#phrase - nlen) + 1
+          local e = offset + #phrase
+          return name, s, e
+        end
+      end
     end
   end
 
@@ -451,8 +478,16 @@ end
 
 -- Convert item names in line to clickable links
 function ItemTracker.renderLineWithLinks(line)
-  -- Skip prompt and exit lines
-  if line:match("^<%d") or line:find("^%[Exits:") then
+  -- Skip prompt, exits, and WHO-list lines
+  if line:match("^<%d")
+  or line:find("^%[Exits:")
+  or line:match(WHO_HEADER_PATTERN) then
+    return false
+  end
+
+  -- Skip while DMAPI room capture is active (room parsing in progress)
+  if dmapi and dmapi.core and dmapi.core.state
+  and dmapi.core.state.capturingRoom then
     return false
   end
 
