@@ -84,14 +84,7 @@ DMTabs = Adjustable.TabWindow:new({
 
   inactiveTabStyle = inactiveStyle,
   activeTabStyle   = activeStyle,
-  --tabBarHeight = "7%",
-  footerStyle = [[
-    background-color: ]] .. Darkmists.getDefaultBackgroundColor() .. [[;
-  ]],
-  centerStyle = [[
-    background-color: ]] .. Darkmists.getDefaultBackgroundColor() .. [[;
-    border-radius: 0px;
-  ]]
+  --tabBarHeight = "7%"
 }, DMTabFrame)
 
 function DMTabs:queueLayoutSave()
@@ -113,3 +106,28 @@ tempTimer(120, function()
 end, true)
 
 DMTabs:load()
+
+tempTimer(0.4, function()
+  for tabName, owner in pairs(Adjustable.TabWindow.allTabs) do
+    local tabObj = owner[tabName]
+    if tabObj and tabObj.floating then
+
+      -- OUTER FLOATING WINDOW (make movable/resizable)
+      local outer = owner[tabName.."tab"]
+      if outer and outer.type == "adjustablecontainer" then
+        outer:unlockContainer()         -- fully movable
+      end
+
+      -- INNER CONTENT PANELS (clean minimal look)
+      local center = owner[tabName.."center"]
+      if center and center.windowList then
+        for _, obj in pairs(center.windowList) do
+          if obj.type == "adjustablecontainer" then
+            obj:lockContainer(nil, "light")
+          end
+        end
+      end
+
+    end
+  end
+end)
