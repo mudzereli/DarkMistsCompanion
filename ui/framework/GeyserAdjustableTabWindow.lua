@@ -468,6 +468,12 @@ function Adjustable.TabWindow:onRelease(tab, event, position)
     if floating then
         self[tab.."tab"]:onRelease(self[tab.."tab"].adjLabel, event)
     end
+    -- Reset drag state ONLY if tab is docked
+    local c = self[tab.."tab"]
+    if c and not self[tab].floating then
+        c.minimized = false
+        c:lockContainer()
+    end
     
     Adjustable.TabWindow.clicked = false
     Adjustable.TabWindow.currentWindow = nil
