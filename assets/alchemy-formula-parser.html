@@ -192,6 +192,27 @@ td:last-child {
     font-style: italic;
 }
 
+#heatmap {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+    gap: 6px;
+    margin-top: 12px;
+}
+
+.heatcell {
+    padding: 6px;
+    border-radius: 6px;
+    text-align: center;
+    font-size: 12px;
+    border: 1px solid #222;
+    transition: transform .1s;
+}
+
+.heatcell:hover {
+    transform: scale(1.08);
+    border-color: #aaa;
+}
+
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql-wasm.js"></script>
 
@@ -215,6 +236,9 @@ td:last-child {
     <button onclick="clearAll()">Clear</button>
     <button onclick="exportSQLite()">Export SQLite</button>
 </div>
+
+<h3 style="margin-top:30px;color:#7fd4ff">Material Frequency Heatmap</h3>
+<div id="heatmap"></div>
 
 <input type="text" id="filterInput" placeholder="Filter formulas..."
        onkeyup="filterTable()"
@@ -255,6 +279,7 @@ const STAT_COLUMNS = [
 "ac","saves"
 ]
 
+let materialCounts = {}
 let allStats = new Set()
 
 async function exportSQLite() {
@@ -512,6 +537,41 @@ function parseStats(statString) {
     return {stats, flags}
 }
 
+function renderHeatmap() {
+
+    const container = document.getElementById("heatmap")
+    container.innerHTML = ""
+
+    const entries = Object.entries(materialCounts)
+        .sort((a,b)=>b[1]-a[1])
+
+    if (entries.length === 0) {
+        container.innerHTML = "<div style='color:#777'>No materials parsed yet.</div>"
+        return
+    }
+
+    const max = entries[0][1]
+
+    entries.forEach(([mat,count]) => {
+
+        const intensity = count / max
+
+        const cell = document.createElement("div")
+        cell.className = "heatcell"
+
+        const hue = 200 - (intensity * 200)   // blue → red
+        const light = 20 + (intensity * 40)
+
+        cell.style.backgroundColor = `hsl(${hue},70%,${light}%)`
+        cell.style.color = intensity > 0.6 ? "#000" : "#fff"
+
+        cell.innerText = mat
+        cell.title = `${mat} used in ${count} formulas`
+
+        container.appendChild(cell)
+    })
+}
+
 function parseData() {
     const raw = document.getElementById("input").value;
     const lines = raw.split(/\r?\n/);
@@ -559,6 +619,10 @@ function parseData() {
 
             let materials = trimmed;
             let materialArray = materials.split(",").map(m=>m.trim()).filter(Boolean);
+            materialArray.forEach(mat => {
+                mat = mat.toLowerCase()
+                materialCounts[mat] = (materialCounts[mat] || 0) + 1
+            })
             let materialCount = materialArray.length;
 
             if (materialCount >=1 && materialCount <=5) {
@@ -659,6 +723,7 @@ function parseData() {
         `5-Part: ${partCounts[5]}`;
 
     document.getElementById("input").value = "";
+    renderHeatmap()
 }
 
 function sortTable(columnIndex) {
@@ -702,6 +767,8 @@ function clearAll() {
     document.getElementById("input").value = "";
     document.getElementById("summary").innerText =
         "1-Part: 0 | 2-Part: 0 | 3-Part: 0 | 4-Part: 0 | 5-Part: 0";
+    materialCounts = {}
+    document.getElementById("heatmap").innerHTML = ""
 }
 
 buildStatColumns()
