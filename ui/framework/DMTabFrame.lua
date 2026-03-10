@@ -107,7 +107,7 @@ end, true)
 
 DMTabs:load()
 
-tempTimer(0.4, function()
+tempTimer(0.2, function()
   for tabName, owner in pairs(Adjustable.TabWindow.allTabs) do
     local tabObj = owner[tabName]
     if tabObj and tabObj.floating then
@@ -115,7 +115,7 @@ tempTimer(0.4, function()
       -- OUTER FLOATING WINDOW (make movable/resizable)
       local outer = owner[tabName.."tab"]
       if outer and outer.type == "adjustablecontainer" then
-        outer:unlockContainer()         -- fully movable
+        outer:unlockContainer()
       end
 
       -- INNER CONTENT PANELS (clean minimal look)
@@ -128,6 +128,21 @@ tempTimer(0.4, function()
         end
       end
 
+    end
+  end
+
+  -- SAFE ACTIVATION PASS
+  for _, win in pairs(Adjustable.TabWindow.all) do
+    if win.tabs and #win.tabs > 0 then
+      win:deactivateTab()
+      win.current = nil
+
+      for _, tabName in ipairs(win.tabs) do
+        if win[tabName] and not win[tabName].floating then
+          win:activateTab(tabName)
+          break
+        end
+      end
     end
   end
 end)
