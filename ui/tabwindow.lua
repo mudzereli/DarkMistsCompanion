@@ -61,9 +61,12 @@ DMTabFrame = Adjustable.Container:new({
   width  = dock.width,
   height = "50%",
 
-  titleText = "Tabbed Windows",
+  titleText = "",
   lockStyle = "border",
-  locked = true,
+  titleTxtColor = Darkmists.getDefaultTextColor(),
+  adjLabelstyle = Darkmists.getDefaultAdjLabelstyle(),
+  --padding = 4,
+  attached = "right",
   autoSave = true,
   autoLoad = true,
   raiseOnClick = true
@@ -81,7 +84,7 @@ DMTabs = Adjustable.TabWindow:new({
 
   inactiveTabStyle = inactiveStyle,
   activeTabStyle   = activeStyle,
-  tabBarHeight = "30px",--"7%",
+  --tabBarHeight = "7%",
   footerStyle = [[
     background-color: ]] .. Darkmists.getDefaultBackgroundColor() .. [[;
   ]],
