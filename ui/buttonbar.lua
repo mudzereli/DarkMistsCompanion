@@ -74,9 +74,10 @@ function ButtonBar:_style(btn)
   ]])
 end
 
--- -----------------------------------------------------------------------------
--- RECURSIVE MENU BUILDER
--- -----------------------------------------------------------------------------
+local function safeReload()
+  Darkmists.Log("PROFILE RESET","<red>Resetting Profile. UI Reload Incoming....")
+  tempTimer(1,[[clearWindow() resetProfile()]])
+end
 -- -----------------------------------------------------------------------------
 -- RECURSIVE MENU BUILDER
 -- -----------------------------------------------------------------------------
@@ -240,42 +241,16 @@ ButtonBar:addDropdown("⚙️ Settings", {
       Darkmists.GlobalSettings.lightMode = true
       Darkmists.Log("Settings","Light Mode Enabled - Reload UI for Changes to Take place")
       Darkmists.SaveSettings()
-      cecho("\n<dim_gray>────────────────────────────────────────\n\n")
-      if Darkmists.GlobalSettings.lightMode then
-        cecho("        <yellow>Theme changed to Light Mode\n\n")
-      else
-        cecho("        <yellow>Theme changed to Dark Mode\n\n")
-      end
-      cecho("        ")
-      cechoLink(
-        "<black:sky_blue><u>   🔄 CLICK TO RELOAD UI   ",
-        "resetProfile()",
-        "Reload the interface",
-        true
-      )
-      cecho("\n\n<dim_gray>────────────────────────────────────────\n")
+      safeReload()
     end},
 
     {label="🌚 Dark Mode", action=function()
       Darkmists.GlobalSettings.lightMode = false
       Darkmists.Log("Settings","Dark Mode Enabled - Reload UI for Changes to Take place")
       Darkmists.SaveSettings()
-      cecho("\n<dim_gray>────────────────────────────────────────\n\n")
-      if Darkmists.GlobalSettings.lightMode then
-        cecho("        <yellow>Theme changed to Light Mode\n\n")
-      else
-        cecho("        <yellow>Theme changed to Dark Mode\n\n")
-      end
-      cecho("        ")
-      cechoLink(
-        "<black:sky_blue><u>   🔄 CLICK TO RELOAD UI   ",
-        "resetProfile()",
-        "Reload the interface",
-        true
-      )
-      cecho("\n\n<dim_gray>────────────────────────────────────────\n")
+      safeReload()
     end},
-
+    --[[
     {label="💬 Chat History", children={
       {label="👁️ Show", action=function() ChatHistory.window:show() end},
       {label="❌ Hide", action=function() ChatHistory.window:hide() end},
@@ -344,14 +319,15 @@ ButtonBar:addDropdown("⚙️ Settings", {
         {label = "Border Right: 30%", action = function() Darkmists.SetWindowBorderPercent("right",30) Darkmists.SaveSettings() end},
       }},
     }},
+    ]]--
     {label="🔧 General Settings", children={
-      {label = "🔄 Reload UI", action = function() clearWindow() resetProfile() end},
+      {label = "🔄 Reload UI", action = safeReload},
       {label = "🧼 Reset All Settings", action = function() 
         saveWindowLayout()
         Darkmists.ApplyDefaultSettings()
         Darkmists.SaveSettings()
         Darkmists.Log("Settings","Settings Reset - Reload UI for changes to take effect")
-        resetProfile() 
+        safeReload() 
       end},
       {label = "💾 Save Settings", action = function() 
         saveWindowLayout()
@@ -360,7 +336,7 @@ ButtonBar:addDropdown("⚙️ Settings", {
       {label = "📥 Load Settings", action = function() 
         loadWindowLayout()
         Darkmists.LoadSettings()
-        resetProfile()
+        safeReload()
       end},
       {label = "📝 Advanced", children = {
         {label="📝 Edit Settings File", action=function() Darkmists.OpenSettingsFile() end}
