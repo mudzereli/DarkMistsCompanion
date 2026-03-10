@@ -37,7 +37,7 @@ Darkmists.DefaultSettings = {
   -- Use light mode UI theme?
   lightMode = false,
   -- Percentage of screen space reserved for each border region
-  borders = { top = 10, bottom = 0, left = 0, right = 30 },
+  borders = { top = 0, bottom = 0, left = 0, right = 0 },
   -- Font Size for additional Information Windows (Chat History, Who List, Affects)
   fontSize = 11,
   -- Font Face for additional Information Windows (Chat History, Who List, Affects)
@@ -288,8 +288,8 @@ end
 function Darkmists.LoadUIScripts()
   if Darkmists.UI_LOADED then return end
 
-  dofile(getMudletHomeDir() .. "/DarkMistsCompanion/ui/GeyserAdjustableTabWindow.lua")
-  dofile(getMudletHomeDir() .. "/DarkMistsCompanion/ui/tabwindow.lua")
+  dofile(getMudletHomeDir() .. "/DarkMistsCompanion/ui/framework/GeyserAdjustableTabWindow.lua")
+  dofile(getMudletHomeDir() .. "/DarkMistsCompanion/ui/framework/DMTabFrame.lua")
   dofile(getMudletHomeDir() .. "/DarkMistsCompanion/ui/statusbars.lua")
   dofile(getMudletHomeDir() .. "/DarkMistsCompanion/ui/whowindow.lua")
   dofile(getMudletHomeDir() .. "/DarkMistsCompanion/ui/chathistory.lua")
