@@ -297,27 +297,6 @@ function Darkmists.LoadUIScripts()
   dofile(getMudletHomeDir() .. "/DarkMistsCompanion/ui/scorepanel.lua")
   dofile(getMudletHomeDir() .. "/DarkMistsCompanion/ui/mapwindow.lua")
   dofile(getMudletHomeDir() .. "/DarkMistsCompanion/utility/mapcolor.lua")
-
-  tempTimer(0.2, function()
-    -- Hide every tab panel completely
-    for _, tabName in ipairs(DMTabs.tabs) do
-      if DMTabs[tabName] then
-        DMTabs[tabName]:hide()
-      end
-    end
-
-    -- Clear current state
-    DMTabs.current = nil
-
-    -- Activate desired tab cleanly
-    local target = "Chat"
-    if DMTabs.tabs and table.contains and table.contains(DMTabs.tabs, DMTabs.current) then
-      target = DMTabs.current
-    end
-
-    DMTabs:activateTab(target)
-  end)
-
   Darkmists.UI_LOADED = true
   Darkmists.Log("Darkmists Core", "UI Scripts Loaded")
 end
