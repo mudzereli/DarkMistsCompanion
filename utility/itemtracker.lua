@@ -12,7 +12,7 @@
 --   • Tooltip avoids covering status bars at bottom
 -- ============================================================================
 
-local WHO_HEADER_PATTERN = "^%[[^%]]-%s+[^%]]-%]"
+local WHO_HEADER_PATTERN = "^%[[^%]]*[A-Za-z][^%]]*%]"
 
 ItemTracker = {
   name = "DM Item Tracker",
