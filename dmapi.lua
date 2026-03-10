@@ -155,7 +155,15 @@ dmapi.player = {
     mvRegen = 0,
     practices = 0
   },
-  
+  stats = {
+    attributes = {
+      str = { base = 0, mod = 0 },
+      int = { base = 0, mod = 0 },
+      wis = { base = 0, mod = 0 },
+      dex = { base = 0, mod = 0 },
+      con = { base = 0, mod = 0 }
+    }
+  },
   status = {
     sleeping = false,
     resting = false,
@@ -697,6 +705,29 @@ function dmapi.parsers.bankWithdrawFail(line)
   end
 
   return nil
+end
+
+-- Parse Attributes from Score
+function dmapi.parsers.attributes(line)
+  local sB,sM,iB,iM,wB,wM,dB,dM,cB,cM =
+    line:match(
+      "^Str:%s*(%d+)%((%d+)%)%s+" ..
+      "Int:%s*(%d+)%((%d+)%)%s+" ..
+      "Wis:%s*(%d+)%((%d+)%)%s+" ..
+      "Dex:%s*(%d+)%((%d+)%)%s+" ..
+      "Con:%s*(%d+)%((%d+)%)"
+    )
+
+  if not sB then return nil end
+
+  return {
+    str = { base = tonumber(sB), mod = tonumber(sM) },
+    int = { base = tonumber(iB), mod = tonumber(iM) },
+    wis = { base = tonumber(wB), mod = tonumber(wM) },
+    dex = { base = tonumber(dB), mod = tonumber(dM) },
+    con = { base = tonumber(cB), mod = tonumber(cM) },
+    line = line
+  }
 end
 
 function dmapi.parsers.captureRoomName()
@@ -1436,6 +1467,15 @@ function dmapi.core.LineTrigger(line)
     return
   end
 
+  -- Parse Attributes from Score
+  local attrs = dmapi.parsers.attributes(line)
+  if attrs then
+    dmapi.player.stats.attributes = attrs
+
+    dmapi.core.raiseEvent("dmapi.player.stats.attributes.updated", attrs)
+    return
+  end
+  
   -- Parse weather
   local weather =
         line:match("no longer raining")   and "clear"
