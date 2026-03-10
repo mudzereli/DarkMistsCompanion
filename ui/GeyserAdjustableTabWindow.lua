@@ -324,6 +324,14 @@ function Adjustable.TabWindow:transformTabContainer(tab)
     container:show()
     container:raiseAll()
     myWindow[tab].floating = true
+    local center = self[tab.."center"]
+    if center and center.windowList then
+        for _, obj in pairs(center.windowList) do
+            if obj.type == "adjustablecontainer" then
+            obj:lockContainer(nil, "light")
+            end
+        end
+    end
     container.raiseOnClick = true
     container.adjLabel:echo(self[tab].tabText)
     container.minimized = false
@@ -342,6 +350,15 @@ end
 --restores the window to be a tab again
 function Adjustable.TabWindow:restoreTab(tab, myWindow)
     myWindow = myWindow or self
+    local center = self[tab.."center"]
+
+    if center and center.windowList then
+    for _, obj in pairs(center.windowList) do
+        if obj.type == "adjustablecontainer" then
+        obj:lockContainer(nil, "full")
+        end
+    end
+    end
     local container = self[tab.."tab"]
     container:attachToBorder("none")
     container.container:remove(container)
