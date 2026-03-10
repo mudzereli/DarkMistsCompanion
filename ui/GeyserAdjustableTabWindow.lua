@@ -353,7 +353,7 @@ function Adjustable.TabWindow:restoreTab(tab, myWindow)
     self[tab].floating = false
     container.raiseOnClick = false
     scrollTo(-10)
-    tempTimer(0,function() scrollTo() end,true)
+    tempTimer(0,function() scrollTo() end)
     if DMTabs and DMTabs.queueLayoutSave then
         DMTabs:queueLayoutSave()
     end
