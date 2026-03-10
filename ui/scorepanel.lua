@@ -8,6 +8,28 @@ local StatusIcons = {
     text = {[0]="Satisfied",[1]="Thirsty",[2]="Parched",[3]="Dehydrating",[4]="Dying"}
   }
 }
+
+local Theme = {}
+if Darkmists.GlobalSettings.lightMode then
+  Theme.section  = "<midnight_blue>"
+  Theme.label    = "<dim_gray>"
+  Theme.value    = "<black>"
+  Theme.accent   = "<royal_blue>"
+  Theme.good     = "<sea_green>"
+  Theme.warn     = "<dark_orange>"
+  Theme.bad      = "<firebrick>"
+  Theme.divider  = "<slate_gray>"
+else
+  Theme.section  = "<light_steel_blue>"
+  Theme.label    = "<dim_gray>"
+  Theme.value    = "<white>"
+  Theme.accent   = "<deep_sky_blue>"
+  Theme.good     = "<medium_spring_green>"
+  Theme.warn     = "<orange>"
+  Theme.bad      = "<ansi_red>"
+  Theme.divider  = "<dark_slate_gray>"
+end
+
 local function getDividerWidth()
   local w,_ = getUserWindowSize("ScorePanelConsole")
   local charW,_ = calcFontSize(AffectsWindow.config.fontSize)
@@ -26,7 +48,13 @@ local function section(title)
   local right = string.rep("━", remaining)
 
   cecho("ScorePanelConsole",
-    ("\n<slate_gray>━━%s%s<reset>\n"):format(cleanTitle, right))
+    ("\n%s━━%s%s<reset>\n"):format(Theme.divider, Theme.section..cleanTitle, Theme.divider..right))
+end
+
+local function diffColor(base, mod)
+  if mod > base then return Theme.good
+  elseif mod < base then return Theme.bad
+  else return Theme.value end
 end
 
 --ScorePanel = {}
@@ -75,14 +103,36 @@ ScorePanel.refresh = function()
   local t = P.status.thirsty
 
   section("Character")
-  line("<dim_gray>Level <white>%d  <dim_gray>Age <white>%dy <dim_gray>(<white>%dh<dim_gray>)\n",
-    P.level, P.age.years, P.age.hours)
+  line("%sLevel %s%d  %sAge %s%dy %s(%dh%s)\n",
+    Theme.label, Theme.value, P.level,
+    Theme.label, Theme.value, P.age.years,
+    Theme.label, P.age.hours, Theme.label)
+
+  section("Attributes")
+  local A = P.stats.attributes
+  -- Base stats
+  line(
+    "%sBase     %sSTR %-2d  INT %-2d  WIS %-2d  DEX %-2d  CON %-2d\n",
+    Theme.label, Theme.value,
+    A.str.base, A.int.base, A.wis.base, A.dex.base, A.con.base
+  )
+  -- Modified Stats
+  line(
+    "%sModified %sSTR %s%-2d%s  INT %s%-2d%s  WIS %s%-2d%s  DEX %s%-2d%s  CON %s%-2d\n",
+    Theme.label, Theme.value,
+    diffColor(A.str.base,A.str.mod), A.str.mod, Theme.value,
+    diffColor(A.int.base,A.int.mod), A.int.mod, Theme.value,
+    diffColor(A.wis.base,A.wis.mod), A.wis.mod, Theme.value,
+    diffColor(A.dex.base,A.dex.mod), A.dex.mod, Theme.value,
+    diffColor(A.con.base,A.con.mod), A.con.mod
+  )
 
   section("Vitals")
-  line("<red>HP <white>%-7s  <blue>MN <white>%-7s  <yellow>MV <white>%-7s\n",
-    P.vitals.hp.."/"..P.vitals.hpMax,
-    P.vitals.mn.."/"..P.vitals.mnMax,
-    P.vitals.mv.."/"..P.vitals.mvMax)
+  line("%sHP %s%-7s %s(+%d)  %sMN %s%-7s %s(+%d)  %sMV %s%-7s %s(+%d)\n",
+    Theme.bad,   Theme.value, P.vitals.hp.."/"..P.vitals.hpMax, Theme.label, P.vitals.hpRegen or 0,
+    Theme.accent,Theme.value, P.vitals.mn.."/"..P.vitals.mnMax, Theme.label, P.vitals.mnRegen or 0,
+    Theme.warn,  Theme.value, P.vitals.mv.."/"..P.vitals.mvMax, Theme.label, P.vitals.mvRegen or 0
+  )
 
   section("Condition")
   line("<dim_gray>Hunger <white>%s %s   <dim_gray>Thirst <white>%s %s\n",
@@ -90,16 +140,25 @@ ScorePanel.refresh = function()
     StatusIcons.thirst.icon[t], StatusIcons.thirst.text[t])
     
   section("Wealth")
-  line("<dim_gray>On Hand  <yellow>%6dg  <slate_gray>%6ds\n",
-    P.currency.gold, P.currency.silver)
-  line("<dim_gray>Bank     <yellow>%6dg  <slate_gray>%6ds  <dim_gray>(House <yellow>%dg<dim_gray>)\n",
-    P.bank.gold, P.bank.silver, P.bank.house)
+  local goldColor   = Darkmists.GlobalSettings.lightMode and "<goldenrod>" or "<gold>"
+  local silverColor = Darkmists.GlobalSettings.lightMode and "<slate_gray>" or "<light_slate_gray>"
+  line("%sOn Hand  %s%6dg  %s%6ds\n",
+    Theme.label,
+    goldColor,   P.currency.gold,
+    silverColor, P.currency.silver
+  )
+  line("%sBank     %s%6dg  %s%6ds  %s(House %s%dg%s)\n",
+    Theme.label,
+    goldColor,   P.bank.gold,
+    silverColor, P.bank.silver,
+    Theme.label, goldColor, P.bank.house, Theme.label
+  )
 
   section("Location")
-  line("<white>%s\n", M.currentName or "?")
-  line("<dim_gray>Room <white>%s  <dim_gray>Exits <white>%s\n",
-    tostring(M.currentRoom) or "?",
-    table.concat(W.room.exits," "))
+  line("%s%s\n", Theme.section, M.currentName or "?")
+  line("%sRoom %s%s  %sExits %s%s\n",
+    Theme.label, Theme.value, tostring(M.currentRoom) or "?",
+    Theme.label, Theme.value, table.concat(W.room.exits," "))
 
   local status = "<white>Ready"
   if P.combat.active then status = "<red>In Combat"
@@ -107,7 +166,20 @@ ScorePanel.refresh = function()
   elseif P.status.resting then status = "<yellow>Resting" end
 
   section("Status")
-  cecho(con, status.."\n")
+  local statusColor = Theme.good
+  local statusText  = "Ready"
+
+  if P.combat.active then
+    statusColor = Theme.bad
+    statusText  = "In Combat"
+  elseif P.status.sleeping then
+    statusColor = Theme.warn
+    statusText  = "Sleeping"
+  elseif P.status.resting then
+    statusColor = Theme.warn
+    statusText  = "Resting"
+  end
+  cecho(con, statusColor .. statusText .. "\n")
 
   if P.combat.active then
     section("Combat")
