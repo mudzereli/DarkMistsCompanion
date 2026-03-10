@@ -1236,7 +1236,7 @@ function dmapi.core.LineTrigger(line)
     })
     return
   end
-  
+
   -- Parse sleep
   local sleepOn = line:match("You go to sleep on (.*)%.")
   if line:match("You go to sleep%.") or sleepOn then
@@ -1512,7 +1512,9 @@ end
 -- @param sleeping boolean Sleep state
 function dmapi.player.setSleeping(sleeping)
   dmapi.player.status.sleeping = sleeping
-  dmapi.core.log(string.format("Sleep status: %s", tostring(sleeping)))
+  if dmapi.settings.debugLevel > 0 then
+    dmapi.core.log(string.format("Sleep status: %s", tostring(sleeping)))
+  end
 end
 
 --- Reset all player state
@@ -1565,7 +1567,9 @@ function dmapi.player.reset()
     kills = 0,
     deaths = 0
   }
-  dmapi.core.log("Player state reset")
+  if dmapi.settings.debugLevel > 0 then
+    dmapi.core.log("Player state reset")
+  end
 end
 
 --- Get current player status summary
@@ -1658,10 +1662,12 @@ tempAlias([[^dmapi setvitals\s+(\d+)\s+(\d+)\s+(\d+)$]], function()
   dmapi.player.vitals.mnMax = mnMax
   dmapi.player.vitals.mvMax = mvMax
   
-  dmapi.core.log(string.format(
-    "Vitals set - HP: %d | MN: %d | MV: %d",
-    hpMax, mnMax, mvMax
-  ))
+  if dmapi.settings.debugLevel > 0 then
+    dmapi.core.log(string.format(
+      "Vitals set - HP: %d | MN: %d | MV: %d",
+      hpMax, mnMax, mvMax
+    ))
+  end
 end)
 
 --- Guess vitals from level
@@ -1688,6 +1694,15 @@ end)
 -- ============================================================================
 
 --- Handle sleep state changes
+registerNamedEventHandler(
+  "dmapi",
+  "dmapi.player.sleep.blocked.handler",
+  "dmapi.player.sleep.blocked",
+  function()
+    dmapi.player.setSleeping(true)
+  end
+)
+
 registerNamedEventHandler(
   "dmapi",
   "dmapi.player.sleep.enter.handler",
@@ -1729,7 +1744,9 @@ registerNamedEventHandler(
     dmapi.player.vitals.mnMax = 1
     dmapi.player.vitals.mvMax = 1
     dmapi.player.online = true
-    dmapi.core.log("Connected - vitals reset. Use 'score' or 'dmapi setvitals'")
+    if dmapi.settings.debugLevel > 0 then
+      dmapi.core.log("Connected - vitals reset. Use 'score' or 'dmapi setvitals'")
+    end
     send("")
     send("")
     send("score")
