@@ -715,17 +715,16 @@ function Adjustable.TabWindow:new(cons, container)
     
     me:createBaseContainers()
     me:createTabs()
-    me.current = me.current or me.tabs[#me.tabs]
-    
-    if me.tabs[1] then
-        me:activateTab(me.tabs[1])
+
+    -- Constructor should not decide active tabs
+    me.current = nil
+
+    -- Hide all tab pages until load() restores state
+    for _, tab in ipairs(me.tabs) do
+        if me[tab] then
+            me[tab]:hide()
+        end
     end
-    tempTimer(0, 
-    function() 
-      if me.tabs[1] then 
-        me[me.tabs[#me.tabs]]:hide()
-      end 
-    end )
     
     if not Adjustable.TabWindow.all[me.name] then
         Adjustable.TabWindow.all_windows[#Adjustable.Container.all_windows + 1] = me.name
