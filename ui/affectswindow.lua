@@ -50,6 +50,8 @@ function AffectsWindow.create()
   }, AffectsWindow.window)
   AffectsWindow.console:setFontSize(AffectsWindow.config.fontSize)
   AffectsWindow.console:setFont(AffectsWindow.config.fontName)
+  AffectsWindow.console:enableAutoWrap()
+  AffectsWindow.console:enableScrollBar()
 
   AffectsWindow.window:show()
   AffectsWindow.window:raiseAll()
