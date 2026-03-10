@@ -32,7 +32,7 @@ end
 
 local function getDividerWidth()
   local w,_ = getUserWindowSize("ScorePanelConsole")
-  local charW,_ = calcFontSize(AffectsWindow.config.fontSize)
+  local charW,_ = calcFontSize(Darkmists.GlobalSettings.fontSize)
   return math.floor(w / charW) - 4
 end
 
@@ -73,8 +73,10 @@ ScorePanel.create = function()
     height = "98%",
     color = Darkmists.getDefaultBackgroundColor()
   }, ScorePanel.window)
-  ScorePanel.console:setFontSize(AffectsWindow.config.fontSize)
-  ScorePanel.console:setFont(AffectsWindow.config.fontName)
+  ScorePanel.console:setFontSize(Darkmists.GlobalSettings.fontSize)
+  ScorePanel.console:setFont(Darkmists.GlobalSettings.fontName)
+  --ScorePanel.console:enableAutoWrap()
+  ScorePanel.console:enableScrollBar()
   ScorePanel.window:show()
   ScorePanel.window:raiseAll()
   Darkmists.Log("ScorePanel","Score Panel Created")
