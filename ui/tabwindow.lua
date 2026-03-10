@@ -53,13 +53,25 @@ or [[
   }
 ]]
 
-DMTabs = Adjustable.TabWindow:new({
-  name = "DMTabs",
+DMTabFrame = Adjustable.Container:new({
+  name = "DMTabFrame",
 
   x = dock.x,
-  width  = dock.width,
   y = "50%",
+  width  = dock.width,
   height = "50%",
+
+  titleText = "Tabbed Windows",
+  lockStyle = "border",
+  locked = true,
+  autoSave = true,
+  autoLoad = true,
+  raiseOnClick = true
+})
+
+DMTabs = Adjustable.TabWindow:new({
+  x = 0, y = 0,
+  width = "100%", height = "100%",
 
   tabs = {"Chat","Affects","Who","Player"},
 
@@ -69,7 +81,7 @@ DMTabs = Adjustable.TabWindow:new({
 
   inactiveTabStyle = inactiveStyle,
   activeTabStyle   = activeStyle,
-  tabBarHeight = "7%",
+  tabBarHeight = "30px",--"7%",
   footerStyle = [[
     background-color: ]] .. Darkmists.getDefaultBackgroundColor() .. [[;
   ]],
@@ -77,7 +89,7 @@ DMTabs = Adjustable.TabWindow:new({
     background-color: ]] .. Darkmists.getDefaultBackgroundColor() .. [[;
     border-radius: 0px;
   ]]
-})
+}, DMTabFrame)
 
 function DMTabs:queueLayoutSave()
   if not self.__layoutSaveQueued then
