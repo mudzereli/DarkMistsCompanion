@@ -242,6 +242,14 @@ end
 -- ===================================================================
 
 function ChatHistory.registerEvents()
+  -- Kill previous handlers
+  if ChatHistory._eventHandlers then
+    for _, id in ipairs(ChatHistory._eventHandlers) do
+      killAnonymousEventHandler(id)
+    end
+  end
+  ChatHistory._eventHandlers = {}
+
   local function bind(event, msgType, sender, receiver)
     registerAnonymousEventHandler(event, function(_, data)
       ChatHistory.addMessage(
@@ -251,6 +259,7 @@ function ChatHistory.registerEvents()
         data.message
       )
     end)
+    table.insert(ChatHistory._eventHandlers, id)
   end
 
   bind("dmapi.communication.tellreceived", "tell")
@@ -271,7 +280,8 @@ function ChatHistory.registerEvents()
   bind("dmapi.communication.newbiechanneldiscord",  "newbiediscord")
   bind("dmapi.communication.housechannel",  "house")
 
-  registerAnonymousEventHandler("sysProfileSaveStarted", saveWindowLayout)
+  local id = registerAnonymousEventHandler("sysProfileSaveStarted", saveWindowLayout)
+  table.insert(ChatHistory._eventHandlers, id)
 
   Darkmists.Log("ChatHistory","Event Handlers Registered")
 end
