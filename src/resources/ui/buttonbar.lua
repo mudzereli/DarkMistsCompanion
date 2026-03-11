@@ -240,19 +240,35 @@ ButtonBar:addDropdown("🛠 Tools", {
 })
 
 ButtonBar:addDropdown("⚙️ Settings", {
+    {label = "🔄 Reload UI", action = safeReload},
     {label="🌞 Light Mode", action=function()
       Darkmists.GlobalSettings.lightMode = true
       Darkmists.Log("Settings","Light Mode Enabled - Reload UI for Changes to Take place")
       Darkmists.SaveSettings()
       safeReload()
     end},
-
     {label="🌚 Dark Mode", action=function()
       Darkmists.GlobalSettings.lightMode = false
       Darkmists.Log("Settings","Dark Mode Enabled - Reload UI for Changes to Take place")
       Darkmists.SaveSettings()
       safeReload()
     end},
+    {label = "🧼 Reset All Settings", action = function() 
+      saveWindowLayout()
+      Darkmists.ResetUILayoutCache()
+    end},
+    {label = "💾 Save Settings", action = function() 
+      saveWindowLayout()
+      Darkmists.SaveSettings()
+    end},
+    {label = "📥 Load Settings", action = function() 
+      loadWindowLayout()
+      Darkmists.LoadSettings()
+      safeReload()
+    end},
+    {label = "📝 Advanced", children = {
+      {label="📝 Edit Settings File", action=function() Darkmists.OpenSettingsFile() end}
+    }}
     --[[
     {label="💬 Chat History", children={
       {label="👁️ Show", action=function() ChatHistory.window:show() end},
@@ -323,27 +339,6 @@ ButtonBar:addDropdown("⚙️ Settings", {
       }},
     }},
     ]]--
-    {label="🔧 General Settings", children={
-      {label = "🔄 Reload UI", action = safeReload},
-      {label = "🧼 Reset All Settings", action = function() 
-        saveWindowLayout()
-        Darkmists.ResetUILayoutCache()
-      end},
-      {label = "💾 Save Settings", action = function() 
-        saveWindowLayout()
-        Darkmists.SaveSettings()
-      end},
-      {label = "📥 Load Settings", action = function() 
-        loadWindowLayout()
-        Darkmists.LoadSettings()
-        safeReload()
-      end},
-      {label = "📝 Advanced", children = {
-        {label="📝 Edit Settings File", action=function() Darkmists.OpenSettingsFile() end}
-      }}
-    }}
-
-
   })
 
-cecho("\n<ButtonBar> Loaded!\n")
+Darkmists.Log("ButtonBar","Loaded!")
