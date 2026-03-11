@@ -106,8 +106,7 @@ function DarkMistsMiniMap.registerEvents()
   DARKMISTS_MINIMAP_EVENT_HANDLERS = {}
 
   -- Register new handlers
-  table.insert(DARKMISTS_MINIMAP_EVENT_HANDLERS,
-    registerAnonymousEventHandler("sysMapWindowMousePressEvent", DarkMistsMiniMap.update))
+  table.insert(DARKMISTS_MINIMAP_EVENT_HANDLERS, registerAnonymousEventHandler("sysMapWindowMousePressEvent", DarkMistsMiniMap.update))
 
   table.insert(DARKMISTS_MINIMAP_EVENT_HANDLERS,
     registerAnonymousEventHandler("dmapi.world.prompt", DarkMistsMiniMap.update))
