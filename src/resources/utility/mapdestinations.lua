@@ -15,7 +15,44 @@
 MapDestinations = {
   list = {},
   path = getMudletHomeDir() .. "/mapdestinations_state.lua",
+  areaWalkTarget = nil,
 }
+
+function MapDestinations.clearAreaWalkTarget()
+  MapDestinations.areaWalkTarget = nil
+end
+
+function MapDestinations.setAreaWalkTarget(areaId, areaName)
+  MapDestinations.areaWalkTarget = {
+    areaId = areaId,
+    areaName = areaName
+  }
+end
+
+function MapDestinations.stopCurrentSpeedwalk()
+  return MapDestinations.stop()
+end
+
+function MapDestinations.checkAreaArrival()
+  local target = MapDestinations.areaWalkTarget
+  if not target then
+    return
+  end
+
+  local currentRoom = getPlayerRoom()
+  if not currentRoom then
+    return
+  end
+
+  local currentAreaId = getRoomArea(currentRoom)
+  if currentAreaId and currentAreaId == target.areaId then
+    if Darkmists and Darkmists.Log then
+      Darkmists.Log("WALK", ("<green>Arrived in area <white>%s<green>, stopping walk."):format(target.areaName or tostring(target.areaId)))
+    end
+    MapDestinations.clearAreaWalkTarget()
+    MapDestinations.stopCurrentSpeedwalk()
+  end
+end
 
 -- Load persistent destinations from disk.
 -- Resets in-memory state before replaying saved add() calls.
@@ -87,6 +124,7 @@ end
 
 -- Stop current walk (delegates to Mudlet map alias).
 function MapDestinations.stop()
+  MapDestinations.clearAreaWalkTarget()
   expandAlias("map stop")
   return true
 end
@@ -132,6 +170,7 @@ function MapDestinations.navigate(name)
     return false, "NO_PATH", name
   end
 
+  MapDestinations.clearAreaWalkTarget()
   gotoRoom(dest)
   return true, dest, roomName
 end
@@ -155,6 +194,10 @@ function MapDestinations.navigateToArea(search)
   end
 
   local currentRoom = getPlayerRoom()
+  if not currentRoom then
+    return false, "NO_CURRENT_ROOM"
+  end
+
   local currentAreaId = currentRoom and getRoomArea(currentRoom)
 
   for areaName, areaId in pairs(areaTable) do
@@ -173,6 +216,12 @@ function MapDestinations.navigateToArea(search)
         return false, "AREA_EMPTY", areaName
       end
 
+      local ok = getPath(currentRoom, firstRoom)
+      if not ok or not speedWalkDir or #speedWalkDir == 0 then
+        return false, "NO_PATH", areaName
+      end
+
+      MapDestinations.setAreaWalkTarget(areaId, areaName)
       gotoRoom(firstRoom)
       return true, firstRoom, areaName
     end
@@ -284,3 +333,4 @@ end
 
 -- Load destinations on startup
 MapDestinations.load()
+DarkmistsEvents.add("MapDestinations.areaArrivalCheck", "dmapi.world.prompt", MapDestinations.checkAreaArrival)

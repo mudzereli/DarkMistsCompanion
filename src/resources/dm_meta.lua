@@ -673,6 +673,10 @@ DarkmistsAlias.add("^walk(?:\\s+(.*))?$", function()
           Darkmists.Log("WALK","<red>Invalid area search.")
         elseif code == "NO_AREAS" then
           Darkmists.Log("WALK","<red>Area table unavailable.")
+        elseif code == "NO_CURRENT_ROOM" then
+          Darkmists.Log("WALK","<red>Current room unknown!")
+        elseif code == "NO_PATH" then
+          Darkmists.Log("WALK",("<red>No known path to area %s%s"):format(c, data))
         end
         return
       end
