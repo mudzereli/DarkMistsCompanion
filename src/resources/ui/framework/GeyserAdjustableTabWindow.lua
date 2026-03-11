@@ -176,6 +176,9 @@ function Adjustable.TabWindow:onMove(tab, event)
             end
         end
     end
+    if DMTabs and DMTabs.queueLayoutSave then
+        DMTabs:queueLayoutSave()
+    end
 end
 
 -- mouse movement on the overlay label
@@ -233,6 +236,9 @@ function Adjustable.TabWindow:onOverlayClick(event)
         container:onRelease(tab.tabname, event)
     end
     resetOverlay(self)
+    if DMTabs and DMTabs.queueLayoutSave then
+        DMTabs:queueLayoutSave()
+    end
 end
 
 -- if clicked on the minimize label the tab will be 
@@ -240,6 +246,9 @@ end
 function Adjustable.TabWindow:onMinimizeClick(tab)  
     local result, value = self:checkMultiCollision(self[tab.."tab"])
     self:restoreTab(tab, value)
+    if DMTabs and DMTabs.queueLayoutSave then
+        DMTabs:queueLayoutSave()
+    end
 end
 
 -- activates the tab tab (doesn't deactivate the previous tab)
@@ -454,6 +463,9 @@ function Adjustable.TabWindow:onRelease(tab, event, position)
         end  
         myWindow:addTab(tab, tab_pos)
         myWindow:raiseAll()
+        if DMTabs and DMTabs.queueLayoutSave then
+            DMTabs:queueLayoutSave()
+        end
     end
     
     if event.button == "LeftButton"
@@ -463,10 +475,16 @@ function Adjustable.TabWindow:onRelease(tab, event, position)
     then
         self:transformTabContainer(tab)
         self[tab.."tab"]:onRelease(self[tab.."tab"].adjLabel, event)
+        if DMTabs and DMTabs.queueLayoutSave then
+            DMTabs:queueLayoutSave()
+        end
     end
     
     if floating then
         self[tab.."tab"]:onRelease(self[tab.."tab"].adjLabel, event)
+        if DMTabs and DMTabs.queueLayoutSave then
+            DMTabs:queueLayoutSave()
+        end
     end
     -- Reset drag state ONLY if tab is docked
     local c = self[tab.."tab"]
