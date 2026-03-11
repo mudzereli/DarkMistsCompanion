@@ -337,6 +337,14 @@ function Darkmists.LoadSettings()
     local settings = {}
 ---@diagnostic disable-next-line: undefined-field
     table.load(saveFilePath, settings)
+
+    -- Detect legacy settings BEFORE merging
+    if settings.layoutCacheVersion == nil then
+      Darkmists.Log("Darkmists Core", "<red>Legacy settings detected (no layout version)")
+      Darkmists.ResetUILayoutCache()
+      return
+    end
+    
     DMUtil.deep_copy_into(Darkmists.GlobalSettings, settings)
     Darkmists.Log("Darkmists Core", ("Settings Loaded From: %s!"):format(saveFilePath))
     Darkmists.Log("Darkmists Core","You may need to Reload UI for changes to take effect!")
