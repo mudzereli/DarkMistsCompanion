@@ -64,6 +64,62 @@ end
 -- All message formatting lives here.
 -- Adding a new channel only requires adding one entry.
 local MESSAGE_FORMATTERS = {
+  emotedsay = {
+    sent = function(m)
+      return string.format(
+        "<dim_gray>[<"..maincolor..">%s<dim_gray>] <"..maincolor..">You %s say, '<"..yellow..">%s<"..maincolor..">'\n",
+        m.timestamp, m.emote or "", m.message
+      )
+    end,
+    received = function(m)
+      return string.format(
+        "<dim_gray>[<"..maincolor..">%s<dim_gray>] <"..blue..">%s <"..maincolor..">%s says, '<"..yellow..">%s<"..maincolor..">'\n",
+        m.timestamp, m.sender, m.emote or "", m.message
+      )
+    end,
+  },
+  yellpanic = {
+    sent = function(m)
+      return string.format(
+        "<dim_gray>[<"..maincolor..">%s<dim_gray>] <"..maincolor..">You yell in panic, '<sky_blue>%s<"..maincolor..">'\n",
+        m.timestamp, m.message
+      )
+    end,
+    received = function(m)
+      return string.format(
+        "<dim_gray>[<"..maincolor..">%s<dim_gray>] <"..blue..">%s <"..maincolor..">yells in panic, '<sky_blue>%s<"..maincolor..">'\n",
+        m.timestamp, m.sender, m.message
+      )
+    end,
+  },
+  mentalblastpanic = {
+    sent = function(m)
+      return string.format(
+        "<dim_gray>[<"..maincolor..">%s<dim_gray>] <"..maincolor..">You mentally blast in panic, '<sky_blue>%s<"..maincolor..">'\n",
+        m.timestamp, m.message
+      )
+    end,
+    received = function(m)
+      return string.format(
+        "<dim_gray>[<"..maincolor..">%s<dim_gray>] <"..blue..">%s <"..maincolor..">mentally blasts in panic, '<sky_blue>%s<"..maincolor..">'\n",
+        m.timestamp, m.sender, m.message
+      )
+    end,
+  },
+  mentalblast = {
+    sent = function(m)
+      return string.format(
+        "<dim_gray>[<"..maincolor..">%s<dim_gray>] <"..maincolor..">You mentally blast, '<sky_blue>%s<"..maincolor..">'\n",
+        m.timestamp, m.message
+      )
+    end,
+    received = function(m)
+      return string.format(
+        "<dim_gray>[<"..maincolor..">%s<dim_gray>] <"..blue..">%s <"..maincolor..">mentally blasts, '<sky_blue>%s<"..maincolor..">'\n",
+        m.timestamp, m.sender, m.message
+      )
+    end,
+  },
   mptell = {
     sent = function(m)
       return string.format(
@@ -206,13 +262,14 @@ end
 -- MESSAGE MANAGEMENT
 -- ===================================================================
 
-function ChatHistory.addMessage(msgType, sender, receiver, message)
+function ChatHistory.addMessage(msgType, sender, receiver, message, extra)
   local msg = {
     timestamp = os.date("%H:%M:%S"),
     msgType   = msgType,
     sender    = sender,
     receiver  = receiver,
     message   = message,
+    emote     = extra and extra.emote
   }
 
   table.insert(ChatHistory.messages, 1, msg)
@@ -249,7 +306,8 @@ function ChatHistory.registerEvents()
         msgType,
         sender or data.sender,
         receiver or data.receiver,
-        data.message
+        data.message,
+        data
       )
     end)
   end
@@ -272,6 +330,18 @@ function ChatHistory.registerEvents()
   bind("ChatHistoryNewbieDiscord",  "dmapi.communication.newbiechanneldiscord",  "newbiediscord")
   bind("ChatHistoryHouseChannel",  "dmapi.communication.housechannel",  "house")
 
+  bind("ChatHistoryEmotedSayReceived", "dmapi.communication.emotedsayreceived", "emotedsay")
+  bind("ChatHistoryEmotedSaySent",     "dmapi.communication.emotedsaysent",     "emotedsay", "You")
+
+  bind("ChatHistoryYellPanicReceived", "dmapi.communication.yellpanicreceived", "yellpanic")
+  bind("ChatHistoryYellPanicSent",     "dmapi.communication.yellpanicsent",     "yellpanic", "You")
+
+  bind("ChatHistoryMentalBlastReceived", "dmapi.communication.mentalblastreceived", "mentalblast")
+  bind("ChatHistoryMentalBlastSent",     "dmapi.communication.mentalblastsent",     "mentalblast", "You")
+
+  bind("ChatHistoryMentalBlastPanicReceived", "dmapi.communication.mentalblastpanicreceived", "mentalblastpanic")
+  bind("ChatHistoryMentalBlastPanicSent",     "dmapi.communication.mentalblastpanicsent",     "mentalblastpanic", "You")
+  
   DarkmistsEvents.add("ChatHistoryProfileSave", "sysProfileSaveStarted", saveWindowLayout)
 
   Darkmists.Log("ChatHistory","Event Handlers Registered")

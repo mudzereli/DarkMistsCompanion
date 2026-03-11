@@ -865,7 +865,90 @@ function dmapi.core.LineTrigger(line)
     return
   end
   
-  local sender, message, receiver, channel
+  local sender, emote, message, receiver, channel
+  -- Emoted say (other player): Saelyth wildly says, 'interesting'
+  sender, emote, message = line:match("^(%a+) ([^ ]+) says, '(.*)'$")
+  if sender and emote and message then
+    dmapi.core.raiseEvent("dmapi.communication.emotedsayreceived", {
+      sender = sender,
+      emote = emote,
+      message = message,
+      line = line
+    })
+    return
+  end
+  -- Emoted say (you): You wildly say, 'interesting'
+  emote, message = line:match("^You ([^ ]+) say, '(.*)'$")
+  if emote and message then
+    dmapi.core.raiseEvent("dmapi.communication.emotedsaysent", {
+      sender = "You",
+      emote = emote,
+      message = message,
+      line = line
+    })
+    return
+  end
+  -- Yell in panic (self/other): You yell in panic, '...'
+  message = line:match("^You yell in panic, '(.*)'$")
+  if message then
+    dmapi.core.raiseEvent("dmapi.communication.yellpanicsent", {
+      sender = "You",
+      message = message,
+      line = line
+    })
+    return
+  end
+  sender, message = line:match("^(.-) yells in panic, '(.*)'$")
+  if sender then
+    dmapi.core.raiseEvent("dmapi.communication.yellpanicreceived", {
+      sender = sender,
+      message = message,
+      line = line
+    })
+    return
+  end
+
+  -- Mental blast (self/other): Saelyth mentally blasts '...'
+  sender, message = line:match("^(.-) mentally blasts '(.*)'$")
+  if sender and message then
+    dmapi.core.raiseEvent("dmapi.communication.mentalblastreceived", {
+      sender = sender,
+      message = message,
+      line = line
+    })
+    return
+  end
+  message = line:match("^You mentally blast, '(.*)'$")
+  if message then
+    dmapi.core.raiseEvent("dmapi.communication.mentalblastsent", {
+      sender = "You",
+      message = message,
+      line = line
+    })
+    return
+  end
+
+  -- Mental blast in panic (you): You mentally blast in panic, '...'
+  message = line:match("^You mentally blast in panic, '(.*)'$")
+  if message then
+    dmapi.core.raiseEvent("dmapi.communication.mentalblastpanicsent", {
+      sender = "You",
+      message = message,
+      line = line
+    })
+    return
+  end
+  -- Mental blast in panic (other): (.+) mentally blasts in panic, '...'
+  sender, message = line:match("^(.-) mentally blasts in panic, '(.*)'$")
+  if sender and message then
+    dmapi.core.raiseEvent("dmapi.communication.mentalblastpanicreceived", {
+      sender = sender,
+      message = message,
+      line = line
+    })
+    return
+  end
+  
   -- Parse tells: Someone tells you, 'message'
   sender, message = line:match("^(.*) tells you, '(.*)'$")
   if sender then
@@ -932,7 +1015,6 @@ function dmapi.core.LineTrigger(line)
     return
   end
 
-  local sender, message, receiver, channel
   -- Parse tells: Someone tells you, 'message'
   sender, message = line:match("^(.*) mentally projects to you, '(.*)'$")
   if sender then
