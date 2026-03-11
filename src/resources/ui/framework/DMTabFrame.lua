@@ -97,7 +97,7 @@ function DMTabs:queueLayoutSave()
   end
 end
 
-registerAnonymousEventHandler("sysProfileSaveStarted", function()
+DarkmistsEvents.add("DMTabFrameProfileSave", "sysProfileSaveStarted", function()
   DMTabs:queueLayoutSave()
 end)
 

@@ -110,19 +110,9 @@ end
 -- Event Management
 -- -------------------------------------------------------------------
 function DarkMistsMiniMap.registerEvents()
-  -- Remove existing handlers owned by this module
-  for _, handlerId in ipairs(DARKMISTS_MINIMAP_EVENT_HANDLERS) do
-    killAnonymousEventHandler(handlerId)
-    Darkmists.Log("MiniMapContainer", ("Killing Event Handler #%d"):format(handlerId))
-  end
-  DARKMISTS_MINIMAP_EVENT_HANDLERS = {}
-
-  -- Register new handlers
-  table.insert(DARKMISTS_MINIMAP_EVENT_HANDLERS, registerAnonymousEventHandler("sysMapWindowMousePressEvent", DarkMistsMiniMap.update))
-
-  table.insert(DARKMISTS_MINIMAP_EVENT_HANDLERS,
-    registerAnonymousEventHandler("dmapi.world.prompt", DarkMistsMiniMap.update))
-
+  Darkmists.Log("MiniMapContainer","Registering Events with EventHandlerManager")
+  DarkmistsEvents.add("MiniMapMousePress", "sysMapWindowMousePressEvent", DarkMistsMiniMap.update)
+  DarkmistsEvents.add("MiniMapPrompt", "dmapi.world.prompt", DarkMistsMiniMap.update)
   Darkmists.Log("MiniMapContainer","Events Registered!")
 end
 

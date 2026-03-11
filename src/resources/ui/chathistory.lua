@@ -242,16 +242,9 @@ end
 -- ===================================================================
 
 function ChatHistory.registerEvents()
-  -- Kill previous handlers
-  if ChatHistory._eventHandlers then
-    for _, id in ipairs(ChatHistory._eventHandlers) do
-      killAnonymousEventHandler(id)
-    end
-  end
-  ChatHistory._eventHandlers = {}
 
-  local function bind(event, msgType, sender, receiver)
-    registerAnonymousEventHandler(event, function(_, data)
+  local function bind(key, event, msgType, sender, receiver)
+    DarkmistsEvents.add(key, event, function(_, data)
       ChatHistory.addMessage(
         msgType,
         sender or data.sender,
@@ -259,29 +252,27 @@ function ChatHistory.registerEvents()
         data.message
       )
     end)
-    table.insert(ChatHistory._eventHandlers, id)
   end
 
-  bind("dmapi.communication.tellreceived", "tell")
-  bind("dmapi.communication.tellsent",     "tell", "You")
-  bind("dmapi.communication.sayreceived",  "say")
-  bind("dmapi.communication.saysent",      "say",  "You")
-  bind("dmapi.communication.mpsayreceived",  "mpsay")
-  bind("dmapi.communication.mpsaysent",      "mpsay",  "You")
-  bind("dmapi.communication.mptellreceived", "mptell")
-  bind("dmapi.communication.mptellsent",     "mptell",  "You")
-  bind("dmapi.communication.yellreceived", "yell")
-  bind("dmapi.communication.yellsent",     "yell", "You")
-  bind("dmapi.communication.gtellreceived","gtell")
-  bind("dmapi.communication.gtellsent",    "gtell","You")
-  bind("dmapi.communication.oocreceived",  "ooc")
-  bind("dmapi.communication.oocsent",      "ooc",  "You")
-  bind("dmapi.communication.newbiechannel",  "newbie")
-  bind("dmapi.communication.newbiechanneldiscord",  "newbiediscord")
-  bind("dmapi.communication.housechannel",  "house")
+  bind("ChatHistoryTellReceived", "dmapi.communication.tellreceived", "tell")
+  bind("ChatHistoryTellSent",     "dmapi.communication.tellsent",     "tell", "You")
+  bind("ChatHistorySayReceived",  "dmapi.communication.sayreceived",  "say")
+  bind("ChatHistorySaySent",      "dmapi.communication.saysent",      "say",  "You")
+  bind("ChatHistoryMPSayReceived",  "dmapi.communication.mpsayreceived",  "mpsay")
+  bind("ChatHistoryMPSaySent",      "dmapi.communication.mpsaysent",      "mpsay",  "You")
+  bind("ChatHistoryMPTellReceived", "dmapi.communication.mptellreceived", "mptell")
+  bind("ChatHistoryMPTellSent",     "dmapi.communication.mptellsent",     "mptell",  "You")
+  bind("ChatHistoryYellReceived", "dmapi.communication.yellreceived", "yell")
+  bind("ChatHistoryYellSent",     "dmapi.communication.yellsent",     "yell", "You")
+  bind("ChatHistoryGTellReceived","dmapi.communication.gtellreceived","gtell")
+  bind("ChatHistoryGTellSent",    "dmapi.communication.gtellsent",    "gtell","You")
+  bind("ChatHistoryOOCReceived",  "dmapi.communication.oocreceived",  "ooc")
+  bind("ChatHistoryOOCSent",      "dmapi.communication.oocsent",      "ooc",  "You")
+  bind("ChatHistoryNewbieChannel",  "dmapi.communication.newbiechannel",  "newbie")
+  bind("ChatHistoryNewbieDiscord",  "dmapi.communication.newbiechanneldiscord",  "newbiediscord")
+  bind("ChatHistoryHouseChannel",  "dmapi.communication.housechannel",  "house")
 
-  local id = registerAnonymousEventHandler("sysProfileSaveStarted", saveWindowLayout)
-  table.insert(ChatHistory._eventHandlers, id)
+  DarkmistsEvents.add("ChatHistoryProfileSave", "sysProfileSaveStarted", saveWindowLayout)
 
   Darkmists.Log("ChatHistory","Event Handlers Registered")
 end

@@ -7,8 +7,6 @@
 -- - Auto-shows on login, hides on disconnect
 -- - Persistent border height across reconnects
 -- ===================================================================
-
-DARKMISTS_STATUSBAR_EVENT_HANDLERS = DARKMISTS_STATUSBAR_EVENT_HANDLERS or {}
 StatusBar = StatusBar or {}
 
 -- ===================================================================
@@ -22,6 +20,7 @@ StatusBar.config = {
   enabled = true,
   maxLevel = 51,
 }
+StatusBar._resizePending = false
 StatusBar._layoutLock = false
 
 -- ===================================================================
@@ -72,12 +71,16 @@ end
 
 -- One-shot handler that waits for the first valid vitals packet
 local function registerFirstVitalsHandler()
-  table.insert(DARKMISTS_STATUSBAR_EVENT_HANDLERS,
-    registerAnonymousEventHandler("dmapi.player.vitals.updated", function()
+  DarkmistsEvents.add(
+    "StatusBarFirstVitalsHandler",
+    "dmapi.player.vitals.updated",
+    function()
       Darkmists.Log("StatusBars","Vitals received — showing bars")
       StatusBar.showAll()  -- state transition: hidden → visible
       StatusBar.reflow()
-    end, true))
+    end,
+    true
+  )
 end
 
 -- ===================================================================
@@ -92,12 +95,6 @@ function StatusBar.cleanup()
       StatusBar[name] = nil -- clear reference for GC
     end
   end
-
-  -- Kill all event handlers owned by this module
-  for _, id in ipairs(DARKMISTS_STATUSBAR_EVENT_HANDLERS) do
-    killAnonymousEventHandler(id)
-  end
-  DARKMISTS_STATUSBAR_EVENT_HANDLERS = {}
 
   if StatusBar.container then
     StatusBar.container:hide()
@@ -437,81 +434,62 @@ end
 -- EVENT HANDLERS
 -- ===================================================================
 function StatusBar.registerEvents()
-  for _, id in ipairs(DARKMISTS_STATUSBAR_EVENT_HANDLERS) do
-    killAnonymousEventHandler(id)
-    Darkmists.Log("StatusBars",("Killing Event Handler #%d"):format(id))
-  end
-  DARKMISTS_STATUSBAR_EVENT_HANDLERS = {}
+  DarkmistsEvents.add("StatusBarVitalsUpdated", "dmapi.player.vitals.updated", StatusBar.update)
 
-  table.insert(DARKMISTS_STATUSBAR_EVENT_HANDLERS,
-    registerAnonymousEventHandler("dmapi.player.vitals.updated", StatusBar.update))
+  DarkmistsEvents.add("StatusBarLevelUp", "dmapi.player.levelup", function()
+    StatusBar.update()
+    StatusBar.maxTnl = nil
+    StatusBar.lastTnl = nil
+    StatusBar.updateXP()
+    StatusBar.reflow()
+  end)
 
-  table.insert(DARKMISTS_STATUSBAR_EVENT_HANDLERS,
-    registerAnonymousEventHandler("dmapi.player.levelup", function()
-      StatusBar.update()
-      StatusBar.maxTnl = nil
-      StatusBar.lastTnl = nil
-      StatusBar.updateXP()
+  DarkmistsEvents.add("StatusBarLevelUpdated", "dmapi.player.level.updated", function()
+    local showXP = shouldShowXP()
+    if (not showXP) and StatusBar.xpGauge and (not StatusBar.xpGauge.hidden) then
+      StatusBar.xpGauge:hide()
       StatusBar.reflow()
-    end))
+      Darkmists.Log("StatusBars","<yellow>XP bar hidden (max level reached)")
+    elseif showXP and StatusBar.xpGauge and StatusBar.xpGauge.hidden then
+      StatusBar.xpGauge:show()
+      StatusBar.reflow()
+      Darkmists.Log("StatusBars","<yellow>XP bar shaown (max level not reached)")
+    end
+  end)
 
-  table.insert(DARKMISTS_STATUSBAR_EVENT_HANDLERS,
-    registerAnonymousEventHandler("dmapi.player.level.updated", function()
-      local showXP = shouldShowXP()
-      if (not showXP) and StatusBar.xpGauge and (not StatusBar.xpGauge.hidden) then
-        StatusBar.xpGauge:hide()
-        StatusBar.reflow()
-        Darkmists.Log("StatusBars","<yellow>XP bar hidden (max level reached)")
-      elseif showXP and StatusBar.xpGauge and StatusBar.xpGauge.hidden then
-        StatusBar.xpGauge:show()
-        StatusBar.reflow()
-        Darkmists.Log("StatusBars","<yellow>XP bar shaown (max level not reached)")
-      end
-    end))
+  DarkmistsEvents.add("StatusBarWindowResize", "sysWindowResizeEvent", function()
+    if StatusBar._resizePending then return end
+    if StatusBar._layoutLock then return end
+    StatusBar._resizePending = true
+    tempTimer(0.2, function()
+      StatusBar._resizePending = false
+      StatusBar.recreate()
+    end)
+  end)
 
-  local resizePending = false
-  table.insert(DARKMISTS_STATUSBAR_EVENT_HANDLERS,
-    registerAnonymousEventHandler("sysWindowResizeEvent", function()
-      if resizePending then return end
-      if StatusBar._layoutLock then return end
-      resizePending = true
-      tempTimer(0.2, function()
-        resizePending = false
-        StatusBar.recreate()
-      end)
-    end))
-    
-  table.insert(DARKMISTS_STATUSBAR_EVENT_HANDLERS,
-    registerAnonymousEventHandler("dmapi.player.experience.gain", StatusBar.updateXP))
+  DarkmistsEvents.add("StatusBarExperienceGain", "dmapi.player.experience.gain", StatusBar.updateXP)
+  DarkmistsEvents.add("StatusBarPrompt", "dmapi.world.prompt", StatusBar.updateXP)
 
-  table.insert(DARKMISTS_STATUSBAR_EVENT_HANDLERS,
-    registerAnonymousEventHandler("dmapi.world.prompt", StatusBar.updateXP))
+  DarkmistsEvents.add("StatusBarCombatMobstate", "dmapi.player.combat.mobstate", function(_, data)
+    StatusBar.updateEnemy(data)
+  end)
 
-  table.insert(DARKMISTS_STATUSBAR_EVENT_HANDLERS,
-    registerAnonymousEventHandler("dmapi.player.combat.mobstate", function(_, data)
-      StatusBar.updateEnemy(data)
-    end))
+  DarkmistsEvents.add("StatusBarCombatEnd", "dmapi.player.combat.end", StatusBar.hideEnemy)
 
-  table.insert(DARKMISTS_STATUSBAR_EVENT_HANDLERS,
-    registerAnonymousEventHandler("dmapi.player.combat.end", StatusBar.hideEnemy))
+  DarkmistsEvents.add("StatusBarWorldExit", "dmapi.world.exit", function()
+    StatusBar.hideAll()
+    Darkmists.Log("StatusBars","<yellow>Disconnect detected")
+  end)
 
-  table.insert(DARKMISTS_STATUSBAR_EVENT_HANDLERS,
-    registerAnonymousEventHandler("dmapi.world.exit", function()
-      StatusBar.hideAll()
-      Darkmists.Log("StatusBars","<yellow>Disconnect detected")
-    end))
+  DarkmistsEvents.add("StatusBarDisconnection", "sysDisconnectionEvent", function()
+    StatusBar.hideAll()
+    Darkmists.Log("StatusBars","<red>System disconnect - hiding bars")
+  end)
 
-  table.insert(DARKMISTS_STATUSBAR_EVENT_HANDLERS,
-    registerAnonymousEventHandler("sysDisconnectionEvent", function()
-      StatusBar.hideAll()
-      Darkmists.Log("StatusBars","<red>System disconnect - hiding bars")
-    end))
-
-  table.insert(DARKMISTS_STATUSBAR_EVENT_HANDLERS,
-    registerAnonymousEventHandler("dmapi.world.enter", function()
-      Darkmists.Log("StatusBars","World entered — awaiting vitals")
-      registerFirstVitalsHandler() -- reset oneshot lifecycle on reconnect
-    end))
+  DarkmistsEvents.add("StatusBarWorldEnter", "dmapi.world.enter", function()
+    Darkmists.Log("StatusBars","World entered — awaiting vitals")
+    registerFirstVitalsHandler() -- reset oneshot lifecycle on reconnect
+  end)
 
   Darkmists.Log("StatusBars","Events Registered!")
 end

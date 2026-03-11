@@ -192,17 +192,3 @@ function DMUtil.replayFileToTriggers(path)
   f:close()
   cecho("<green>[Replay] Done\n")
 end
-
--- Verbose wrapper for anonymous event handlers (debug visibility)
-function DMUtil.registerAnonymousEventHandlerVerbose(event, handler)
-  local id = registerAnonymousEventHandler(event, handler)
-  local label =
-    (type(handler) == "string" and handler)
-    or (type(handler) == "function" and "function")
-    or "unknown"
-
-  cecho(string.format(
-    "<green>[UT] <yellow>registerAnonymousEventHandler: <white>[%d] %s > %s\n",
-    id, event, label
-  ))
-end

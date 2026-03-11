@@ -83,13 +83,7 @@ ScorePanel.create = function()
 end
 
 ScorePanel.registerEvents = function()
-  if SCOREPANEL_PROMPT_HANDLER then 
-    killAnonymousEventHandler(SCOREPANEL_PROMPT_HANDLER) 
-    Darkmists.Log("ScorePanel","Killed Old Event Handlers")
-  end
-  SCOREPANEL_PROMPT_HANDLER = registerAnonymousEventHandler(
-    "dmapi.world.prompt",
-    function() ScorePanel.refresh() end)
+  DarkmistsEvents.add("ScorePanelPromptHandler", "dmapi.world.prompt", ScorePanel.refresh)
   Darkmists.Log("ScorePanel","Events Registered")
 end
 

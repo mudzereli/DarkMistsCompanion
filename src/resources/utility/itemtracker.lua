@@ -62,8 +62,7 @@ ItemTracker = {
     border = nil,
     header = nil,
     width = 0,
-    height = 0,
-    clickHandler = nil
+    height = 0
   },
 }
 
@@ -166,10 +165,6 @@ function ItemTracker.hideTooltip()
   hideWindow(t.header)
   hideWindow(t.border)
   hideWindow(t.win)
-  if t.clickHandler then
-    killAnonymousEventHandler(t.clickHandler)
-    t.clickHandler = nil
-  end
 end
 
 function ItemTracker.showTooltip(name)
@@ -262,12 +257,7 @@ function ItemTracker.showTooltip(name)
   showWindow(t.header)
   showWindow(t.win)
 
-  if t.clickHandler then
-    killAnonymousEventHandler(t.clickHandler)
-    t.clickHandler = nil
-  end
-
-  t.clickHandler = registerAnonymousEventHandler("sysWindowMousePressEvent","ItemTracker.hideTooltip")
+  DarkmistsEvents.add("ItemTrackerTooltipClick", "sysWindowMousePressEvent", ItemTracker.hideTooltip)
 end
 
 -- ============================================================================

@@ -1,13 +1,6 @@
 -- ===================================================================
 -- Who Window - Player list tracker with age display
 -- ===================================================================
-
--- Clean up previous prompt handler if reloading
-if WhoWindow and WhoWindow.promptHandler then
-  killAnonymousEventHandler(WhoWindow.promptHandler)
-  Darkmists.Log("WhoWindow", ("<red>Killed Anonymous Event Handler #%d"):format(WhoWindow.promptHandler))
-end
-
 WhoWindow = WhoWindow or {}
 
 -- Configuration
@@ -265,10 +258,7 @@ function WhoWindow.registerTriggers()
 end
 
 --- Register prompt event handler for age updates
-WhoWindow.promptHandler = registerAnonymousEventHandler(
-  "dmapi.world.prompt",
-  WhoWindow.updateAge
-)
+DarkmistsEvents.add("WhoWindowPromptHandler", "dmapi.world.prompt", WhoWindow.updateAge)
 
 --- Initialize window and triggers
 WhoWindow.create()

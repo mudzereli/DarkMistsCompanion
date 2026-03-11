@@ -1,17 +1,12 @@
 -- ===================================================================
 -- Skill Ups Tracker - Simple skill improvement logger
 -- ===================================================================
-if SkillUps and SkillUps.eventHandler then
-  killAnonymousEventHandler(SkillUps.eventHandler)
-  Darkmists.Log("SkillUps",("Killed Anonymous Event Handler #%d"):format(SkillUps.eventHandler))
-end
-
 SkillUps = {
   config = {
     maxSkillUps = 20,  -- Keep last 20 skill ups
   },
   history = {},
-  eventHandler = nil
+  -- No need for eventHandler tracking; managed by EventManager
 }
 
 -- ===================================================================
@@ -84,11 +79,13 @@ function SkillUps.reset()
   Darkmists.Log("SkillUps","<red>Skill improvement history reset.")
 end
 
+
 -- ===================================================================
--- EVENT HANDLER
+-- EVENT HANDLER (managed by EventManager)
 -- ===================================================================
 
-SkillUps.eventHandler = registerAnonymousEventHandler(
+DarkmistsEvents.add(
+  "SkillUpsImproved",
   "dmapi.player.skill.improved",
   function(_, data)
     SkillUps.addSkillUp(data.skill)

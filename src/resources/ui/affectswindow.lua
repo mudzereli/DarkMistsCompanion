@@ -432,7 +432,6 @@ function AffectsWindow.registerTriggers()
   if AffectsWindow.affectHeaderTrigger then killTrigger(AffectsWindow.affectHeaderTrigger) end
   if AffectsWindow.affectLineTrigger   then killTrigger(AffectsWindow.affectLineTrigger)   end
   if AffectsWindow.noAffectsTrigger    then killTrigger(AffectsWindow.noAffectsTrigger)   end
-  if AffectsWindow.promptHandler       then killAnonymousEventHandler(AffectsWindow.promptHandler) end
 
   -- If we have no effects, just capture an empty affect list
   -- If we DONT do this, then EXPIRED effects will just show EXPIRING forever
@@ -465,7 +464,8 @@ function AffectsWindow.registerTriggers()
   )
 
   -- Stop capturing once we hit a prompt.
-  AffectsWindow.promptHandler = registerAnonymousEventHandler(
+  DarkmistsEvents.add(
+    "affectsPromptHandler",
     "dmapi.world.prompt",
     function()
       if AffectsWindow.capturing then
