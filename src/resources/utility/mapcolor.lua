@@ -443,7 +443,7 @@ local function registerCustomEnvs()
       MapColors.TerrainToEnv[terrain] = index
       MapColors.EnvToTerrain[index] = terrain
       local cstr = ("<%d,%d,%d>"):format(r, g, b)
-      decho(("\n%s[%16s] = %d"):format(cstr, terrain, index))
+      --decho(("\n%s[%16s] = %d"):format(cstr, terrain, index))
       index = index + 1
     end
   end
