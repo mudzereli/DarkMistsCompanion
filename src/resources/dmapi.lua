@@ -1611,7 +1611,7 @@ end
 -- ============================================================================
 
 --- Main dmapi command handler
-tempAlias([[^dmapi(?:\s+(\w+))?(?:\s+(.*))?$]], function()
+DarkmistsAlias.add([[^dmapi(?:\s+(\w+))?(?:\s+(.*))?$]], function()
   local cmd = matches[2]
   local args = matches[3]
   
@@ -1653,7 +1653,7 @@ tempAlias([[^dmapi(?:\s+(\w+))?(?:\s+(.*))?$]], function()
 end)
 
 --- Set vitals command
-tempAlias([[^dmapi setvitals\s+(\d+)\s+(\d+)\s+(\d+)$]], function()
+DarkmistsAlias.add([[^dmapi setvitals\s+(\d+)\s+(\d+)\s+(\d+)$]], function()
   local hpMax = tonumber(matches[2])
   local mnMax = tonumber(matches[3])
   local mvMax = tonumber(matches[4])
@@ -1671,7 +1671,7 @@ tempAlias([[^dmapi setvitals\s+(\d+)\s+(\d+)\s+(\d+)$]], function()
 end)
 
 --- Guess vitals from level
-tempAlias([[^dmapi guessvitals\s+(\d+)$]], function()
+DarkmistsAlias.add([[^dmapi guessvitals\s+(\d+)$]], function()
   local level = tonumber(matches[2])
   
   -- Estimate: ~15 HP/MN/MV per level (adjust based on class/race)

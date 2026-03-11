@@ -16,6 +16,7 @@
 -- =============================================================================
 
 -- Load foundational utilities first (no dependencies)
+dofile(getMudletHomeDir() .. "/DarkMistsCompanion/core/AliasManager.lua")
 dofile(getMudletHomeDir() .. "/DarkMistsCompanion/utility/util.lua")
 
 local saveFilePath     = getMudletHomeDir() .. "/darkmists_global_settings.lua"

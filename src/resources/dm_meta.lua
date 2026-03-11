@@ -16,7 +16,6 @@
 -- Safe to reload at any time.
 -- =============================================================================
 
-
 -- =============================================================================
 -- META REGISTRY
 -- =============================================================================
@@ -191,7 +190,7 @@ end
 -- UI MODE COMMANDS
 -- ===================================================================
 
-tempAlias([[^dmc\s+ui(?:\s+(on|off))?$]], function()
+DarkmistsAlias.add([[^dmc\s+ui(?:\s+(on|off))?$]], function()
   local state = matches[2]
 
   -- Explicit ON
@@ -232,7 +231,7 @@ end)
 -- dm help
 -- =============================================================================
 
-tempAlias("^dmc help (.*)$", function()
+DarkmistsAlias.add("^dmc help (.*)$", function()
   local key   = matches[2]
   local entry = DarkmistsMeta.helpIndex[key]
 
@@ -252,7 +251,7 @@ tempAlias("^dmc help (.*)$", function()
   cecho("<dim_gray>" .. (entry.info or "No additional information available.") .. "\n")
 end)
 
-tempAlias("^dmc(?:\\s+help)?$", function()
+DarkmistsAlias.add("^dmc(?:\\s+help)?$", function()
   dm_header(DarkmistsMeta.meta.name)
 
   cecho(string.format(
@@ -282,7 +281,7 @@ end)
 -- CHAT HISTORY (CH) COMMANDS
 -- ===================================================================
 
-tempAlias([[^ch(?:\s+(\w+))?$]], function()
+DarkmistsAlias.add([[^ch(?:\s+(\w+))?$]], function()
   local cmd = matches[2]
 
   if cmd == "refresh" then
@@ -298,7 +297,7 @@ end)
 -- STATUS BAR COMMANDS
 -- ===================================================================
 
-tempAlias([[^sb(?:\s+(\w+))?$]], function()
+DarkmistsAlias.add([[^sb(?:\s+(\w+))?$]], function()
   local cmd = matches[2]
 
   if cmd == "show" then
@@ -386,7 +385,7 @@ end)
 
 do
   -- Main help command
-  tempAlias(string.format("^%s$", ItemTracker.settings.alias), function()
+  DarkmistsAlias.add(string.format("^%s$", ItemTracker.settings.alias), function()
     local alias = ItemTracker.settings.alias
     
     cecho("\n<ansi_cyan>Item Tracker Commands:\n")
@@ -420,7 +419,7 @@ do
   end)
 
   -- Area search command
-  tempAlias("^" .. ItemTracker.settings.alias .. "\\s+area\\s+(.*)$", function()
+  DarkmistsAlias.add("^" .. ItemTracker.settings.alias .. "\\s+area\\s+(.*)$", function()
     local query = matches[2]
     local results = ItemTracker.listByArea(query)
 
@@ -449,7 +448,7 @@ do
   end)
 
   -- Item search command
-  tempAlias(string.format("^%s\\s+(.+)$", ItemTracker.settings.alias), function()
+  DarkmistsAlias.add(string.format("^%s\\s+(.+)$", ItemTracker.settings.alias), function()
     local query = matches[2]
 
     -- Prevent collision with area subcommand
@@ -529,7 +528,7 @@ local function renderWalkList(filter)
   end
 end
 
-tempAlias("^walk(?:\\s+(.*))?$", function()
+DarkmistsAlias.add("^walk(?:\\s+(.*))?$", function()
   local c = DarkmistsMeta.colors.default
   local arg = matches[2] and matches[2]:trim() or ""
 
@@ -723,7 +722,7 @@ end)
 -- =============================================================================
 -- ENCHANTER ASSIST (ES) COMMAND
 -- =============================================================================
-tempAlias("^es(?:\\s+(.*))?$", function()
+DarkmistsAlias.add("^es(?:\\s+(.*))?$", function()
   local c = DarkmistsMeta.colors.default
   local arg = matches[2] and matches[2]:trim() or ""
 
@@ -779,45 +778,45 @@ tempAlias("^es(?:\\s+(.*))?$", function()
   end
 end)
 
-tempAlias("^es run$", function() EnchanterAssist.run() end)
+DarkmistsAlias.add("^es run$", function() EnchanterAssist.run() end)
 
-tempAlias("^es auto$", function()
+DarkmistsAlias.add("^es auto$", function()
   EnchanterAssist.autoRun = not EnchanterAssist.autoRun
   Darkmists.Log(EnchanterAssist.color.."EnchanterAssist","AutoRun: " .. tostring(EnchanterAssist.autoRun))
 end)
 
-tempAlias("^es 1$", function() EnchanterAssist.partCount = 1 EnchanterAssist._comboIndices = nil EnchanterAssist.save() EnchanterAssist.run() end)
-tempAlias("^es 2$", function() EnchanterAssist.partCount = 2 EnchanterAssist._comboIndices = nil EnchanterAssist.save() EnchanterAssist.run() end)
-tempAlias("^es 3$", function() EnchanterAssist.partCount = 3 EnchanterAssist._comboIndices = nil EnchanterAssist.save() EnchanterAssist.run() end)
-tempAlias("^es 4$", function() EnchanterAssist.partCount = 4 EnchanterAssist._comboIndices = nil EnchanterAssist.save() EnchanterAssist.run() end)
-tempAlias("^es 5$", function() EnchanterAssist.partCount = 5 EnchanterAssist._comboIndices = nil EnchanterAssist.save() EnchanterAssist.run() end)
+DarkmistsAlias.add("^es 1$", function() EnchanterAssist.partCount = 1 EnchanterAssist._comboIndices = nil EnchanterAssist.save() EnchanterAssist.run() end)
+DarkmistsAlias.add("^es 2$", function() EnchanterAssist.partCount = 2 EnchanterAssist._comboIndices = nil EnchanterAssist.save() EnchanterAssist.run() end)
+DarkmistsAlias.add("^es 3$", function() EnchanterAssist.partCount = 3 EnchanterAssist._comboIndices = nil EnchanterAssist.save() EnchanterAssist.run() end)
+DarkmistsAlias.add("^es 4$", function() EnchanterAssist.partCount = 4 EnchanterAssist._comboIndices = nil EnchanterAssist.save() EnchanterAssist.run() end)
+DarkmistsAlias.add("^es 5$", function() EnchanterAssist.partCount = 5 EnchanterAssist._comboIndices = nil EnchanterAssist.save() EnchanterAssist.run() end)
 
-tempAlias("^es reset$", EnchanterAssist.reset)
+DarkmistsAlias.add("^es reset$", EnchanterAssist.reset)
 
-tempAlias("^es stats$", EnchanterAssist.stats)
+DarkmistsAlias.add("^es stats$", EnchanterAssist.stats)
 
-tempAlias("^es missing$", EnchanterAssist.statsMissing)
+DarkmistsAlias.add("^es missing$", EnchanterAssist.statsMissing)
 
 -- ============================================================================
 -- CONFIG COMMANDS
 -- ============================================================================
 
 -- es set container <name>
-tempAlias("^es set container (.+)$", function()
+DarkmistsAlias.add("^es set container (.+)$", function()
   EnchanterAssist.container = matches[2]
   EnchanterAssist.save()
   Darkmists.Log(EnchanterAssist.color.."EnchanterAssist","Container set to: " .. EnchanterAssist.container)
 end)
 
 -- es set sleeper <name>
-tempAlias("^es set sleeper (.+)$", function()
+DarkmistsAlias.add("^es set sleeper (.+)$", function()
   EnchanterAssist.sleeper = matches[2]
   EnchanterAssist.save()
   Darkmists.Log(EnchanterAssist.color.."EnchanterAssist","Sleeper set to: " .. EnchanterAssist.sleeper)
 end)
 
 -- es set sleepmode <sleep|potion>
-tempAlias("^es set sleepmode (sleep|potion)$", function()
+DarkmistsAlias.add("^es set sleepmode (sleep|potion)$", function()
   if matches[2] == "sleep" then
     EnchanterAssist.sleepType = 1
   else
@@ -828,14 +827,14 @@ tempAlias("^es set sleepmode (sleep|potion)$", function()
 end)
 
 -- es set potion <item>
-tempAlias("^es set potion (.+)$", function()
+DarkmistsAlias.add("^es set potion (.+)$", function()
   EnchanterAssist.drainItem = matches[2]
   EnchanterAssist.save()
   Darkmists.Log(EnchanterAssist.color.."EnchanterAssist","Potion item set to: " .. EnchanterAssist.drainItem)
 end)
 
 -- es enable / disable
-tempAlias("^es (enable|disable)$", function()
+DarkmistsAlias.add("^es (enable|disable)$", function()
   if matches[2] == "enable" then
     EnchanterAssist.enabled = true
   else
@@ -844,7 +843,7 @@ tempAlias("^es (enable|disable)$", function()
   Darkmists.Log(EnchanterAssist.color.."EnchanterAssist","Status: " .. tostring(EnchanterAssist.enabled))
 end)
 
-tempAlias("^es sound$", function()
+DarkmistsAlias.add("^es sound$", function()
   EnchanterAssist.playSoundOnDiscover =
     not EnchanterAssist.playSoundOnDiscover
   EnchanterAssist.save()

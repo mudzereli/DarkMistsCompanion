@@ -98,7 +98,7 @@ SkillUps.eventHandler = registerAnonymousEventHandler(
 -- ===================================================================
 -- ALIAS
 -- ===================================================================
-tempAlias([[^skillups?$]], function()
+DarkmistsAlias.add([[^skillups?$]], function()
   local c = Darkmists.getDefaultTextColorTag()
   cecho([[
 <ansi_cyan>SkillUps Module:
@@ -118,11 +118,11 @@ tempAlias([[^skillups?$]], function()
     ]])
   end)
 
-tempAlias([[^skillups? list$]], function()
+DarkmistsAlias.add([[^skillups? list$]], function()
   SkillUps.display()
 end)
 
-tempAlias([[^skillups? reset$]], function()
+DarkmistsAlias.add([[^skillups? reset$]], function()
   SkillUps.reset()
 end)
 
