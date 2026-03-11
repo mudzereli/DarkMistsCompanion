@@ -371,7 +371,21 @@ end
 -- VISIBILITY CONTROL
 -- ===================================================================
 function StatusBar.showAll()
-  StatusBar.container:show()
+  if not shouldShowVitals() then return end
+  StatusBar.reflow()
+
+  if StatusBar.container then
+    StatusBar.container:show()
+  end
+
+  for _, gauge in ipairs({
+    StatusBar.hpGauge,
+    StatusBar.mnGauge,
+    StatusBar.mvGauge
+  }) do
+    if gauge then gauge:show() end
+  end
+
   StatusBar.update()
   StatusBar.updateXP()
   StatusBar.reflow()
@@ -379,8 +393,18 @@ function StatusBar.showAll()
 end
 
 function StatusBar.hideAll()
-  StatusBar.container:hide()
   StatusBar.reflow()
+  if StatusBar.hpGauge then StatusBar.hpGauge:hide() end
+  if StatusBar.mnGauge then StatusBar.mnGauge:hide() end
+  if StatusBar.mvGauge then StatusBar.mvGauge:hide() end
+  StatusBar.hideEnemy()
+  StatusBar.updateXP()
+
+  if StatusBar.container then
+    StatusBar.container:hide()
+  end
+
+  Darkmists.SetWindowBorderPercent("bottom", 0)
   Darkmists.Log("StatusBars","Bars hidden")
 end
 
