@@ -57,6 +57,11 @@ function DarkMistsMiniMap.create()
 end
 
 function DarkMistsMiniMap.destroy()
+  if DarkMistsMiniMap.minimap then
+    DarkMistsMiniMap.minimap:hide()
+    DarkMistsMiniMap.minimap:delete()
+    DarkMistsMiniMap.minimap = nil
+  end
   if DarkMistsMiniMap.container then
     DarkMistsMiniMap.container:hide()
     DarkMistsMiniMap.container:delete()
@@ -124,9 +129,9 @@ end
 -- -------------------------------------------------------------------
 -- Initialization
 -- -------------------------------------------------------------------
-tempTimer(1, function()
-  DarkMistsMiniMap.create()
-  DarkMistsMiniMap.registerEvents()
+DarkMistsMiniMap.create()
+DarkMistsMiniMap.registerEvents()
+tempTimer(0, function()
   DarkMistsMiniMap.update()
   DarkMistsMiniMap.container:show()
   DarkMistsMiniMap.container:raiseAll()
