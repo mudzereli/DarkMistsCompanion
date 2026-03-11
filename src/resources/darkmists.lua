@@ -31,7 +31,7 @@ Darkmists.VERSION = "1.4.0"
 Darkmists.GITHUB_URL = "https://github.com/mudzereli/DarkMistsCompanion/releases/latest/download/DarkMistsCompanion.mpackage"
 Darkmists.IS_DEV_BUILD = true
 Darkmists.UI_LOADED = false
-Darkmists.LAYOUT_CACHE_VERSION = 2
+Darkmists.LAYOUT_CACHE_VERSION = 1
 
 Darkmists.DefaultSettings = {
   minimalMode = true, -- start with no extra UI
@@ -341,7 +341,7 @@ function Darkmists.LoadSettings()
     -- Detect legacy settings BEFORE merging
     if settings.layoutCacheVersion == nil then
       Darkmists.Log("Darkmists Core", "<red>Legacy settings detected (no layout version)")
-      Darkmists.ResetUILayoutCache()
+      tempTimer(0,Darkmists.ResetUILayoutCache)
       return
     end
     
@@ -389,7 +389,7 @@ function Darkmists.Init()
 
   -- Layout cache compatibility check
   if Darkmists.GlobalSettings.layoutCacheVersion ~= Darkmists.LAYOUT_CACHE_VERSION then
-    Darkmists.ResetUILayoutCache()
+    tempTimer(0,Darkmists.ResetUILayoutCache)
     return
   end
 
