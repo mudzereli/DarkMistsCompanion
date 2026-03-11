@@ -71,7 +71,9 @@ Darkmists.DefaultSettings = {
   -- Delete original Who lines when running Who command
   whoWindowDeleteOriginalLines = false,
   -- Stat Roller Leniancy (0 = Roll must be Max, 1 = Roll can be 1 lower than Max, etc)
-  statRollerLeniency = 1
+  statRollerLeniency = 1,
+  -- First Run Flag (for Setting up default settings)
+  hasInitializedUILayout = false,
 }
 
 Darkmists.GlobalSettings = Darkmists.GlobalSettings or {}
@@ -172,6 +174,30 @@ end
 
 function Darkmists.getDefaultTextColorTag()
   return ("<%s>"):format(Darkmists.getDefaultTextColor())
+end
+
+function Darkmists.GetBorderPercentages()
+  local px = getBorderSizes()
+  local winW, winH = getMainWindowSize()
+
+  return {
+    left   = (px.left   / winW) * 100,
+    right  = (px.right  / winW) * 100,
+    top    = (px.top    / winH) * 100,
+    bottom = (px.bottom / winH) * 100
+  }
+end
+
+function Darkmists.ApplyFirstRunUILayout()
+  if Darkmists.GlobalSettings.hasInitializedUILayout then return end
+
+  Darkmists.Log("Darkmists Core", "Applying first-run UI layout...")
+
+  -- Default dock: right 30%
+  Darkmists.SetWindowBorderPercent("right", 30)
+
+  Darkmists.GlobalSettings.hasInitializedUILayout = true
+  Darkmists.SaveSettings()
 end
 
 function Darkmists.getSmartDockGeometry()
@@ -276,11 +302,7 @@ function Darkmists.Init()
   Darkmists.ApplyDefaultSettings()
   Darkmists.LoadSettings()
 
-  if not Darkmists.GlobalSettings.minimalMode then
-    for k, v in pairs(Darkmists.GlobalSettings.borders) do
-      Darkmists.SetWindowBorderPercent(k, v)
-    end
-  else
+  if Darkmists.GlobalSettings.minimalMode then
     setBorderTop(0); setBorderBottom(0); setBorderLeft(0); setBorderRight(0)
   end
 end
@@ -308,6 +330,7 @@ function Darkmists.EnableUI()
   Darkmists.SaveSettings()
 
   -- Load UI if not already loaded
+  Darkmists.ApplyFirstRunUILayout()
   Darkmists.LoadUIScripts()
 
   -- Apply borders
