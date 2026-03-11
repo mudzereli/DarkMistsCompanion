@@ -1,3 +1,4 @@
+---@diagnostic disable: duplicate-doc-field
 ---@meta
 -- Shared type definitions for Dark Mists Mudlet Package
 -- This file is for editor tooling only (LuaLS / EmmyLua)
