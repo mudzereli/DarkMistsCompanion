@@ -324,10 +324,7 @@ ButtonBar:addDropdown("⚙️ Settings", {
       {label = "🔄 Reload UI", action = safeReload},
       {label = "🧼 Reset All Settings", action = function() 
         saveWindowLayout()
-        Darkmists.ApplyDefaultSettings()
-        Darkmists.SaveSettings()
-        Darkmists.Log("Settings","Settings Reset - Reload UI for changes to take effect")
-        safeReload() 
+        Darkmists.ResetUILayoutCache()
       end},
       {label = "💾 Save Settings", action = function() 
         saveWindowLayout()
