@@ -56,6 +56,13 @@ function DarkMistsMiniMap.create()
   Darkmists.Log("MiniMapContainer","Container Created!")
 end
 
+function DarkMistsMiniMap.destroy()
+  if DarkMistsMiniMap.container then
+    DarkMistsMiniMap.container:hide()
+    DarkMistsMiniMap.container:delete()
+    DarkMistsMiniMap.container = nil
+  end
+end
 -- -------------------------------------------------------------------
 -- Update Display
 -- -------------------------------------------------------------------
