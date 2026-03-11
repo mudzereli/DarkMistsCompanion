@@ -22,6 +22,7 @@ StatusBar.config = {
   enabled = true,
   maxLevel = 51,
 }
+StatusBar._layoutLock = false
 
 -- ===================================================================
 -- UTILITY FUNCTIONS
@@ -329,6 +330,8 @@ function StatusBar.reflow()
   local xpHeight = (xpUnits / totalUnits) * 100
 
   if not cfg.moveable then
+    StatusBar._layoutLock = true   -- START LOCK
+
     local baseHeight = cfg.containerHeightPct
     local newHeight = baseHeight * (totalUnits / 5)
     local newY = 100 - newHeight
@@ -336,6 +339,10 @@ function StatusBar.reflow()
     container:move(nil, newY .. "%")
     container:resize(nil, newHeight .. "%")
     Darkmists.SetWindowBorderPercent("bottom", newHeight)
+
+    tempTimer(0.1, function()
+      StatusBar._layoutLock = false -- RELEASE LOCK
+    end)
   end
 
   local yOffset = 0
@@ -466,6 +473,7 @@ function StatusBar.registerEvents()
   table.insert(DARKMISTS_STATUSBAR_EVENT_HANDLERS,
     registerAnonymousEventHandler("sysWindowResizeEvent", function()
       if resizePending then return end
+      if StatusBar._layoutLock then return end
       resizePending = true
       tempTimer(0.2, function()
         resizePending = false
