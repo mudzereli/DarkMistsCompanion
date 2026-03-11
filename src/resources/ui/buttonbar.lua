@@ -334,4 +334,51 @@ ButtonBar:addDropdown("⚙️ Settings", {
     ]]--
   })
 
+ButtonBar:addDropdown("❓ Help", {
+
+  {label="❔ General", action=function()
+    expandAlias("dmc help")
+  end},
+
+  {label="🧭 World", children={
+    {label="🗺️ Area Maps", action=function()
+      expandAlias("dmc help map")
+    end},
+    {label="🚩 Map Markers", action=function()
+      expandAlias("dmc help walk")
+    end},
+  }},
+
+  {label="👤 Character", children={
+    {label="🎲 Stat Roller", action=function()
+      expandAlias("dmc help statroll")
+    end},
+    {label="📈 Skillup Tracking", action=function()
+      expandAlias("dmc help skillups")
+    end},
+    {label="🧪 Enchant Assist", action=function()
+      expandAlias("dmc help es")
+    end},
+  }},
+
+  {label="☰ Interface", children={
+    {label="📊 Status Bars", action=function()
+      expandAlias("dmc help sb")
+    end},
+    {label="💬 Chat History", action=function()
+      expandAlias("dmc help ch")
+    end},
+    {label="👥 Who List", action=function()
+      expandAlias("dmc help who")
+    end},
+    {label="✨ Affects List", action=function()
+      expandAlias("dmc help affects")
+    end},
+    {label="🏷️ Item Tracker", action=function()
+      expandAlias("dmc help dmid")
+    end},
+  }},
+
+})
+
 Darkmists.Log("ButtonBar","Loaded!")
