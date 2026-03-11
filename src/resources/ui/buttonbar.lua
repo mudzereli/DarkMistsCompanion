@@ -184,34 +184,41 @@ ButtonBar:addDropdown("🧰 Modules", {
         appendCmdLine("walk add ")
         end},
     {label="🛑 Stop Walking", action=function() expandAlias("walk stop") end},
+    {label="🧭 Zones", action=function() MapColors.AuditCurrentArea() end},
     {label="❓ Walk", action=function() expandAlias("dmc help walk") end},
   }},
   -- Enchant Assist Module
   {label="🧪 Enchant Assist", children={
-    {label="❶ ES Try 1", action=function() expandAlias("es 1") end},
-    {label="❷ ES Try 2", action=function() expandAlias("es 2") end},
-    {label="❸ ES Try 3", action=function() expandAlias("es 3") end},
-    {label="❹ ES Try 4", action=function() expandAlias("es 4") end},
-    {label="❺ ES Try 5", action=function() expandAlias("es 5") end},
-    {label="⚙️ EA Settings", children={
-      {label="⚡ Run", action=function() expandAlias("es run") end},
-      {label="♾️ Auto", action=function() expandAlias("es auto") end},
-      {label="📊 Stats", action=function() expandAlias("es stats") end},
-      {label="⚠ Missing", action=function() expandAlias("es missing") end},
-      {label="🧹 Reset", action=function() expandAlias("es reset") end},
+    {label="⚗️ Trials", children={
+      {label="❶ ES Try 1", action=function() expandAlias("es 1") end},
+      {label="❷ ES Try 2", action=function() expandAlias("es 2") end},
+      {label="❸ ES Try 3", action=function() expandAlias("es 3") end},
+      {label="❹ ES Try 4", action=function() expandAlias("es 4") end},
+      {label="❺ ES Try 5", action=function() expandAlias("es 5") end},
     }},
+    {label="⚡ Run", action=function() expandAlias("es run") end},
+    {label="♾️ Auto", action=function() expandAlias("es auto") end},
+    {label="📊 Stats", action=function() expandAlias("es stats") end},
+    {label="⚠ Missing", action=function() expandAlias("es missing") end},
+    {label="🧹 Reset", action=function() expandAlias("es reset") end},
     {label="🛠 EA Tools", children={
       {label="🧪 EA Formula Viewer", action=function() Darkmists.OpenEAFormulaParser() end},
       {label="🔄 EA Save Converter", action=function() Darkmists.OpenEAConverter() end},
     }},
     {label="❓ Enchant Assist", action=function() expandAlias("dmc help es") end}
   }},
-  {label="🧭 Zones", action=function() MapColors.AuditCurrentArea() end}
+  {label="🔎 Item Tracker", children={
+    {label="🏷️ Item Tracker", action=function()
+      expandAlias("dmc help dmid")
+    end},
+    {label="🔮 Offline Item Browser", action=function() Darkmists.OpenItemViewer() end},
+  }}
 })
 
 ButtonBar:addDropdown("🛠 Tools", {
-  {label="🔮 Items", action=function() Darkmists.OpenItemViewer() end},
+  {label="🔮 Offline Item Browser", action=function() Darkmists.OpenItemViewer() end},
   {label="🔄 EA Save Converter", action=function() Darkmists.OpenEAConverter() end},
+  {label="🧪 EA Formula Viewer", action=function() Darkmists.OpenEAFormulaParser() end},
   {label="🎨 Re-Color Map", action=function() 
     MapColors.ResetAllRooms()
     MapColors.FullUpdatePass()
