@@ -129,11 +129,14 @@ end
 -- -------------------------------------------------------------------
 -- Initialization
 -- -------------------------------------------------------------------
-DarkMistsMiniMap.create()
-DarkMistsMiniMap.registerEvents()
-tempTimer(0, function()
-  DarkMistsMiniMap.update()
-  DarkMistsMiniMap.container:show()
-  DarkMistsMiniMap.container:raiseAll()
+
+tempTimer(0.5, function()
+  DarkMistsMiniMap.create()
+  DarkMistsMiniMap.registerEvents()
   Darkmists.Log("MiniMapContainer","MiniMap Created!")
+  tempTimer(0, function()
+    DarkMistsMiniMap.update()
+    DarkMistsMiniMap.container:show()
+    DarkMistsMiniMap.container:raiseAll()
+  end)
 end)
