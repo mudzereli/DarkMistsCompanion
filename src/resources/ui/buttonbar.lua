@@ -75,6 +75,9 @@ function ButtonBar:_style(btn)
 end
 
 local function safeReload()
+  if DarkMistsMiniMap then
+    DarkMistsMiniMap.destroy()
+  end
   Darkmists.Log("PROFILE RESET","<red>Resetting Profile. UI Reload Incoming....")
   tempTimer(1,[[clearWindow() resetProfile()]])
 end
