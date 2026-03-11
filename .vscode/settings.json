@@ -117,7 +117,8 @@
         "setUserWindowTitle",
         "disableMapInfo",
         "scrollTo",
-        "loadWindowLayout"
+        "loadWindowLayout",
+        "getBorderSizes"
     ],
     "Lua.diagnostics.disable": [
         "deprecated",
