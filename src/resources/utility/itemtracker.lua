@@ -267,10 +267,7 @@ function ItemTracker.showTooltip(name)
     t.clickHandler = nil
   end
 
-  t.clickHandler = registerAnonymousEventHandler(
-    "sysWindowMousePressEvent",
-    "ItemTracker.hideTooltip"
-  )
+  t.clickHandler = registerAnonymousEventHandler("sysWindowMousePressEvent","ItemTracker.hideTooltip")
 end
 
 -- ============================================================================
