@@ -21,13 +21,13 @@ dofile(getMudletHomeDir() .. "/DarkMistsCompanion/utility/util.lua")
 local saveFilePath     = getMudletHomeDir() .. "/darkmists_global_settings.lua"
 local itemViewerPath   = getMudletHomeDir() .. "/DarkMistsCompanion/assets/item-viewer.html"
 local dmapiDocPath     = getMudletHomeDir() .. "/DarkMistsCompanion/assets/dmapi.html"
-local mapDatPath       = getMudletHomeDir() .. "/DarkMistsCompanion/map.dat"
+local mapDatPath       = getMudletHomeDir() .. "/DarkMistsCompanion/assets/map.dat"
 local eaConverterPath  = getMudletHomeDir() .. "/DarkMistsCompanion/assets/ea-save-converter.html"
 local eaFormulaParser  = getMudletHomeDir() .. "/DarkMistsCompanion/assets/alchemy-formula-parser.html"
 
 Darkmists = Darkmists or {}
 Darkmists.NAME = "DarkMistsCompanion"
-Darkmists.VERSION = "1.3.10"
+Darkmists.VERSION = "1.4.0"
 Darkmists.GITHUB_URL = "https://github.com/mudzereli/DarkMistsCompanion/releases/latest/download/DarkMistsCompanion.mpackage"
 Darkmists.IS_DEV_BUILD = true
 Darkmists.UI_LOADED = false

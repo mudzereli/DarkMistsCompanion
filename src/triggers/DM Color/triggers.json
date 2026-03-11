@@ -1,0 +1,44 @@
+[
+       {
+              "name": "Colored Directions Filter",
+              "isActive": "yes",
+              "isFolder": "no",
+              "multiline": "no",
+              "multilineDelta": "0",
+              "matchall": "no",
+              "filter": "no",
+              "fireLength": "0",
+              "highlight": "no",
+              "highlightFG": "#ff0000",
+              "highlightBG": "#ffff00",
+              "patterns": [
+                     {
+                            "pattern": "return dmapi and dmapi.core and dmapi.core.state and dmapi.core.state.capturingRoom",
+                            "type": "lua"
+                     }
+              ],
+              "script": "",
+              "children": [
+                     {
+                            "name": "Colored Directions",
+                            "isActive": "yes",
+                            "isFolder": "no",
+                            "multiline": "no",
+                            "multilineDelta": "0",
+                            "matchall": "yes",
+                            "filter": "no",
+                            "fireLength": "0",
+                            "highlight": "yes",
+                            "highlightFG": "#16a085",
+                            "highlightBG": "transparent",
+                            "patterns": [
+                                   {
+                                          "pattern": "(?i)\\b(north|east|south|west|up|down)",
+                                          "type": "regex"
+                                   }
+                            ],
+                            "script": ""
+                     }
+              ]
+       }
+]
