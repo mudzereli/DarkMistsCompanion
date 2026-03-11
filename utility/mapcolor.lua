@@ -205,6 +205,7 @@ MapColors.WordAssociations = {
 
   -- Fortified rooms
   { "gate", MapColors.Terrain.METAL }, { "cell", MapColors.Terrain.SHADOWY },
+  { "cage", MapColors.Terrain.METAL },
   { "stall", MapColors.Terrain.METAL }, { "chamber", MapColors.Terrain.METAL },
 
   -- Generic interior rooms
@@ -314,6 +315,7 @@ MapColors.WordAssociations = {
   { "market square", MapColors.Terrain.STONE_WHITE },
   { "market area", MapColors.Terrain.STONE_WHITE },
   { "Archives of the Harvester", MapColors.Terrain.SHADOWY},
+  { "Inside the Darkness", MapColors.Terrain.SHADOWY},
   { "Plaza of the Silver Dragon", MapColors.Terrain.STONE_WHITE },
   { "over windreach", MapColors.Terrain.MISTY },
   { "river bank", MapColors.Terrain.MUDDY },
