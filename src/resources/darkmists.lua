@@ -382,6 +382,15 @@ function Darkmists.SetWindowBorderPercent(region, percent)
   Darkmists.LogDebug("Darkmists Core", "Window Borders Adjusted")
 end
 
+function Darkmists.SafeReload()
+  if DarkMistsMiniMap then
+    DarkMistsMiniMap.destroy()
+  end
+
+  Darkmists.Log("Darkmists Core","<red>Resetting Profile. UI Reload Incoming....")
+  tempTimer(1, [[clearWindow() resetProfile()]])
+end
+
 function Darkmists.Init()
   Darkmists.Log("Darkmists Core", ("Loaded Darkmists Core v%s"):format(Darkmists.VERSION))
   Darkmists.ApplyDefaultSettings()

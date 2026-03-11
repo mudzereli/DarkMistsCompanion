@@ -74,13 +74,6 @@ function ButtonBar:_style(btn)
   ]])
 end
 
-local function safeReload()
-  if DarkMistsMiniMap then
-    DarkMistsMiniMap.destroy()
-  end
-  Darkmists.Log("PROFILE RESET","<red>Resetting Profile. UI Reload Incoming....")
-  tempTimer(1,[[clearWindow() resetProfile()]])
-end
 -- -----------------------------------------------------------------------------
 -- RECURSIVE MENU BUILDER
 -- -----------------------------------------------------------------------------
@@ -240,18 +233,18 @@ ButtonBar:addDropdown("🛠 Tools", {
 })
 
 ButtonBar:addDropdown("⚙️ Settings", {
-    {label = "🔄 Reload UI", action = safeReload},
+    {label = "🔄 Reload UI", action = Darkmists.SafeReload},
     {label="🌞 Light Mode", action=function()
       Darkmists.GlobalSettings.lightMode = true
       Darkmists.Log("Settings","Light Mode Enabled - Reload UI for Changes to Take place")
       Darkmists.SaveSettings()
-      safeReload()
+      Darkmists.SafeReload()
     end},
     {label="🌚 Dark Mode", action=function()
       Darkmists.GlobalSettings.lightMode = false
       Darkmists.Log("Settings","Dark Mode Enabled - Reload UI for Changes to Take place")
       Darkmists.SaveSettings()
-      safeReload()
+      Darkmists.SafeReload()
     end},
     {label = "🧼 Reset All Settings", action = function() 
       saveWindowLayout()
@@ -264,7 +257,7 @@ ButtonBar:addDropdown("⚙️ Settings", {
     {label = "📥 Load Settings", action = function() 
       loadWindowLayout()
       Darkmists.LoadSettings()
-      safeReload()
+      Darkmists.SafeReload()
     end},
     {label = "📝 Advanced", children = {
       {label="📝 Edit Settings File", action=function() Darkmists.OpenSettingsFile() end}
