@@ -124,11 +124,16 @@ function StatusBar.create()
     { name = "mvGauge", label = "StatusBar_MV", x = 66.66, width = 33.33, color = cfg.colors.mv }
   }
 
+  local borders = Darkmists.GetBorderPercentages()
+  local left   = borders.left
+  local right  = borders.right
+  local bottom = borders.bottom
+
   local constraints = {
-    name = "StatusBarContainer",
-    x = Darkmists.GlobalSettings.borders.left .. "%",
-    y = (100 - cfg.containerHeightPct) .. "%",
-    width = (100 - Darkmists.GlobalSettings.borders.left - Darkmists.GlobalSettings.borders.right) .. "%",
+    name   = "StatusBarContainer",
+    x      = left .. "%",
+    y      = (100 - cfg.containerHeightPct) .. "%",
+    width  = (100 - left - right) .. "%",
     height = cfg.containerHeightPct .. "%",
   }
 
@@ -433,6 +438,17 @@ function StatusBar.registerEvents()
       end
     end))
 
+  local resizePending = false
+  table.insert(DARKMISTS_STATUSBAR_EVENT_HANDLERS,
+    registerAnonymousEventHandler("sysWindowResizeEvent", function()
+      if resizePending then return end
+      resizePending = true
+      tempTimer(0.2, function()
+        resizePending = false
+        StatusBar.recreate()
+      end)
+    end))
+    
   table.insert(DARKMISTS_STATUSBAR_EVENT_HANDLERS,
     registerAnonymousEventHandler("dmapi.player.experience.gain", StatusBar.updateXP))
 
