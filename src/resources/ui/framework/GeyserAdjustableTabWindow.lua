@@ -604,38 +604,43 @@ function Adjustable.TabWindow:load()
     if io.exists(getMudletHomeDir().."/AdjustableTabWindow/TabWindowTabs.lua") then
         table.load(getMudletHomeDir().."/AdjustableTabWindow/TabWindowTabs.lua", mytable)
     end
+
     for k,v in pairs(mytable) do
         -- load fixed Tabs
         local myWindow = Adjustable.TabWindow.all[k]
-        for k1,v1 in ipairs(v.tabs) do
-            local myTabWindow = Adjustable.TabWindow.allTabs[v1]
-            if myTabWindow then
-                local myTab = myTabWindow[v1]
-                if myTab.floating then
-                    myTabWindow:restoreTab(v1)
+
+        if myWindow then
+            for k1,v1 in ipairs(v.tabs) do
+                local myTabWindow = Adjustable.TabWindow.allTabs[v1]
+                if myTabWindow then
+                    local myTab = myTabWindow[v1]
+                    if myTab.floating then
+                        myTabWindow:restoreTab(v1)
+                    end
+                    if not myWindow.header.windowList[v1.."tab"] then
+                        myTabWindow:changeTabContainer(v1, myWindow)
+                    end
+                    myWindow:addTab(v1,k1)
                 end
-                if not myWindow.header.windowList[v1.."tab"] then
-                    myTabWindow:changeTabContainer(v1, myWindow)
+            end
+
+            -- load floating Tabs
+            if v.floatingTabs then
+                for k1, v1 in pairs(v.floatingTabs) do
+                    local myTabWindow = Adjustable.TabWindow.allTabs[k1]
+                    if myTabWindow then
+                        local myTab = myTabWindow[k1.."tab"]
+                        myTabWindow:transformTabContainer(k1)
+                        -- send my Tab to a UserWindow if saved there
+                        if v1 ~= "main" then
+                            myTab:changeContainer(Geyser.windowList[v1.."Container"].windowList[v1])
+                        end
+                        -- load Adjustable Container settings
+                        myTab:load()
+                    end
                 end
-                myWindow:addTab(v1,k1)
             end
         end
-        -- load floating Tabs
-        if v.floatingTabs then
-            for k1, v1 in pairs(v.floatingTabs) do
-                local myTabWindow = Adjustable.TabWindow.allTabs[k1]
-                if myTabWindow then
-                    local myTab = myTabWindow[k1.."tab"]
-                    myTabWindow:transformTabContainer(k1)
-                    -- send my Tab to a UserWindow if saved there
-                    if v1 ~= "main" then
-                        myTab:changeContainer(Geyser.windowList[v1.."Container"].windowList[v1])
-                    end
-                    -- load Adjustable Container settings
-                    myTab:load()
-                end
-            end
-        end        
     end
 end
 
