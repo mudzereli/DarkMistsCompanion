@@ -5,7 +5,7 @@
 DarkmistsEvents = DarkmistsEvents or {}
 DarkmistsEvents.registry = DarkmistsEvents.registry or {}
 
-local debug = true
+local debug = false
 
 
 function DarkmistsEvents.add(key, eventName, func, oneshot)
