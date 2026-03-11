@@ -31,6 +31,7 @@ Darkmists.VERSION = "1.3.10"
 Darkmists.GITHUB_URL = "https://github.com/mudzereli/DarkMistsCompanion/releases/latest/download/DarkMistsCompanion.mpackage"
 Darkmists.IS_DEV_BUILD = true
 Darkmists.UI_LOADED = false
+Darkmists.LAYOUT_CACHE_VERSION = 2
 
 Darkmists.DefaultSettings = {
   minimalMode = true, -- start with no extra UI
@@ -74,6 +75,10 @@ Darkmists.DefaultSettings = {
   statRollerLeniency = 1,
   -- First Run Flag (for Setting up default settings)
   hasInitializedUILayout = false,
+  -- First Time Intro Message?
+  hasSeenUIIntroMessage = false,
+  -- Cached UI Version (changing this will invalidate settings)
+  layoutCacheVersion = Darkmists.LAYOUT_CACHE_VERSION,
 }
 
 Darkmists.GlobalSettings = Darkmists.GlobalSettings or {}
@@ -188,6 +193,77 @@ function Darkmists.GetBorderPercentages()
   }
 end
 
+function Darkmists.ResetUILayoutCache()
+  Darkmists.Log("Darkmists Core","<red>Resetting incompatible UI layout cache...")
+
+  local home = getMudletHomeDir()
+
+  local targets = {
+    home .. "/darkmists_global_settings.lua",
+    home .. "/AdjustableContainer",
+    home .. "/AdjustableTabWindow",
+  }
+
+  for _, path in ipairs(targets) do
+    if io.exists(path) then
+      local attr = lfs.attributes(path)
+      if attr and attr.mode == "directory" then
+        for file in lfs.dir(path) do
+          if file ~= "." and file ~= ".." then
+            os.remove(path .. "/" .. file)
+          end
+        end
+        lfs.rmdir(path)
+      else
+        os.remove(path)
+      end
+    end
+  end
+
+  Darkmists.Log("Darkmists Core","<orange>UI cache cleared. Reloading profile...")
+  tempTimer(1, [[resetProfile()]])
+end
+
+function Darkmists.ShowUIIntroMessage()
+  if Darkmists.GlobalSettings.hasSeenUIIntroMessage then return end
+  if not Darkmists.GlobalSettings.minimalMode then return end
+
+  -- slight delay so login text finishes first
+  tempTimer(1.5, function()
+
+    cecho("\n")
+    cecho("<gold>╔════════════════════════════════════════════════════════════╗\n")
+    cecho("<gold>║<cadet_blue>              🔮 WELCOME TO DARK MISTS COMPANION            <gold>║\n")
+    cecho("<gold>╠════════════════════════════════════════════════════════════╣\n")
+    cecho("<gold>║<ansi_yellow> You are currently using Minimal UI Mode.                   <gold>║\n")
+    cecho("<gold>║                                                            ║\n")
+    cecho("<gold>║<steel_blue> Enable the Full Interface to access:                       <gold>║\n")
+    cecho("<gold>║   <steel_blue>• Chat History Window                                    <gold>║\n")
+    cecho("<gold>║   <steel_blue>• Who List Panel                                         <gold>║\n")
+    cecho("<gold>║   <steel_blue>• Affect & Buff Duration Tracker                         <gold>║\n")
+    cecho("<gold>║   <steel_blue>• Player Status & Combat Panels                          <gold>║\n")
+    cecho("<gold>║   <steel_blue>• Dockable & Customizable UI Windows                     <gold>║\n")
+    cecho("<gold>║                                                            ║\n")
+    cecho("<gold>╠════════════════════════════════════════════════════════════╣\n")
+    cecho("<gold>║<steel_blue> Command: <green>dmc ui<steel_blue>                                            <gold>║\n")
+    cecho("<gold>║<dim_gray> (Toggle command — turns UI <green>ON<dim_gray> or <red>OFF<dim_gray>)                      <gold>║\n")
+    cecho("<gold>║                                                            ║\n")
+    cecho("<gold>║ ")
+    cechoLink(
+      "<dim_gray><u>[<green>ENABLE FULL UI NOW<dim_gray>]",
+      [[Darkmists.EnableUI()]],
+      "Enable the full Dark Mists Companion UI",
+      true
+    )
+    cecho("                                       <gold>║\n")
+    cecho("<gold>╚════════════════════════════════════════════════════════════╝\n\n")
+
+    Darkmists.GlobalSettings.hasSeenUIIntroMessage = true
+    Darkmists.SaveSettings()
+
+  end)
+end
+
 function Darkmists.ApplyFirstRunUILayout()
   if Darkmists.GlobalSettings.hasInitializedUILayout then return end
 
@@ -248,6 +324,7 @@ function Darkmists.LogDebug(pluginName, msg)
 end
 
 function Darkmists.SaveSettings()
+  Darkmists.GlobalSettings.layoutCacheVersion = Darkmists.LAYOUT_CACHE_VERSION
   local settings = Darkmists.GlobalSettings
 ---@diagnostic disable-next-line: undefined-field
   table.save(saveFilePath, settings)
@@ -302,9 +379,17 @@ function Darkmists.Init()
   Darkmists.ApplyDefaultSettings()
   Darkmists.LoadSettings()
 
+  -- Layout cache compatibility check
+  if Darkmists.GlobalSettings.layoutCacheVersion ~= Darkmists.LAYOUT_CACHE_VERSION then
+    Darkmists.ResetUILayoutCache()
+    return
+  end
+
   if Darkmists.GlobalSettings.minimalMode then
     setBorderTop(0); setBorderBottom(0); setBorderLeft(0); setBorderRight(0)
   end
+
+  Darkmists.ShowUIIntroMessage()
 end
 
 function Darkmists.LoadUIScripts()
