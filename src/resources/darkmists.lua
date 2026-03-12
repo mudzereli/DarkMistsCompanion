@@ -29,11 +29,11 @@ local eaFormulaParser  = getMudletHomeDir() .. "/DarkMistsCompanion/assets/alche
 
 Darkmists = Darkmists or {}
 Darkmists.NAME = "DarkMistsCompanion"
-Darkmists.VERSION = "1.4.0"
+Darkmists.VERSION = "1.4.1"
 Darkmists.GITHUB_URL = "https://github.com/mudzereli/DarkMistsCompanion/releases/latest/download/DarkMistsCompanion.mpackage"
-Darkmists.IS_DEV_BUILD = true
+Darkmists.IS_DEV_BUILD = false
 Darkmists.UI_LOADED = false
-Darkmists.LAYOUT_CACHE_VERSION = 1
+Darkmists.LAYOUT_CACHE_VERSION = 2
 
 Darkmists.DefaultSettings = {
   minimalMode = true, -- start with no extra UI
