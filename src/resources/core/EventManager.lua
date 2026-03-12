@@ -27,7 +27,7 @@ end
 function DarkmistsEvents.clearAll()
   for _, id in pairs(DarkmistsEvents.registry) do
     if debug then
-      cecho("\n<ansi_red>Killing event handler: <white>" .. key .. " <ansi_red>for <white>" .. eventName .. (oneshot and " <dim_gray>(oneshot)" or ""))
+      cecho("\n<ansi_red>Killing event handler: <white>" .. id)
     end
     killAnonymousEventHandler(id)
   end
