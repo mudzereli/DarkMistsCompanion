@@ -18,6 +18,7 @@
 -- Load foundational utilities first (no dependencies)
 dofile(getMudletHomeDir() .. "/DarkMistsCompanion/core/AliasManager.lua")
 dofile(getMudletHomeDir() .. "/DarkMistsCompanion/core/EventManager.lua")
+dofile(getMudletHomeDir() .. "/DarkMistsCompanion/core/ThemeManager.lua")
 dofile(getMudletHomeDir() .. "/DarkMistsCompanion/utility/util.lua")
 
 local saveFilePath     = getMudletHomeDir() .. "/darkmists_global_settings.lua"
@@ -29,11 +30,12 @@ local eaFormulaParser  = getMudletHomeDir() .. "/DarkMistsCompanion/assets/alche
 
 Darkmists = Darkmists or {}
 Darkmists.NAME = "DarkMistsCompanion"
-Darkmists.VERSION = "1.4.0"
+Darkmists.VERSION = "@VERSION@"
 Darkmists.GITHUB_URL = "https://github.com/mudzereli/DarkMistsCompanion/releases/latest/download/DarkMistsCompanion.mpackage"
-Darkmists.IS_DEV_BUILD = true
+Darkmists.IS_DEV_BUILD = false
 Darkmists.UI_LOADED = false
-Darkmists.LAYOUT_CACHE_VERSION = 1
+Darkmists.LAYOUT_CACHE_VERSION = "@VERSION@"
+Darkmists._resizePending = false
 
 Darkmists.DefaultSettings = {
   minimalMode = true, -- start with no extra UI
@@ -79,6 +81,10 @@ Darkmists.DefaultSettings = {
   hasInitializedUILayout = false,
   -- First Time Intro Message?
   hasSeenUIIntroMessage = false,
+  -- Whether we've prompted to load the packaged map after enabling UI
+  hasSeenMapPrompt = false,
+  -- Update channel for GitHub installs: "stable" or "beta"
+  updateChannel = "stable",
   -- Cached UI Version (changing this will invalidate settings)
   layoutCacheVersion = Darkmists.LAYOUT_CACHE_VERSION,
 }
@@ -119,6 +125,35 @@ end
 function Darkmists.LoadMapDat()
   Darkmists.Log("Darkmists Core", ("Loading Map from: %s"):format(mapDatPath))
   loadMap(mapDatPath)
+  -- post-load adjustments commonly expected after loading packaged map
+  tempTimer(2,function()
+    disableMapInfo("Full")
+    disableMapInfo("Short")
+    expandAlias("find prompt")
+    expandAlias("map config speedwalk_delay 0.4")
+    send("look")
+  end)
+end
+
+-- Prompt the user before loading the packaged map (may overwrite their current map)
+function Darkmists.PromptLoadMap()
+  -- Prominent prompt using cecho so timestamps aren't added
+  cecho("\n\n")
+  cecho("<orange>╔════════════════════════════════════════════════════════════╗\n")
+  cecho("<orange>║<red>      Warning: loading the packaged map will overwrite      <orange>║\n")
+  cecho("<orange>║<red>                your current map in Mudlet.                 <orange>║\n")
+  cecho("<orange>║                    ")
+    cechoLink("<dim_gray><u>[<green>Load Packaged Map<dim_gray>]",
+    [[Darkmists.LoadMapDat()]],
+    "Load the packaged map (may overwrite existing map)",
+    true
+  )
+  cecho("                     <orange>║\n")
+  cecho("<orange>╚════════════════════════════════════════════════════════════╝\n")
+
+  -- mark as shown to avoid prompting repeatedly and persist
+  Darkmists.GlobalSettings.hasSeenMapPrompt = true
+  Darkmists.SaveSettings()
 end
 
 function Darkmists.OpenEAConverter()
@@ -146,21 +181,44 @@ function Darkmists.OpenWebsite()
   openUrl("https://darkmists.org")
 end
 
-function Darkmists.UpdateFromGitHub()
+function Darkmists.getGithubUrl(channel)
+  channel = channel or Darkmists.GlobalSettings.updateChannel or "stable"
+  if channel == "beta" then
+    -- Beta URL: expects a release/tag named "beta" or adjust to your beta release URL
+    return "https://github.com/mudzereli/DarkMistsCompanion/releases/tag/beta/download/DarkMistsCompanion.mpackage"
+  else
+    -- Stable (latest release)
+    return "https://github.com/mudzereli/DarkMistsCompanion/releases/latest/download/DarkMistsCompanion.mpackage"
+  end
+end
+
+function Darkmists.SetUpdateChannel(channel)
+  if channel ~= "stable" and channel ~= "beta" then
+    Darkmists.Log("Darkmists Core", ("<red>Unknown update channel: %s"):format(tostring(channel)))
+    return
+  end
+  Darkmists.GlobalSettings.updateChannel = channel
+  Darkmists.SaveSettings()
+  Darkmists.Log("Darkmists Core", ("Update channel set to: %s"):format(channel))
+end
+
+function Darkmists.UpdateFromGitHub(channel)
+  channel = channel or Darkmists.GlobalSettings.updateChannel
   if Darkmists.IS_DEV_BUILD then
     Darkmists.Log("Darkmists Core", "<red>Can not update DEV BUILD from GitHub!")
     return
   end
+  Darkmists.Log("Darkmists Core", ("Updating Dark Mists Companion from GitHub... (channel=%s)"):format(tostring(channel)))
 
-  Darkmists.Log("Darkmists Core", "Updating Dark Mists Companion from GitHub...")
+  local url = Darkmists.getGithubUrl(channel)
 
   if table.contains(getPackages(), Darkmists.NAME) then
     uninstallPackage(Darkmists.NAME)
     tempTimer(2, function()
-      installPackage(Darkmists.GITHUB_URL)
+      installPackage(url)
     end)
   else
-    installPackage(Darkmists.GITHUB_URL)
+    installPackage(url)
   end
 end
 
@@ -251,8 +309,7 @@ function Darkmists.ShowUIIntroMessage()
     cecho("<gold>║<dim_gray> (Toggle command — turns UI <green>ON<dim_gray> or <red>OFF<dim_gray>)                      <gold>║\n")
     cecho("<gold>║                                                            ║\n")
     cecho("<gold>║ ")
-    cechoLink(
-      "<dim_gray><u>[<green>ENABLE FULL UI NOW<dim_gray>]",
+    cechoLink("<dim_gray><u>[<green>ENABLE FULL UI NOW<dim_gray>]",
       [[Darkmists.EnableUI()]],
       "Enable the full Dark Mists Companion UI",
       true
@@ -384,6 +441,86 @@ function Darkmists.SetWindowBorderPercent(region, percent)
   Darkmists.LogDebug("Darkmists Core", "Window Borders Adjusted")
 end
 
+function Darkmists.UpdateMainWindowWrap()
+  local mainWidth = getMainWindowSize()
+  local borders = getBorderSizes()
+  local usableWidth = math.floor(mainWidth - (borders.left or 0) - (borders.right or 0))
+  local charWidth = select(1, calcFontSize("main"))
+
+  if (not charWidth or charWidth <= 0) and Darkmists.GlobalSettings.fontSize then
+    charWidth = select(1, calcFontSize(
+      Darkmists.GlobalSettings.fontSize,
+      Darkmists.GlobalSettings.fontName
+    ))
+  end
+
+  if usableWidth > 0 and charWidth and charWidth > 0 then
+    local wrapAt = math.max(20, math.floor(usableWidth / charWidth) - 2)
+    setWindowWrap("main", wrapAt)
+  end
+end
+
+function Darkmists.RefreshUILayout(opts)
+  opts = opts or {}
+
+  if Darkmists.GlobalSettings.minimalMode then
+    Darkmists.UpdateMainWindowWrap()
+    return
+  end
+
+  if opts.syncStatusBar and StatusBar and StatusBar.syncToBorders and not StatusBar._layoutLock then
+    StatusBar.syncToBorders()
+  end
+
+  tempTimer(0, Darkmists.UpdateMainWindowWrap)
+end
+
+function Darkmists.RegisterEvents()
+  DarkmistsEvents.add("DarkmistsWindowResize", "sysWindowResizeEvent", function()
+    if Darkmists._resizePending then return end
+
+    Darkmists._resizePending = true
+
+    local function applyResize()
+      if StatusBar and StatusBar._layoutLock then
+        tempTimer(0.1, applyResize)
+        return
+      end
+
+      Darkmists._resizePending = false
+      Darkmists.RefreshUILayout({ syncStatusBar = true })
+
+    -- Hook into dmapi events so we can show the packaged-map prompt after a world enter
+    -- Mark a pending flag when the world enter event fires (DMAPI's reset handler will send 'score')
+    DarkmistsEvents.add("Darkmists.map.prompt.pending", "dmapi.world.enter", function()
+      Darkmists._pendingMapPrompt = true
+    end)
+
+    -- After vitals update (score processed), if a pending prompt exists show the map prompt
+        DarkmistsEvents.add("Darkmists.map.prompt.aftervitals", "dmapi.player.vitals.updated", function()
+          if Darkmists._pendingMapPrompt then
+            -- only show the packaged-map prompt when the full UI is loaded and enabled
+            if Darkmists.UI_LOADED and not Darkmists.GlobalSettings.minimalMode and Darkmists.GlobalSettings.hasSeenUIIntroMessage then
+              Darkmists._pendingMapPrompt = false
+              if not Darkmists.GlobalSettings.hasSeenMapPrompt then
+                tempTimer(2, function()
+                  if not Darkmists.GlobalSettings.hasSeenMapPrompt then
+                    Darkmists.PromptLoadMap()
+                  end
+                end)
+              end
+            else
+              -- keep pending; EnableUI() or later vitals update will handle it
+              Darkmists._pendingMapPrompt = true
+            end
+          end
+    end)
+    end
+
+    tempTimer(0.4, applyResize)
+  end)
+end
+
 function Darkmists.SafeReload()
   if DarkMistsMiniMap then
     DarkMistsMiniMap.destroy()
@@ -397,7 +534,9 @@ function Darkmists.Init()
   Darkmists.Log("Darkmists Core", ("Loaded Darkmists Core v%s"):format(Darkmists.VERSION))
   Darkmists.ApplyDefaultSettings()
   Darkmists.LoadSettings()
-
+  DarkmistsTheme.buildTheme()
+  Darkmists.RegisterEvents()
+  
   -- Layout cache compatibility check
   if Darkmists.GlobalSettings.layoutCacheVersion ~= Darkmists.LAYOUT_CACHE_VERSION then
     tempTimer(0,Darkmists.ResetUILayoutCache)
@@ -406,6 +545,8 @@ function Darkmists.Init()
 
   if Darkmists.GlobalSettings.minimalMode then
     setBorderTop(0); setBorderBottom(0); setBorderLeft(0); setBorderRight(0)
+  else
+    tempTimer(0, Darkmists.UpdateMainWindowWrap)
   end
 
   Darkmists.ShowUIIntroMessage()
@@ -438,8 +579,19 @@ function Darkmists.EnableUI()
   Darkmists.LoadUIScripts()
 
   -- Apply borders
-  for k, v in pairs(Darkmists.GlobalSettings.borders) do
-    Darkmists.SetWindowBorderPercent(k, v)
+  Darkmists.RefreshUILayout({ syncStatusBar = true })
+
+  -- Defer the packaged-map prompt: if DMAPI is available, set pending and
+  -- let the DMAPI vitals handler show it after score; otherwise fall back
+  -- to a simple delayed prompt so manual enables still get prompted.
+  if dmapi then
+    Darkmists._pendingMapPrompt = true
+  else
+    tempTimer(0.8, function()
+      if not Darkmists.GlobalSettings.hasSeenMapPrompt then
+        Darkmists.PromptLoadMap()
+      end
+    end)
   end
 
   Darkmists.Log("Darkmists Core", "UI Enabled")
@@ -464,7 +616,7 @@ end
 -- =============================================================================
 
 -- DMAPI first
-dofile(getMudletHomeDir() .. "/DarkMistsCompanion/dmapi.lua")
+dofile(getMudletHomeDir() .. "/DarkMistsCompanion/core/DMAPI.lua")
 
 -- NOW Call Init
 Darkmists.Init()
@@ -481,9 +633,12 @@ dofile(getMudletHomeDir() .. "/DarkMistsCompanion/ui/buttonbar.lua")
 -- UI Scripts
 if not Darkmists.GlobalSettings.minimalMode then
   Darkmists.LoadUIScripts()
+  tempTimer(0.8, function()
+    Darkmists.RefreshUILayout({ syncStatusBar = true })
+  end)
 end
 
 -- Meta Help / Command
-dofile(getMudletHomeDir() .. "/DarkMistsCompanion/dm_meta.lua")
+dofile(getMudletHomeDir() .. "/DarkMistsCompanion/core/DarkMistsMeta.lua")
 
 Darkmists.Log("Darkmists Core", "All Scripts Loaded!")

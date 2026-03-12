@@ -4,8 +4,13 @@
 
 ButtonBar = ButtonBar or {}
 
-ButtonBar.height = "25px"
 ButtonBar.bg = "#000000"
+ButtonBar.fontSize = Darkmists.GlobalSettings.fontSize + 3
+ButtonBar.padding = 2
+ButtonBar.fontWidth, ButtonBar.fontheight = calcFontSize(ButtonBar.fontSize)
+ButtonBar.topLevelMaxCharacters = 16
+ButtonBar.dropDownMaxCharacters = 20   -- used for dropdown width calculations
+ButtonBar.height = ButtonBar.fontheight * 1.5
 
 -- -----------------------------------------------------------------------------
 -- DELETE OLD BAR PROPERLY
@@ -39,9 +44,9 @@ function ButtonBar:create()
     width = "100%",
     height = ButtonBar.height,
     titleText = "",
-    padding = 0,
+    padding = ButtonBar.padding,
     locked = true,
-    lockStyle = "full",
+    lockStyle = "border",
     autoSave = false,
     autoLoad = false,
     adjLabelstyle = [[
@@ -68,7 +73,6 @@ function ButtonBar:_style(btn)
       background-color: #000000;
       color: #dddddd;
       border-right: 1px solid #222222;
-      font-size: 9pt;
     }
     QLabel::hover { background-color: #111111; }
   ]])
@@ -94,20 +98,19 @@ function ButtonBar:_addMenuChildren(parent, items, depth)
     local caret = item.children and "   ▸" or ""
 
     local child = parent:addChild({
-      width = 180,
-      height = 24,
+      width = ButtonBar.fontWidth * ButtonBar.dropDownMaxCharacters,
+      height = ButtonBar.height,
       layoutDir = dir,
       flyOut = true,
       message = "<left>  " .. item.label .. caret,
     })
-
+    child:setFontSize(ButtonBar.fontSize)
     child:setStyleSheet([[
       QLabel {
         background-color: #000000;
         color: #cccccc;
         border: 1px solid #222222;
         padding-left: 6px;
-        font-size: 9pt;
       }
       QLabel::hover { background-color: #1a1a1a; }
     ]])
@@ -129,10 +132,12 @@ function ButtonBar:addButton(text, action)
   local btn = Geyser.Label:new({
     x = ButtonBar.nextX,
     y = 0,
-    width = 120,
+    width = ButtonBar.fontWidth * 20,
     height = "100%",
     message = "<center>" .. text .. "</center>",
   }, ButtonBar.container)
+
+  btn:setFontSize(ButtonBar.fontSize)
 
   ButtonBar:_style(btn)
 
@@ -140,7 +145,7 @@ function ButtonBar:addButton(text, action)
     ButtonBar:_run(action)
   end)
 
-  ButtonBar.nextX = ButtonBar.nextX + 120
+  ButtonBar.nextX = ButtonBar.nextX + (ButtonBar.fontWidth * 20)
 end
 
 -- -----------------------------------------------------------------------------
@@ -150,15 +155,17 @@ function ButtonBar:addDropdown(text, items)
   local main = Geyser.Label:new({
     x = ButtonBar.nextX,
     y = 0,
-    width = 150,
+    width = ButtonBar.fontWidth * ButtonBar.topLevelMaxCharacters,
     height = "100%",
     message = "<center>" .. text .. " ▾</center>",
     nestable = true,
   }, ButtonBar.container)
 
+  main:setFontSize(ButtonBar.fontSize)
+
   ButtonBar:_style(main)
   ButtonBar:_addMenuChildren(main, items)
-  ButtonBar.nextX = ButtonBar.nextX + 150
+  ButtonBar.nextX = ButtonBar.nextX + (ButtonBar.fontWidth * ButtonBar.topLevelMaxCharacters)
 end
 
 -- -----------------------------------------------------------------------------
@@ -226,17 +233,8 @@ ButtonBar:addDropdown("🛠 Tools", {
   end},
   {label="🐞 DMAPI Debug", action=function() expandAlias("dmapi debug") end},
   {label="📚 DMAPI Extension", action=function() Darkmists.OpenDMAPIDocs() end},
-  {label="🗺️ Load Map", action=function() 
-    Darkmists.LoadMapDat()
-    tempTimer(2,function()
-      disableMapInfo("Full")
-      disableMapInfo("Short")
-      expandAlias("find prompt")
-      expandAlias("map config speedwalk_delay 0.4")
-      send("look")
-    end)
-  end},
-  {label="📡 Update From Github", action=function() Darkmists.UpdateFromGitHub() end},
+  {label="🗺️ Load Map", action=function() Darkmists.PromptLoadMap() end},
+  -- Update action moved to Settings -> Advanced (choose channel there)
 })
 
 ButtonBar:addDropdown("⚙️ Settings", {
@@ -253,21 +251,30 @@ ButtonBar:addDropdown("⚙️ Settings", {
       Darkmists.SaveSettings()
       Darkmists.SafeReload()
     end},
-    {label = "🧼 Reset All Settings", action = function() 
-      saveWindowLayout()
-      Darkmists.ResetUILayoutCache()
-    end},
-    {label = "💾 Save Settings", action = function() 
-      saveWindowLayout()
-      Darkmists.SaveSettings()
-    end},
-    {label = "📥 Load Settings", action = function() 
-      loadWindowLayout()
-      Darkmists.LoadSettings()
-      Darkmists.SafeReload()
-    end},
     {label = "📝 Advanced", children = {
-      {label="📝 Edit Settings File", action=function() Darkmists.OpenSettingsFile() end}
+      {label = "🧼 Reset All Settings", action = function() 
+        saveWindowLayout()
+        Darkmists.ResetUILayoutCache()
+      end},
+      {label = "💾 Save Settings", action = function() 
+        saveWindowLayout()
+        Darkmists.SaveSettings()
+      end},
+      {label = "📥 Load Settings", action = function() 
+        loadWindowLayout()
+        Darkmists.LoadSettings()
+        Darkmists.SafeReload()
+      end},
+      {label = "📡 Update (current channel)", action = function()
+        Darkmists.UpdateFromGitHub()
+      end},
+      {label = "🟢 Use Stable Channel", action = function()
+        Darkmists.SetUpdateChannel("stable")
+      end},
+      {label = "🟡 Use Beta Channel", action = function()
+        Darkmists.SetUpdateChannel("beta")
+      end},
+      {label="📝 Edit Settings File", action=function() Darkmists.OpenSettingsFile() end},
     }}
     --[[
     {label="💬 Chat History", children={
