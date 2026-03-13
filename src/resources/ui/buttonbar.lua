@@ -68,7 +68,6 @@ function ButtonBar:_style(btn)
       background-color: #000000;
       color: #dddddd;
       border-right: 1px solid #222222;
-      font-size: 9pt;
     }
     QLabel::hover { background-color: #111111; }
   ]])
@@ -100,14 +99,13 @@ function ButtonBar:_addMenuChildren(parent, items, depth)
       flyOut = true,
       message = "<left>  " .. item.label .. caret,
     })
-
+    child:setFontSize(Darkmists.GlobalSettings.fontSize)
     child:setStyleSheet([[
       QLabel {
         background-color: #000000;
         color: #cccccc;
         border: 1px solid #222222;
         padding-left: 6px;
-        font-size: 9pt;
       }
       QLabel::hover { background-color: #1a1a1a; }
     ]])
@@ -134,6 +132,8 @@ function ButtonBar:addButton(text, action)
     message = "<center>" .. text .. "</center>",
   }, ButtonBar.container)
 
+  btn:setFontSize(Darkmists.GlobalSettings.fontSize)
+
   ButtonBar:_style(btn)
 
   btn:setClickCallback(function()
@@ -155,6 +155,8 @@ function ButtonBar:addDropdown(text, items)
     message = "<center>" .. text .. " ▾</center>",
     nestable = true,
   }, ButtonBar.container)
+
+  main:setFontSize(Darkmists.GlobalSettings.fontSize)
 
   ButtonBar:_style(main)
   ButtonBar:_addMenuChildren(main, items)
