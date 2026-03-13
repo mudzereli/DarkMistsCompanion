@@ -59,6 +59,7 @@ end
 -- Theme test
 -- =============================================================================
 function DarkmistsTheme.test()
+  if not Darkmists then return end
   local original = Darkmists.GlobalSettings.lightMode
 
   cecho("\n<white:black>  ═════════ DARK MODE (on black) ═════════  <reset>\n")
@@ -77,5 +78,3 @@ function DarkmistsTheme.test()
 
   cecho("\n")
 end
-
-DarkmistsTheme.buildTheme()

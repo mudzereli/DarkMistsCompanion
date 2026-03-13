@@ -398,7 +398,8 @@ function Darkmists.Init()
   Darkmists.Log("Darkmists Core", ("Loaded Darkmists Core v%s"):format(Darkmists.VERSION))
   Darkmists.ApplyDefaultSettings()
   Darkmists.LoadSettings()
-
+  DarkmistsTheme.buildTheme()
+  
   -- Layout cache compatibility check
   if Darkmists.GlobalSettings.layoutCacheVersion ~= Darkmists.LAYOUT_CACHE_VERSION then
     tempTimer(0,Darkmists.ResetUILayoutCache)

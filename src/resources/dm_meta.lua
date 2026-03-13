@@ -1,4 +1,4 @@
-﻿-- =============================================================================
+-- =============================================================================
 -- dm_meta.lua
 -- -----------------------------------------------------------------------------
 -- Dark Mists meta / UI helpers.
@@ -276,7 +276,7 @@ DarkmistsAlias.add("^dmc(?:\\s+help)?$", function()
     cecho("\n")
   end
 
-  cecho(dm_muted.."Click a feature or type "..dm_muted.."dmc help <feature>\n")
+  cecho(dm_muted.."Click a feature or type "..dm_text.."dmc help <feature>\n")
 end)
 
 -- ===================================================================
