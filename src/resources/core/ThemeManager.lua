@@ -33,8 +33,8 @@ function DarkmistsTheme.buildTheme()
   t.warn   = t.orange
   t.bad    = t.red
   t.info   = t.blue
-  t.muted  = light and "dim_gray" or "slate_gray"
-  t.text   = light and "black"    or "white"
+  t.muted  = light and "dim_gray"   or "slate_gray"
+  t.text   = light and "black"      or "white"
   t.accent = light and "slate_blue" or "cornflower_blue"
 
   -- Build cecho tags
