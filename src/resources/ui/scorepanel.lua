@@ -46,8 +46,11 @@ local function diffColor(base, mod)
   else return value end
 end
 
---ScorePanel = {}
 ScorePanel = ScorePanel or {}
+-- Always reset UI references on load so create() runs fresh against the new
+-- DMTabs containers. ScorePanel holds no persistent data, so this is safe.
+ScorePanel.window  = nil
+ScorePanel.console = nil
 
 ScorePanel.create = function()
   if ScorePanel.window then return end
@@ -84,8 +87,16 @@ ScorePanel.refresh = function()
   local W = dmapi.world
   local M = map
 
-  local h = P.status.hungry
-  local t = P.status.thirsty
+  -- Ensure we have numeric indices for lookups; coerce possible string values
+  -- to numbers and default to 0 (satisfied).
+  local h = tonumber(P.status.hungry) or 0
+  local t = tonumber(P.status.thirsty) or 0
+
+  -- Resolve icon/text with simple fallbacks to the '0' (satisfied) entry
+  local hungerIcon = StatusIcons.hunger.icon[h] or StatusIcons.hunger.icon[0] or ""
+  local hungerText = StatusIcons.hunger.text[h] or StatusIcons.hunger.text[0] or "Unknown"
+  local thirstIcon = StatusIcons.thirst.icon[t] or StatusIcons.thirst.icon[0] or ""
+  local thirstText = StatusIcons.thirst.text[t] or StatusIcons.thirst.text[0] or "Unknown"
 
   section("Character")
   line("%sLevel %s%d  %sAge %s%dy %s(%dh%s)\n",
@@ -120,9 +131,10 @@ ScorePanel.refresh = function()
   )
 
   section("Condition")
-  line("%sHunger %s%s %s   %sThirst %s%s\n",
-    label, value, StatusIcons.hunger.icon[h], StatusIcons.hunger.text[h],
-    label, value, StatusIcons.thirst.icon[t], StatusIcons.thirst.text[t])
+  -- Ensure format string has one placeholder per argument (8 total)
+  line("%sHunger %s%s %s   %sThirst %s%s %s\n",
+    label, value, hungerIcon, hungerText,
+    label, value, thirstIcon, thirstText)
     
   section("Wealth")
   local goldColor   = DarkmistsTheme.goldTag or "<gold>"
