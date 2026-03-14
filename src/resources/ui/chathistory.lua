@@ -52,198 +52,124 @@ end
 -- MESSAGE FORMATTING
 -- ===================================================================
 
-local maincolor = Darkmists.getDefaultTextColor()
-local yellow = "yellow"
-local blue = "steel_blue"
-local green = "spring_green"
-if Darkmists.GlobalSettings.lightMode then
-  yellow = "ansi_yellow"
-  blue = "midnight_blue"
-  green = "forest_green"
-end
+local textTag   = DarkmistsTheme.textTag
+local mutedTag  = DarkmistsTheme.mutedTag
+local yellowTag = DarkmistsTheme.yellowTag
+local blueTag   = DarkmistsTheme.blueTag
+local greenTag  = DarkmistsTheme.greenTag
+local skyTag    = DarkmistsTheme.skyTag
+local purpleTag = DarkmistsTheme.purpleTag
+local cyanTag   = DarkmistsTheme.cyanTag
 -- All message formatting lives here.
 -- Adding a new channel only requires adding one entry.
 local MESSAGE_FORMATTERS = {
   emotedsay = {
     sent = function(m)
-      return string.format(
-        "<dim_gray>[<"..maincolor..">%s<dim_gray>] <"..maincolor..">You %s say, '<"..yellow..">%s<"..maincolor..">'\n",
-        m.timestamp, m.emote or "", m.message
-      )
+      local em = m.emote and (m.emote .. " ") or ""
+      return mutedTag .. "[" .. textTag .. m.timestamp .. mutedTag .. "] " .. textTag .. "You " .. em .. "say, '" .. yellowTag .. m.message .. textTag .. "'\n"
     end,
     received = function(m)
-      return string.format(
-        "<dim_gray>[<"..maincolor..">%s<dim_gray>] <"..blue..">%s <"..maincolor..">%s says, '<"..yellow..">%s<"..maincolor..">'\n",
-        m.timestamp, m.sender, m.emote or "", m.message
-      )
+      local em = m.emote and (m.emote .. " ") or ""
+      return mutedTag .. "[" .. textTag .. m.timestamp .. mutedTag .. "] " .. blueTag .. m.sender .. " " .. textTag .. em .. "says, '" .. yellowTag .. m.message .. textTag .. "'\n"
     end,
   },
   yellpanic = {
     sent = function(m)
-      return string.format(
-        "<dim_gray>[<"..maincolor..">%s<dim_gray>] <"..maincolor..">You yell in panic, '<sky_blue>%s<"..maincolor..">'\n",
-        m.timestamp, m.message
-      )
+      return mutedTag .. "[" .. textTag .. m.timestamp .. mutedTag .. "] " .. textTag .. "You yell in panic, '" .. skyTag .. m.message .. textTag .. "'\n"
     end,
     received = function(m)
-      return string.format(
-        "<dim_gray>[<"..maincolor..">%s<dim_gray>] <"..blue..">%s <"..maincolor..">yells in panic, '<sky_blue>%s<"..maincolor..">'\n",
-        m.timestamp, m.sender, m.message
-      )
+      return mutedTag .. "[" .. textTag .. m.timestamp .. mutedTag .. "] " .. blueTag .. m.sender .. " " .. textTag .. "yells in panic, '" .. skyTag .. m.message .. textTag .. "'\n"
     end,
   },
   mentalblastpanic = {
     sent = function(m)
-      return string.format(
-        "<dim_gray>[<"..maincolor..">%s<dim_gray>] <"..maincolor..">You mentally blast in panic, '<sky_blue>%s<"..maincolor..">'\n",
-        m.timestamp, m.message
-      )
+      return mutedTag .. "[" .. textTag .. m.timestamp .. mutedTag .. "] " .. textTag .. "You mentally blast in panic, '" .. skyTag .. m.message .. textTag .. "'\n"
     end,
     received = function(m)
-      return string.format(
-        "<dim_gray>[<"..maincolor..">%s<dim_gray>] <"..blue..">%s <"..maincolor..">mentally blasts in panic, '<sky_blue>%s<"..maincolor..">'\n",
-        m.timestamp, m.sender, m.message
-      )
+      return mutedTag .. "[" .. textTag .. m.timestamp .. mutedTag .. "] " .. blueTag .. m.sender .. " " .. textTag .. "mentally blasts in panic, '" .. skyTag .. m.message .. textTag .. "'\n"
     end,
   },
   mentalblast = {
     sent = function(m)
-      return string.format(
-        "<dim_gray>[<"..maincolor..">%s<dim_gray>] <"..maincolor..">You mentally blast, '<sky_blue>%s<"..maincolor..">'\n",
-        m.timestamp, m.message
-      )
+      return mutedTag .. "[" .. textTag .. m.timestamp .. mutedTag .. "] " .. textTag .. "You mentally blast, '" .. skyTag .. m.message .. textTag .. "'\n"
     end,
     received = function(m)
-      return string.format(
-        "<dim_gray>[<"..maincolor..">%s<dim_gray>] <"..blue..">%s <"..maincolor..">mentally blasts, '<sky_blue>%s<"..maincolor..">'\n",
-        m.timestamp, m.sender, m.message
-      )
+      return mutedTag .. "[" .. textTag .. m.timestamp .. mutedTag .. "] " .. blueTag .. m.sender .. " " .. textTag .. "mentally blasts, '" .. skyTag .. m.message .. textTag .. "'\n"
     end,
   },
   mptell = {
     sent = function(m)
-      return string.format(
-        "<dim_gray>[<"..maincolor..">%s<dim_gray>] <"..maincolor..">You mentally project to <"..blue..">%s<"..maincolor..">, '<"..green..">%s<"..maincolor..">'\n",
-        m.timestamp, m.receiver or "?", m.message
-      )
+      return mutedTag .. "[" .. textTag .. m.timestamp .. mutedTag .. "] " .. textTag .. "You mentally project to " .. blueTag .. (m.receiver or "?") .. textTag .. ", '" .. greenTag .. m.message .. textTag .. "'\n"
     end,
     received = function(m)
-      return string.format(
-        "<dim_gray>[<"..maincolor..">%s<dim_gray>] <"..blue..">%s <"..maincolor..">mentally projects to you, '<"..green..">%s<"..maincolor..">'\n",
-        m.timestamp, m.sender, m.message
-      )
+      return mutedTag .. "[" .. textTag .. m.timestamp .. mutedTag .. "] " .. blueTag .. m.sender .. " " .. textTag .. "mentally projects to you, '" .. greenTag .. m.message .. textTag .. "'\n"
     end,
   },
 
   tell = {
     sent = function(m)
-      return string.format(
-        "<dim_gray>[<"..maincolor..">%s<dim_gray>] <"..maincolor..">You tell <"..blue..">%s<"..maincolor..">, '<"..green..">%s<"..maincolor..">'\n",
-        m.timestamp, m.receiver or "?", m.message
-      )
+      return mutedTag .. "[" .. textTag .. m.timestamp .. mutedTag .. "] " .. textTag .. "You tell " .. blueTag .. (m.receiver or "?") .. textTag .. ", '" .. greenTag .. m.message .. textTag .. "'\n"
     end,
     received = function(m)
-      return string.format(
-        "<dim_gray>[<"..maincolor..">%s<dim_gray>] <"..blue..">%s <"..maincolor..">tells you, '<"..green..">%s<"..maincolor..">'\n",
-        m.timestamp, m.sender, m.message
-      )
+      return mutedTag .. "[" .. textTag .. m.timestamp .. mutedTag .. "] " .. blueTag .. m.sender .. " " .. textTag .. "tells you, '" .. greenTag .. m.message .. textTag .. "'\n"
     end,
   },
 
   say = {
     sent = function(m)
-      return string.format(
-        "<dim_gray>[<"..maincolor..">%s<dim_gray>] <"..maincolor..">You say, '<"..yellow..">%s<"..maincolor..">'\n",
-        m.timestamp, m.message
-      )
+      return mutedTag .. "[" .. textTag .. m.timestamp .. mutedTag .. "] " .. textTag .. "You say, '" .. yellowTag .. m.message .. textTag .. "'\n"
     end,
     received = function(m)
-      return string.format(
-        "<dim_gray>[<"..maincolor..">%s<dim_gray>] <"..blue..">%s <"..maincolor..">says, '<"..yellow..">%s<"..maincolor..">'\n",
-        m.timestamp, m.sender, m.message
-      )
+      return mutedTag .. "[" .. textTag .. m.timestamp .. mutedTag .. "] " .. blueTag .. m.sender .. " " .. textTag .. "says, '" .. yellowTag .. m.message .. textTag .. "'\n"
     end,
   },
 
   mpsay = {
     sent = function(m)
-      return string.format(
-        "<dim_gray>[<"..maincolor..">%s<dim_gray>] <"..maincolor..">You mentally project, '<"..yellow..">%s<"..maincolor..">'\n",
-        m.timestamp, m.message
-      )
+      return mutedTag .. "[" .. textTag .. m.timestamp .. mutedTag .. "] " .. textTag .. "You mentally project, '" .. yellowTag .. m.message .. textTag .. "'\n"
     end,
     received = function(m)
-      return string.format(
-        "<dim_gray>[<"..maincolor..">%s<dim_gray>] <"..blue..">%s <"..maincolor..">mentally projects, '<"..yellow..">%s<"..maincolor..">'\n",
-        m.timestamp, m.sender, m.message
-      )
+      return mutedTag .. "[" .. textTag .. m.timestamp .. mutedTag .. "] " .. blueTag .. m.sender .. " " .. textTag .. "mentally projects, '" .. yellowTag .. m.message .. textTag .. "'\n"
     end,
   },
 
   yell = {
     sent = function(m)
-      return string.format(
-        "<dim_gray>[<"..maincolor..">%s<dim_gray>] <"..maincolor..">You yell, '<sky_blue>%s<"..maincolor..">'\n",
-        m.timestamp, m.message
-      )
+      return mutedTag .. "[" .. textTag .. m.timestamp .. mutedTag .. "] " .. textTag .. "You yell, '" .. skyTag .. m.message .. textTag .. "'\n"
     end,
     received = function(m)
-      return string.format(
-        "<dim_gray>[<"..maincolor..">%s<dim_gray>] <"..blue..">%s <"..maincolor..">yells, '<sky_blue>%s<"..maincolor..">'\n",
-        m.timestamp, m.sender, m.message
-      )
+      return mutedTag .. "[" .. textTag .. m.timestamp .. mutedTag .. "] " .. blueTag .. m.sender .. " " .. textTag .. "yells, '" .. skyTag .. m.message .. textTag .. "'\n"
     end,
   },
 
   gtell = {
     sent = function(m)
-      return string.format(
-        "<dim_gray>[<"..maincolor..">%s<dim_gray>] <"..maincolor..">You tell the group '<purple>%s<"..maincolor..">'\n",
-        m.timestamp, m.message
-      )
+      return mutedTag .. "[" .. textTag .. m.timestamp .. mutedTag .. "] " .. textTag .. "You tell the group '" .. purpleTag .. m.message .. textTag .. "'\n"
     end,
     received = function(m)
-      return string.format(
-        "<dim_gray>[<"..maincolor..">%s<dim_gray>] <"..blue..">%s <"..maincolor..">tells the group '<purple>%s<"..maincolor..">'\n",
-        m.timestamp, m.sender, m.message
-      )
+      return mutedTag .. "[" .. textTag .. m.timestamp .. mutedTag .. "] " .. blueTag .. m.sender .. " " .. textTag .. "tells the group '" .. purpleTag .. m.message .. textTag .. "'\n"
     end,
   },
 
   newbie = function(m)
-    return string.format(
-      "<dim_gray>[<"..maincolor..">%s<dim_gray>] <gray>[<dark_green>NEWBIE<gray>] <"..blue..">%s<gray>: %s<"..maincolor..">\n",
-      m.timestamp, m.sender, m.message
-    )
+    return mutedTag .. "[" .. textTag .. m.timestamp .. mutedTag .. "] " .. mutedTag .. "[" .. greenTag .. "NEWBIE" .. mutedTag .. "] " .. blueTag .. m.sender .. mutedTag .. ": " .. textTag .. m.message .. "\n"
   end,
 
   newbiediscord = function(m)
-    return string.format(
-      "<dim_gray>[<"..maincolor..">%s<dim_gray>] <gray>[<dark_green>NEWBIE via Discord<gray>] <"..blue..">%s<gray>: %s<"..maincolor..">\n",
-      m.timestamp, m.sender, m.message
-    )
+    return mutedTag .. "[" .. textTag .. m.timestamp .. mutedTag .. "] " .. mutedTag .. "[" .. greenTag .. "NEWBIE via Discord" .. mutedTag .. "] " .. blueTag .. m.sender .. mutedTag .. ": " .. textTag .. m.message .. "\n"
   end,
 
   ooc = {
     sent = function(m)
-      return string.format(
-        "<dim_gray>[<"..maincolor..">%s<dim_gray>] <ansi_cyan>[OOC] to %s: %s\n",
-        m.timestamp, m.receiver or "?", m.message
-      )
+      return mutedTag .. "[" .. textTag .. m.timestamp .. mutedTag .. "] " .. cyanTag .. "[OOC] to " .. textTag .. (m.receiver or "?") .. ": " .. m.message .. "\n"
     end,
     received = function(m)
-      return string.format(
-        "<dim_gray>[<"..maincolor..">%s<dim_gray>] <ansi_cyan>[OOC] %s: %s\n",
-        m.timestamp, m.sender, m.message
-      )
+      return mutedTag .. "[" .. textTag .. m.timestamp .. mutedTag .. "] " .. cyanTag .. "[OOC] " .. textTag .. m.sender .. ": " .. m.message .. "\n"
     end,
   },
 
   house = function(m)
-    return string.format(
-      "<dim_gray>[<"..maincolor..">%s<dim_gray>] <gray>[<dim_gray>%s<gray>] <"..blue..">%s<"..maincolor..">: %s<"..maincolor..">\n",
-      m.timestamp, m.receiver, m.sender, m.message
-    )
+    return mutedTag .. "[" .. textTag .. m.timestamp .. mutedTag .. "] " .. mutedTag .. "[" .. mutedTag .. (m.receiver or "") .. mutedTag .. "] " .. blueTag .. m.sender .. textTag .. ": " .. m.message .. "\n"
   end,
 }
 
