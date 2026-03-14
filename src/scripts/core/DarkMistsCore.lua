@@ -83,6 +83,8 @@ Darkmists.DefaultSettings = {
   hasSeenUIIntroMessage = false,
   -- Whether we've prompted to load the packaged map after enabling UI
   hasSeenMapPrompt = false,
+  -- Update channel for GitHub installs: "stable" or "beta"
+  updateChannel = "stable",
   -- Cached UI Version (changing this will invalidate settings)
   layoutCacheVersion = Darkmists.LAYOUT_CACHE_VERSION,
 }
@@ -179,21 +181,44 @@ function Darkmists.OpenWebsite()
   openUrl("https://darkmists.org")
 end
 
-function Darkmists.UpdateFromGitHub()
+function Darkmists.getGithubUrl(channel)
+  channel = channel or Darkmists.GlobalSettings.updateChannel or "stable"
+  if channel == "beta" then
+    -- Beta URL: expects a release/tag named "beta" or adjust to your beta release URL
+    return "https://github.com/mudzereli/DarkMistsCompanion/releases/tag/beta/download/DarkMistsCompanion.mpackage"
+  else
+    -- Stable (latest release)
+    return "https://github.com/mudzereli/DarkMistsCompanion/releases/latest/download/DarkMistsCompanion.mpackage"
+  end
+end
+
+function Darkmists.SetUpdateChannel(channel)
+  if channel ~= "stable" and channel ~= "beta" then
+    Darkmists.Log("Darkmists Core", ("<red>Unknown update channel: %s"):format(tostring(channel)))
+    return
+  end
+  Darkmists.GlobalSettings.updateChannel = channel
+  Darkmists.SaveSettings()
+  Darkmists.Log("Darkmists Core", ("Update channel set to: %s"):format(channel))
+end
+
+function Darkmists.UpdateFromGitHub(channel)
+  channel = channel or Darkmists.GlobalSettings.updateChannel
   if Darkmists.IS_DEV_BUILD then
     Darkmists.Log("Darkmists Core", "<red>Can not update DEV BUILD from GitHub!")
     return
   end
+  Darkmists.Log("Darkmists Core", ("Updating Dark Mists Companion from GitHub... (channel=%s)"):format(tostring(channel)))
 
-  Darkmists.Log("Darkmists Core", "Updating Dark Mists Companion from GitHub...")
+  local url = Darkmists.getGithubUrl(channel)
 
   if table.contains(getPackages(), Darkmists.NAME) then
     uninstallPackage(Darkmists.NAME)
     tempTimer(2, function()
-      installPackage(Darkmists.GITHUB_URL)
+      installPackage(url)
     end)
   else
-    installPackage(Darkmists.GITHUB_URL)
+    installPackage(url)
   end
 end
 

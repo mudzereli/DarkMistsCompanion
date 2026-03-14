@@ -234,7 +234,7 @@ ButtonBar:addDropdown("🛠 Tools", {
   {label="🐞 DMAPI Debug", action=function() expandAlias("dmapi debug") end},
   {label="📚 DMAPI Extension", action=function() Darkmists.OpenDMAPIDocs() end},
   {label="🗺️ Load Map", action=function() Darkmists.PromptLoadMap() end},
-  {label="📡 Update From Github", action=function() Darkmists.UpdateFromGitHub() end},
+  -- Update action moved to Settings -> Advanced (choose channel there)
 })
 
 ButtonBar:addDropdown("⚙️ Settings", {
@@ -264,6 +264,15 @@ ButtonBar:addDropdown("⚙️ Settings", {
         loadWindowLayout()
         Darkmists.LoadSettings()
         Darkmists.SafeReload()
+      end},
+      {label = "📡 Update (current channel)", action = function()
+        Darkmists.UpdateFromGitHub()
+      end},
+      {label = "🟢 Use Stable Channel", action = function()
+        Darkmists.SetUpdateChannel("stable")
+      end},
+      {label = "🟡 Use Beta Channel", action = function()
+        Darkmists.SetUpdateChannel("beta")
       end},
       {label="📝 Edit Settings File", action=function() Darkmists.OpenSettingsFile() end},
     }}
