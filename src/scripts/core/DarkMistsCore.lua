@@ -464,6 +464,32 @@ function Darkmists.RegisterEvents()
 
       Darkmists._resizePending = false
       Darkmists.RefreshUILayout({ syncStatusBar = true })
+
+    -- Hook into dmapi events so we can show the packaged-map prompt after a world enter
+    -- Mark a pending flag when the world enter event fires (DMAPI's reset handler will send 'score')
+    DarkmistsEvents.add("Darkmists.map.prompt.pending", "dmapi.world.enter", function()
+      Darkmists._pendingMapPrompt = true
+    end)
+
+    -- After vitals update (score processed), if a pending prompt exists show the map prompt
+        DarkmistsEvents.add("Darkmists.map.prompt.aftervitals", "dmapi.player.vitals.updated", function()
+          if Darkmists._pendingMapPrompt then
+            -- only show the packaged-map prompt when the full UI is loaded and enabled
+            if Darkmists.UI_LOADED and not Darkmists.GlobalSettings.minimalMode and Darkmists.GlobalSettings.hasSeenUIIntroMessage then
+              Darkmists._pendingMapPrompt = false
+              if not Darkmists.GlobalSettings.hasSeenMapPrompt then
+                tempTimer(2, function()
+                  if not Darkmists.GlobalSettings.hasSeenMapPrompt then
+                    Darkmists.PromptLoadMap()
+                  end
+                end)
+              end
+            else
+              -- keep pending; EnableUI() or later vitals update will handle it
+              Darkmists._pendingMapPrompt = true
+            end
+          end
+    end)
     end
 
     tempTimer(0.4, applyResize)
@@ -530,12 +556,18 @@ function Darkmists.EnableUI()
   -- Apply borders
   Darkmists.RefreshUILayout({ syncStatusBar = true })
 
-  -- Delay showing the packaged-map prompt until after the full UI has loaded
-  tempTimer(0.8, function()
-    if not Darkmists.GlobalSettings.hasSeenMapPrompt then
-      Darkmists.PromptLoadMap()
-    end
-  end)
+  -- Defer the packaged-map prompt: if DMAPI is available, set pending and
+  -- let the DMAPI vitals handler show it after score; otherwise fall back
+  -- to a simple delayed prompt so manual enables still get prompted.
+  if dmapi then
+    Darkmists._pendingMapPrompt = true
+  else
+    tempTimer(0.8, function()
+      if not Darkmists.GlobalSettings.hasSeenMapPrompt then
+        Darkmists.PromptLoadMap()
+      end
+    end)
+  end
 
   Darkmists.Log("Darkmists Core", "UI Enabled")
 end
