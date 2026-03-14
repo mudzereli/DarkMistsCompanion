@@ -60,6 +60,7 @@ local greenTag  = DarkmistsTheme.greenTag
 local skyTag    = DarkmistsTheme.skyTag
 local purpleTag = DarkmistsTheme.purpleTag
 local cyanTag   = DarkmistsTheme.cyanTag
+local silverTag = DarkmistsTheme.silverTag
 -- All message formatting lives here.
 -- Adding a new channel only requires adding one entry.
 local MESSAGE_FORMATTERS = {
@@ -169,7 +170,7 @@ local MESSAGE_FORMATTERS = {
   },
 
   house = function(m)
-    return mutedTag .. "[" .. textTag .. m.timestamp .. mutedTag .. "] " .. mutedTag .. "[" .. mutedTag .. (m.receiver or "") .. mutedTag .. "] " .. blueTag .. m.sender .. textTag .. ": " .. m.message .. "\n"
+    return mutedTag .. "[" .. textTag .. m.timestamp .. mutedTag .. "] " .. mutedTag .. "[" .. silverTag .. (m.receiver or "") .. mutedTag .. "] " .. blueTag .. m.sender .. textTag .. ": " .. m.message .. "\n"
   end,
 }
 
