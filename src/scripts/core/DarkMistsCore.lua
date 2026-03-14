@@ -34,7 +34,7 @@ Darkmists.VERSION = "@VERSION@"
 Darkmists.GITHUB_URL = "https://github.com/mudzereli/DarkMistsCompanion/releases/latest/download/DarkMistsCompanion.mpackage"
 Darkmists.IS_DEV_BUILD = false
 Darkmists.UI_LOADED = false
-Darkmists.LAYOUT_CACHE_VERSION = 2
+Darkmists.LAYOUT_CACHE_VERSION = "@VERSION@"
 Darkmists._resizePending = false
 
 Darkmists.DefaultSettings = {
