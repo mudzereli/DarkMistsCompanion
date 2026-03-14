@@ -135,19 +135,20 @@ end
 
 -- Prompt the user before loading the packaged map (may overwrite their current map)
 function Darkmists.PromptLoadMap()
-  cecho("\n")
-  cecho("<gold>Warning: loading the packaged map may overwrite your current map in Mudlet.\n")
-  cecho(" ")
-  cechoLink("<dim_gray><u>[<green>Load Packaged Map<dim_gray>]",
+  -- Prominent prompt using cecho so timestamps aren't added
+  cecho("\n\n")
+  cecho("<orange>╔════════════════════════════════════════════════════════════╗\n")
+  cecho("<orange>║<red>      Warning: loading the packaged map will overwrite      <orange>║\n")
+  cecho("<orange>║<red>                your current map in Mudlet.                 <orange>║\n")
+  cecho("<orange>║                    ")
+    cechoLink("<dim_gray><u>[<green>Load Packaged Map<dim_gray>]",
     [[Darkmists.LoadMapDat()]],
     "Load the packaged map (may overwrite existing map)",
     true
   )
-  cecho(" ")
-  cechoLink("<dim_gray><u>[<red>Cancel<dim_gray>]",
-    [[return]],
-    "Cancel map load",
-    true)
+  cecho("                     <orange>║\n")
+  cecho("<orange>╚════════════════════════════════════════════════════════════╝\n")
+
   -- mark as shown to avoid prompting repeatedly and persist
   Darkmists.GlobalSettings.hasSeenMapPrompt = true
   Darkmists.SaveSettings()
