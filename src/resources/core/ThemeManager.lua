@@ -20,12 +20,12 @@ function DarkmistsTheme.buildTheme()
   t.cyan   = light and "cadet_blue"        or "ansi_cyan"
   t.sky    = light and "steel_blue"        or "light_steel_blue"
   t.lightBlue = "cornflower_blue"
-  t.darkBlue = "dark_slate_blue"
+  t.darkBlue  = "dark_slate_blue"
   t.purple = light and "dark_violet"       or "medium_purple"
   t.pink   = light and "medium_violet_red" or "deep_pink"
   t.brown  = light and "sienna"            or "peru"
   t.olive  = light and "olive_drab"        or "yellow_green"
-  t.silver = light and "slate_gray"        or "silver"
+  t.silver = light and "slate_gray"        or "light_gray"
   t.gold   = light and "goldenrod"         or "gold"
 
   -- Semantic aliases
