@@ -4,8 +4,13 @@
 
 ButtonBar = ButtonBar or {}
 
-ButtonBar.height = "25px"
 ButtonBar.bg = "#000000"
+ButtonBar.fontSize = Darkmists.GlobalSettings.fontSize + 3
+ButtonBar.padding = 2
+ButtonBar.fontWidth, ButtonBar.fontheight = calcFontSize(ButtonBar.fontSize)
+ButtonBar.topLevelMaxCharacters = 16
+ButtonBar.dropDownMaxCharacters = 20   -- used for dropdown width calculations
+ButtonBar.height = ButtonBar.fontheight * 1.5
 
 -- -----------------------------------------------------------------------------
 -- DELETE OLD BAR PROPERLY
@@ -39,9 +44,9 @@ function ButtonBar:create()
     width = "100%",
     height = ButtonBar.height,
     titleText = "",
-    padding = 0,
+    padding = ButtonBar.padding,
     locked = true,
-    lockStyle = "full",
+    lockStyle = "border",
     autoSave = false,
     autoLoad = false,
     adjLabelstyle = [[
@@ -93,13 +98,13 @@ function ButtonBar:_addMenuChildren(parent, items, depth)
     local caret = item.children and "   ▸" or ""
 
     local child = parent:addChild({
-      width = 180,
-      height = 24,
+      width = ButtonBar.fontWidth * ButtonBar.dropDownMaxCharacters,
+      height = ButtonBar.height,
       layoutDir = dir,
       flyOut = true,
       message = "<left>  " .. item.label .. caret,
     })
-    child:setFontSize(Darkmists.GlobalSettings.fontSize)
+    child:setFontSize(ButtonBar.fontSize)
     child:setStyleSheet([[
       QLabel {
         background-color: #000000;
@@ -127,12 +132,12 @@ function ButtonBar:addButton(text, action)
   local btn = Geyser.Label:new({
     x = ButtonBar.nextX,
     y = 0,
-    width = 120,
+    width = ButtonBar.fontWidth * 20,
     height = "100%",
     message = "<center>" .. text .. "</center>",
   }, ButtonBar.container)
 
-  btn:setFontSize(Darkmists.GlobalSettings.fontSize)
+  btn:setFontSize(ButtonBar.fontSize)
 
   ButtonBar:_style(btn)
 
@@ -140,7 +145,7 @@ function ButtonBar:addButton(text, action)
     ButtonBar:_run(action)
   end)
 
-  ButtonBar.nextX = ButtonBar.nextX + 120
+  ButtonBar.nextX = ButtonBar.nextX + (ButtonBar.fontWidth * 20)
 end
 
 -- -----------------------------------------------------------------------------
@@ -150,17 +155,17 @@ function ButtonBar:addDropdown(text, items)
   local main = Geyser.Label:new({
     x = ButtonBar.nextX,
     y = 0,
-    width = 150,
+    width = ButtonBar.fontWidth * ButtonBar.topLevelMaxCharacters,
     height = "100%",
     message = "<center>" .. text .. " ▾</center>",
     nestable = true,
   }, ButtonBar.container)
 
-  main:setFontSize(Darkmists.GlobalSettings.fontSize)
+  main:setFontSize(ButtonBar.fontSize)
 
   ButtonBar:_style(main)
   ButtonBar:_addMenuChildren(main, items)
-  ButtonBar.nextX = ButtonBar.nextX + 150
+  ButtonBar.nextX = ButtonBar.nextX + (ButtonBar.fontWidth * ButtonBar.topLevelMaxCharacters)
 end
 
 -- -----------------------------------------------------------------------------
