@@ -9,6 +9,7 @@ DarkmistsTheme = DarkmistsTheme or {}
 function DarkmistsTheme.buildTheme()
   local t     = DarkmistsTheme
   local light = Darkmists.GlobalSettings.lightMode
+  local tagKeys = {}
 
   -- Named hues
   t.red    = light and "firebrick"         or "tomato"
@@ -39,7 +40,14 @@ function DarkmistsTheme.buildTheme()
   -- Build cecho tags
   for k, v in pairs(t) do
     if type(v) == "string" and not k:find("Tag$") then
-      t[k .. "Tag"] = ("<%s>"):format(v)
+      table.insert(tagKeys, k)
+    end
+  end
+
+  for _, key in ipairs(tagKeys) do
+    local value = t[key]
+    if type(value) == "string" then
+      t[key .. "Tag"] = ("<%s>"):format(value)
     end
   end
 end
