@@ -251,21 +251,21 @@ ButtonBar:addDropdown("⚙️ Settings", {
       Darkmists.SaveSettings()
       Darkmists.SafeReload()
     end},
-    {label = "🧼 Reset All Settings", action = function() 
-      saveWindowLayout()
-      Darkmists.ResetUILayoutCache()
-    end},
-    {label = "💾 Save Settings", action = function() 
-      saveWindowLayout()
-      Darkmists.SaveSettings()
-    end},
-    {label = "📥 Load Settings", action = function() 
-      loadWindowLayout()
-      Darkmists.LoadSettings()
-      Darkmists.SafeReload()
-    end},
     {label = "📝 Advanced", children = {
-      {label="📝 Edit Settings File", action=function() Darkmists.OpenSettingsFile() end}
+      {label = "🧼 Reset All Settings", action = function() 
+        saveWindowLayout()
+        Darkmists.ResetUILayoutCache()
+      end},
+      {label = "💾 Save Settings", action = function() 
+        saveWindowLayout()
+        Darkmists.SaveSettings()
+      end},
+      {label = "📥 Load Settings", action = function() 
+        loadWindowLayout()
+        Darkmists.LoadSettings()
+        Darkmists.SafeReload()
+      end},
+      {label="📝 Edit Settings File", action=function() Darkmists.OpenSettingsFile() end},
     }}
     --[[
     {label="💬 Chat History", children={
