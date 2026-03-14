@@ -260,21 +260,23 @@ ButtonBar:addDropdown("⚙️ Settings", {
         saveWindowLayout()
         Darkmists.SaveSettings()
       end},
-      {label = "📥 Load Settings", action = function() 
+      {label = "📤 Load Settings", action = function() 
         loadWindowLayout()
         Darkmists.LoadSettings()
         Darkmists.SafeReload()
       end},
-      {label = "📡 Update (current channel)", action = function()
-        Darkmists.UpdateFromGitHub()
-      end},
-      {label = "🟢 Use Stable Channel", action = function()
-        Darkmists.SetUpdateChannel("stable")
-      end},
-      {label = "🟡 Use Beta Channel", action = function()
-        Darkmists.SetUpdateChannel("beta")
-      end},
       {label="📝 Edit Settings File", action=function() Darkmists.OpenSettingsFile() end},
+      {label = "📡 Updates", children = {
+        {label = "🟢 Use Stable Channel", action = function()
+          Darkmists.SetUpdateChannel("stable")
+        end},
+        {label = "🟡 Use Beta Channel", action = function()
+          Darkmists.SetUpdateChannel("beta")
+        end},
+        {label = "📥 Update", action = function()
+          Darkmists.UpdateFromGitHub()
+        end},
+      }},
     }}
     --[[
     {label="💬 Chat History", children={

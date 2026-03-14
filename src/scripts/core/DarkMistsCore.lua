@@ -32,7 +32,7 @@ Darkmists = Darkmists or {}
 Darkmists.NAME = "DarkMistsCompanion"
 Darkmists.VERSION = "@VERSION@"
 Darkmists.GITHUB_URL = "https://github.com/mudzereli/DarkMistsCompanion/releases/latest/download/DarkMistsCompanion.mpackage"
-Darkmists.IS_DEV_BUILD = false
+Darkmists.GITHUB_URL_BETA = "https://github.com/mudzereli/DarkMistsCompanion/raw/refs/heads/beta/build/DarkMistsCompanion.mpackage"
 Darkmists.UI_LOADED = false
 Darkmists.LAYOUT_CACHE_VERSION = "@VERSION@"
 Darkmists._resizePending = false
@@ -185,10 +185,10 @@ function Darkmists.getGithubUrl(channel)
   channel = channel or Darkmists.GlobalSettings.updateChannel or "stable"
   if channel == "beta" then
     -- Beta URL: expects a release/tag named "beta" or adjust to your beta release URL
-    return "https://github.com/mudzereli/DarkMistsCompanion/releases/tag/beta/download/DarkMistsCompanion.mpackage"
+    return Darkmists.GITHUB_URL_BETA
   else
     -- Stable (latest release)
-    return "https://github.com/mudzereli/DarkMistsCompanion/releases/latest/download/DarkMistsCompanion.mpackage"
+    return Darkmists.GITHUB_URL_STABLE
   end
 end
 
@@ -204,10 +204,6 @@ end
 
 function Darkmists.UpdateFromGitHub(channel)
   channel = channel or Darkmists.GlobalSettings.updateChannel
-  if Darkmists.IS_DEV_BUILD then
-    Darkmists.Log("Darkmists Core", "<red>Can not update DEV BUILD from GitHub!")
-    return
-  end
   Darkmists.Log("Darkmists Core", ("Updating Dark Mists Companion from GitHub... (channel=%s)"):format(tostring(channel)))
 
   local url = Darkmists.getGithubUrl(channel)
