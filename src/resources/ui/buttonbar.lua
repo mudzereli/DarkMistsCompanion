@@ -224,8 +224,7 @@ ButtonBar:addDropdown("🧰 Modules", {
 
 ButtonBar:addDropdown("🛠 Tools", {
   {label="🔮 Offline Item Browser", action=function() Darkmists.OpenItemViewer() end},
-  {label="🔄 EA Save Converter", action=function() Darkmists.OpenEAConverter() end},
-  {label="🧪 EA Formula Viewer", action=function() Darkmists.OpenEAFormulaParser() end},
+  {label="🗺️ Load Map", action=function() Darkmists.PromptLoadMap() end},
   {label="🎨 Re-Color Map", action=function() 
     MapColors.ResetAllRooms()
     MapColors.FullUpdatePass()
@@ -233,8 +232,6 @@ ButtonBar:addDropdown("🛠 Tools", {
   end},
   {label="🐞 DMAPI Debug", action=function() expandAlias("dmapi debug") end},
   {label="📚 DMAPI Extension", action=function() Darkmists.OpenDMAPIDocs() end},
-  {label="🗺️ Load Map", action=function() Darkmists.PromptLoadMap() end},
-  -- Update action moved to Settings -> Advanced (choose channel there)
 })
 
 ButtonBar:addDropdown("⚙️ Settings", {
