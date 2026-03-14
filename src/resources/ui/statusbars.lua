@@ -20,7 +20,6 @@ StatusBar.config = {
   enabled = true,
   maxLevel = 51,
 }
-StatusBar._resizePending = false
 StatusBar._layoutLock = false
 
 -- ===================================================================
@@ -302,6 +301,20 @@ function StatusBar.recreate()
   Darkmists.Log("StatusBars","Status Bars Recreated")
 end
 
+function StatusBar.syncToBorders()
+  if not StatusBar.container or StatusBar.config.moveable then return end
+
+  local borders = Darkmists.GetBorderPercentages()
+  local left = borders.left or 0
+  local right = borders.right or 0
+
+  StatusBar.container:move(left .. "%", nil)
+  StatusBar.container:resize((100 - left - right) .. "%", nil)
+  StatusBar.reflow()
+  StatusBar.update()
+  StatusBar.updateXP()
+end
+
 function StatusBar.reflow()
   if not StatusBar.container then return end
 
@@ -455,16 +468,6 @@ function StatusBar.registerEvents()
       StatusBar.reflow()
       Darkmists.Log("StatusBars","<yellow>XP bar shaown (max level not reached)")
     end
-  end)
-
-  DarkmistsEvents.add("StatusBarWindowResize", "sysWindowResizeEvent", function()
-    if StatusBar._resizePending then return end
-    if StatusBar._layoutLock then return end
-    StatusBar._resizePending = true
-    tempTimer(0.2, function()
-      StatusBar._resizePending = false
-      StatusBar.recreate()
-    end)
   end)
 
   DarkmistsEvents.add("StatusBarExperienceGain", "dmapi.player.experience.gain", StatusBar.updateXP)
