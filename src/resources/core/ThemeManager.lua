@@ -11,14 +11,21 @@ function DarkmistsTheme.buildTheme()
   local light = Darkmists.GlobalSettings.lightMode
 
   -- Named hues
-  t.red    = light and "firebrick"      or "tomato"
-  t.orange = light and "chocolate"      or "orange"
-  t.yellow = light and "goldenrod"      or "yellow"
-  t.green  = light and "sea_green"      or "spring_green"
-  t.blue   = light and "royal_blue"     or "deep_sky_blue"
-  t.cyan   = light and "cadet_blue"     or "ansi_cyan"
-  t.purple = light and "dark_violet"    or "medium_purple"
-  t.gold   = light and "goldenrod"      or "gold"
+  t.red    = light and "firebrick"         or "tomato"
+  t.orange = light and "chocolate"         or "orange"
+  t.yellow = light and "goldenrod"         or "yellow"
+  t.green  = light and "sea_green"         or "spring_green"
+  t.blue   = light and "royal_blue"        or "deep_sky_blue"
+  t.cyan   = light and "cadet_blue"        or "ansi_cyan"
+  t.sky    = light and "steel_blue"        or "light_steel_blue"
+  t.lightBlue = "cornflower_blue"
+  t.darkBlue = "dark_slate_blue"
+  t.purple = light and "dark_violet"       or "medium_purple"
+  t.pink   = light and "medium_violet_red" or "deep_pink"
+  t.brown  = light and "sienna"            or "peru"
+  t.olive  = light and "olive_drab"        or "yellow_green"
+  t.silver = light and "slate_gray"        or "silver"
+  t.gold   = light and "goldenrod"         or "gold"
 
   -- Semantic aliases
   t.good   = t.green
