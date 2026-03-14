@@ -81,6 +81,8 @@ Darkmists.DefaultSettings = {
   hasInitializedUILayout = false,
   -- First Time Intro Message?
   hasSeenUIIntroMessage = false,
+  -- Whether we've prompted to load the packaged map after enabling UI
+  hasSeenMapPrompt = false,
   -- Cached UI Version (changing this will invalidate settings)
   layoutCacheVersion = Darkmists.LAYOUT_CACHE_VERSION,
 }
@@ -121,6 +123,34 @@ end
 function Darkmists.LoadMapDat()
   Darkmists.Log("Darkmists Core", ("Loading Map from: %s"):format(mapDatPath))
   loadMap(mapDatPath)
+  -- post-load adjustments commonly expected after loading packaged map
+  tempTimer(2,function()
+    disableMapInfo("Full")
+    disableMapInfo("Short")
+    expandAlias("find prompt")
+    expandAlias("map config speedwalk_delay 0.4")
+    send("look")
+  end)
+end
+
+-- Prompt the user before loading the packaged map (may overwrite their current map)
+function Darkmists.PromptLoadMap()
+  cecho("\n")
+  cecho("<gold>Warning: loading the packaged map may overwrite your current map in Mudlet.\n")
+  cecho(" ")
+  cechoLink("<dim_gray><u>[<green>Load Packaged Map<dim_gray>]",
+    [[Darkmists.LoadMapDat()]],
+    "Load the packaged map (may overwrite existing map)",
+    true
+  )
+  cecho(" ")
+  cechoLink("<dim_gray><u>[<red>Cancel<dim_gray>]",
+    [[return]],
+    "Cancel map load",
+    true)
+  -- mark as shown to avoid prompting repeatedly and persist
+  Darkmists.GlobalSettings.hasSeenMapPrompt = true
+  Darkmists.SaveSettings()
 end
 
 function Darkmists.OpenEAConverter()
@@ -253,8 +283,7 @@ function Darkmists.ShowUIIntroMessage()
     cecho("<gold>║<dim_gray> (Toggle command — turns UI <green>ON<dim_gray> or <red>OFF<dim_gray>)                      <gold>║\n")
     cecho("<gold>║                                                            ║\n")
     cecho("<gold>║ ")
-    cechoLink(
-      "<dim_gray><u>[<green>ENABLE FULL UI NOW<dim_gray>]",
+    cechoLink("<dim_gray><u>[<green>ENABLE FULL UI NOW<dim_gray>]",
       [[Darkmists.EnableUI()]],
       "Enable the full Dark Mists Companion UI",
       true
@@ -499,6 +528,13 @@ function Darkmists.EnableUI()
 
   -- Apply borders
   Darkmists.RefreshUILayout({ syncStatusBar = true })
+
+  -- Delay showing the packaged-map prompt until after the full UI has loaded
+  tempTimer(0.8, function()
+    if not Darkmists.GlobalSettings.hasSeenMapPrompt then
+      Darkmists.PromptLoadMap()
+    end
+  end)
 
   Darkmists.Log("Darkmists Core", "UI Enabled")
 end

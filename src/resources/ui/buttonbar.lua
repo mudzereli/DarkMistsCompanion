@@ -233,16 +233,7 @@ ButtonBar:addDropdown("🛠 Tools", {
   end},
   {label="🐞 DMAPI Debug", action=function() expandAlias("dmapi debug") end},
   {label="📚 DMAPI Extension", action=function() Darkmists.OpenDMAPIDocs() end},
-  {label="🗺️ Load Map", action=function() 
-    Darkmists.LoadMapDat()
-    tempTimer(2,function()
-      disableMapInfo("Full")
-      disableMapInfo("Short")
-      expandAlias("find prompt")
-      expandAlias("map config speedwalk_delay 0.4")
-      send("look")
-    end)
-  end},
+  {label="🗺️ Load Map", action=function() Darkmists.PromptLoadMap() end},
   {label="📡 Update From Github", action=function() Darkmists.UpdateFromGitHub() end},
 })
 
