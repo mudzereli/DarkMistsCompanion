@@ -31,7 +31,7 @@ local eaFormulaParser  = getMudletHomeDir() .. "/DarkMistsCompanion/assets/alche
 Darkmists = Darkmists or {}
 Darkmists.NAME = "DarkMistsCompanion"
 Darkmists.VERSION = "@VERSION@"
-Darkmists.GITHUB_URL = "https://github.com/mudzereli/DarkMistsCompanion/releases/latest/download/DarkMistsCompanion.mpackage"
+Darkmists.GITHUB_URL_STABLE = "https://github.com/mudzereli/DarkMistsCompanion/releases/latest/download/DarkMistsCompanion.mpackage"
 Darkmists.GITHUB_URL_BETA = "https://github.com/mudzereli/DarkMistsCompanion/raw/refs/heads/beta/build/DarkMistsCompanion.mpackage"
 Darkmists.UI_LOADED = false
 Darkmists.LAYOUT_CACHE_VERSION = "@VERSION@"
@@ -207,7 +207,7 @@ function Darkmists.UpdateFromGitHub(channel)
   Darkmists.Log("Darkmists Core", ("Updating Dark Mists Companion from GitHub... (channel=%s)"):format(tostring(channel)))
 
   local url = Darkmists.getGithubUrl(channel)
-
+  
   if table.contains(getPackages(), Darkmists.NAME) then
     uninstallPackage(Darkmists.NAME)
     tempTimer(2, function()
