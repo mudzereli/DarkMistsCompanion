@@ -370,7 +370,7 @@ function Darkmists.createTabPanel(id, title, tabName)
 end
 
 function Darkmists.Log(pluginName, msg)
-  local output = "\n<dim_gray>[<%s>%s<dim_gray>] <green>%s"
+  local output = "\n<dim_gray>[<%s>%s<dim_gray>] <slate_gray>%s"
   cecho(output:format(Darkmists.getDefaultTextColor(), pluginName, msg))
 end
 
@@ -395,22 +395,22 @@ function Darkmists.LoadSettings()
 
     -- Detect legacy settings BEFORE merging
     if settings.layoutCacheVersion == nil then
-      Darkmists.Log("Darkmists Core", "<red>Legacy settings detected (no layout version)")
+      Darkmists.Log("<medium_sea_green>Darkmists Core", "<red>Legacy settings detected (no layout version)")
       tempTimer(0,Darkmists.ResetUILayoutCache)
       return
     end
     
     DMUtil.deep_copy_into(Darkmists.GlobalSettings, settings)
-    Darkmists.Log("Darkmists Core", ("Settings Loaded From: %s!"):format(saveFilePath))
-    Darkmists.Log("Darkmists Core","You may need to Reload UI for changes to take effect!")
+    Darkmists.Log("<medium_sea_green>Darkmists Core", ("<slate_gray>Settings Loaded From: <steel_blue>%s<r>"):format(saveFilePath))
+    Darkmists.Log("<medium_sea_green>Darkmists Core","<slate_gray>You may need to Reload UI for changes to take effect!")
   else
-    Darkmists.Log("Darkmists Core","No Pre-Existing Settings File Found!")
+    Darkmists.Log("<medium_sea_green>Darkmists Core","<slate_gray>No Pre-Existing Settings File Found!")
   end
 end
 
 function Darkmists.ApplyDefaultSettings()
   DMUtil.deep_copy_into(Darkmists.GlobalSettings, Darkmists.DefaultSettings)
-  Darkmists.Log("Darkmists Core","Default Settings Applied!")
+  Darkmists.Log("<medium_sea_green>Darkmists Core","<slate_gray>Default Settings Applied!")
 end
 
 function Darkmists.SetWindowBorderPercent(region, percent)
@@ -527,7 +527,7 @@ function Darkmists.SafeReload()
 end
 
 function Darkmists.Init()
-  Darkmists.Log("Darkmists Core", ("Loaded Darkmists Core v%s"):format(Darkmists.VERSION))
+  Darkmists.Log("<medium_sea_green>Darkmists Core", ("<slate_gray>Loaded Darkmists Core <steel_blue>v%s<r>"):format(Darkmists.VERSION))
   Darkmists.ApplyDefaultSettings()
   Darkmists.LoadSettings()
   DarkmistsTheme.buildTheme()
@@ -610,11 +610,6 @@ end
 -- =============================================================================
 -- MODULE LOAD ORDER
 -- =============================================================================
-
--- DMAPI first
-dofile(getMudletHomeDir() .. "/DarkMistsCompanion/core/DMAPI.lua")
-
--- NOW Call Init
 Darkmists.Init()
 
 -- Utility Scripts that use DMAPI
