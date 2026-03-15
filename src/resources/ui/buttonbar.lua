@@ -203,11 +203,11 @@ ButtonBar:addDropdown("🧰 Modules", {
       {label="❹ ES Try 4", action=function() expandAlias("es 4") end},
       {label="❺ ES Try 5", action=function() expandAlias("es 5") end},
     }},
+    {label="📊 Show Stats", action=function() expandAlias("es stats") end},
     {label="⚡ Run", action=function() expandAlias("es run") end},
     {label="♾️ Auto", action=function() expandAlias("es auto") end},
-    {label="📊 Stats", action=function() expandAlias("es stats") end},
-    {label="⚠ Missing", action=function() expandAlias("es missing") end},
-    {label="🧹 Reset", action=function() expandAlias("es reset") end},
+    {label="⚠ Missing Essences", action=function() expandAlias("es missing") end},
+    {label="🧹 Reset Session", action=function() expandAlias("es reset") end},
     {label="🛠 EA Tools", children={
       {label="🧪 EA Formula Viewer", action=function() Darkmists.OpenEAFormulaParser() end},
       {label="🔄 EA Save Converter", action=function() Darkmists.OpenEAConverter() end},
@@ -219,23 +219,15 @@ ButtonBar:addDropdown("🧰 Modules", {
       expandAlias("dmc help dmid")
     end},
     {label="🔮 Offline Item Browser", action=function() Darkmists.OpenItemViewer() end},
+    {label="❓ Item Tracker", action=function()
+      expandAlias("dmc help dmid")
+    end},
   }}
-})
-
-ButtonBar:addDropdown("🛠 Tools", {
-  {label="🔮 Offline Item Browser", action=function() Darkmists.OpenItemViewer() end},
-  {label="🗺️ Load Map", action=function() Darkmists.PromptLoadMap() end},
-  {label="🎨 Re-Color Map", action=function() 
-    MapColors.ResetAllRooms()
-    MapColors.FullUpdatePass()
-    MapColors.FinalUpdatePass()
-  end},
-  {label="🐞 DMAPI Debug", action=function() expandAlias("dmapi debug") end},
-  {label="📚 DMAPI Extension", action=function() Darkmists.OpenDMAPIDocs() end},
 })
 
 ButtonBar:addDropdown("⚙️ Settings", {
     {label = "🔄 Reload UI", action = Darkmists.SafeReload},
+    {label = "📊 Toggle UI", action = function() expandAlias("dmc ui") end},
     {label="🌞 Light Mode", action=function()
       Darkmists.GlobalSettings.lightMode = true
       Darkmists.Log("Settings","Light Mode Enabled - Reload UI for Changes to Take place")
@@ -247,6 +239,9 @@ ButtonBar:addDropdown("⚙️ Settings", {
       Darkmists.Log("Settings","Dark Mode Enabled - Reload UI for Changes to Take place")
       Darkmists.SaveSettings()
       Darkmists.SafeReload()
+    end},
+    {label = "🗺️ Load Map", action = function()
+        Darkmists.PromptLoadMap()
     end},
     {label = "📝 Advanced", children = {
       {label = "🧼 Reset All Settings", action = function() 
@@ -273,6 +268,15 @@ ButtonBar:addDropdown("⚙️ Settings", {
         {label = "📥 Update", action = function()
           Darkmists.UpdateFromGitHub()
         end},
+      }},
+      {label = "🔩 Dev Tools", children = {
+        {label = "🎨 Re-Color Map", action = function()
+          MapColors.ResetAllRooms()
+          MapColors.FullUpdatePass()
+          MapColors.FinalUpdatePass()
+        end},
+        {label = "🐞 DMAPI Debug", action = function() expandAlias("dmapi debug") end},
+        {label = "📚 DMAPI Extension", action = function() Darkmists.OpenDMAPIDocs() end},
       }},
     }}
     --[[
