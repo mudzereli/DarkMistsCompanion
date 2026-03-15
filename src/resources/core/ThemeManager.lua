@@ -50,6 +50,7 @@ function DarkmistsTheme.buildTheme()
       t[key .. "Tag"] = ("<%s>"):format(value)
     end
   end
+  Darkmists.Log("<medium_sea_green>Darkmists Core",("<slate_gray>Theme Built! Light Mode: <steel_blue>%s<r>"):format(tostring(light)))
 end
 
 
