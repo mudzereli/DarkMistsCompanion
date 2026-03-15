@@ -1,1 +1,0 @@
-dofile(getMudletHomeDir() .. "/DarkMistsCompanion/darkmists.lua" )

@@ -1,0 +1,14 @@
+[
+       {
+              "name": "DMAPI",
+              "isActive": "yes",
+              "script": "",
+              "isFolder": "no"
+       },
+       {
+              "name": "DarkMistsCore",
+              "isActive": "yes",
+              "script": "",
+              "isFolder": "no"
+       }
+]

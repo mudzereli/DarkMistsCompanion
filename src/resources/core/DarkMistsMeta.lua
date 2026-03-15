@@ -27,11 +27,13 @@ DarkmistsMeta.meta = {
   version = Darkmists.VERSION,
 }
 
-DarkmistsMeta.colors = {
-  default = Darkmists.getDefaultTextColorTag(),
-  header = "<ansi_cyan>",
-  link = "<cornflower_blue>"
-}
+local dm_text = DarkmistsTheme.textTag
+local dm_header_color = DarkmistsTheme.infoTag
+local dm_link_color = DarkmistsTheme.accentTag
+local dm_muted = DarkmistsTheme.mutedTag
+local dm_good = DarkmistsTheme.goodTag
+local dm_warn = DarkmistsTheme.warnTag
+local dm_bad = DarkmistsTheme.badTag
 
 DarkmistsMeta.helpIndex = {
   dmc = {
@@ -174,12 +176,12 @@ local helpSections = {
 
 -- Section header
 local function dm_header(title)
-  cecho("\n"..DarkmistsMeta.colors.header.."[" .. title .. "]"..DarkmistsMeta.colors.default.."\n")
+  cecho("\n"..dm_header_color.."[" .. title .. "]"..dm_text.."\n")
 end
 
 local function dm_link(label, command)
   cechoLink(
-    string.format(DarkmistsMeta.colors.link.."%-10s", label),
+    string.format(dm_link_color.."%-10s"..dm_text, label),
     function() expandAlias(command) end,
     "Click to run: " .. command,
     true
@@ -196,11 +198,11 @@ DarkmistsAlias.add([[^dmc\s+ui(?:\s+(on|off))?$]], function()
   -- Explicit ON
   if state == "on" then
     if not Darkmists.GlobalSettings.minimalMode then
-      cecho("\n<dim_gray>[UI] "..DarkmistsMeta.colors.default.."Already in <green>FULL UI<dim_gray> mode.\n")
+      cecho("\n"..dm_muted.."[UI] "..dm_text.."Already in "..dm_good.."FULL UI"..dm_muted.." mode.\n")
       return
     end
 
-    cecho("\n<dim_gray>[UI] "..DarkmistsMeta.colors.default.."Enabling <green>FULL UI<dim_gray> mode...\n")
+    cecho("\n"..dm_muted.."[UI] "..dm_text.."Enabling "..dm_good.."FULL UI"..dm_muted.." mode...\n")
     Darkmists.EnableUI()
     return
   end
@@ -208,21 +210,21 @@ DarkmistsAlias.add([[^dmc\s+ui(?:\s+(on|off))?$]], function()
   -- Explicit OFF
   if state == "off" then
     if Darkmists.GlobalSettings.minimalMode then
-      cecho("\n<dim_gray>[UI] "..DarkmistsMeta.colors.default.."Already in <yellow>MINIMAL UI<dim_gray> mode.\n")
+      cecho("\n"..dm_muted.."[UI] "..dm_text.."Already in "..dm_warn.."MINIMAL UI"..dm_muted.." mode.\n")
       return
     end
 
-    cecho("\n<dim_gray>[UI] "..DarkmistsMeta.colors.default.."Switching to <yellow>MINIMAL UI<dim_gray> mode...\n")
+    cecho("\n"..dm_muted.."[UI] "..dm_text.."Switching to "..dm_warn.."MINIMAL UI"..dm_muted.." mode...\n")
     Darkmists.DisableUI()
     return
   end
 
   -- Toggle
   if Darkmists.GlobalSettings.minimalMode then
-    cecho("\n<dim_gray>[UI] "..DarkmistsMeta.colors.default.."Enabling <green>FULL UI<dim_gray> mode...\n")
+    cecho("\n"..dm_muted.."[UI] "..dm_text.."Enabling "..dm_good.."FULL UI"..dm_muted.." mode...\n")
     Darkmists.EnableUI()
   else
-    cecho("\n<dim_gray>[UI] "..DarkmistsMeta.colors.default.."Switching to <yellow>MINIMAL UI<dim_gray> mode...\n")
+    cecho("\n"..dm_muted.."[UI] "..dm_text.."Switching to "..dm_warn.."MINIMAL UI"..dm_muted.." mode...\n")
     Darkmists.DisableUI()
   end
 end)
@@ -236,7 +238,7 @@ DarkmistsAlias.add("^dmc help (.*)$", function()
   local entry = DarkmistsMeta.helpIndex[key]
 
   if not entry then
-    cecho("\n<red>[DM] Unknown help topic: "..DarkmistsMeta.colors.default .. key .. "\n")
+    cecho("\n"..dm_bad.."[DM] Unknown help topic: "..dm_text .. key .. "\n")
     return
   end
 
@@ -248,33 +250,33 @@ DarkmistsAlias.add("^dmc help (.*)$", function()
 
   -- Otherwise, show informational help
   dm_header(entry.title)
-  cecho("<dim_gray>" .. (entry.info or "No additional information available.") .. "\n")
+  cecho(dm_muted .. (entry.info or "No additional information available.") .. "\n")
 end)
 
 DarkmistsAlias.add("^dmc(?:\\s+help)?$", function()
   dm_header(DarkmistsMeta.meta.name)
 
   cecho(string.format(
-    "<dim_gray>Version: "..DarkmistsMeta.colors.default.."%s\n\n",
+    dm_muted.."Version: "..dm_text.."%s\n\n",
     DarkmistsMeta.meta.version
   ))
 
   for _, section in ipairs(helpSections) do
-    cecho(DarkmistsMeta.colors.header .. section.title .. ":\n")
+    cecho(dm_header_color .. section.title .. ":\n")
 
     for _, key in ipairs(section.keys) do
       local info = DarkmistsMeta.helpIndex[key]
       if info then
         local cmd = (key == "dmc") and "dmc help" or ("dmc help " .. key)
         dm_link(("  <u>%s [%s]</u>"):format(info.title,key), cmd)
-        cecho("\n<dim_gray>    " .. info.desc .. "\n")
+        cecho("\n"..dm_muted.."    " .. info.desc .. "\n")
       end
     end
 
     cecho("\n")
   end
 
-  cecho("<dim_gray>Click a feature or type <dim_gray>dmc help <feature>\n")
+  cecho(dm_muted.."Click a feature or type "..dm_text.."dmc help <feature>\n")
 end)
 
 -- ===================================================================
@@ -286,10 +288,10 @@ DarkmistsAlias.add([[^ch(?:\s+(\w+))?$]], function()
 
   if cmd == "refresh" then
     ChatHistory.refresh()
-    cecho("\n<dim_gray>["..DarkmistsMeta.colors.default.."ChatHistory<dim_gray>] <green>Refreshed")
+    cecho("\n"..dm_muted.."["..dm_text.."ChatHistory"..dm_muted.."] "..dm_good.."Refreshed")
   else
-    cecho("\n<ansi_cyan>Chat History Commands:\n")
-    cecho(DarkmistsMeta.colors.default.."ch refresh<dim_gray> – Refresh window\n")
+    cecho("\n"..dm_header_color.."Chat History Commands:\n")
+    cecho(dm_text.."ch refresh"..dm_muted.." – Refresh window\n")
   end
 end)
 
@@ -317,7 +319,7 @@ DarkmistsAlias.add([[^sb(?:\s+(\w+))?$]], function()
 
   if cmd == "update" then
     StatusBar.update()
-    cecho("\n<dim_grey>[sb] <green>updated\n")
+    cecho("\n"..dm_muted.."[sb] "..dm_good.."updated\n")
     return
   end
 
@@ -327,42 +329,42 @@ DarkmistsAlias.add([[^sb(?:\s+(\w+))?$]], function()
   end
 
   if cmd == "info" then
-    cecho("\n<ansi_cyan>Status Bars:\n")
+    cecho("\n"..dm_header_color.."Status Bars:\n")
 
-    cecho(string.format("  "..DarkmistsMeta.colors.default.."HP Gauge:    <dim_grey>%s\n", tostring(StatusBar.hpGauge ~= nil)))
-    cecho(string.format("  "..DarkmistsMeta.colors.default.."MN Gauge:    <dim_grey>%s\n", tostring(StatusBar.mnGauge ~= nil)))
-    cecho(string.format("  "..DarkmistsMeta.colors.default.."MV Gauge:    <dim_grey>%s\n", tostring(StatusBar.mvGauge ~= nil)))
-    cecho(string.format("  "..DarkmistsMeta.colors.default.."XP Gauge:    <dim_grey>%s\n", tostring(StatusBar.xpGauge ~= nil)))
-    cecho(string.format("  "..DarkmistsMeta.colors.default.."Enemy Gauge: <dim_grey>%s\n", tostring(StatusBar.enemyGauge ~= nil)))
-    cecho(string.format("  "..DarkmistsMeta.colors.default.."Border:      <dim_grey>%spx\n", StatusBar.currentBorderHeight or "?"))
+    cecho(string.format("  "..dm_text.."HP Gauge:    "..dm_muted.."%s\n", tostring(StatusBar.hpGauge ~= nil)))
+    cecho(string.format("  "..dm_text.."MN Gauge:    "..dm_muted.."%s\n", tostring(StatusBar.mnGauge ~= nil)))
+    cecho(string.format("  "..dm_text.."MV Gauge:    "..dm_muted.."%s\n", tostring(StatusBar.mvGauge ~= nil)))
+    cecho(string.format("  "..dm_text.."XP Gauge:    "..dm_muted.."%s\n", tostring(StatusBar.xpGauge ~= nil)))
+    cecho(string.format("  "..dm_text.."Enemy Gauge: "..dm_muted.."%s\n", tostring(StatusBar.enemyGauge ~= nil)))
+    cecho(string.format("  "..dm_text.."Border:      "..dm_muted.."%spx\n", StatusBar.currentBorderHeight or "?"))
 
     if dmapi.player and dmapi.player.vitals then
-      cecho("\n<ansi_cyan>Vitals:\n")
+      cecho("\n"..dm_header_color.."Vitals:\n")
       cecho(string.format(
-        "  "..DarkmistsMeta.colors.default.."HP: <green>%d"..DarkmistsMeta.colors.default.."/<green>%d\n",
+        "  "..dm_text.."HP: "..dm_good.."%d"..dm_text.."/"..dm_good.."%d\n",
         dmapi.player.vitals.hp or 0,
         dmapi.player.vitals.hpMax or 0
       ))
       cecho(string.format(
-        "  "..DarkmistsMeta.colors.default.."MN: <green>%d"..DarkmistsMeta.colors.default.."/<green>%d\n",
+        "  "..dm_text.."MN: "..dm_good.."%d"..dm_text.."/"..dm_good.."%d\n",
         dmapi.player.vitals.mn or 0,
         dmapi.player.vitals.mnMax or 0
       ))
       cecho(string.format(
-        "  "..DarkmistsMeta.colors.default.."MV: <green>%d"..DarkmistsMeta.colors.default.."/<green>%d\n",
+        "  "..dm_text.."MV: "..dm_good.."%d"..dm_text.."/"..dm_good.."%d\n",
         dmapi.player.vitals.mv or 0,
         dmapi.player.vitals.mvMax or 0
       ))
     end
 
     if dmapi.player and dmapi.player.combat then
-      cecho("\n<ansi_cyan>Combat:\n")
+      cecho("\n"..dm_header_color.."Combat:\n")
       cecho(string.format(
-        "  "..DarkmistsMeta.colors.default.."In Combat: <dim_grey>%s\n",
+        "  "..dm_text.."In Combat: "..dm_muted.."%s\n",
         tostring(dmapi.player.combat.active or false)
       ))
       if dmapi.player.combat.target then
-        cecho("  "..DarkmistsMeta.colors.default.."Target: <red>" .. tostring(dmapi.player.combat.target) .. "\n")
+        cecho("  "..dm_text.."Target: "..dm_bad .. tostring(dmapi.player.combat.target) .. "\n")
       end
     end
 
@@ -370,13 +372,13 @@ DarkmistsAlias.add([[^sb(?:\s+(\w+))?$]], function()
   end
 
   -- default / help
-  cecho("\n<ansi_cyan>Status Bar Commands:\n")
-  cecho("  "..DarkmistsMeta.colors.default.."sb show      <dim_grey>- show all bars\n")
-  cecho("  "..DarkmistsMeta.colors.default.."sb hide      <dim_grey>- hide all bars\n")
-  cecho("  "..DarkmistsMeta.colors.default.."sb toggle    <dim_grey>- toggle visibility\n")
-  cecho("  "..DarkmistsMeta.colors.default.."sb update    <dim_grey>- force refresh\n")
-  cecho("  "..DarkmistsMeta.colors.default.."sb recreate  <dim_grey>- rebuild UI\n")
-  cecho("  "..DarkmistsMeta.colors.default.."sb info      <dim_grey>- debug information\n")
+  cecho("\n"..dm_header_color.."Status Bar Commands:\n")
+  cecho("  "..dm_text.."sb show      "..dm_muted.."- show all bars\n")
+  cecho("  "..dm_text.."sb hide      "..dm_muted.."- hide all bars\n")
+  cecho("  "..dm_text.."sb toggle    "..dm_muted.."- toggle visibility\n")
+  cecho("  "..dm_text.."sb update    "..dm_muted.."- force refresh\n")
+  cecho("  "..dm_text.."sb recreate  "..dm_muted.."- rebuild UI\n")
+  cecho("  "..dm_text.."sb info      "..dm_muted.."- debug information\n")
 end)
 
 -- ============================================================================
@@ -388,34 +390,34 @@ do
   DarkmistsAlias.add(string.format("^%s$", ItemTracker.settings.alias), function()
     local alias = ItemTracker.settings.alias
     
-    cecho("\n<ansi_cyan>Item Tracker Commands:\n")
-    cecho("<dim_grey>Clickable item identification & lookup system\n\n")
+    cecho("\n"..dm_header_color.."Item Tracker Commands:\n")
+    cecho(dm_muted.."Clickable item identification & lookup system\n\n")
 
-    cecho(DarkmistsMeta.colors.default.."Usage:\n")
-    cecho(string.format("  <ansi_cyan>%s "..DarkmistsMeta.colors.default.."<item name or partial>\n\n", alias))
+    cecho(dm_text.."Usage:\n")
+    cecho(string.format("  %s%s %s<item name or partial>\n\n", dm_header_color, alias, dm_text))
 
-    cecho(DarkmistsMeta.colors.default.."Examples:\n")
-    cecho(string.format("  <ansi_cyan>%s bracelet"..DarkmistsMeta.colors.default.."                – search for items containing 'bracelet'\n", alias))
-    cecho(string.format("  <ansi_cyan>%s an oversized lumber axe"..DarkmistsMeta.colors.default.." – exact name lookup\n\n", alias))
+    cecho(dm_text.."Examples:\n")
+    cecho(string.format("  %s%s bracelet%s                – search for items containing 'bracelet'\n", dm_header_color, alias, dm_text))
+    cecho(string.format("  %s%s an oversized lumber axe%s – exact name lookup\n\n", dm_header_color, alias, dm_text))
 
-    cecho(DarkmistsMeta.colors.default.."Area search:\n")
-    cecho(string.format("  <ansi_cyan>%s area "..DarkmistsMeta.colors.default.."<area name or partial>\n\n", alias))
+    cecho(dm_text.."Area search:\n")
+    cecho(string.format("  %s%s area %s<area name or partial>\n\n", dm_header_color, alias, dm_text))
 
-    cecho(DarkmistsMeta.colors.default.."In-game interaction:\n")
-    cecho("  <ansi_cyan>• Click an item name"..DarkmistsMeta.colors.default.."       – show tooltip near your cursor\n")
-    cecho("  <ansi_cyan>• Shift + Click"..DarkmistsMeta.colors.default.."            – print full item details to chat\n")
-    cecho("  <ansi_cyan>• Click anywhere else"..DarkmistsMeta.colors.default.."      – close the tooltip\n\n")
+    cecho(dm_text.."In-game interaction:\n")
+    cecho("  "..dm_header_color.."• Click an item name"..dm_text.."       – show tooltip near your cursor\n")
+    cecho("  "..dm_header_color.."• Shift + Click"..dm_text.."            – print full item details to chat\n")
+    cecho("  "..dm_header_color.."• Click anywhere else"..dm_text.."      – close the tooltip\n\n")
 
-    cecho(DarkmistsMeta.colors.default.."Detection rules:\n")
-    cecho("  <dim_grey>• Only matches item names at the END of a line\n")
-    cecho("  <dim_grey>• Longest names are matched first\n")
-    cecho("  <dim_grey>• Prevents false matches (e.g. 'egg' in 'leggings')\n\n")
+    cecho(dm_text.."Detection rules:\n")
+    cecho("  "..dm_muted.."• Only matches item names at the END of a line\n")
+    cecho("  "..dm_muted.."• Longest names are matched first\n")
+    cecho("  "..dm_muted.."• Prevents false matches (e.g. 'egg' in 'leggings')\n\n")
 
-    cecho(DarkmistsMeta.colors.default.."Notes:\n")
-    cecho("  <dim_grey>• Duplicate item names are supported and shown together\n")
-    cecho("  <dim_grey>• Tooltip size auto-adjusts to item details\n")
-    cecho("  <dim_grey>• Tooltip avoids covering status bars at bottom\n")
-    cecho("  <dim_grey>• Colors and layout can be customized in ItemTracker.settings\n\n")
+    cecho(dm_text.."Notes:\n")
+    cecho("  "..dm_muted.."• Duplicate item names are supported and shown together\n")
+    cecho("  "..dm_muted.."• Tooltip size auto-adjusts to item details\n")
+    cecho("  "..dm_muted.."• Tooltip avoids covering status bars at bottom\n")
+    cecho("  "..dm_muted.."• Colors and layout can be customized in ItemTracker.settings\n\n")
   end)
 
   -- Area search command
@@ -424,22 +426,22 @@ do
     local results = ItemTracker.listByArea(query)
 
     if not results or #results == 0 then
-      cecho("<red>[ID] No items found for area: " .. query .. "\n")
+      cecho(dm_bad.."[ID] No items found for area: " .. query .. "\n")
       return
     end
 
     cecho(string.format(
-      "\n<light_goldenrod>[ID] Items in area matching '%s' (%d):"..DarkmistsMeta.colors.default.."\n",
+      "\n"..dm_warn.."[ID] Items in area matching '%s' (%d):"..dm_text.."\n",
       query,
       #results
     ))
 
     for i, item in ipairs(results) do
-      cecho(string.format("   "..DarkmistsMeta.colors.default.."%d) ", i))
+      cecho(string.format("   "..dm_text.."%d) ", i))
       local areaTag = item.area and ("[" .. item.area .. "] ") or ""
       cechoLink(
-        "<dim_grey>" .. areaTag .. DarkmistsMeta.colors.default ..
-        ItemTracker.settings.itemLinkColor .. item.name .. DarkmistsMeta.colors.default.."\n",
+        dm_muted .. areaTag .. dm_text ..
+        ItemTracker.settings.itemLinkColor .. item.name .. dm_text.."\n",
         function() ItemTracker.handleClick(item.name) end,
         "Click: tooltip | Shift+Click: full identify",
         true
@@ -459,7 +461,7 @@ do
     local results = ItemTracker.find(query)
 
     if not results or #results == 0 then
-      cecho("<red>[ID] No items found for: " .. query .. "\n")
+      cecho(dm_bad.."[ID] No items found for: " .. query .. "\n")
       return
     end
 
@@ -470,17 +472,17 @@ do
     end
 
     -- Multiple matches: show clickable list
-    cecho("<light_goldenrod>[ID] Multiple matches:"..DarkmistsMeta.colors.default.."\n")
+    cecho(dm_warn.."[ID] Multiple matches:"..dm_text.."\n")
     for i, item in ipairs(results) do
-      cecho(string.format("   "..DarkmistsMeta.colors.default.."%d) ", i))
+      cecho(string.format("   "..dm_text.."%d) ", i))
       cechoLink(
-        ItemTracker.settings.itemLinkColor .. item.name .. DarkmistsMeta.colors.default.."\n",
+        ItemTracker.settings.itemLinkColor .. item.name .. dm_text.."\n",
         function() ItemTracker.handleClick(item.name) end,
         "Click: tooltip | Shift+Click: full identify",
         true
       )
     end
-    cecho("<light_goldenrod>Refine your search."..DarkmistsMeta.colors.default.."\n")
+    cecho(dm_warn.."Refine your search."..dm_text.."\n")
   end)
 end
 
@@ -488,13 +490,13 @@ end
 -- WALK COMMAND
 -- =============================================================================
 local function renderWalkList(filter)
-  local c = DarkmistsMeta.colors.default
+  local c = dm_text
 
   Darkmists.Log("WALK","Destinations by Area:")
 
   local grouped = MapDestinations.getGroupedFiltered(filter)
   if not next(grouped) then
-    cecho("\n  <dim_gray>(none)")
+    cecho("\n  "..dm_muted.."(none)")
     return
   end
 
@@ -509,13 +511,18 @@ local function renderWalkList(filter)
       local roomName = getRoomName(entry.room) or "UNKNOWN"
 
       cechoLink(string.format(
-        "\n<dark_khaki>[%s%-16s<dark_khaki>] %s%-23s <dim_gray>→ <dim_gray>[%s%5d<dim_gray>] %s%-32s",
+        "\n%s[%s%-16s%s] %s%-23s %s→ %s[%s%5d%s] %s%-32s",
+        dm_warn,
         c,
         DMUtil.cap(areaName, 16),
+        dm_warn,
         c,
         ("<u>%s</u>"):format(DMUtil.cap(entry.name, 16)),
+        dm_muted,
+        dm_muted,
         c,
         entry.room,
+        dm_muted,
         c,
         DMUtil.cap(roomName,32)
       ),
@@ -529,45 +536,44 @@ local function renderWalkList(filter)
 end
 
 DarkmistsAlias.add("^walk(?:\\s+(.*))?$", function()
-  local c = DarkmistsMeta.colors.default
+  local c = dm_text
   local arg = matches[2] and matches[2]:trim() or ""
 
   -- HELP
   if arg == "" then
-    cecho([[
-<ansi_cyan>Walk Module:
-    <dim_gray>The Walk module enables speedwalking between two known rooms 
+    cecho(dm_header_color..[[Walk Module:
+    ]]..dm_muted..[[The Walk module enables speedwalking between two known rooms 
     using the default map speedwalk system. Both the starting room and 
     destination must already be discovered, and the route must be clear. Paths 
     that require traversing mazes are not supported.
 
-<ansi_cyan>Walk Commands:
+]]..dm_header_color..[[Walk Commands:
   ]]..c..[[walk <name>
-    <dim_gray>Navigate to a saved destination
+    ]]..dm_muted..[[Navigate to a saved destination
 
   ]]..c..[[walk list <filter: optional>
-    <dim_gray>Show all saved destinations. A filter argument can
+    ]]..dm_muted..[[Show all saved destinations. A filter argument can
     be supplied to further refine the results.
 
   ]]..c..[[walk add <name> <roomid: optional>
-    <dim_gray>Add a persistent destination. If room id is omitted
+    ]]..dm_muted..[[Add a persistent destination. If room id is omitted
     then the current room is used (if known).
 
   ]]..c..[[walk rem <name>
-    <dim_gray>Permanently remove a destination.
+    ]]..dm_muted..[[Permanently remove a destination.
 
   ]]..c..[[walk area <name>
-    <dim_gray>Navigate to the first room of a matching area.
+    ]]..dm_muted..[[Navigate to the first room of a matching area.
 
   ]]..c..[[walk stop
-    <dim_gray>Cancel a walk that is currently in progress.
+    ]]..dm_muted..[[Cancel a walk that is currently in progress.
 ]])
     return
   end
 
   if arg == "stop" then
     MapDestinations.stop()
-    Darkmists.Log("WALK","<red>Walking Stopped!")
+    Darkmists.Log("WALK", dm_bad.."Walking Stopped!")
     return
   end
 
@@ -586,9 +592,9 @@ DarkmistsAlias.add("^walk(?:\\s+(.*))?$", function()
 
       if not ok then
         if a == "NO_CURRENT_ROOM" then
-          Darkmists.Log("WALK","<red>No Current Room found on Map")
+          Darkmists.Log("WALK", dm_bad.."No Current Room found on Map")
         elseif a == "INVALID_NAME" then
-          Darkmists.Log("WALK","<red>Invalid destination name")
+          Darkmists.Log("WALK", dm_bad.."Invalid destination name")
         end
         return
       end
@@ -596,8 +602,8 @@ DarkmistsAlias.add("^walk(?:\\s+(.*))?$", function()
       local destName, roomId = a, b
 
       Darkmists.Log("WALK",
-        ("Added destination: %s%s<green> → <dim_gray>[%s%d<dim_gray>] %s%s")
-          :format(c, destName, c, roomId, c, cRoomName)
+        ("Added destination: %s%s%s → %s[%s%d%s] %s%s")
+          :format(c, destName, dm_good, dm_muted, c, roomId, dm_muted, c, cRoomName)
       )
 
       return
@@ -609,12 +615,12 @@ DarkmistsAlias.add("^walk(?:\\s+(.*))?$", function()
 
       if not ok then
         if a == "INVALID_NAME" then
-          Darkmists.Log("WALK","<red>Invalid destination name")
+          Darkmists.Log("WALK", dm_bad.."Invalid destination name")
         elseif a == "INVALID_ROOM" then
-          Darkmists.Log("WALK","<red>Invalid room id")
+          Darkmists.Log("WALK", dm_bad.."Invalid room id")
         elseif a == "ROOM_MISSING" then
           Darkmists.Log("WALK",
-            ("<red>Room does not exist: <white>%s%d"):format(c, b)
+            ("%sRoom does not exist: %s%d"):format(dm_bad, c, b)
           )
         end
         return
@@ -623,8 +629,8 @@ DarkmistsAlias.add("^walk(?:\\s+(.*))?$", function()
       local destName, roomId = a, b
 
       Darkmists.Log("WALK",
-        ("Added destination: %s%s<green> → <dim_gray>[%s%d<dim_gray>] %s%s")
-          :format(c, destName, c, roomId, c, roomName)
+        ("Added destination: %s%s%s → %s[%s%d%s] %s%s")
+          :format(c, destName, dm_good, dm_muted, c, roomId, dm_muted, c, roomName)
       )
 
       return
@@ -639,12 +645,12 @@ DarkmistsAlias.add("^walk(?:\\s+(.*))?$", function()
     if not ok then
       if code == "NOT_FOUND" then
         Darkmists.Log("WALK",
-          ("<red>No destination named %s%s"):format(c, data)
+          ("%sNo destination named %s%s"):format(dm_bad, c, data)
         )
       end
     else
       Darkmists.Log("WALK",
-        ("<dark_khaki>Removed destination %s%s"):format(c, data)
+        ("%sRemoved destination %s%s"):format(dm_warn, c, data)
       )
     end
     return
@@ -659,31 +665,31 @@ DarkmistsAlias.add("^walk(?:\\s+(.*))?$", function()
       if not ok then
         if code == "ALREADY_IN_AREA" then
           Darkmists.Log("WALK",
-            ("<dark_khaki>You are already in %s%s"):format(c, data)
+            ("%sYou are already in %s%s"):format(dm_warn, c, data)
           )
         elseif code == "AREA_NOT_FOUND" then
           Darkmists.Log("WALK",
-            ("<red>No area matching %s%s"):format(c, data)
+            ("%sNo area matching %s%s"):format(dm_bad, c, data)
           )
         elseif code == "AREA_EMPTY" then
           Darkmists.Log("WALK",
-            ("<red>Area has no indexed rooms: %s%s"):format(c, data)
+            ("%sArea has no indexed rooms: %s%s"):format(dm_bad, c, data)
           )
         elseif code == "INVALID_SEARCH" then
-          Darkmists.Log("WALK","<red>Invalid area search.")
+          Darkmists.Log("WALK", dm_bad.."Invalid area search.")
         elseif code == "NO_AREAS" then
-          Darkmists.Log("WALK","<red>Area table unavailable.")
+          Darkmists.Log("WALK", dm_bad.."Area table unavailable.")
         elseif code == "NO_CURRENT_ROOM" then
-          Darkmists.Log("WALK","<red>Current room unknown!")
+          Darkmists.Log("WALK", dm_bad.."Current room unknown!")
         elseif code == "NO_PATH" then
-          Darkmists.Log("WALK",("<red>No known path to area %s%s"):format(c, data))
+          Darkmists.Log("WALK",("%sNo known path to area %s%s"):format(dm_bad, c, data))
         end
         return
       end
 
       Darkmists.Log("WALK",
-        ("<ansi_cyan>Walking to area %s%s <dim_gray>[%s%d<dim_gray>]")
-          :format(c, data, c, code)
+        ("%sWalking to area %s%s %s[%s%d%s]")
+          :format(dm_header_color, c, data, dm_muted, c, code, dm_muted)
       )
       return
     end
@@ -695,31 +701,31 @@ DarkmistsAlias.add("^walk(?:\\s+(.*))?$", function()
   if not ok then
     if a == "NOT_FOUND" then
       Darkmists.Log("WALK",
-        ("<red>No destination named %s%s"):format(c, b)
+        ("%sNo destination named %s%s"):format(dm_bad, c, b)
       )
     elseif a == "INVALID_NAME" then
-      Darkmists.Log("WALK","<red>Invalid name given!")
+      Darkmists.Log("WALK", dm_bad.."Invalid name given!")
     elseif a == "NO_CURRENT_ROOM" then
-      Darkmists.Log("WALK","<red>Current room unknown!")
+      Darkmists.Log("WALK", dm_bad.."Current room unknown!")
     elseif a == "ALREADY_THERE" then
       Darkmists.Log("WALK",
-        ("<red>You are already at %s%s"):format(c, b)
+        ("%sYou are already at %s%s"):format(dm_bad, c, b)
       )
     elseif a == "ROOM_MISSING" then
       Darkmists.Log("WALK",
-        ("<red>Destination room no longer exists for %s%s"):format(c, b)
+        ("%sDestination room no longer exists for %s%s"):format(dm_bad, c, b)
       )
     elseif a == "NO_PATH" then
       Darkmists.Log("WALK",
-        ("<red>No known path to %s%s"):format(c, b)
+        ("%sNo known path to %s%s"):format(dm_bad, c, b)
       )
     end
     return
   end
 
   Darkmists.Log("WALK",
-    ("<ansi_cyan>Generating path to %s%s <dim_gray>[%s%d<dim_gray>] %s%s")
-      :format(c, arg, c, a, c, b)
+    ("%sGenerating path to %s%s %s[%s%d%s] %s%s")
+      :format(dm_header_color, c, arg, dm_muted, c, a, dm_muted, c, b)
   )
 end)
 
@@ -727,56 +733,55 @@ end)
 -- ENCHANTER ASSIST (ES) COMMAND
 -- =============================================================================
 DarkmistsAlias.add("^es(?:\\s+(.*))?$", function()
-  local c = DarkmistsMeta.colors.default
+  local c = dm_text
   local arg = matches[2] and matches[2]:trim() or ""
 
   -- HELP
   if arg == "" or arg == "help" then
-    cecho([[
-<ansi_cyan>EnchanterAssist Module:
-    <dim_gray>Automation helper for enchantment workflow management.
+    cecho(dm_header_color..[[EnchanterAssist Module:
+    ]]..dm_muted..[[Automation helper for enchantment workflow management.
     Controls resting, part counts, and execution flow.
 
-<ansi_cyan>EA Module Commands:
+]]..dm_header_color..[[EA Module Commands:
   ]]..c..[[es run
-    <dim_gray>Execute a single enchantment cycle.
+    ]]..dm_muted..[[Execute a single enchantment cycle.
 
   ]]..c..[[es auto
-    <dim_gray>Toggle automatic running mode.
+    ]]..dm_muted..[[Toggle automatic running mode.
 
   ]]..c..[[es 1-5
-    <dim_gray>Set enchantment part count (1–5),
+    ]]..dm_muted..[[Set enchantment part count (1–5),
     save configuration, and immediately run.
 
   ]]..c..[[es stats
-    <dim_gray>Display current session statistics.
+    ]]..dm_muted..[[Display current session statistics.
 
   ]]..c..[[es missing
-    <dim_gray>Display missing material statistics.
+    ]]..dm_muted..[[Display missing material statistics.
 
   ]]..c..[[es reset
-    <dim_gray>Reset session statistics.
+    ]]..dm_muted..[[Reset session statistics.
 
-<ansi_cyan>Configuration Commands:
+]]..dm_header_color..[[Configuration Commands:
   ]]..c..[[es set container <name>
-    <dim_gray>Set container holding enchantment items.
+    ]]..dm_muted..[[Set container holding enchantment items.
 
   ]]..c..[[es set sleeper <name>
-    <dim_gray>Set sleeper target.
+    ]]..dm_muted..[[Set sleeper target.
 
   ]]..c..[[es set sleepmode <sleep|potion>
-    <dim_gray>Choose restoration behavior type.
+    ]]..dm_muted..[[Choose restoration behavior type.
 
   ]]..c..[[es set potion <item>
-    <dim_gray>Set item used for quaffing.
+    ]]..dm_muted..[[Set item used for quaffing.
 
   ]]..c..[[es sound
-    <dim_gray>Toggle formula discovery sound
+    ]]..dm_muted..[[Toggle formula discovery sound
 
-<ansi_cyan>Control:
+]]..dm_header_color..[[Control:
   ]]..c..[[es enable
   ]]..c..[[es disable
-    <dim_gray>Enable or disable EnchanterAssist entirely.
+    ]]..dm_muted..[[Enable or disable EnchanterAssist entirely.
 ]])
     return
   end

@@ -1,6 +1,6 @@
 [
        {
-              "name": "DM Core",
+              "name": "core",
               "isActive": "yes",
               "script": "",
               "isFolder": "yes"

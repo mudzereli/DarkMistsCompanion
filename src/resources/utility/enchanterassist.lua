@@ -26,12 +26,39 @@ EnchanterAssist.container    = "bag"
 EnchanterAssist.sleeper      = "bedroll"
 EnchanterAssist.sleepType    = 1   -- 1 = sleep, 0 = consumables
 EnchanterAssist.drainItem    = "potion"
-EnchanterAssist.color        = "<cornflower_blue>"
 
 EnchanterAssist._lastVitalsCheck = 0
 EnchanterAssist._comboIndices = nil
 EnchanterAssist._wrapped     = false
 EnchanterAssist._savePath    = getMudletHomeDir() .. "/ea_data.lua"
+
+EnchanterAssist.color = DarkmistsTheme.accentTag
+
+local ea_plugin = EnchanterAssist.color .. "EnchanterAssist"
+local ea_text = DarkmistsTheme.textTag
+local ea_muted = DarkmistsTheme.mutedTag
+local ea_good = DarkmistsTheme.goodTag
+local ea_warn = DarkmistsTheme.warnTag
+local ea_bad = DarkmistsTheme.badTag
+local ea_info = DarkmistsTheme.infoTag
+local ea_accent = DarkmistsTheme.accentTag
+local ea_gold = DarkmistsTheme.goldTag
+
+local ea_red = DarkmistsTheme.red
+local ea_orange = DarkmistsTheme.orange
+local ea_green = DarkmistsTheme.green
+local ea_blue = DarkmistsTheme.blue
+local ea_cyan = DarkmistsTheme.cyan
+local ea_light_blue = DarkmistsTheme.lightBlue
+local ea_dark_blue = DarkmistsTheme.darkBlue
+local ea_purple = DarkmistsTheme.purple
+local ea_pink = DarkmistsTheme.pink
+local ea_brown = DarkmistsTheme.brown
+local ea_olive = DarkmistsTheme.olive
+local ea_silver = DarkmistsTheme.silver
+local ea_warn_color = DarkmistsTheme.warn
+local ea_gold_color = DarkmistsTheme.gold
+local ea_muted_color = DarkmistsTheme.muted
 
 EnchanterAssist.allmats = {
   "softwood","fire","skin","ivory","sandstone","bread","ice","coral","canvas",
@@ -156,29 +183,29 @@ function EnchanterAssist._nCr(n, r)
 end
 
 local highlightMap = {
-  ["^(.*) is momentarily encased in an aura of semitranslucent power%."] = {"pale_turquoise", "(SAVES)"},
-  ["^(.*) glows a brief light blue%."] = {"cornflower_blue", "(ATTRIBUTES)"},
-  ["^(.*) flares orange%."] = {"orange", "(RESOURCES)"},
-  ["^(.*) is more sturdy%."] = {"plum", "(-AC)"},
-  ["^(.*) glows a brief dark blue%."] = {"dark_slate_blue", "(OFFENSIVE)"},
-  ["^(.*) vibrates for a moment%."] = {"royal_blue", "(SLOW or HASTE)"},
-  ["^(.*) flares bright green, and you feel a sense of calm%."] = {"medium_sea_green", "(RESOURCE REGENERATION)"},
-  ["^(.*) seems a lot less metallic%."] = {"sienna", "(NONMETAL)"},
-  ["^(.*) begins to glow brightly%."] = {"deep_pink", "(GLOWING)"},
-  ["^(.*) begins to hum%."] = {"firebrick", "(HUMMING)"},
-  ["^(.*) emits a shimmering wave through the air%."] = {"light_steel_blue", "(ADDED AFFECT)"},
-  ["^(.*) glows a sickly green%."] = {"olive_drab", "(CURSE)"},
-  ["^(.*) seems heavier%."] = {"dim_gray", "(DOUBLE WEIGHT)"},
-  ["^(.*) is less sturdy%."] = {"light_coral", "(+AC)"},
-  ["^(.*) is more resistant to fire%."] = {"coral", "(BURN PROOF)"},
-  ["^(.*) almost escapes your grasp%."] = {"ansi_magenta", "(FLYING)"},
-  ["^(.*) looks a bit more expensive in quality%."] = {"dark_khaki", "(ADDED VALUE)"},
-  ["^(.*) fades out and back into existence%."] = {"light_cyan", "(INVIS)"},
-  ["^(.*) fades out of existence%."] = {"light_cyan", "(INVIS)"},
-  ["^(.*) seems lighter%."] = {"rosy_brown", "(HALF WEIGHT)"},
-  ["^(.*) sticks to your hands%."] = {"ansi_red", "(NOREMOVE)"},
-  ["^(.*) flares with a blinding silver aura, a pulse of energy emanating from it%."] = {"light_gray", "(IMMUNITY)"},
-  ["^(.*) begins to radiate a soft silver aura, shimmering vibrantly%."] = {"silver", "(RESIST)"}
+  ["^(.*) is momentarily encased in an aura of semitranslucent power%."] = {ea_cyan, "(SAVES)"},
+  ["^(.*) glows a brief light blue%."] = {ea_light_blue, "(ATTRIBUTES)"},
+  ["^(.*) flares orange%."] = {ea_orange, "(RESOURCES)"},
+  ["^(.*) is more sturdy%."] = {ea_purple, "(-AC)"},
+  ["^(.*) glows a brief dark blue%."] = {ea_dark_blue, "(OFFENSIVE)"},
+  ["^(.*) vibrates for a moment%."] = {ea_blue, "(SLOW or HASTE)"},
+  ["^(.*) flares bright green, and you feel a sense of calm%."] = {ea_green, "(RESOURCE REGENERATION)"},
+  ["^(.*) seems a lot less metallic%."] = {ea_brown, "(NONMETAL)"},
+  ["^(.*) begins to glow brightly%."] = {ea_pink, "(GLOWING)"},
+  ["^(.*) begins to hum%."] = {ea_red, "(HUMMING)"},
+  ["^(.*) emits a shimmering wave through the air%."] = {ea_cyan, "(ADDED AFFECT)"},
+  ["^(.*) glows a sickly green%."] = {ea_olive, "(CURSE)"},
+  ["^(.*) seems heavier%."] = {ea_muted_color, "(DOUBLE WEIGHT)"},
+  ["^(.*) is less sturdy%."] = {ea_warn_color, "(+AC)"},
+  ["^(.*) is more resistant to fire%."] = {ea_orange, "(BURN PROOF)"},
+  ["^(.*) almost escapes your grasp%."] = {ea_purple, "(FLYING)"},
+  ["^(.*) looks a bit more expensive in quality%."] = {ea_gold_color, "(ADDED VALUE)"},
+  ["^(.*) fades out and back into existence%."] = {ea_cyan, "(INVIS)"},
+  ["^(.*) fades out of existence%."] = {ea_cyan, "(INVIS)"},
+  ["^(.*) seems lighter%."] = {ea_brown, "(HALF WEIGHT)"},
+  ["^(.*) sticks to your hands%."] = {ea_red, "(NOREMOVE)"},
+  ["^(.*) flares with a blinding silver aura, a pulse of energy emanating from it%."] = {ea_silver, "(IMMUNITY)"},
+  ["^(.*) begins to radiate a soft silver aura, shimmering vibrantly%."] = {ea_silver, "(RESIST)"}
 }
 
 -- ============================================================================
@@ -200,7 +227,7 @@ function EnchanterAssist.save()
   }
 
   table.save(EnchanterAssist._savePath, data)
-  Darkmists.Log(EnchanterAssist.color.."EnchanterAssist","<dim_gray>Data saved to: <white>"..EnchanterAssist._savePath)
+  Darkmists.Log(ea_plugin, ea_muted .. "Data saved to: " .. ea_text .. EnchanterAssist._savePath)
 end
 
 function EnchanterAssist.load()
@@ -219,7 +246,7 @@ function EnchanterAssist.load()
     EnchanterAssist.sleepType = data.config.sleepType or 1
     EnchanterAssist.drainItem = data.config.drainItem or "potion"
   end
-  Darkmists.Log(EnchanterAssist.color.."EnchanterAssist","Data loaded from: <white>"..EnchanterAssist._savePath)
+  Darkmists.Log(ea_plugin, "Data loaded from: " .. ea_text .. EnchanterAssist._savePath)
 end
 
 -- ============================================================================
@@ -229,20 +256,20 @@ function EnchanterAssist.run()
   if not EnchanterAssist.enabled then return end
 
   if EnchanterAssist.state ~= "idle" then
-    local msg = "<dark_khaki>Waiting — "
+    local msg = ea_warn .. "Waiting - "
 
     if EnchanterAssist.state == "brewing" then
-      msg = msg .. "<orange>Brewing"
+      msg = msg .. ea_warn .. "Brewing"
       if EnchanterAssist.pendingKey then
-        msg = msg .. " <dim_gray>(<white>"..EnchanterAssist.pendingKey.."<dim_gray>)"
+        msg = msg .. " " .. ea_muted .. "(" .. ea_text .. EnchanterAssist.pendingKey .. ea_muted .. ")"
       end
     elseif EnchanterAssist.state == "resting" then
-      msg = msg .. "<medium_sea_green>Resting"
+      msg = msg .. ea_good .. "Resting"
     else
-      msg = msg .. "<white>"..EnchanterAssist.state
+      msg = msg .. ea_text .. EnchanterAssist.state
     end
 
-    Darkmists.Log(EnchanterAssist.color.."EnchanterAssist", msg)
+    Darkmists.Log(ea_plugin, msg)
     return
   end
 
@@ -252,8 +279,8 @@ function EnchanterAssist.run()
 
   if n < r then
       Darkmists.Log(
-        EnchanterAssist.color.."EnchanterAssist",
-        "<dark_khaki>Not enough materials available."
+        ea_plugin,
+        ea_warn .. "Not enough materials available."
       )
       return
   end
@@ -287,8 +314,8 @@ function EnchanterAssist.run()
           EnchanterAssist.sawFlare = false
           EnchanterAssist.sessionTrials = EnchanterAssist.sessionTrials + 1
 
-          Darkmists.Log(EnchanterAssist.color.."EnchanterAssist",
-              "<dim_gray>TRY <white>" .. key .. "\n")
+            Darkmists.Log(ea_plugin,
+              ea_muted .. "TRY " .. ea_text .. key .. "\n")
 
           EnchanterAssist.state = "brewing"
           dmapi.core.send("get", "key", EnchanterAssist.container)
@@ -304,8 +331,8 @@ function EnchanterAssist.run()
 
   -- exhausted
   Darkmists.Log(
-      EnchanterAssist.color.."EnchanterAssist",
-      "<red>No new combinations remain for "..r.."-part."
+      ea_plugin,
+      ea_bad .. "No new combinations remain for "..r.."-part."
   )
   EnchanterAssist.autoRun = false
   EnchanterAssist.state = "idle"
@@ -316,15 +343,15 @@ function EnchanterAssist.showSessionFormulas()
   local discoveredCount = #EnchanterAssist.sessionFormulas
 
   if discoveredCount == 0 then
-    cecho("\n<dark_khaki>No formulas discovered this session.\n")
+    cecho("\n" .. ea_warn .. "No formulas discovered this session.\n")
     return
   end
 
-  cecho("\n<cadet_blue>===== Session Formulas =====\n")
+  cecho("\n" .. ea_info .. "===== Session Formulas =====\n")
 
   for _, name in ipairs(EnchanterAssist.sessionFormulas) do
     cechoLink(
-      string.format("<cornflower_blue>• <white>%s\n", name),
+      string.format("%s• %s%s\n", ea_accent, ea_text, name),
       function()
         send("alch info " .. name)
       end,
@@ -333,12 +360,10 @@ function EnchanterAssist.showSessionFormulas()
     )
   end
 
-  cecho("<cadet_blue>============================\n")
+  cecho(ea_info .. "============================\n")
 end
 
 function EnchanterAssist.finishAttempt()
-  dmapi.core.send("save")
-
   EnchanterAssist.sawFlare   = false
   EnchanterAssist.pendingKey = nil
 
@@ -355,7 +380,7 @@ function EnchanterAssist.stats()
 
   cecho(--Darkmists.Log(
     --EnchanterAssist.color.."EnchanterAssist",
-    "\n<cadet_blue>===== EnchanterAssist Progress ====="
+    "\n" .. ea_info .. "===== EnchanterAssist Progress ====="
   )
 
   for r = 1, 5 do
@@ -374,9 +399,9 @@ function EnchanterAssist.stats()
       percent = (attemptedForMode / totalCombos) * 100
     end
 
-    local lineColor = "<dim_gray>"
+    local lineColor = ea_muted
     if r == EnchanterAssist.partCount then
-      lineColor = "<medium_sea_green>"
+      lineColor = ea_good
     end
 
     cecho(--Darkmists.Log(
@@ -392,23 +417,27 @@ function EnchanterAssist.stats()
     )
   end
 
-  cecho("\n<cadet_blue>-------- Session Statistics --------")
+  cecho("\n" .. ea_info .. "-------- Session Statistics --------")
 
   cecho(string.format(
-    "\n<white>Trials Attempted:    <medium_sea_green>%4d",
+    "\n%sTrials Attempted:    %s%4d",
+    ea_text,
+    ea_good,
     EnchanterAssist.sessionTrials
   ))
 
   local discoveredCount = #EnchanterAssist.sessionFormulas
 
   cecho(string.format(
-    "\n<white>Formulas Discovered: <cornflower_blue>%4d ",
+    "\n%sFormulas Discovered: %s%4d ",
+    ea_text,
+    ea_accent,
     discoveredCount
   ))
 
   if discoveredCount > 0 then
     cechoLink(
-      "<dark_khaki>[View All]",
+      ea_gold .. "[View All]",
       function()
         EnchanterAssist.showSessionFormulas()
       end,
@@ -417,7 +446,7 @@ function EnchanterAssist.stats()
     )
   end
   
-  cecho("\n<cadet_blue>====================================")
+  cecho("\n" .. ea_info .. "====================================")
 end
 
 function EnchanterAssist.reset()
@@ -434,23 +463,23 @@ function EnchanterAssist.reset()
   EnchanterAssist._shuffleMaterials()
 
   EnchanterAssist.save()
-  Darkmists.Log(EnchanterAssist.color.."EnchanterAssist","<medium_sea_green>Reset complete, Attempts Preserved.")
+  Darkmists.Log(ea_plugin, ea_good .. "Reset complete, Attempts Preserved.")
 end
 
 function EnchanterAssist.statsMissing()
 
-  cecho("\n<cadet_blue>===== Missing Materials =====")
+  cecho("\n" .. ea_info .. "===== Missing Materials =====")
 
   local count = 0
   for mat,_ in pairs(EnchanterAssist.missing) do
     count = count + 1
-    cecho("\n<dark_khaki>• <white>" .. mat)
+    cecho("\n" .. ea_warn .. "• " .. ea_text .. mat)
   end
 
   if count == 0 then
-    cecho("\n<medium_sea_green>None")
+    cecho("\n" .. ea_good .. "None")
   else
-    cecho("\n<dim_gray>("..count.." total)")
+    cecho("\n" .. ea_muted .. "("..count.." total)")
   end
 
   cecho("\n")
@@ -488,8 +517,8 @@ function EnchanterAssist.on_line(ln)
                   EnchanterAssist.pendingKey) then
 
               Darkmists.Log(
-                EnchanterAssist.color.."EnchanterAssist",
-                "<medium_sea_green>Already Known Formula: <white>"..EnchanterAssist.pendingKey
+                ea_plugin,
+                ea_good .. "Already Known Formula: " .. ea_text .. EnchanterAssist.pendingKey
               )
 
               EnchanterAssist._add(
@@ -509,8 +538,8 @@ function EnchanterAssist.on_line(ln)
     -- If autorun is OFF, do not force rest.
     if not EnchanterAssist.autoRun then
         Darkmists.Log(
-          EnchanterAssist.color.."EnchanterAssist",
-          "<dark_khaki>Too tired — Manual mode, not forcing rest."
+          ea_plugin,
+          ea_warn .. "Too tired - Manual mode, not forcing rest."
         )
         EnchanterAssist.state = "idle"
         return
@@ -523,8 +552,8 @@ function EnchanterAssist.on_line(ln)
     EnchanterAssist.state = "resting"
 
     Darkmists.Log(
-      EnchanterAssist.color.."EnchanterAssist",
-      "<medium_sea_green>Too tired — Forcing Rest"
+      ea_plugin,
+      ea_good .. "Too tired - Forcing Rest"
     )
 
     local v = dmapi.player.vitals
@@ -555,7 +584,7 @@ function EnchanterAssist.on_line(ln)
 
   local m = ln:match("^You do not have essence of (%w+)%.")
   if m then
-    Darkmists.Log(EnchanterAssist.color.."EnchanterAssist","<dark_khaki>Missing Essence: <white>"..m)
+    Darkmists.Log(ea_plugin, ea_warn .. "Missing Essence: " .. ea_text .. m)
     dmapi.core.send("put", "key", EnchanterAssist.container)
     EnchanterAssist._add(EnchanterAssist.missing, string.lower(m))
     EnchanterAssist._comboIndices = nil
@@ -567,20 +596,20 @@ function EnchanterAssist.on_line(ln)
   if ln:match("^You lack the materials")
   or ln:match("^You must only use raw materials")
   or ln:match("^Alchemy only needs one of each kind of ingredient") then
-    Darkmists.Log(EnchanterAssist.color.."EnchanterAssist","<red>Bad Materials")
+    Darkmists.Log(ea_plugin, ea_bad .. "Bad Materials")
     --EnchanterAssist.finishAttempt()
     return
   end
   
   if  ln:match("^You botch the brew, and your alchemy process") then
     --EnchanterAssist.finishAttempt()
-    Darkmists.Log(EnchanterAssist.color.."EnchanterAssist","<red>Skill check failed.")
+    Darkmists.Log(ea_plugin, ea_bad .. "Skill check failed.")
     return
   end
 
   if ln:match("^Your alchemy process results in a gooey mess") then
     if EnchanterAssist.state == "brewing" and not EnchanterAssist._contains(EnchanterAssist.attempted, EnchanterAssist.pendingKey) then
-      Darkmists.Log(EnchanterAssist.color.."EnchanterAssist","<dark_khaki>No formula from: <white>"..EnchanterAssist.pendingKey)
+      Darkmists.Log(ea_plugin, ea_warn .. "No formula from: " .. ea_text .. EnchanterAssist.pendingKey)
       EnchanterAssist._add(EnchanterAssist.attempted, EnchanterAssist.pendingKey)
       EnchanterAssist.save()
     end
@@ -592,8 +621,13 @@ function EnchanterAssist.on_line(ln)
   if formula then
     if EnchanterAssist.state == "brewing" and not EnchanterAssist._contains(EnchanterAssist.attempted, EnchanterAssist.pendingKey) then
       table.insert(EnchanterAssist.sessionFormulas, formula)
-      local msg = "Formula Discovered! <white>%s <dim_gray>(<white>%s<dim_gray>)"
-      Darkmists.Log(EnchanterAssist.color.."EnchanterAssist",msg:format(formula,EnchanterAssist.pendingKey))
+      dmapi.core.send("save")
+      local msg = "Formula Discovered! "
+        .. ea_text .. formula
+        .. " " .. ea_muted .. "("
+        .. ea_text .. EnchanterAssist.pendingKey
+        .. ea_muted .. ")"
+      Darkmists.Log(ea_plugin, msg)
       EnchanterAssist._playDiscoverSound()
       dmapi.core.send("alc info",formula)
       EnchanterAssist._add(EnchanterAssist.attempted, EnchanterAssist.pendingKey)
@@ -725,4 +759,4 @@ EnchanterAssist.load()
 math.randomseed(os.time())   -- seed once per session
 EnchanterAssist._shuffleMaterials()
 --EnchanterAssist.stats()
-Darkmists.Log(EnchanterAssist.color.."EnchanterAssist","Ready for Usage!")
+Darkmists.Log(ea_plugin, "Ready for Usage!")

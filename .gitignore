@@ -1,5 +1,6 @@
-# Ignore build directory and .output file
-build/
+# Ignore build directory except the packaged mpkg we want tracked
+/build/*
+!/build/DarkMistsCompanion.mpackage
 .output
 
 # Ignore any file starting with "muddle" in the project root directory
