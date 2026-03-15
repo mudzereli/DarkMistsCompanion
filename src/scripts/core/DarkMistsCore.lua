@@ -15,12 +15,6 @@
 --   - Explicit > clever
 -- =============================================================================
 
--- Load foundational utilities first (no dependencies)
-dofile(getMudletHomeDir() .. "/DarkMistsCompanion/core/AliasManager.lua")
-dofile(getMudletHomeDir() .. "/DarkMistsCompanion/core/EventManager.lua")
-dofile(getMudletHomeDir() .. "/DarkMistsCompanion/core/ThemeManager.lua")
-dofile(getMudletHomeDir() .. "/DarkMistsCompanion/utility/util.lua")
-
 local saveFilePath     = getMudletHomeDir() .. "/darkmists_global_settings.lua"
 local itemViewerPath   = getMudletHomeDir() .. "/DarkMistsCompanion/assets/item-viewer.html"
 local dmapiDocPath     = getMudletHomeDir() .. "/DarkMistsCompanion/assets/dmapi.html"
