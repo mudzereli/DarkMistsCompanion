@@ -131,19 +131,37 @@ end
 
 -- Prompt the user before loading the packaged map (may overwrite their current map)
 function Darkmists.PromptLoadMap()
-  -- Prominent prompt using cecho so timestamps aren't added
-  cecho("\n\n")
-  cecho("<orange>╔════════════════════════════════════════════════════════════╗\n")
-  cecho("<orange>║<red>      Warning: loading the packaged map will overwrite      <orange>║\n")
-  cecho("<orange>║<red>                your current map in Mudlet.                 <orange>║\n")
-  cecho("<orange>║                    ")
+  -- Prefer showing the packaged-map prompt in the reusable alert window.
+  local helperPath = getMudletHomeDir() .. "/DarkMistsCompanion/ui/framework/DMAlertWindow.lua"
+  if not DMAlertWindow and io.exists(helperPath) then
+    dofile(helperPath)
+  end
+
+  if DMAlertWindow and DMAlertWindow.Show then
+    DMAlertWindow.Show("Warning: Load Packaged Map", function(win)
+      cecho(win, "\n")
+      cecho(win, "<red>Loading the packaged map will overwrite your current map in Mudlet.\n\n")
+      cechoLink(win, "<dim_gray><u>[<green>Load Packaged Map<dim_gray>]",
+        [[DMAlertWindow.Hide(); Darkmists.LoadMapDat()]],
+        "Load the packaged map (may overwrite existing map)",
+        true
+      )
+    end, { width = 560, height = 160 })
+  else
+    -- Fallback to original cecho block if helper unavailable
+    cecho("\n\n")
+    cecho("<orange>╔════════════════════════════════════════════════════════════╗\n")
+    cecho("<orange>║<red>      Warning: loading the packaged map will overwrite      <orange>║\n")
+    cecho("<orange>║<red>                your current map in Mudlet.                 <orange>║\n")
+    cecho("<orange>║                    ")
     cechoLink("<dim_gray><u>[<green>Load Packaged Map<dim_gray>]",
-    [[Darkmists.LoadMapDat()]],
-    "Load the packaged map (may overwrite existing map)",
-    true
-  )
-  cecho("                     <orange>║\n")
-  cecho("<orange>╚════════════════════════════════════════════════════════════╝\n")
+      [[Darkmists.LoadMapDat()]],
+      "Load the packaged map (may overwrite existing map)",
+      true
+    )
+    cecho("                     <orange>║\n")
+    cecho("<orange>╚════════════════════════════════════════════════════════════╝\n")
+  end
 
   -- mark as shown to avoid prompting repeatedly and persist
   Darkmists.GlobalSettings.hasSeenMapPrompt = true
@@ -277,40 +295,75 @@ end
 function Darkmists.ShowUIIntroMessage()
   if Darkmists.GlobalSettings.hasSeenUIIntroMessage then return end
   if not Darkmists.GlobalSettings.minimalMode then return end
-
   -- slight delay so login text finishes first
   tempTimer(1.5, function()
+    -- lazily load framework helper if not already present (works in minimal mode)
+    local helperPath = getMudletHomeDir() .. "/DarkMistsCompanion/ui/framework/DMAlertWindow.lua"
+    if not DMAlertWindow and io.exists(helperPath) then
+      dofile(helperPath)
+    end
 
-    cecho("\n")
-    cecho("<gold>╔════════════════════════════════════════════════════════════╗\n")
-    cecho("<gold>║<cadet_blue>              🔮 WELCOME TO DARK MISTS COMPANION            <gold>║\n")
-    cecho("<gold>╠════════════════════════════════════════════════════════════╣\n")
-    cecho("<gold>║<ansi_yellow> You are currently using Minimal UI Mode.                   <gold>║\n")
-    cecho("<gold>║                                                            ║\n")
-    cecho("<gold>║<steel_blue> Enable the Full Interface to access:                       <gold>║\n")
-    cecho("<gold>║   <steel_blue>• Chat History Window                                    <gold>║\n")
-    cecho("<gold>║   <steel_blue>• Who List Panel                                         <gold>║\n")
-    cecho("<gold>║   <steel_blue>• Affect & Buff Duration Tracker                         <gold>║\n")
-    cecho("<gold>║   <steel_blue>• Player Status & Combat Panels                          <gold>║\n")
-    cecho("<gold>║   <steel_blue>• Dockable & Customizable UI Windows                     <gold>║\n")
-    cecho("<gold>║                                                            ║\n")
-    cecho("<gold>╠════════════════════════════════════════════════════════════╣\n")
-    cecho("<gold>║<steel_blue> Command: <green>dmc ui<steel_blue>                                            <gold>║\n")
-    cecho("<gold>║<dim_gray> (Toggle command — turns UI <green>ON<dim_gray> or <red>OFF<dim_gray>)                      <gold>║\n")
-    cecho("<gold>║                                                            ║\n")
-    cecho("<gold>║ ")
-    cechoLink("<dim_gray><u>[<green>ENABLE FULL UI NOW<dim_gray>]",
-      [[Darkmists.EnableUI()]],
-      "Enable the full Dark Mists Companion UI",
-      true
-    )
-    cecho("                                       <gold>║\n")
-    cecho("<gold>╚════════════════════════════════════════════════════════════╝\n\n")
+    if DMAlertWindow and DMAlertWindow.Show then
+      DMAlertWindow.Show("🔮 WELCOME TO DARK MISTS COMPANION", function(win)
+        cecho(win, "\n")
+        cecho(win, "<ansi_yellow> You are currently using Minimal UI Mode.\n\n")
+        cecho(win, "<steel_blue> Enable the Full Interface to access:\n")
+        cecho(win, "  <steel_blue>• Chat History Window\n")
+        cecho(win, "  <steel_blue>• Who List Panel\n")
+        cecho(win, "  <steel_blue>• Affect & Buff Duration Tracker\n")
+        cecho(win, "  <steel_blue>• Player Status & Combat Panels\n")
+        cecho(win, "  <steel_blue>• Dockable & Customizable UI Windows\n\n")
+        cecho(win, "<steel_blue> Command: <green>dmc ui<steel_blue>\n")
+        cecho(win, "<dim_gray> (Toggle command — turns UI <green>ON<dim_gray> or <red>OFF<dim_gray>)\n\n")
+        cechoLink(win, "<dim_gray><u>[<green>ENABLE FULL UI NOW<dim_gray>]", [[Darkmists.EnableUI()]], "Enable the full Dark Mists Companion UI", true)
+      end, { width = 640, height = 300 })
+    else
+      -- Fallback to original cecho block when helper unavailable
+      cecho("\n")
+      cecho("<gold>╔════════════════════════════════════════════════════════════╗\n")
+      cecho("<gold>║<cadet_blue>              🔮 WELCOME TO DARK MISTS COMPANION            <gold>║\n")
+      cecho("<gold>╠════════════════════════════════════════════════════════════╣\n")
+      cecho("<gold>║<ansi_yellow> You are currently using Minimal UI Mode.                   <gold>║\n")
+      cecho("<gold>║                                                            ║\n")
+      cecho("<gold>║<steel_blue> Enable the Full Interface to access:                       <gold>║\n")
+      cecho("<gold>║   <steel_blue>• Chat History Window                                    <gold>║\n")
+      cecho("<gold>║   <steel_blue>• Who List Panel                                         <gold>║\n")
+      cecho("<gold>║   <steel_blue>• Affect & Buff Duration Tracker                         <gold>║\n")
+      cecho("<gold>║   <steel_blue>• Player Status & Combat Panels                          <gold>║\n")
+      cecho("<gold>║   <steel_blue>• Dockable & Customizable UI Windows                     <gold>║\n")
+      cecho("<gold>║                                                            ║\n")
+      cecho("<gold>╠════════════════════════════════════════════════════════════╣\n")
+      cecho("<gold>║<steel_blue> Command: <green>dmc ui<steel_blue>                                            <gold>║\n")
+      cecho("<gold>║<dim_gray> (Toggle command — turns UI <green>ON<dim_gray> or <red>OFF<dim_gray>)                      <gold>║\n")
+      cecho("<gold>║                                                            ║\n")
+      cecho("<gold>║ ")
+      cechoLink("<dim_gray><u>[<green>ENABLE FULL UI NOW<dim_gray>]",
+        [[Darkmists.EnableUI()]],
+        "Enable the full Dark Mists Companion UI",
+        true
+      )
+      cecho("                                       <gold>║\n")
+      cecho("<gold>╚════════════════════════════════════════════════════════════╝\n\n")
+    end
 
+    -- persist that we've shown it once (user can close with X)
     Darkmists.GlobalSettings.hasSeenUIIntroMessage = true
     Darkmists.SaveSettings()
 
   end)
+end
+
+function Darkmists.HideUIIntroPanel()
+  if DMAlertWindow and DMAlertWindow.Hide then
+    pcall(DMAlertWindow.Hide)
+    return
+  end
+  if not Darkmists.UIIntroPanel then return end
+  local p = Darkmists.UIIntroPanel
+  hideWindow(p.body)
+  hideWindow(p.header)
+  hideWindow(p.close)
+  hideWindow(p.border)
 end
 
 function Darkmists.ApplyFirstRunUILayout()
@@ -560,6 +613,8 @@ end
 
 function Darkmists.EnableUI()
   if not Darkmists.GlobalSettings.minimalMode then return end
+  -- closing any alert panels (same behavior as X)
+  if DMAlertWindow and DMAlertWindow.Hide then pcall(DMAlertWindow.Hide) end
 
   Darkmists.GlobalSettings.minimalMode = false
   Darkmists.SaveSettings()
