@@ -1,5 +1,29 @@
 [
        {
+              "name": "DMUtil",
+              "isActive": "yes",
+              "script": "",
+              "isFolder": "no"
+       },
+       {
+              "name": "AliasManager",
+              "isActive": "yes",
+              "script": "",
+              "isFolder": "no"
+       },
+       {
+              "name": "EventManager",
+              "isActive": "yes",
+              "script": "",
+              "isFolder": "no"
+       },
+       {
+              "name": "ThemeManager",
+              "isActive": "yes",
+              "script": "",
+              "isFolder": "no"
+       },
+       {
               "name": "DMAPI",
               "isActive": "yes",
               "script": "",
