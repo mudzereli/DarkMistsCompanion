@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Material Sources</title>
+
+<style>
+
+body {
+	font-family: "Segoe UI", Arial, sans-serif;
+	background: linear-gradient(180deg,#1b1b1b,#121212);
+	color: #ddd;
+	padding: 24px;
+}
+
+h2 {
+	color: #7fd4ff;
+	margin-bottom: 10px;
+}
+
+input {
+	width: 100%;
+	padding: 8px;
+	background: #111;
+	border: 1px solid #333;
+	color: #ddd;
+	border-radius: 6px;
+	margin-bottom: 10px;
+}
+
+input:focus {
+	border-color: #6aa8ff;
+	box-shadow: 0 0 6px #1f4aff55;
+}
+
+table {
+	width: 100%;
+	border-collapse: collapse;
+}
+
+th {
+	cursor: pointer;
+	background: #232323;
+	color: #7fd4ff;
+	border-bottom: 2px solid #444;
+	padding: 8px;
+}
+
+td {
+	padding: 6px 8px;
+}
+
+tbody tr:nth-child(even) { background:#181818; }
+tbody tr:nth-child(odd) { background:#141414; }
+
+tbody tr:hover { background:#222; }
+
+thead th {
+	position: sticky;
+	top: 0;
+}
+
+td:first-child {
+	text-align:right;
+	font-family: monospace;
+	color:#ffc36e;
+}
+
+td:nth-child(2){
+	color:#8cffb5;
+}
+
+td:nth-child(4){
+	color:#7caeff;
+}
+
+</style>
+</head>
+
+<body>
+
+<h2>Material Sources</h2>
+
+<div id="materialCheck" style="
+margin-bottom:10px;
+padding:8px;
+background:#111;
+border:1px solid #333;
+border-radius:6px;
+font-family:monospace;">
+</div>
+
+<input id="search" placeholder="Search material, item, or location..." onkeyup="filterTable()">
+
+<table id="table">
+<thead>
+<tr>
+<th onclick="sortTable(0)">#</th>
+<th onclick="sortTable(1)">Material</th>
+<th onclick="sortTable(2)">Item</th>
+<th onclick="sortTable(3)">Source</th>
+<th onclick="sortTable(4)">Notes</th>
+</tr>
+</thead>
+<tbody></tbody>
+</table>
+
+<script>
+
+/* ---------- DATA (edit this section only) ---------- */
+
+const materials = [
+{ id:1, material:"Adamantite", item:"Keys on the First Maid", source:"Guldoran Castle", notes:'Gate to "first maid"' },
+{ id:1, material:"Adamantite", item:"Various drops (Hunter / Charred Skeletons)", source:"Grove of Despair", notes:"Grove of Despair - Hunter and Charred Skeletons (charred sword); Gate point: Trog" },
+{ id:2, material:"Bone", item:"Bone ring", source:"Drow City" },
+{ id:2, material:"Bone", item:"Needles", source:"Glyndane Poorhouse", notes:"Ladies on 3rd floor (needles); Gate point: Beth" },
+{ id:2, material:"Bone", item:"Cow skull", source:"Cow temple", notes:"Any cow (cow skull); Gate point: elf villager" },
+{ id:2, material:"Bone", item:"Dragon skull", source:"Magic Forest", notes:"Troll Woodsman (dragon skull); Gate point: grey squirrel" },
+{ id:3, material:"Brass", item:"Oil lamp", source:"Tyr", notes:"Common lamp sold in Tyr markets" },
+{ id:3, material:"Brass", item:"Small lantern", source:"Glyndane", notes:"Bought in Glyndane general store (small lantern); Gate point: dwarf child or nanny" },
+{ id:3, material:"Brass", item:"Brass gear", source:"Ofcol", notes:"Bought at Talrec's in Ofcol; Gate point: 3.ofcol" },
+{ id:3, material:"Brass", item:"Wand of fire", source:"Elemental Canyon", notes:"Elemental Canyon monster drops (wand of fire); Gate point: Acid" },
+{ id:3, material:"Brass", item:"Brass dragon chest drop", source:"Sands of Sorrow", notes:"Brass Dragon chest (brass gear); Gate point: dwarf child or nanny" },
+{ id:4, material:"Bread", item:"A bread", source:"Tyr", notes:"Simple bakery item in Tyr" },
+{ id:4, material:"Bread", item:"Warm loaf of bread", source:"Glyndane - bakery", notes:"Glyndane - bought in Glyndane bakery (warm loaf of bread); Gate point: Dwarf child or nanny" },
+{ id:5, material:"Bronze", item:"Set of horseshoes", source:"Tyr", notes:"Found at general goods" },
+{ id:5, material:"Bronze", item:"Bronze monocle", source:"Ofcol", notes:"Ofcol - bought in shop opposite Talrec (bronze monocle); Gate point: 3.ofcol" },
+{ id:5, material:"Bronze", item:"Starter gear from the Mist", source:"Game start", notes:"Gear from the Mist at game start if not dropped" },
+{ id:6, material:"Canvas", item:"a sack", source:"Tyr", notes:"Generic sack sold in Tyr vendors" },
+{ id:6, material:"Canvas", item:"Canvas sack", source:"Elvenhame", notes:"Elvenhame - bought at Necessities R Us (canvas sack); Gate point: Sam" },
+{ id:7, material:"Clay", item:"Jar of black ink", source:"Gul'Doran", notes:"Sold in Gul'Doran general / ink shops" },
+{ id:7, material:"Clay", item:"Magic dust", source:"Elemental Canyon", notes:"Elemental Canyon - Dust cloud (magic dust); Gate point: Acid" },
+{ id:8, material:"Cloth", item:"a knapsack", source:"Tyr", notes:"Cloth goods sold in Tyr clothing vendors" },
+{ id:8, material:"Cloth", item:"Black robe", source:"High Tower", notes:"High Tower - black robed apprentice (black robe); Gate point: black apprentice" },
+{ id:8, material:"Cloth", item:"Druidian robe", source:"Grove of Despair", notes:"Grove of Despair - dark druid (druidian robe); Gate point: Trog" },
+{ id:8, material:"Cloth", item:"Teddy bear (found on ground)", source:"Glyndane", notes:"Glyndane - found on ground (teddy bear); Gate point: Dwarf child or Nanny" },
+{ id:8, material:"Cloth", item:"Thieves/Clerics gear", source:"Glyndane", notes:"Glyndane - Thieves and Clerics gear; Gate point: Dwarf child or Nanny" },
+{ id:8, material:"Cloth", item:"Cityguard gear", source:"Glyndane", notes:"Glyndane - Cityguard gear; Gate point: Dwarf child or Nanny" },
+{ id:8, material:"Cloth", item:"Fluffy pillow", source:"Ethshar", notes:"Ethshar - bought at Sancho's Joke shop (fluffy pillow); Gate point: Ethshar citizen" },
+{ id:9, material:"Copper", item:"Hand-and-a-half sword", source:"Tyr", notes:"Commonly available at Tyr weapon shops" },
+{ id:9, material:"Copper", item:"Copper bracelet (brass dragon chest)", source:"Sands of Sorrow", notes:"Sands of Sorrow - brass dragon chest (copper bracelet); Gate point: dwarf child or nanny" },
+{ id:9, material:"Copper", item:"Mist lantern", source:"Sheqeston", notes:"Sheqeston - bought in shop (mist lantern); Gate point: patrolman or skunk" },
+{ id:10, material:"Coral", item:"Heavy coral mace", source:"Ethshar", notes:"Weapon shop (1st floor)" },
+{ id:11, material:"Crystal", item:"Crystal mug of tea", source:"GML Shop / Rockfist", notes:"Sold in GML / Rockfist shops" },
+{ id:11, material:"Crystal", item:"Chest jewels", source:"Sands of Sorrow", notes:"Sands of Sorrow brass dragon chest; Gate point: nanny or dwarf child" },
+{ id:11, material:"Crystal", item:"Crystal claw", source:"Fungus Caves", notes:"Fungus Caves quadruped (crystal claw); Gate point: quadruped" },
+{ id:11, material:"Crystal", item:"Jewel earring", source:"Arkham", notes:"Arkham - witch (jewel earring)" },
+{ id:12, material:"Diamond", item:"Diamond-studded earring", source:"Arkham", notes:'Gate to "bluebeard" (sold in Bluebeard\'s pub)' },
+{ id:12, material:"Diamond", item:"Chest drop (diamond)", source:"Sands of Sorrow", notes:"Chest drop from Brass Dragon in Sands of Sorrow; Gate point: nanny or dwarf child" },
+{ id:12, material:"Diamond", item:"Xorn (diamond)", source:"The Halls of Legion", notes:"Halls of Legion: Xorn (diamond)" },
+{ id:12, material:"Diamond", item:"Bought at All that Glitters", source:"Elvenhame", notes:"Elvenhame - bought in 'All that Glitters'" },
+{ id:13, material:"Dragonscale", item:"Pair of dragonscale greaves", source:"Thraccus", notes:"Dropped or sold in Thraccus" },
+{ id:13, material:"Dragonscale", item:"Draconian patrolman drop (draconian ring)", source:"Sheqeston", notes:"Sheqeston - Draconian patrolman; Gate point: patrolman or skunk" },
+{ id:13, material:"Dragonscale", item:"Sentinel drops", source:"Windreach", notes:"Windreach - Sentinel; Gate point: sentinel" },
+{ id:14, material:"Ebony", item:"Ebony amulet", source:"Drow City", notes:"Found on Drow City vendors / drops" },
+{ id:14, material:"Ebony", item:"Death Knight drop", source:"Grove of Despair", notes:"Grove of Despair - Death Knight; Gate point: Trog" },
+{ id:14, material:"Ebony", item:"Elite Panther warrior drop (ring of focus)", source:"Panther Clan", notes:"Panther Clan elites; Gate point: little bird" },
+{ id:14, material:"Ebony", item:"Troll patrolman drop (ring of darkness)", source:"Sheqeston", notes:"Sheqeston - Troll patrolman; Gate point: skunk or patrolman" },
+{ id:15, material:"Elysium", item:"Six-sided die", source:"Glyndane Library", notes:'Gate to "2.mimic"' },
+{ id:15, material:"Elysium", item:"Elysium ore", source:"The Dwarven Militia", notes:"Dwarven Militia - dwarf miners and foreman; Gate point: elder druid" },
+{ id:16, material:"Etherealness", item:"Training weapons (on the ground in Melee)", source:"Drow City", notes:"Found on training weapons scattered in melee area" },
+{ id:17, material:"Fire", item:"Flame lance / fiery dagger", source:"Elemental Canyon", notes:'Gate to "magneto"' },
+{ id:17, material:"Fire", item:"Raging red staff of flames", source:"Lothnok", notes:'Gate to "brute"' },
+{ id:18, material:"Flesh", item:"Werewolf cookie", source:"Arkham", notes:"Dropped or sold in Arkham (werewolf area)" },
+{ id:18, material:"Flesh", item:"Steak", source:"Ranger-created", notes:"Any steaks created by Rangers (use 'locate steak')" },
+{ id:19, material:"Food", item:"Tuna with white sauce", source:"Tyr", notes:"Food stall / tavern item in Tyr" },
+{ id:19, material:"Food", item:"Handful of rice", source:"Oriental Village", notes:"Oriental village - bought from general store (handful of rice); Gate point: little bird" },
+{ id:19, material:"Food", item:"Buttered toast", source:"Glyndane library cafe", notes:"Glyndane library - bought from cafe (buttered toast); Gate point: elder druid" },
+{ id:19, material:"Food", item:"Filet of bass", source:"Midgaard River", notes:"Midgaard River - Monster: A Bass (filet of bass); Gate point: bass" },
+{ id:20, material:"Glass", item:"Bottle of aged mushroom wine", source:"Tyr", notes:"Tyr taverns and specialty vendors" },
+{ id:21, material:"Gold", item:"Plain gold key", source:"GML Shop / Rockfist", notes:"Sold in GML / Rockfist shops; used for gates" },
+{ id:21, material:"Gold", item:"Calico Cat collar drop", source:"High Tower", notes:"High Tower - Calico Cat (collar); Gate point: Calico" },
+{ id:21, material:"Gold", item:"Dwarf guard badge", source:"The Dwarven Militia", notes:"Dwarven Militia - dwarf guard (badge); Gate point: elder druid" },
+{ id:21, material:"Gold", item:"Ring of striking", source:"Ethshar", notes:"Ethshar shop purchase; Gate point: Ethshar citizen" },
+{ id:22, material:"Granite", item:"Chunk of dull granite", source:"Thelgaard", notes:"Kramn - Take 20k gold, and kill to get it back" },
+{ id:22, material:"Granite", item:"Stoney breastplate", source:"Elemental Canyon", notes:"Elemental Canyon - Earth Ruler (stoney breastplate); Gate point: Acid" },
+{ id:22, material:"Granite", item:"Rod of earthquake (alchemist)", source:"Elemental Canyon", notes:"Elemental Canyon - alchemist (rod of earthquake); Gate point: Acid" },
+{ id:23, material:"Hardwood", item:"Quiver's worth of hardwood arrows", source:"Gul'Doran", notes:"Sold by archery/weapon shops; often in quivers" },
+{ id:23, material:"Hardwood", item:"Mug (give 5 silver to bartender)", source:"City of Gul'Doran", notes:"City of Gul'Doran - give 5 silver to bartender (mug); Gate point: bluebird" },
+{ id:23, material:"Hardwood", item:"Silverwood claw drop", source:"Silverwood", notes:"Silverwood - found in stump (silverwood claw); Gate point: elf patrol" },
+{ id:24, material:"Hemp", item:"Small black pill", source:"Ethshar", notes:"Sold in Ethshar (alchemy/oddities vendors)" },
+{ id:25, material:"Ice", item:"Icicle knife", source:"Buraf", notes:"Buraf source (expensive icicle knife)" },
+{ id:25, material:"Ice", item:"Ice staff", source:"Elemental Canyon", notes:'Gate to "Puddle"' },
+{ id:26, material:"Iron", item:"Adventurer's inkpot", source:"Tyr", notes:"Found in Tyr general stores" },
+{ id:27, material:"Ivory", item:"Ivory fountain pen", source:"Tyr", notes:"Sold by Tyr curio/novelty vendors" },
+{ id:28, material:"Leather", item:"Pair of hiking boots", source:"Tyr", notes:"Leatherworkers / equipment shops in Tyr" },
+{ id:29, material:"Marble", item:"Marble ring", source:"Drow City", notes:"Sold in Drow City jewelry vendors" },
+{ id:30, material:"Meat", item:"some dry rations", source:"Tyr", notes:"Sold as dry rations in Tyr provisions" },
+{ id:30, material:"Meat", item:"Body parts / corpses", source:"Various kills", notes:"Body parts of creatures you kill or corpses" },
+{ id:31, material:"Metal", item:"Unknown source", source:"Unknown", notes:"Material confirmed via essence list" },
+{ id:31, material:"Metal", item:"Canteen / metal items", source:"Elvenhame", notes:"Elvenhame - bought at Necessities R Us (canteen); Gate point: Sam" },
+{ id:31, material:"Metal", item:"Dwarf guard equipment", source:"The Dwarven Militia", notes:"Dwarven Militia - dwarf guard (orange helm and blue boots); Gate point: elder druid" },
+{ id:31, material:"Metal", item:"Large metal shield", source:"Glyndane", notes:"Glyndane - bought at The Armoury (large metal shield); Gate point: Dwarf child or Nanny" },
+{ id:32, material:"Mithril", item:"Dwarven pickaxe", source:"Mithril Hall", notes:"Available at Mithril Blades / Dwarven smiths" },
+{ id:32, material:"Mithril", item:"Dwarf scouts/patroller drops", source:"The Targoth Mountains", notes:"Dwarf scouts / patrollers in Targoth Mountains; Gate point: dwarf patroller" },
+{ id:32, material:"Mithril", item:"Joke shop purchase", source:"Ethshar", notes:"Ethshar - bought in Joke Shop; Gate point: Ethshar citizen" },
+{ id:33, material:"Obsidian", item:"Large obsidian jug", source:"Drow City", notes:"Drow City vendors / special drops" },
+{ id:33, material:"Obsidian", item:"Obsidian shard / legion guards", source:"Arkham Legion", notes:"Arkham Legion - legion guards; Gate point: Jed" },
+{ id:34, material:"Paper", item:"Sheet of blank paper", source:"Gul'Doran" },
+{ id:34, material:"Paper", item:"Box of cards / maps / scrolls", source:"Glyndane / Ethshar", notes:"Glyndane library peddler; Ethshar map/potion shops" },
+{ id:35, material:"Parchment", item:"Wizard's Scroll", source:"Glyndane", notes:"Listed as 'Bathing Day' on wizard scrolls" },
+{ id:36, material:"Pewter", item:"Pewter adventurer's sword", source:"Wistfolk", notes:"Found in Wistfolk shops or drops" },
+{ id:36, material:"Pewter", item:"Pewter weapons (ground)", source:"Kobold Tunnels", notes:"The Kobold Tunnels - found on ground (pewter weapons); Gate point: crimson kobold" },
+{ id:35, material:"Parchment", item:"\"Bathing Day\" (The Wizard's Scroll)", source:"Glyndane", notes:"Listed as 'Bathing Day' on wizard scrolls" },
+{ id:37, material:"Platinum", item:"Platinum ring", source:"Gul'Doran", notes:"Sold in Gul'Doran jewelers" },
+{ id:38, material:"Quartz", item:"Topaz-encrusted collar (All that Glitters)", source:"Elvenhame", notes:"Found in Elvenhame specialty shops" },
+{ id:39, material:"Sandstone", item:"Small flat grainy stone", source:"GML Shop / Rockfist", notes:"Sold in GML / Rockfist rock vendors" },
+{ id:40, material:"Shell", item:"Seashells", source:"Desolate Beach", notes:'Gate to "king crab"' },
+{ id:41, material:"Silk", item:"Fine silk gloves", source:"Tyr", notes:"Available at Tyr tailors" },
+{ id:42, material:"Silver", item:"Tulip-shaped cloakpin", source:"Tyr", notes:"Sold in Tyr accessory shops" },
+{ id:43, material:"Skin", item:"Lizard skin", source:"Nest of the Antfolk", notes:'Gate to "Red Lizard"' },
+{ id:44, material:"Softwood", item:"Gourd", source:"Oriental Village", notes:"Market item in Oriental Village" },
+{ id:45, material:"Steel", item:"Long sword", source:"Glyndane", notes:"Glyndane weapon shops" },
+{ id:46, material:"Stone", item:"Stone shortsword", source:"Wistfolk", notes:"Wistfolk vendors" },
+{ id:47, material:"Tin", item:"Tin bottle", source:"Ethshar", notes:"Ethshar vendors" },
+{ id:48, material:"Water", item:"Misty bracelet", source:"Cloud City / Gurtair", notes:"Sold by a mistling just outside Gurtair" },
+{ id:49, material:"Wax", item:"Candle", source:"Tyr", notes:"Candle sold in Tyr general stores" },
+{ id:50, material:"Wood", item:"Basket", source:"Tyr", notes:"Common vendor basket in Tyr markets" }
+]
+
+/* ---------- build table ---------- */
+
+function renderTable() {
+
+const tbody = document.querySelector("#table tbody")
+tbody.innerHTML = ""
+
+materials.forEach(m => {
+
+let row = document.createElement("tr")
+
+row.innerHTML = `
+<td>${m.id}</td>
+<td>${m.material}</td>
+<td>${m.item}</td>
+<td>${m.source}</td>
+<td>${m.notes || ""}</td>
+`
+
+tbody.appendChild(row)
+
+})
+
+}
+
+renderTable()
+validateMaterials()
+
+/* ---------- search ---------- */
+
+function filterTable(){
+
+const query =
+document.getElementById("search")
+.value
+.toLowerCase()
+
+const rows =
+document.querySelectorAll("#table tbody tr")
+
+rows.forEach(row => {
+
+const text =
+row.innerText.toLowerCase()
+
+row.style.display =
+text.includes(query) ? "" : "none"
+
+})
+
+}
+
+/* ---------- sorting ---------- */
+
+function sortTable(column){
+
+const table =
+document.getElementById("table")
+
+const tbody =
+table.tBodies[0]
+
+let rows =
+Array.from(tbody.rows)
+
+let asc =
+table.getAttribute("data-sort-dir") !== "asc"
+
+rows.sort((a,b)=>{
+
+let x =
+a.cells[column].innerText
+
+let y =
+b.cells[column].innerText
+
+let nx =
+Number(x)
+
+let ny =
+Number(y)
+
+if(!isNaN(nx) && !isNaN(ny))
+return asc ? nx-ny : ny-nx
+
+return asc
+? x.localeCompare(y)
+: y.localeCompare(x)
+
+})
+
+table.setAttribute(
+"data-sort-dir",
+asc ? "asc" : "desc"
+)
+
+rows.forEach(r => tbody.appendChild(r))
+
+}
+
+function validateMaterials(){
+
+const ids = materials.map(m => m.id)
+
+const unique = new Set(ids)
+
+let missing = []
+
+for(let i=1;i<=50;i++){
+ if(!unique.has(i)) missing.push(i)
+}
+
+const duplicates =
+ids.filter((v,i,a)=>a.indexOf(v)!==i)
+
+const div =
+document.getElementById("materialCheck")
+
+div.innerHTML = `
+Total entries: ${materials.length}<br>
+Unique materials: ${unique.size}/50<br>
+Missing IDs: ${missing.length ? missing.join(", ") : "None"}<br>
+Duplicate IDs: ${duplicates.length ? duplicates.join(", ") : "None"}
+`
+}
+
+</script>
+
+</body>
+</html>
