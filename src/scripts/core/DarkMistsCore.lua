@@ -288,8 +288,8 @@ function Darkmists.ResetUILayoutCache()
     end
   end
 
-  Darkmists.Log("Darkmists Core","<orange>UI cache cleared. Reloading profile...")
-  Darkmists.SafeReload()
+  setBorderTop(0); setBorderBottom(0); setBorderLeft(0); setBorderRight(0);
+  Darkmists.Log("Darkmists Core","<orange>UI cache cleared.")
 end
 
 function Darkmists.ShowUIIntroMessage()
@@ -443,7 +443,10 @@ function Darkmists.LoadSettings()
     -- Detect legacy settings BEFORE merging
     if settings.layoutCacheVersion == nil then
       Darkmists.Log("<medium_sea_green>Darkmists Core", "<red>Legacy settings detected (no layout version)")
-      tempTimer(0,Darkmists.ResetUILayoutCache)
+      tempTimer(0,function ()
+        Darkmists.ResetUILayoutCache()
+        Darkmists.SafeReload()
+      end)
       return
     end
     
@@ -566,7 +569,7 @@ function Darkmists.RegisterEvents()
   DarkmistsEvents.add("DarkmistsPackageUninstall","sysUninstallPackage",function (_,pkgName)
     if pkgName == Darkmists.NAME then
       Darkmists.Log("Darkmists Core", ("Package Uninstall Detected: %s"):format(tostring(pkgName)))
-      Darkmists.CleanupUI({ resetBorders = true })
+      Darkmists.CleanupUI({ uninstall = true })
     end
   end)
 end
@@ -588,9 +591,11 @@ function Darkmists.CleanupUI(opts)
 
   if DMTabs and DMTabs.destroy then pcall(DMTabs.destroy) end
   if DarkMistsMiniMap and DarkMistsMiniMap.destroy then pcall(DarkMistsMiniMap.destroy) end
+  if ButtonBar and ButtonBar.destroy then pcall(ButtonBar.destroy) end
   
-  if opts.resetBorders then
+  if opts.uninstall then
     Darkmists.Log("Darkmists Core", "Resetting window borders to default...")
+    Darkmists.ResetUILayoutCache()
     tempTimer(0.5, function()
       setBorderTop(0); setBorderBottom(0); setBorderLeft(0); setBorderRight(0)
     end)
@@ -606,7 +611,10 @@ function Darkmists.Init()
   
   -- Layout cache compatibility check
   if Darkmists.GlobalSettings.layoutCacheVersion ~= Darkmists.LAYOUT_CACHE_VERSION then
-    tempTimer(0,Darkmists.ResetUILayoutCache)
+      tempTimer(0,function ()
+        Darkmists.ResetUILayoutCache()
+        Darkmists.SafeReload()
+      end)
     return
   end
 
