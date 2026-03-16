@@ -1,9 +1,4 @@
-DARKMISTS_MINIMAP_EVENT_HANDLERS = DARKMISTS_MINIMAP_EVENT_HANDLERS or {}
-
 DarkMistsMiniMap = DarkMistsMiniMap or {}
-DarkMistsMiniMap.container = nil
-DarkMistsMiniMap.header = nil
-DarkMistsMiniMap.minimap = nil
 
 -- Geometry snapshot at load time (intentional: matches original behavior)
 local dock = Darkmists.getSmartDockGeometry()
@@ -12,6 +7,8 @@ local dock = Darkmists.getSmartDockGeometry()
 -- UI Creation
 -- -------------------------------------------------------------------
 function DarkMistsMiniMap.create()
+  if DarkMistsMiniMap.container then return end
+
   DarkMistsMiniMap.container = Adjustable.Container:new({
     name = "MiniMapContainer",
     x = dock.x,
@@ -57,11 +54,6 @@ function DarkMistsMiniMap.create()
 end
 
 function DarkMistsMiniMap.destroy()
-  if DarkMistsMiniMap.minimap then
-    DarkMistsMiniMap.minimap:hide()
-    DarkMistsMiniMap.minimap:delete()
-    DarkMistsMiniMap.minimap = nil
-  end
   if DarkMistsMiniMap.container then
     DarkMistsMiniMap.container:hide()
     DarkMistsMiniMap.container:delete()
