@@ -121,6 +121,12 @@ function DMTabs.destroy()
   if DMTabFrame and DMTabFrame.delete then pcall(DMTabFrame.delete, DMTabFrame) end
   DMTabFrame = nil
 
+  -- Stop the repeating autosave timer if present
+  if DMTabs and DMTabs._autosaveTimer then
+    pcall(killTimer, DMTabs._autosaveTimer)
+    DMTabs._autosaveTimer = nil
+  end
+
   tempTimer(0, function()
     -- drop module globals so saved UI won't reference stale functions/objects
     if DMTabs and DMTabs.delete then pcall(DMTabs.delete, DMTabs) end
@@ -128,11 +134,14 @@ function DMTabs.destroy()
   end)
 end
 
+--[[
 DarkmistsEvents.add("DMTabFrameProfileSave", "sysProfileSaveStarted", function()
   DMTabs:queueLayoutSave()
 end)
+]]--
 
-tempTimer(120, function()
+-- repeating autosave timer (assign to var so it can be killed on reload)
+DMTabs._autosaveTimer = tempTimer(120, function()
   if DMTabs then DMTabs:save() end
 end, true)
 
