@@ -199,12 +199,12 @@ Click <green>Reload Now<r> to proceed, or close this panel to cancel.
     -- Fallback to plain text / cecho with safe scheduling
     cecho("\n\n")
     cecho("<orange>╔════════════════════════════════════════╗\n")
-    cecho("<orange>║<cadet_blue>      Reload Dark Mists UI?      <orange>║\n")
+    cecho("<orange>║<cadet_blue>         Reload Dark Mists UI?          <orange>║\n")
+    cecho("<orange>║                                        ║\n")
+    cecho("<orange>║              ")
+    cechoLink("<dim_gray><u>[<green>Reload Now<dim_gray>]", [[tempTimer(0, 'Darkmists.SafeReload()')]], "Reload the UI", true)
+    cecho("              <orange>║\n")
     cecho("<orange>╚════════════════════════════════════════╝\n")
-    cechoLink("<dim_gray><u>[<green>Reload Now<dim_gray>]",
-      [[tempTimer(0, 'Darkmists.SafeReload()')]],
-      "Reload the UI (safe)", true
-    )
     cecho("\n\n")
   end
 end
