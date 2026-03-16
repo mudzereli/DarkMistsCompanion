@@ -97,6 +97,37 @@ function DMTabs:queueLayoutSave()
   end
 end
 
+function DMTabs.destroy()
+  -- destroy tabwindows/containers created by Adjustable.TabWindow
+  if Adjustable and Adjustable.TabWindow and Adjustable.TabWindow.all then
+    for _, win in pairs(Adjustable.TabWindow.all) do
+      pcall(function()
+        if win.header and win.header.windowList then
+          for _, wname in ipairs(win.header.windows or {}) do
+            local tabc = win[wname .. "tab"] or win[wname]
+            if tabc and tabc.delete then pcall(tabc.delete, tabc) end
+          end
+        end
+        if win.footer and win.footer.delete then pcall(win.footer.delete, win.footer) end
+        if win.overlay and win.overlay.delete then pcall(win.overlay.delete, win.overlay) end
+        if win.header and win.header.delete then pcall(win.header.delete, win.header) end
+      end)
+    end
+    Adjustable.TabWindow.all = {}
+    Adjustable.TabWindow.allTabs = {}
+    Adjustable.TabWindow.all_windows = {}
+  end
+
+  if DMTabFrame and DMTabFrame.delete then pcall(DMTabFrame.delete, DMTabFrame) end
+  DMTabFrame = nil
+
+  tempTimer(0, function()
+    -- drop module globals so saved UI won't reference stale functions/objects
+    if DMTabs and DMTabs.delete then pcall(DMTabs.delete, DMTabs) end
+    DMTabs = nil
+  end)
+end
+
 DarkmistsEvents.add("DMTabFrameProfileSave", "sysProfileSaveStarted", function()
   DMTabs:queueLayoutSave()
 end)
