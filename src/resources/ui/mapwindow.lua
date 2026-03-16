@@ -64,6 +64,7 @@ end
 -- Update Display
 -- -------------------------------------------------------------------
 function DarkMistsMiniMap.update()
+  if not map then return end -- defensive; should not occur if mapper data properly loaded
   local name, id, area
 
   -- Prefer selected room
