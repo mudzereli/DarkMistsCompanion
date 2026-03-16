@@ -293,7 +293,7 @@ end
 
 function StatusBar.recreate()
   StatusBar.cleanup()
-  tempTimer(0.5, function()
+  tempTimer(0, function()
     StatusBar.create()
     StatusBar.registerEvents()
     StatusBar.showAll()
@@ -500,7 +500,7 @@ end
 -- ===================================================================
 -- INITIALIZATION
 -- ===================================================================
-tempTimer(0.5, function()
+tempTimer(0, function()
   StatusBar.create()
   StatusBar.registerEvents()
   Darkmists.Log("StatusBars","Status Bar Loaded (UI Ready)")
