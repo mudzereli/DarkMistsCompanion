@@ -168,6 +168,47 @@ function Darkmists.PromptLoadMap()
   Darkmists.SaveSettings()
 end
 
+-- Prompt the user before performing a UI reload (safe pathway)
+function Darkmists.PromptSafeReload(opts)
+  opts = opts or {}
+  local helperPath = getMudletHomeDir() .. "/DarkMistsCompanion/ui/framework/DMAlertWindow.lua"
+  if not DMAlertWindow and io.exists(helperPath) then
+    dofile(helperPath)
+  end
+
+  local title = opts.title or "Reload UI"
+  local body = opts.body or ([[
+Reloading the UI will reset the Dark Mists interface and apply any pending layout or theme changes. If you have unsaved settings, save them first.
+
+Click <green>Reload Now<r> to proceed, or close this panel to cancel.
+  ]])
+
+  if DMAlertWindow and DMAlertWindow.Show then
+    DMAlertWindow.Show(title, function(win)
+      cecho(win, "\n")
+      cecho(win, body)
+      cecho("\n\n")
+      -- Use a string that hides the panel then defers the actual reload to avoid
+      -- stale C++ callback references (safe pattern used elsewhere).
+      cechoLink(win, "<dim_gray><u>[<green>Reload Now<dim_gray>]",
+        [[DMAlertWindow.Hide(); tempTimer(0, 'Darkmists.SafeReload()')]],
+        "Reload the UI (safe)", true
+      )
+    end, { width = opts.width or 640, height = opts.height or 200 })
+  else
+    -- Fallback to plain text / cecho with safe scheduling
+    cecho("\n\n")
+    cecho("<orange>╔════════════════════════════════════════╗\n")
+    cecho("<orange>║<cadet_blue>      Reload Dark Mists UI?      <orange>║\n")
+    cecho("<orange>╚════════════════════════════════════════╝\n")
+    cechoLink("<dim_gray><u>[<green>Reload Now<dim_gray>]",
+      [[tempTimer(0, 'Darkmists.SafeReload()')]],
+      "Reload the UI (safe)", true
+    )
+    cecho("\n\n")
+  end
+end
+
 function Darkmists.OpenEAConverter()
   DMUtil.openLocalFile(eaConverterPath)
 end

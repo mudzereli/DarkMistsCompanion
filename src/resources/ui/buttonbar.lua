@@ -59,10 +59,7 @@ end
 -- -----------------------------------------------------------------------------
 -- HELPERS
 -- -----------------------------------------------------------------------------
-function ButtonBar:_run(action)
-  if type(action) == "function" then tempTimer(0,action)
-  elseif type(action) == "string" then send(action) end
-end
+-- Actions are executed inline in callbacks (using pcall).
 
 function ButtonBar:_style(btn)
   btn:setStyleSheet([[
@@ -116,7 +113,7 @@ function ButtonBar:_addMenuChildren(parent, items, depth)
       self:_addMenuChildren(child, item.children, depth + 1)
     else
       child:setClickCallback(function()
-        ButtonBar:_run(item.action)
+        tempTimer(0,function() pcall(item.action) end)
       end)
     end
   end
@@ -139,7 +136,7 @@ function ButtonBar:addButton(text, action)
   ButtonBar:_style(btn)
 
   btn:setClickCallback(function()
-    ButtonBar:_run(action)
+    tempTimer(0,function() pcall(action) end)
   end)
 
   ButtonBar.nextX = ButtonBar.nextX + (ButtonBar.fontWidth * 20)
@@ -207,10 +204,10 @@ ButtonBar:addDropdown("🧰 Modules", {
     {label="🧹 Reset Session", action=function() expandAlias("es reset") end},
     {label="🛠 EA Tools", children={
       {label="🧪 EA Formula Viewer", action=function() Darkmists.OpenEAFormulaParser() end},
-      {label="🔄 EA Save Converter", action=function() Darkmists.OpenEAConverter() end},
       {label="📜 Alchemy Mat List", action=function()
           DMUtil.openLocalFile(getMudletHomeDir() .. "/DarkMistsCompanion/assets/alchemy-mat-list.html")
         end},
+      {label="🔄 EA Save Converter", action=function() Darkmists.OpenEAConverter() end},
     }},
     {label="❓ Enchant Assist", action=function() expandAlias("dmc help es") end}
   }},
@@ -226,19 +223,19 @@ ButtonBar:addDropdown("🧰 Modules", {
 })
 
 ButtonBar:addDropdown("⚙️ Settings", {
-    {label = "🔄 Reload UI", action = Darkmists.SafeReload},
+    {label = "🔄 Reload UI", action = function() Darkmists.PromptSafeReload() end},
     {label = "📊 Toggle UI", action = function() expandAlias("dmc ui") end},
     {label="🌞 Light Mode", action=function()
       Darkmists.GlobalSettings.lightMode = true
       Darkmists.Log("Settings","Light Mode Enabled - Reload UI for Changes to Take place")
       Darkmists.SaveSettings()
-      Darkmists.SafeReload()
+      Darkmists.PromptSafeReload()
     end},
     {label="🌚 Dark Mode", action=function()
       Darkmists.GlobalSettings.lightMode = false
       Darkmists.Log("Settings","Dark Mode Enabled - Reload UI for Changes to Take place")
       Darkmists.SaveSettings()
-      Darkmists.SafeReload()
+      Darkmists.PromptSafeReload()
     end},
     {label = "🗺️ Load Map", action = function()
         Darkmists.PromptLoadMap()
@@ -255,7 +252,7 @@ ButtonBar:addDropdown("⚙️ Settings", {
       {label = "📤 Load Settings", action = function() 
         loadWindowLayout()
         Darkmists.LoadSettings()
-        Darkmists.SafeReload()
+        Darkmists.PromptSafeReload()
       end},
       {label="📝 Edit Settings File", action=function() Darkmists.OpenSettingsFile() end},
       {label = "📡 Updates", children = {
