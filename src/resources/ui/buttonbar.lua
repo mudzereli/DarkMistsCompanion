@@ -63,7 +63,7 @@ end
 -- HELPERS
 -- -----------------------------------------------------------------------------
 function ButtonBar:_run(action)
-  if type(action) == "function" then action()
+  if type(action) == "function" then tempTimer(0,action)
   elseif type(action) == "string" then send(action) end
 end
 
