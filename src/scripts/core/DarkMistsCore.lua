@@ -333,11 +333,12 @@ function Darkmists.ResetUILayoutCache()
   Darkmists.Log("Darkmists Core","<orange>UI cache cleared.")
 end
 
-function Darkmists.ShowUIIntroMessage()
-  if Darkmists.GlobalSettings.hasSeenUIIntroMessage then return end
-  if not Darkmists.GlobalSettings.minimalMode then return end
+function Darkmists.ShowUIIntroMessage(force)
+  -- when `force` is truthy, bypass the first-run and minimal-mode guards
+  if not force and Darkmists.GlobalSettings.hasSeenUIIntroMessage then return end
+  if not force and not Darkmists.GlobalSettings.minimalMode then return end
   -- slight delay so login text finishes first
-  tempTimer(1.5, function()
+  tempTimer(force and 0 or 1.5, function()
     -- lazily load framework helper if not already present (works in minimal mode)
     local helperPath = getMudletHomeDir() .. "/DarkMistsCompanion/ui/framework/DMAlertWindow.lua"
     if not DMAlertWindow and io.exists(helperPath) then
@@ -345,28 +346,46 @@ function Darkmists.ShowUIIntroMessage()
     end
 
     if DMAlertWindow and DMAlertWindow.Show then
-      DMAlertWindow.Show(("🔮 WELCOME TO DARK MISTS COMPANION — v%s"):format(tostring(Darkmists.VERSION or "unknown")), function(win)
+      local isMinimal = Darkmists.GlobalSettings and Darkmists.GlobalSettings.minimalMode
+      local title = ("🔮 DARK MISTS COMPANION — v%s"):format(tostring(Darkmists.VERSION or "unknown"))
+      DMAlertWindow.Show(title, function(win)
         cecho(win, "\n")
-        cecho(win, "<ansi_yellow> You are currently using Minimal UI Mode.\n\n")
-        cecho(win, "<steel_blue> Enable the Full Interface to access:\n")
+        if isMinimal then
+          cecho(win, "<ansi_yellow> You are currently using Minimal UI Mode.\n\n")
+        else
+          cecho(win, "<ansi_yellow> You are currently using Full UI Mode.\n\n")
+        end
+
+        cecho(win, "<steel_blue> Full UI provides:\n")
         cecho(win, "  <steel_blue>• Chat History Window\n")
         cecho(win, "  <steel_blue>• Who List Panel\n")
         cecho(win, "  <steel_blue>• Affect & Buff Duration Tracker\n")
         cecho(win, "  <steel_blue>• Player Status & Combat Panels\n")
         cecho(win, "  <steel_blue>• Dockable & Customizable UI Windows\n\n")
-        cecho(win, "<steel_blue> Command: <green>dmc ui<steel_blue>\n")
-        cecho(win, "<dim_gray> (Toggle command — turns UI <green>ON<dim_gray> or <red>OFF<dim_gray>)\n\n")
-        cechoLink(win, "<dim_gray><u>[<green>ENABLE FULL UI NOW<dim_gray>]", [[Darkmists.EnableUI()]], "Enable the full Dark Mists Companion UI", true)
+
+        if isMinimal then
+          cecho(win, "<steel_blue> Command: <green>dmc ui<steel_blue>\n")
+          cecho(win, "<dim_gray> (Toggle command — turns UI <green>ON<dim_gray> or <red>OFF<dim_gray>)\n\n")
+          cechoLink(win, "<dim_gray><u>[<green>ENABLE FULL UI NOW<dim_gray>]", [[Darkmists.EnableUI()]], "Enable the full Dark Mists Companion UI", true)
+        else
+          cecho(win, "<dim_gray> Click to switch back to Minimal UI.\n\n")
+          cechoLink(win, "<dim_gray><u>[<red>DISABLE FULL UI NOW<dim_gray>]", [[Darkmists.DisableUI()]], "Switch to minimal UI", true)
+        end
       end, { width = 640, height = 300 })
     else
       -- Fallback to original cecho block when helper unavailable
+      local isMinimal = Darkmists.GlobalSettings and Darkmists.GlobalSettings.minimalMode
       cecho("\n")
       cecho("<gold>╔════════════════════════════════════════════════════════════╗\n")
-      cecho(("<gold>║<cadet_blue> 🔮 WELCOME TO DARK MISTS COMPANION        %16s <gold>║\n"):format("v"..tostring(Darkmists.VERSION or "unknown")))
+      cecho(("<gold>║<cadet_blue> 🔮 DARK MISTS COMPANION        %16s <gold>║\n"):format("v"..tostring(Darkmists.VERSION or "unknown")))
       cecho("<gold>╠════════════════════════════════════════════════════════════╣\n")
-      cecho("<gold>║<ansi_yellow> You are currently using Minimal UI Mode.                   <gold>║\n")
+      if isMinimal then
+        cecho("<gold>║<ansi_yellow> You are currently using Minimal UI Mode.                   <gold>║\n")
+      else
+        cecho("<gold>║<ansi_yellow> You are currently using Full UI Mode.                      <gold>║\n")
+      end
       cecho("<gold>║                                                            ║\n")
-      cecho("<gold>║<steel_blue> Enable the Full Interface to access:                       <gold>║\n")
+      cecho("<gold>║<steel_blue> Full UI provides:                                      <gold>║\n")
       cecho("<gold>║   <steel_blue>• Chat History Window                                    <gold>║\n")
       cecho("<gold>║   <steel_blue>• Who List Panel                                         <gold>║\n")
       cecho("<gold>║   <steel_blue>• Affect & Buff Duration Tracker                         <gold>║\n")
@@ -374,16 +393,18 @@ function Darkmists.ShowUIIntroMessage()
       cecho("<gold>║   <steel_blue>• Dockable & Customizable UI Windows                     <gold>║\n")
       cecho("<gold>║                                                            ║\n")
       cecho("<gold>╠════════════════════════════════════════════════════════════╣\n")
-      cecho("<gold>║<steel_blue> Command: <green>dmc ui<steel_blue>                                            <gold>║\n")
-      cecho("<gold>║<dim_gray> (Toggle command — turns UI <green>ON<dim_gray> or <red>OFF<dim_gray>)                      <gold>║\n")
-      cecho("<gold>║                                                            ║\n")
-      cecho("<gold>║ ")
-      cechoLink("<dim_gray><u>[<green>ENABLE FULL UI NOW<dim_gray>]",
-        [[Darkmists.EnableUI()]],
-        "Enable the full Dark Mists Companion UI",
-        true
-      )
-      cecho("                                       <gold>║\n")
+      if isMinimal then
+        cecho("<gold>║<steel_blue> Command: <green>dmc ui<steel_blue>                                            <gold>║\n")
+        cecho("<gold>║<dim_gray> (Toggle command — turns UI <green>ON<dim_gray> or <red>OFF<dim_gray>)                      <gold>║\n")
+        cecho("<gold>║ ")
+        cechoLink("<dim_gray><u>[<green>ENABLE FULL UI NOW<dim_gray>]", [[Darkmists.EnableUI()]], "Enable the full Dark Mists Companion UI", true)
+        cecho("                                       <gold>║\n")
+      else
+        cecho("<gold>║<dim_gray> Click to switch back to Minimal UI.                                 <gold>║\n")
+        cecho("<gold>║ ")
+        cechoLink("<dim_gray><u>[<red>DISABLE FULL UI NOW<dim_gray>]", [[Darkmists.DisableUI()]], "Disable the full Dark Mists Companion UI", true)
+        cecho("                                       <gold>║\n")
+      end
       cecho("<gold>╚════════════════════════════════════════════════════════════╝\n\n")
     end
 

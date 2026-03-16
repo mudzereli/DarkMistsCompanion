@@ -224,7 +224,7 @@ ButtonBar:addDropdown("🧰 Modules", {
 
 ButtonBar:addDropdown("⚙️ Settings", {
     {label = "🔄 Reload UI", action = function() Darkmists.PromptSafeReload() end},
-    {label = "📊 Toggle UI", action = function() expandAlias("dmc ui") end},
+    {label = "📊 Toggle UI", action = function() Darkmists.ShowUIIntroMessage(true) end},
     {label="🌞 Light Mode", action=function()
       Darkmists.GlobalSettings.lightMode = true
       Darkmists.Log("Settings","Light Mode Enabled - Reload UI for Changes to Take place")
