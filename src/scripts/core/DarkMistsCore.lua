@@ -566,11 +566,7 @@ function Darkmists.RegisterEvents()
   DarkmistsEvents.add("DarkmistsPackageUninstall","sysUninstallPackage",function (_,pkgName)
     if pkgName == Darkmists.NAME then
       Darkmists.Log("Darkmists Core", ("Package Uninstall Detected: %s"):format(tostring(pkgName)))
-      setBorderTop(0); setBorderBottom(0); setBorderLeft(0); setBorderRight(0);
-      if DarkMistsMiniMap and DarkMistsMiniMap.destroy then
-        Darkmists.Log("Darkmists Core", "Destroying MiniMap on Uninstall...")
-        DarkMistsMiniMap.destroy()
-      end
+      Darkmists.CleanupUI({ resetBorders = true })
     end
   end)
 end
@@ -578,14 +574,27 @@ end
 function Darkmists.SafeReload()
   Darkmists.Log("Darkmists Core","<red>Resetting Profile. UI Reload Incoming....")
 
-  if DarkMistsMiniMap then
-    DarkMistsMiniMap.destroy()
-  end
+  Darkmists.CleanupUI()
 
-  tempTimer(1, function()
-    clearWindow()
-    resetProfile()
-  end)
+  clearWindow()
+  resetProfile()
+end
+
+
+function Darkmists.CleanupUI(opts)
+  opts = opts or {}
+  if DarkmistsAlias and DarkmistsAlias.clearAll then pcall(DarkmistsAlias.clearAll) end
+  if DarkmistsEvents and DarkmistsEvents.clearAll then pcall(DarkmistsEvents.clearAll) end
+
+  if DMTabs and DMTabs.destroy then pcall(DMTabs.destroy) end
+  if DarkMistsMiniMap and DarkMistsMiniMap.destroy then pcall(DarkMistsMiniMap.destroy) end
+  
+  if opts.resetBorders then
+    Darkmists.Log("Darkmists Core", "Resetting window borders to default...")
+    tempTimer(0.5, function()
+      setBorderTop(0); setBorderBottom(0); setBorderLeft(0); setBorderRight(0)
+    end)
+  end
 end
 
 function Darkmists.Init()
@@ -688,7 +697,7 @@ dofile(getMudletHomeDir() .. "/DarkMistsCompanion/ui/buttonbar.lua")
 -- UI Scripts
 if not Darkmists.GlobalSettings.minimalMode then
   Darkmists.LoadUIScripts()
-  tempTimer(0.8, function()
+  tempTimer(0.4, function()
     Darkmists.RefreshUILayout({ syncStatusBar = true })
   end)
 end
