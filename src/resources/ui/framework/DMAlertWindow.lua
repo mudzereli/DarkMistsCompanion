@@ -12,9 +12,13 @@ local function ensure_init()
   panel.body   = "dmalert_body"
 
   createMiniConsole(panel.border, 0,0,1,1)
+  disableScrolling(panel.border)
   createMiniConsole(panel.header, 0,0,1,1)
+  disableScrolling(panel.header)
   createMiniConsole(panel.close, 0,0,1,1)
+  disableScrolling(panel.close)
   createMiniConsole(panel.body, 0,0,1,1)
+  disableScrolling(panel.body)
 
   panel.w = 640
   panel.h = 300

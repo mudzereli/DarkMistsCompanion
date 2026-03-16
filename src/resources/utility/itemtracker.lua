@@ -141,11 +141,13 @@ function ItemTracker.initTooltip()
 
   t.border = "itemTooltipBorder"
   createMiniConsole(t.border, 0, 0, 1, 1)
+  disableScrolling(t.border)
   setBackgroundColor(t.border, unpack(s.tooltipBorderColor))
   hideWindow(t.border)
 
   t.header = "itemTooltipHeader"
   createMiniConsole(t.header, 0, 0, 1, 1)
+  disableScrolling(t.header)
   setMiniConsoleFontSize(t.header, s.tooltipHeaderFontSize)
   setBackgroundColor(t.header, unpack(s.tooltipHeaderBGColor))
   setFgColor(t.header, 255, 255, 255)
@@ -153,6 +155,7 @@ function ItemTracker.initTooltip()
 
   t.win = "itemTooltip"
   createMiniConsole(t.win, s.tooltipBorderSize, s.tooltipBorderSize, 1, 1)
+  disableScrolling(t.win)
   setMiniConsoleFontSize(t.win, s.tooltipFontSize)
   setBackgroundColor(t.win, unpack(s.tooltipBGColor))
   setFgColor(t.win, unpack(s.tooltipTextColor))
