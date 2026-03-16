@@ -13,14 +13,14 @@ ButtonBar.dropDownMaxCharacters = 20   -- used for dropdown width calculations
 ButtonBar.height = ButtonBar.fontheight * 1.5
 
 -- -----------------------------------------------------------------------------
--- DELETE OLD BAR PROPERLY
+-- TEAR DOWN
 -- -----------------------------------------------------------------------------
-function ButtonBar:reset()
-  if ButtonBar.container then
-    ButtonBar.container:delete()
-    ButtonBar.container = nil
+function ButtonBar.destroy()
+  if ButtonBar.container and ButtonBar.container.delete then
+    pcall(ButtonBar.container.delete, ButtonBar.container)
   end
-  ButtonBar.nextX = 0
+  ButtonBar.container = nil
+  ButtonBar.nextX = nil
 end
 
 -- -----------------------------------------------------------------------------
@@ -33,10 +33,7 @@ function ButtonBar:create()
     return
   end
 
-  if ButtonBar.container then
-    ButtonBar.container:delete()
-    ButtonBar.container = nil
-  end
+  ButtonBar.destroy()
 
   ButtonBar.container = Adjustable.Container:new({
     name = "ButtonBar",
