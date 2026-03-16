@@ -112,7 +112,7 @@ end
 -- Initialization
 -- -------------------------------------------------------------------
 
-tempTimer(0.5, function()
+tempTimer(0, function()
   DarkMistsMiniMap.create()
   DarkMistsMiniMap.registerEvents()
   Darkmists.Log("MiniMapContainer","MiniMap Created!")
