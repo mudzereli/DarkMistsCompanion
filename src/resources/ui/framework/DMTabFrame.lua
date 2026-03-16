@@ -113,6 +113,25 @@ function DMTabs.destroy()
         if win.header and win.header.delete then pcall(win.header.delete, win.header) end
       end)
     end
+    -- Also destroy any floating adjustable containers (pulled-out tabs).
+    -- These may not be reachable via each window's header.windows if they've been transformed.
+    if Adjustable.TabWindow.allTabs then
+      for tabName, owner in pairs(Adjustable.TabWindow.allTabs or {}) do
+        pcall(function()
+          local cont = owner[tabName.."tab"]
+          if cont and cont.delete then cont:delete() end
+          local page = owner[tabName]
+          if page and page.delete then page:delete() end
+          owner[tabName.."tab"] = nil
+          owner[tabName] = nil
+          -- remove header bookkeeping if present
+          if owner.header then
+            owner.header:remove(tabName.."tab")
+            owner.header:organize()
+          end
+        end)
+      end
+    end
     Adjustable.TabWindow.all = {}
     Adjustable.TabWindow.allTabs = {}
     Adjustable.TabWindow.all_windows = {}
