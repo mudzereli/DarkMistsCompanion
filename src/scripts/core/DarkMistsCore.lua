@@ -592,6 +592,7 @@ function Darkmists.CleanupUI(opts)
   if DMTabs and DMTabs.destroy then pcall(DMTabs.destroy) end
   if DarkMistsMiniMap and DarkMistsMiniMap.destroy then pcall(DarkMistsMiniMap.destroy) end
   if ButtonBar and ButtonBar.destroy then pcall(ButtonBar.destroy) end
+  if StatusBar and StatusBar.cleanup then pcall(StatusBar.cleanup) end
   
   if opts.uninstall then
     Darkmists.Log("Darkmists Core", "Resetting window borders to default...")
