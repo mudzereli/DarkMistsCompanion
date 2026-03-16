@@ -345,7 +345,7 @@ function Darkmists.ShowUIIntroMessage()
     end
 
     if DMAlertWindow and DMAlertWindow.Show then
-      DMAlertWindow.Show("🔮 WELCOME TO DARK MISTS COMPANION", function(win)
+      DMAlertWindow.Show(("🔮 WELCOME TO DARK MISTS COMPANION — v%s"):format(tostring(Darkmists.VERSION or "unknown")), function(win)
         cecho(win, "\n")
         cecho(win, "<ansi_yellow> You are currently using Minimal UI Mode.\n\n")
         cecho(win, "<steel_blue> Enable the Full Interface to access:\n")
@@ -362,7 +362,7 @@ function Darkmists.ShowUIIntroMessage()
       -- Fallback to original cecho block when helper unavailable
       cecho("\n")
       cecho("<gold>╔════════════════════════════════════════════════════════════╗\n")
-      cecho("<gold>║<cadet_blue>              🔮 WELCOME TO DARK MISTS COMPANION            <gold>║\n")
+      cecho(("<gold>║<cadet_blue> 🔮 WELCOME TO DARK MISTS COMPANION        %16s <gold>║\n"):format("v"..tostring(Darkmists.VERSION or "unknown")))
       cecho("<gold>╠════════════════════════════════════════════════════════════╣\n")
       cecho("<gold>║<ansi_yellow> You are currently using Minimal UI Mode.                   <gold>║\n")
       cecho("<gold>║                                                            ║\n")
