@@ -289,7 +289,7 @@ function Darkmists.ResetUILayoutCache()
   end
 
   Darkmists.Log("Darkmists Core","<orange>UI cache cleared. Reloading profile...")
-  tempTimer(1, [[resetProfile()]])
+  Darkmists.SafeReload()
 end
 
 function Darkmists.ShowUIIntroMessage()
@@ -562,15 +562,30 @@ function Darkmists.RegisterEvents()
 
     tempTimer(0.4, applyResize)
   end)
+
+  DarkmistsEvents.add("DarkmistsPackageUninstall","sysUninstallPackage",function (_,pkgName)
+    if pkgName == Darkmists.NAME then
+      Darkmists.Log("Darkmists Core", ("Package Uninstall Detected: %s"):format(tostring(pkgName)))
+      setBorderTop(0); setBorderBottom(0); setBorderLeft(0); setBorderRight(0);
+      if DarkMistsMiniMap and DarkMistsMiniMap.destroy then
+        Darkmists.Log("Darkmists Core", "Destroying MiniMap on Uninstall...")
+        DarkMistsMiniMap.destroy()
+      end
+    end
+  end)
 end
 
 function Darkmists.SafeReload()
+  Darkmists.Log("Darkmists Core","<red>Resetting Profile. UI Reload Incoming....")
+
   if DarkMistsMiniMap then
     DarkMistsMiniMap.destroy()
   end
 
-  Darkmists.Log("Darkmists Core","<red>Resetting Profile. UI Reload Incoming....")
-  tempTimer(1, [[clearWindow() resetProfile()]])
+  tempTimer(1, function()
+    clearWindow()
+    resetProfile()
+  end)
 end
 
 function Darkmists.Init()
@@ -653,7 +668,7 @@ function Darkmists.DisableUI()
   end
 
   Darkmists.Log("Darkmists Core", "Switching to Minimal UI...")
-  tempTimer(0.5, function() resetProfile() end)
+  Darkmists.SafeReload()
 end
 
 -- =============================================================================
