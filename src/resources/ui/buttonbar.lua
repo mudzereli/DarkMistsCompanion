@@ -211,6 +211,9 @@ ButtonBar:addDropdown("🧰 Modules", {
     {label="🛠 EA Tools", children={
       {label="🧪 EA Formula Viewer", action=function() Darkmists.OpenEAFormulaParser() end},
       {label="🔄 EA Save Converter", action=function() Darkmists.OpenEAConverter() end},
+      {label="📜 Alchemy Mat List", action=function()
+          DMUtil.openLocalFile(getMudletHomeDir() .. "/DarkMistsCompanion/assets/alchemy-mat-list.html")
+        end},
     }},
     {label="❓ Enchant Assist", action=function() expandAlias("dmc help es") end}
   }},
