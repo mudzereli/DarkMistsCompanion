@@ -641,121 +641,112 @@ end
 -- REST LOGIC (DMAPI VITALS)
 -- ============================================================================
 
-registerNamedEventHandler(
-  "darkmists.enchanter",
-  "EnchanterAssist.newline",
-  "dmapi.core.line",
-  function(_,data)
-    EnchanterAssist.on_line(data.line)
+-- Use DarkmistsEvents so handlers are deduped/managed across reloads
+DarkmistsEvents.add("EnchanterAssist.NewLine", "dmapi.core.line", function(_, data)
+  EnchanterAssist.on_line(data.line)
+end)
+
+DarkmistsEvents.add("EnchanterAssist.Vitals", "dmapi.player.vitals.updated", function()
+
+  -- Only process vitals when either:
+  --  • autorun is enabled (normal operation), or
+  --  • we're currently in `resting` and need to detect recovery even if autorun
+  --    was temporarily disabled. In all other cases, skip processing.
+  if not EnchanterAssist.autoRun then
+    if EnchanterAssist.state ~= "resting" then
+      return
+    end
   end
-)
 
-registerNamedEventHandler(
-  "darkmists.enchanter",
-  "EnchanterAssist.vitals",
-  "dmapi.player.vitals.updated",
-  function()
+  local v = dmapi.player.vitals
+  local manaPct = v.mnPct or 0
+  local movePct = v.mvPct or 0
 
-    -- Only process vitals when either:
-    --  • autorun is enabled (normal operation), or
-    --  • we're currently in `resting` and need to detect recovery even if autorun
-    --    was temporarily disabled. In all other cases, skip processing.
-    if not EnchanterAssist.autoRun then
-      if EnchanterAssist.state ~= "resting" then
-        return
-      end
-    end
+  local low  = (manaPct < 20) or (movePct < 20)
+  local high = (manaPct > 90) and (movePct > 90)
 
-    local v = dmapi.player.vitals
-    local manaPct = v.mnPct or 0
-    local movePct = v.mvPct or 0
+  -------------------------------------------------
+  -- IF SLEEPING
+  -------------------------------------------------
+  if dmapi.player.status.sleeping then
 
-    local low  = (manaPct < 20) or (movePct < 20)
-    local high = (manaPct > 90) and (movePct > 90)
+    -- Start refresh timer if not running
+    EnchanterAssist._ensureSleepTimer()
 
-    -------------------------------------------------
-    -- IF SLEEPING
-    -------------------------------------------------
-    if dmapi.player.status.sleeping then
-
-      -- Start refresh timer if not running
-      EnchanterAssist._ensureSleepTimer()
-
-      -- Wake when fully recovered
-      if high then
-        if EnchanterAssist.sleepRefreshTimer then
-          killTimer(EnchanterAssist.sleepRefreshTimer)
-          EnchanterAssist.sleepRefreshTimer = nil
-        end
-
-        EnchanterAssist.state = "idle"
-        dmapi.core.send("wake")
-
-        tempTimer(0.3, function()
-          if EnchanterAssist.autoRun and EnchanterAssist.state == "idle" then
-            EnchanterAssist.run()
-          end
-        end)
+    -- Wake when fully recovered
+    if high then
+      if EnchanterAssist.sleepRefreshTimer then
+        killTimer(EnchanterAssist.sleepRefreshTimer)
+        EnchanterAssist.sleepRefreshTimer = nil
       end
 
-      return
-    end
-
-    local now = getEpoch()
-
-    -- throttle to once every 3 seconds
-    if EnchanterAssist.state ~= "resting"
-      and now - EnchanterAssist._lastVitalsCheck < 3 then
-      return
-    end
-
-    EnchanterAssist._lastVitalsCheck = now
-    -- Exit resting (potion mode support)
-    if high and EnchanterAssist.state == "resting" and not dmapi.player.status.sleeping then
       EnchanterAssist.state = "idle"
-      tempTimer(0.2, function()
-        if EnchanterAssist.autoRun then
+      dmapi.core.send("wake")
+
+      tempTimer(0.3, function()
+        if EnchanterAssist.autoRun and EnchanterAssist.state == "idle" then
           EnchanterAssist.run()
         end
       end)
     end
-    -------------------------------------------------
-    -- IF LOW RESOURCES
-    -------------------------------------------------
-    if low then
 
-      -- Never interrupt brewing
-      if EnchanterAssist.state == "brewing" then
-        return
+    return
+  end
+
+  local now = getEpoch()
+
+  -- throttle to once every 3 seconds
+  if EnchanterAssist.state ~= "resting"
+    and now - EnchanterAssist._lastVitalsCheck < 3 then
+    return
+  end
+
+  EnchanterAssist._lastVitalsCheck = now
+  -- Exit resting (potion mode support)
+  if high and EnchanterAssist.state == "resting" and not dmapi.player.status.sleeping then
+    EnchanterAssist.state = "idle"
+    tempTimer(0.2, function()
+      if EnchanterAssist.autoRun then
+        EnchanterAssist.run()
       end
+    end)
+  end
+  -------------------------------------------------
+  -- IF LOW RESOURCES
+  -------------------------------------------------
+  if low then
 
-      -- Already trying to rest? Don't resend commands
-      if EnchanterAssist.state == "resting" then
-        return
-      end
-
-      EnchanterAssist.state = "resting"
-
-      if EnchanterAssist.sleepType == 1 then
-        dmapi.core.send("get", EnchanterAssist.sleeper, EnchanterAssist.container)
-        dmapi.core.send("drop", EnchanterAssist.sleeper)
-        dmapi.core.send("sleep", EnchanterAssist.sleeper)
-      else
-        if manaPct < 20 then
-          dmapi.core.send("get", EnchanterAssist.drainItem, EnchanterAssist.container)
-          dmapi.core.send("quaff", EnchanterAssist.drainItem)
-        end
-        if movePct < 20 then
-          dmapi.core.send("get", "refreshment", EnchanterAssist.container)
-          dmapi.core.send("recite", "refreshment", "self")
-        end
-      end
-
+    -- Never interrupt brewing
+    if EnchanterAssist.state == "brewing" then
       return
     end
 
+    -- Already trying to rest? Don't resend commands
+    if EnchanterAssist.state == "resting" then
+      return
+    end
+
+    EnchanterAssist.state = "resting"
+
+    if EnchanterAssist.sleepType == 1 then
+      dmapi.core.send("get", EnchanterAssist.sleeper, EnchanterAssist.container)
+      dmapi.core.send("drop", EnchanterAssist.sleeper)
+      dmapi.core.send("sleep", EnchanterAssist.sleeper)
+    else
+      if manaPct < 20 then
+        dmapi.core.send("get", EnchanterAssist.drainItem, EnchanterAssist.container)
+        dmapi.core.send("quaff", EnchanterAssist.drainItem)
+      end
+      if movePct < 20 then
+        dmapi.core.send("get", "refreshment", EnchanterAssist.container)
+        dmapi.core.send("recite", "refreshment", "self")
+      end
+    end
+
+    return
   end
-)
+
+end)
 
 -- ============================================================================
 -- LOAD STATE
