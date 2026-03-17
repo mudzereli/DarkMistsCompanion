@@ -1,5 +1,11 @@
 [
        {
+              "name": "ui",
+              "isActive": "yes",
+              "script": "",
+              "isFolder": "yes"
+       },
+       {
               "name": "DMUtil",
               "isActive": "yes",
               "script": "",
