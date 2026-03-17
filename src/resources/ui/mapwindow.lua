@@ -114,6 +114,37 @@ end
 -- Initialization
 -- -------------------------------------------------------------------
 
+-- Install an override for the mapper's `sanitizeRoomName` function.
+-- This replaces the original implementation with the project's preferred behavior
+-- while keeping the override local to this module. If `map` is not yet present,
+-- retry once shortly after load.
+local function install_sanitize_override()
+  local function sanitizeRoomName(roomtitle)
+    if type(roomtitle) ~= "string" then
+      return roomtitle
+    end
+
+    -- remove immortal VNUMs like [12345] at end of room titles, which disrupts the minimap's ability to match selected rooms to mapper data.
+    roomtitle = roomtitle:gsub("%s*%[%d+%]%s*$", "")
+
+    -- original behavior (keep this)
+    if not roomtitle:match("   ") then
+      return roomtitle
+    end
+
+    local parts = roomtitle:split("  ")
+    table.sort(parts, function(a,b) return #a < #b end)
+    local longestpart = parts[#parts]
+
+    local trimmed = utf8.match(longestpart, "[%w ]+"):trim()
+    return trimmed
+  end
+
+  if map then
+    map.sanitizeRoomName = sanitizeRoomName
+  end
+end
+
 -- Initialize the minimap when connected (or immediately if already connected).
 local function initMiniMap()
   if DarkMistsMiniMap.container then return end
@@ -122,6 +153,7 @@ local function initMiniMap()
   Darkmists.Log("MiniMapContainer","MiniMap Created!")
   -- update and show immediately
   DarkMistsMiniMap.update()
+  install_sanitize_override()
   if DarkMistsMiniMap.container then
     DarkMistsMiniMap.container:show()
     DarkMistsMiniMap.container:raiseAll()
@@ -148,3 +180,4 @@ function DarkMistsMiniMap.Init()
     true
   )
 end
+
