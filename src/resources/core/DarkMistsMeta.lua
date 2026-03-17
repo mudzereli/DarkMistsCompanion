@@ -539,35 +539,23 @@ DarkmistsAlias.add("^walk(?:\\s+(.*))?$", function()
   local c = dm_text
   local arg = matches[2] and matches[2]:trim() or ""
 
-  -- HELP
+  -- HELP (compact)
   if arg == "" then
-    cecho(dm_header_color..[[Walk Module:
-    ]]..dm_muted..[[The Walk module enables speedwalking between two known rooms 
-    using the default map speedwalk system. Both the starting room and 
-    destination must already be discovered, and the route must be clear. Paths 
-    that require traversing mazes are not supported.
+    local function line(cmd, desc)
+      return string.format("  %s\n    %s\n", cmd, desc)
+    end
 
-]]..dm_header_color..[[Walk Commands:
-  ]]..c..[[walk <name>
-    ]]..dm_muted..[[Navigate to a saved destination
+    local out = dm_header_color .. "Walk Module:\n\n"
+      .. dm_muted .. "Speedwalk between known rooms using the map speedwalk system. \nDestinations must be discovered and routes clear.\n\n"
+      .. dm_header_color .. "Walk Commands:\n"
+      .. line(c .. "walk <name>", dm_muted .. "Navigate to a saved destination")
+      .. line(c .. "walk list <filter: optional>", dm_muted .. "Show saved destinations (optional filter)")
+      .. line(c .. "walk add <name> <roomid: optional>", dm_muted .. "Add persistent destination (room optional)")
+      .. line(c .. "walk rem <name>", dm_muted .. "Remove a saved destination")
+      .. line(c .. "walk area <name>", dm_muted .. "Navigate to first room in matching area")
+      .. line(c .. "walk stop", dm_muted .. "Cancel an active walk")
 
-  ]]..c..[[walk list <filter: optional>
-    ]]..dm_muted..[[Show all saved destinations. A filter argument can
-    be supplied to further refine the results.
-
-  ]]..c..[[walk add <name> <roomid: optional>
-    ]]..dm_muted..[[Add a persistent destination. If room id is omitted
-    then the current room is used (if known).
-
-  ]]..c..[[walk rem <name>
-    ]]..dm_muted..[[Permanently remove a destination.
-
-  ]]..c..[[walk area <name>
-    ]]..dm_muted..[[Navigate to the first room of a matching area.
-
-  ]]..c..[[walk stop
-    ]]..dm_muted..[[Cancel a walk that is currently in progress.
-]])
+    cecho(out)
     return
   end
 
