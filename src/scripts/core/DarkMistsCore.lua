@@ -532,6 +532,74 @@ function Darkmists.RegisterEvents()
 
     tempTimer(0.4, applyResize)
   end)
+  
+  DarkmistsEvents.add("DarkmistsImmortalButton","dmapi.world.enter",function()
+    ButtonBar:addButton("🔱 Make Me Immortal", function()
+      local events = {
+        {0,  DarkmistsTheme.goodTag,   "You step into the Circle of Ascension."},
+        {3,  DarkmistsTheme.accentTag, "Ancient sigils flare to life beneath your feet."},
+        {6,  DarkmistsTheme.textTag,   "A low chant echoes from unseen voices beyond the veil."},
+        {9,  DarkmistsTheme.warnTag,   "The air grows heavy with the weight of old magic."},
+        {11, DarkmistsTheme.infoTag,   "Starlight gathers above, spiraling toward your mortal form."},
+        {13, DarkmistsTheme.badTag,    "The heavens tremble as the gates of eternity begin to open."},
+        {15, DarkmistsTheme.textTag,   "A timeless voice intones: <b>'So it shall be.'"},
+        {17, DarkmistsTheme.goodTag,   "Your soul rises beyond the bounds of flesh..."},
+        {18, DarkmistsTheme.accentTag, "🎶 The Song of Immortality begins to play... 🎶"},
+      }
+
+      for _, ev in ipairs(events) do
+        local d, tag, msg = ev[1], ev[2], ev[3]
+        tempTimer(d, function()
+          cecho("\n" .. tag .. msg .. "\n")
+        end)
+      end
+
+      tempTimer(19, function()
+        DMAlertWindow.Show("You have become Immortalized!", function(win)
+            echo(win,"\n⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⣠⣤⢤⣤⣀⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀")
+            echo(win,"\n⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣠⣿⣿⣿⣿⣿⣿⣿⣦⣄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀")
+            echo(win,"\n⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣰⡿⣾⣿⣿⣿⣿⣿⣿⣿⣿⣧⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀")
+            echo(win,"\n⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣿⣶⠛⡏⠀⠀⠉⠀⠀⠉⢻⣿⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⠀⠀⠀⠀⠀⠀⠀")
+            echo(win,"\n⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣿⣿⣠⣦⣤⣄⢀⣀⡀⠀⢸⡿⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀")
+            echo(win,"\n⠀⠀⠀⠀⠀⠀⠀⠀⠀⢠⣿⠀⡟⠉⠙⣿⠀⠙⠛⠛⣿⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀")
+            echo(win,"\n⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⣿⡀⡇⠀⡴⠒⠒⠀⠀⢀⣿⠃⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⠀⠀⠀⠀⠀⠀⠀")
+            echo(win,"\n⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣸⣇⠈⠉⠁⠐⠆⣠⠞⠉⠀⠀⠀⠀⠀⢢⡀⠀⠀⠀⠋⠀⠀⠀⠀⠀⠀⠀")
+            echo(win,"\n⠀⠀⠀⠀⠀⠀⠀⠀⢀⠔⠋⣽⠾⢷⣶⣤⡤⠖⣿⡆⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀")
+            echo(win,"\n⠀⠀⠀⠀⠈⠀⠀⠤⣎⣀⣾⡟⠄⠀⠀⠀⠀⣠⠋⣿⣦⣀⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀")
+            echo(win,"\n⠀⠀⠀⠠⠊⠉⢉⣭⣿⡇⠀⣟⣶⣶⡀⣠⠞⠁⢸⣿⣿⣿⣿⣿⣷⣶⣶⣤⣄⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀")
+            echo(win,"\n⠀⢀⣤⣶⣽⣿⣿⣿⣿⠀⢀⡇⢸⣿⠋⠁⠀⣰⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣧⠀⠀⠀⠀⠀⠀⠀⠀")
+            echo(win,"\n⠀⢸⣿⣿⣿⣿⣿⣿⣿⣿⣿⣇⢀⣟⣓⣒⢴⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣇⠀⠀⠀⠀⠀⠀⠀")
+            echo(win,"\n⠀⢸⣿⣿⣿⣿⣿⣿⣿⣿⣿⡿⠻⣿⣻⢨⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠆⠀⠀⠀⠀⠀⠀")
+            echo(win,"\n⠀⣼⣿⣿⣿⣿⣿⣿⣿⣿⣒⡃⠀⠿⠯⢽⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣦⠀⠀⠀⠀⠀⠀")
+            echo(win,"\n⠀⣿⣿⣿⣿⣿⣿⣿⣿⣿⡯⠅⠀⠯⣍⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣦⣄⠀⠀⠀⠀")
+            echo(win,"\n⠀⣿⣿⣿⣿⣿⣿⣿⣿⣿⣯⣽⣿⣛⣳⣿⣿⣿⣿⢶⣭⠉⠉⠉⢻⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣷⣦⡀⠀")
+            echo(win,"\n⠀⢻⣿⣿⣿⣿⣿⣿⣿⣿⣗⣺⣿⠶⣽⣿⣿⣿⣿⣿⠀⣀⣀⠀⠀⢻⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡆")
+            echo(win,"\n⠀⣾⣿⣿⣿⣿⣿⣿⣿⣿⣿⠿⣿⣭⣿⣿⣿⣿⣿⣿⣯⣁⣀⡀⠀⠀⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡇")
+            echo(win,"\n⢸⣿⣿⣿⣿⡿⠿⠿⢿⣻⣿⣯⣽⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣦⣤⣾⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿")
+            echo(win,"\n⠀⢻⣿⣟⣥⠐⠢⠤⠤⢿⣿⣓⣿⣺⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠟⠃")
+            echo(win,"\n⠀⠘⣿⣿⣿⡆⢒⣶⣾⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡆⠀⠉⠉⠉⠀⠀⠀⠀⠀")
+            echo(win,"\n⠀⠀⠈⠙⢿⣿⣮⣽⣿⣿⣿⡶⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀")
+            echo(win,"\n⠀⠀⠈⠂⠀⠈⠉⣿⣿⣿⠿⣷⣻⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣷⠀⠀⠀⠀⠀⠀⠀⠀⠀")
+            echo(win,"\n⠀⠀⠀⠀⠀⠀⣠⣿⣿⣿⠀⢸⠛⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡆⠀⠀⠀⠀⠀⠀⠀⠀")
+            echo(win,"\nNever gonna give you up...             ")
+            echo(win,"\n            Never gonna let you down...")
+        end, { width = 450, height = 600 })
+
+        local soundPath = getMudletHomeDir() .. "/DarkMistsCompanion/assets/sounds/ascension.mp3"
+
+        -- Normalize slashes (safety for Windows)
+        soundPath = soundPath:gsub("\\", "/")
+
+        playSoundFile({
+          name = soundPath,
+          volume = 75,
+          priority = 75,
+          tag = "ascension_sound"
+        })
+      end)
+
+    end)
+  end)
 
   DarkmistsEvents.add("DarkmistsPackageUninstall","sysUninstallPackage",function (_,pkgName)
     if pkgName == Darkmists.NAME then
