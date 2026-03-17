@@ -290,6 +290,8 @@ DarkmistsAlias.add([[^ch(?:\s+(\w+))?$]], function()
     ChatHistory.refresh()
     cecho("\n"..dm_muted.."["..dm_text.."ChatHistory"..dm_muted.."] "..dm_good.."Refreshed")
   else
+    cecho("\n"..dm_header_color.."Chat History:\n")
+    cecho(dm_muted.."Chat History provides a separate chat window that contains recent \nmessages from various channels (All, OOC, Direct, Local).\n")
     cecho("\n"..dm_header_color.."Chat History Commands:\n")
     cecho(dm_text.."ch refresh"..dm_muted.." – Refresh window\n")
   end
