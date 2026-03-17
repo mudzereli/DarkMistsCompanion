@@ -705,6 +705,12 @@ function Darkmists.LoadUIScripts()
   dofile(getMudletHomeDir() .. "/DarkMistsCompanion/ui/scorepanel.lua")
   dofile(getMudletHomeDir() .. "/DarkMistsCompanion/ui/mapwindow.lua")
   dofile(getMudletHomeDir() .. "/DarkMistsCompanion/utility/mapcolor.lua")
+  
+  -- Initialize optional UI modules that need runtime context (e.g., connection state)
+  if DarkMistsMiniMap and DarkMistsMiniMap.Init then
+    pcall(DarkMistsMiniMap.Init)
+  end
+
   Darkmists.UI_LOADED = true
   Darkmists.Log("Darkmists Core", "UI Scripts Loaded")
 end
