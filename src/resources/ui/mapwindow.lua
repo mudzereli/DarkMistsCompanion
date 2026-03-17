@@ -124,8 +124,9 @@ local function install_sanitize_override()
       return roomtitle
     end
 
-    -- remove immortal VNUMs like [12345] at end of room titles, which disrupts the minimap's ability to match selected rooms to mapper data.
-    roomtitle = roomtitle:gsub("%s*%[%d+%]%s*$", "")
+    -- remove immortal VNUMs like [Room 12345] at end of room titles,
+    -- which disrupts the minimap's ability to match selected rooms to mapper data.
+    roomtitle = roomtitle:gsub("%s*%[[Rr][Oo][Oo][Mm]%s+%d+%]%s*$", "")
 
     -- original behavior (keep this)
     if not roomtitle:match("   ") then
