@@ -31,7 +31,6 @@ EnchanterAssist._lastVitalsCheck = 0
 EnchanterAssist._comboIndices = nil
 EnchanterAssist._wrapped     = false
 EnchanterAssist._savePath    = getMudletHomeDir() .. "/ea_data.lua"
-
 EnchanterAssist.color = DarkmistsTheme.accentTag
 
 local ea_plugin = EnchanterAssist.color .. "EnchanterAssist"
@@ -134,7 +133,7 @@ function EnchanterAssist._playDiscoverSound()
   if not EnchanterAssist.playSoundOnDiscover then return end
 
   local soundPath = getMudletHomeDir() ..
-    "/DarkMistsCompanion/assets/sounds/double-beep.mp3"
+    "/DarkMistsCompanion/assets/sounds/bubbling.wav"
 
   -- Normalize slashes (safety for Windows)
   soundPath = soundPath:gsub("\\", "/")
@@ -368,7 +367,6 @@ function EnchanterAssist.finishAttempt()
   EnchanterAssist.pendingKey = nil
 
   EnchanterAssist.state = "idle"
-
   if EnchanterAssist.autoRun then
       EnchanterAssist.run()
   end
@@ -658,7 +656,15 @@ registerNamedEventHandler(
   "dmapi.player.vitals.updated",
   function()
 
-    if not EnchanterAssist.autoRun then return end
+    -- Only process vitals when either:
+    --  • autorun is enabled (normal operation), or
+    --  • we're currently in `resting` and need to detect recovery even if autorun
+    --    was temporarily disabled. In all other cases, skip processing.
+    if not EnchanterAssist.autoRun then
+      if EnchanterAssist.state ~= "resting" then
+        return
+      end
+    end
 
     local v = dmapi.player.vitals
     local manaPct = v.mnPct or 0
