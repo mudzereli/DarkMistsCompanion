@@ -307,7 +307,6 @@ function Darkmists.ResetUILayoutCache()
   local home = getMudletHomeDir()
 
   local targets = {
-    home .. "/darkmists_global_settings.lua",
     home .. "/AdjustableContainer",
     home .. "/AdjustableTabWindow",
   }
@@ -329,6 +328,9 @@ function Darkmists.ResetUILayoutCache()
   end
 
   setBorderTop(0); setBorderBottom(0); setBorderLeft(0); setBorderRight(0);
+  -- update stored layout cache version so we don't repeatedly trigger a reset
+  Darkmists.GlobalSettings.layoutCacheVersion = Darkmists.LAYOUT_CACHE_VERSION
+  Darkmists.SaveSettings()
   Darkmists.Log("Darkmists Core","<orange>UI cache cleared.")
 end
 
@@ -501,21 +503,15 @@ function Darkmists.LoadSettings()
 ---@diagnostic disable-next-line: undefined-field
     table.load(saveFilePath, settings)
 
-    -- Detect legacy settings BEFORE merging
-    if settings.layoutCacheVersion == nil then
-      Darkmists.Log("<medium_sea_green>Darkmists Core", "<red>Legacy settings detected (no layout version)")
-      tempTimer(0,function ()
-        Darkmists.ResetUILayoutCache()
-        Darkmists.SafeReload()
-      end)
-      return
-    end
-    
+    -- Merge settings (preserve values even if layoutCacheVersion missing)
     DMUtil.deep_copy_into(Darkmists.GlobalSettings, settings)
     Darkmists.Log("<medium_sea_green>Darkmists Core", ("<slate_gray>Settings Loaded From: <steel_blue>%s<r>"):format(saveFilePath))
     Darkmists.Log("<medium_sea_green>Darkmists Core","<slate_gray>You may need to Reload UI for changes to take effect!")
+    -- return true indicating a settings file existed
+    return true
   else
     Darkmists.Log("<medium_sea_green>Darkmists Core","<slate_gray>No Pre-Existing Settings File Found!")
+    return false
   end
 end
 
@@ -666,18 +662,26 @@ end
 
 function Darkmists.Init()
   Darkmists.Log("<medium_sea_green>Darkmists Core", ("<slate_gray>Loaded Darkmists Core <steel_blue>v%s<r>"):format(Darkmists.VERSION))
-  Darkmists.ApplyDefaultSettings()
-  Darkmists.LoadSettings()
+  local hadSettings = Darkmists.LoadSettings()
   DarkmistsTheme.buildTheme()
   Darkmists.RegisterEvents()
-  
-  -- Layout cache compatibility check
-  if Darkmists.GlobalSettings.layoutCacheVersion ~= Darkmists.LAYOUT_CACHE_VERSION then
-      tempTimer(0,function ()
-        Darkmists.ResetUILayoutCache()
-        Darkmists.SafeReload()
-      end)
-    return
+  -- Version-based settings policy:
+  -- If a saved settings file existed and its stored layout version matches the
+  -- current package version, keep the user's settings. Otherwise (no saved
+  -- settings, or a mismatched version), remove the saved file, apply defaults
+  -- and persist defaults so the package starts clean for the new version.
+  if hadSettings and Darkmists.GlobalSettings.layoutCacheVersion == Darkmists.LAYOUT_CACHE_VERSION then
+    -- same version: keep loaded settings
+  else
+    -- version mismatch or no settings: remove any existing saved file and reset
+    if io.exists(saveFilePath) then
+      pcall(os.remove, saveFilePath)
+    end
+    Darkmists.ApplyDefaultSettings()
+    Darkmists.GlobalSettings.layoutCacheVersion = Darkmists.LAYOUT_CACHE_VERSION
+    Darkmists.SaveSettings()
+    -- Reset UI layout cache to avoid stale UI artifacts from previous versions
+    Darkmists.ResetUILayoutCache()
   end
 
   if Darkmists.GlobalSettings.minimalMode then
