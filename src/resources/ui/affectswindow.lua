@@ -121,6 +121,19 @@ function AffectsWindow.removeExpiredAffect(affectName)
   end
 end
 
+function AffectsWindow.clearExpiredAffects()
+  local changed = false
+  for i = #AffectsWindow.affectsList, 1, -1 do
+    if AffectsWindow.affectsList[i].expired then
+      table.remove(AffectsWindow.affectsList, i)
+      changed = true
+    end
+  end
+  if changed then
+    AffectsWindow.refreshDisplay()
+  end
+end
+
 function AffectsWindow.displayHeader()
   if not AffectsWindow.window or not AffectsWindow.lastUpdateTime then return end
 
@@ -129,9 +142,9 @@ function AffectsWindow.displayHeader()
 
   local disp
   if Darkmists.GlobalSettings.lightMode then
-    disp = "<ansi_yellow>Age: <black>%ss <dim_gray>(%s<dim_gray>) <black>| "
+    disp = "<ansi_yellow>Age: <black>%ss <dim_gray>(%s<dim_gray>) <r>| "
   else
-    disp = "<yellow>Age: <white>%ss <dim_gray>(%s<dim_gray>) <white>| "
+    disp = "<yellow>Age: <white>%ss <dim_gray>(%s<dim_gray>) <r>| "
   end
 
   AffectsWindow.console:cecho(string.format(disp, realElapsed, age))
@@ -141,9 +154,17 @@ function AffectsWindow.displayHeader()
   local linkColor = Darkmists.getDefaultTextColorTag()
 
   AffectsWindow.console:cechoLink(
-    linkColor .. "<u>[Refresh]",
+    linkColor .. "<u>[Refresh]<r>",
     function() send("affects") end,
     "Refresh affects list",
+    true
+  )
+  AffectsWindow.console:cecho(" ")
+  linkColor = DarkmistsTheme.redTag
+  AffectsWindow.console:cechoLink(
+    linkColor .. "<u>[Clear Expired]<r>",
+    function() AffectsWindow.clearExpiredAffects() end,
+    "Remove all expired affects",
     true
   )
 

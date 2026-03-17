@@ -120,5 +120,4 @@ function DMAlertWindow.Hide()
   hideWindow(panel.close)
   hideWindow(panel.border)
 end
-
 return DMAlertWindow

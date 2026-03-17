@@ -65,6 +65,7 @@ end
 -- -------------------------------------------------------------------
 function DarkMistsMiniMap.update()
   if not map then return end -- defensive; should not occur if mapper data properly loaded
+  if not map.configs then return end  -- defensive; should not occur if mapper data properly loaded
   local name, id, area
 
   -- Prefer selected room
@@ -113,13 +114,37 @@ end
 -- Initialization
 -- -------------------------------------------------------------------
 
-tempTimer(0, function()
+-- Initialize the minimap when connected (or immediately if already connected).
+local function initMiniMap()
+  if DarkMistsMiniMap.container then return end
   DarkMistsMiniMap.create()
   DarkMistsMiniMap.registerEvents()
   Darkmists.Log("MiniMapContainer","MiniMap Created!")
-  tempTimer(0, function()
-    DarkMistsMiniMap.update()
+  -- update and show immediately
+  DarkMistsMiniMap.update()
+  if DarkMistsMiniMap.container then
     DarkMistsMiniMap.container:show()
     DarkMistsMiniMap.container:raiseAll()
-  end)
-end)
+  end
+end
+-- Public initializer: create now if connected, otherwise register a one-shot
+-- sysConnectionEvent handler and unregister it after first successful connect.
+function DarkMistsMiniMap.Init()
+  local _, _, connected = getConnectionInfo()
+  if connected then
+    initMiniMap()
+    return
+  end
+
+  -- Register a one-shot connection handler via DarkmistsEvents so it will be
+  -- automatically removed after it fires once.
+  DarkmistsEvents.add("DarkMistsMiniMap.OnConnect", "sysConnectionEvent",
+    function()
+      local _,_,c = getConnectionInfo()
+      if c then
+        initMiniMap()
+      end
+    end,
+    true
+  )
+end

@@ -290,6 +290,8 @@ DarkmistsAlias.add([[^ch(?:\s+(\w+))?$]], function()
     ChatHistory.refresh()
     cecho("\n"..dm_muted.."["..dm_text.."ChatHistory"..dm_muted.."] "..dm_good.."Refreshed")
   else
+    cecho("\n"..dm_header_color.."Chat History:\n")
+    cecho(dm_muted.."Chat History provides a separate chat window that contains recent \nmessages from various channels (All, OOC, Direct, Local).\n")
     cecho("\n"..dm_header_color.."Chat History Commands:\n")
     cecho(dm_text.."ch refresh"..dm_muted.." – Refresh window\n")
   end
@@ -539,35 +541,23 @@ DarkmistsAlias.add("^walk(?:\\s+(.*))?$", function()
   local c = dm_text
   local arg = matches[2] and matches[2]:trim() or ""
 
-  -- HELP
+  -- HELP (compact)
   if arg == "" then
-    cecho(dm_header_color..[[Walk Module:
-    ]]..dm_muted..[[The Walk module enables speedwalking between two known rooms 
-    using the default map speedwalk system. Both the starting room and 
-    destination must already be discovered, and the route must be clear. Paths 
-    that require traversing mazes are not supported.
+    local function line(cmd, desc)
+      return string.format("  %s\n    %s\n", cmd, desc)
+    end
 
-]]..dm_header_color..[[Walk Commands:
-  ]]..c..[[walk <name>
-    ]]..dm_muted..[[Navigate to a saved destination
+    local out = dm_header_color .. "Walk Module:\n\n"
+      .. dm_muted .. "Speedwalk between known rooms using the map speedwalk system. \nDestinations must be discovered and routes clear.\n\n"
+      .. dm_header_color .. "Walk Commands:\n"
+      .. line(c .. "walk <name>", dm_muted .. "Navigate to a saved destination")
+      .. line(c .. "walk list <filter: optional>", dm_muted .. "Show saved destinations (optional filter)")
+      .. line(c .. "walk add <name> <roomid: optional>", dm_muted .. "Add persistent destination (room optional)")
+      .. line(c .. "walk rem <name>", dm_muted .. "Remove a saved destination")
+      .. line(c .. "walk area <name>", dm_muted .. "Navigate to first room in matching area")
+      .. line(c .. "walk stop", dm_muted .. "Cancel an active walk")
 
-  ]]..c..[[walk list <filter: optional>
-    ]]..dm_muted..[[Show all saved destinations. A filter argument can
-    be supplied to further refine the results.
-
-  ]]..c..[[walk add <name> <roomid: optional>
-    ]]..dm_muted..[[Add a persistent destination. If room id is omitted
-    then the current room is used (if known).
-
-  ]]..c..[[walk rem <name>
-    ]]..dm_muted..[[Permanently remove a destination.
-
-  ]]..c..[[walk area <name>
-    ]]..dm_muted..[[Navigate to the first room of a matching area.
-
-  ]]..c..[[walk stop
-    ]]..dm_muted..[[Cancel a walk that is currently in progress.
-]])
+    cecho(out)
     return
   end
 
@@ -736,53 +726,28 @@ DarkmistsAlias.add("^es(?:\\s+(.*))?$", function()
   local c = dm_text
   local arg = matches[2] and matches[2]:trim() or ""
 
-  -- HELP
+  -- HELP (compact)
   if arg == "" or arg == "help" then
-    cecho(dm_header_color..[[EnchanterAssist Module:
-    ]]..dm_muted..[[Automation helper for enchantment workflow management.
-    Controls resting, part counts, and execution flow.
-
-]]..dm_header_color..[[EA Module Commands:
-  ]]..c..[[es run
-    ]]..dm_muted..[[Execute a single enchantment cycle.
-
-  ]]..c..[[es auto
-    ]]..dm_muted..[[Toggle automatic running mode.
-
-  ]]..c..[[es 1-5
-    ]]..dm_muted..[[Set enchantment part count (1–5),
-    save configuration, and immediately run.
-
-  ]]..c..[[es stats
-    ]]..dm_muted..[[Display current session statistics.
-
-  ]]..c..[[es missing
-    ]]..dm_muted..[[Display missing material statistics.
-
-  ]]..c..[[es reset
-    ]]..dm_muted..[[Reset session statistics.
-
-]]..dm_header_color..[[Configuration Commands:
-  ]]..c..[[es set container <name>
-    ]]..dm_muted..[[Set container holding enchantment items.
-
-  ]]..c..[[es set sleeper <name>
-    ]]..dm_muted..[[Set sleeper target.
-
-  ]]..c..[[es set sleepmode <sleep|potion>
-    ]]..dm_muted..[[Choose restoration behavior type.
-
-  ]]..c..[[es set potion <item>
-    ]]..dm_muted..[[Set item used for quaffing.
-
-  ]]..c..[[es sound
-    ]]..dm_muted..[[Toggle formula discovery sound
-
-]]..dm_header_color..[[Control:
-  ]]..c..[[es enable
-  ]]..c..[[es disable
-    ]]..dm_muted..[[Enable or disable EnchanterAssist entirely.
-]])
+    cecho(
+      dm_header_color.."EnchanterAssist Module:\n\n"..
+      dm_muted.."Automation helper for enchantment workflow management.\n"..
+                "Controls resting, part counts, and execution flow.\n\n"..
+      dm_header_color.."EA Module Commands:\n"..
+      "  "..c.."es auto    "..dm_muted.."Toggle automatic running mode.\n"..
+      "  "..c.."es <1-5>   "..dm_muted.."Set part count (1–5), save configuration, and run.\n"..
+      "  "..c.."es run     "..dm_muted.."Execute a single enchantment cycle.\n"..
+      "  "..c.."es stats   "..dm_muted.."Display session statistics.\n"..
+      "  "..c.."es missing "..dm_muted.."Display missing material statistics.\n"..
+      "  "..c.."es reset   "..dm_muted.."Reset session statistics.\n\n"..
+      dm_header_color.."Configuration Commands:\n"..
+      "  "..c.."es set container <name>         "..dm_muted.."Set container holding enchantment items.\n"..
+      "  "..c.."es set sleeper <name>           "..dm_muted.."Set sleeper target.\n"..
+      "  "..c.."es set sleepmode <sleep|potion> "..dm_muted.."Choose restoration behavior type.\n"..
+      "  "..c.."es set potion <item>            "..dm_muted.."Set item used for quaffing.\n"..
+      "  "..c.."es sound                        "..dm_muted.."Toggle formula discovery sound\n\n"..
+      dm_header_color.."Control:\n"..
+      "  "..c.."es enable / es disable          "..dm_muted.."Enable or disable EnchanterAssist entirely.\n"
+    )
     return
   end
 end)

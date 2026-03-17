@@ -93,7 +93,7 @@ function DMClickables.ClickablePractices()
     end
     
     cechoLink(
-        string.format("%s%-19s", c, skillDisplay),
+        string.format("%s%-20s", c, skillDisplay),
         function()
         if holdingModifiers(mudlet.keymodifier.Shift) then
             send("prac " .. skill)

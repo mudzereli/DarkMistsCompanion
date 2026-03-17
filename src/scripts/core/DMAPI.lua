@@ -1775,49 +1775,53 @@ end)
 -- EVENT HANDLERS
 -- ============================================================================
 
+-- Helper to add event handlers using DarkmistsEvents when available,
+-- falling back to registerNamedEventHandler for init-order safety.
+-- Helper to add event handlers using DarkmistsEvents (no fallback).
+-- NOTE: Handlers are added directly via DarkmistsEvents.add
+
 --- Handle sleep state changes
-registerNamedEventHandler(
-  "dmapi",
+DarkmistsEvents.add(
   "dmapi.player.sleep.blocked.handler",
   "dmapi.player.sleep.blocked",
   function()
     dmapi.player.setSleeping(true)
-  end
+  end,
+  false
 )
 
-registerNamedEventHandler(
-  "dmapi",
+DarkmistsEvents.add(
   "dmapi.player.sleep.enter.handler",
   "dmapi.player.sleep.enter",
   function()
     dmapi.player.setSleeping(true)
-  end
+  end,
+  false
 )
 
-registerNamedEventHandler(
-  "dmapi",
+DarkmistsEvents.add(
   "dmapi.player.sleep.exit.handler",
   "dmapi.player.sleep.exit",
   function()
     dmapi.player.setSleeping(false)
-  end
+  end,
+  false
 )
 
 --- Track last command sent
-registerNamedEventHandler(
-  "dmapi",
+DarkmistsEvents.add(
   "dmapi.command.tracker",
   "sysDataSendRequest",
   function(_, command)
     if not command or command == "" then return end
     dmapi.core.state.lastCommand = command
     dmapi.core.raiseEvent("dmapi.core.command.sent", {command = command})
-  end
+  end,
+  false
 )
 
 --- Reset vitals on world enter
-registerNamedEventHandler(
-  "dmapi",
+DarkmistsEvents.add(
   "dmapi.world.enter.reset",
   "dmapi.world.enter",
   function()
@@ -1832,12 +1836,12 @@ registerNamedEventHandler(
     send("")
     send("")
     send("score")
-  end
+  end,
+  false
 )
 
 --- End combat after 2 consecutive prompts without combat activity
-registerNamedEventHandler(
-  "dmapi",
+DarkmistsEvents.add(
   "dmapi.combat.end.tracker",
   "dmapi.player.vitals.updated",
   function()
@@ -1858,41 +1862,42 @@ registerNamedEventHandler(
         })
       end
     end
-  end
+  end,
+  false
 )
 
 --- Auto-guess vitals on first level update
-registerNamedEventHandler(
-  "dmapi",
+DarkmistsEvents.add(
   "dmapi.vitals.autoguess",
   "dmapi.player.level.updated",
   function(_, data)
     if dmapi.player.vitals.hpMax == 1 then
       expandAlias(string.format("dmapi guessvitals %d", data.level))
     end
-  end
+  end,
+  false
 )
 
-registerNamedEventHandler(
-  "dmapi",
+DarkmistsEvents.add(
   "dmapi.vitals.checkscore",
   "dmapi.player.vitals.updated",
   function(_, data)
     if dmapi.player.vitals.hpMax == 1 then
       send("score")
     end
-  end
+  end,
+  false
 )
 
-registerNamedEventHandler(
-  "dmapi",
+DarkmistsEvents.add(
   "dmapi.player.online false",
   "sysDisconnectionEvent",
   function()
     if not dmapi then return end
     if not dmapi.player then return end
     dmapi.player.online = false
-  end
+  end,
+  false
 )
 
 -- ============================================================================
