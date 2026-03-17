@@ -187,7 +187,6 @@ Click <green>Reload Now<r> to proceed, or close this panel to cancel.
     DMAlertWindow.Show(title, function(win)
       cecho(win, "\n")
       cecho(win, body)
-      cecho("\n\n")
       -- Use a string that hides the panel then defers the actual reload to avoid
       -- stale C++ callback references (safe pattern used elsewhere).
       cechoLink(win, "<dim_gray><u>[<green>Reload Now<dim_gray>]",

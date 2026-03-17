@@ -736,53 +736,28 @@ DarkmistsAlias.add("^es(?:\\s+(.*))?$", function()
   local c = dm_text
   local arg = matches[2] and matches[2]:trim() or ""
 
-  -- HELP
+  -- HELP (compact)
   if arg == "" or arg == "help" then
-    cecho(dm_header_color..[[EnchanterAssist Module:
-    ]]..dm_muted..[[Automation helper for enchantment workflow management.
-    Controls resting, part counts, and execution flow.
-
-]]..dm_header_color..[[EA Module Commands:
-  ]]..c..[[es run
-    ]]..dm_muted..[[Execute a single enchantment cycle.
-
-  ]]..c..[[es auto
-    ]]..dm_muted..[[Toggle automatic running mode.
-
-  ]]..c..[[es 1-5
-    ]]..dm_muted..[[Set enchantment part count (1–5),
-    save configuration, and immediately run.
-
-  ]]..c..[[es stats
-    ]]..dm_muted..[[Display current session statistics.
-
-  ]]..c..[[es missing
-    ]]..dm_muted..[[Display missing material statistics.
-
-  ]]..c..[[es reset
-    ]]..dm_muted..[[Reset session statistics.
-
-]]..dm_header_color..[[Configuration Commands:
-  ]]..c..[[es set container <name>
-    ]]..dm_muted..[[Set container holding enchantment items.
-
-  ]]..c..[[es set sleeper <name>
-    ]]..dm_muted..[[Set sleeper target.
-
-  ]]..c..[[es set sleepmode <sleep|potion>
-    ]]..dm_muted..[[Choose restoration behavior type.
-
-  ]]..c..[[es set potion <item>
-    ]]..dm_muted..[[Set item used for quaffing.
-
-  ]]..c..[[es sound
-    ]]..dm_muted..[[Toggle formula discovery sound
-
-]]..dm_header_color..[[Control:
-  ]]..c..[[es enable
-  ]]..c..[[es disable
-    ]]..dm_muted..[[Enable or disable EnchanterAssist entirely.
-]])
+    cecho(
+      dm_header_color.."EnchanterAssist Module:\n\n"..
+      dm_muted.."Automation helper for enchantment workflow management.\n"..
+                "Controls resting, part counts, and execution flow.\n\n"..
+      dm_header_color.."EA Module Commands:\n"..
+      "  "..c.."es auto    "..dm_muted.."Toggle automatic running mode.\n"..
+      "  "..c.."es <1-5>   "..dm_muted.."Set part count (1–5), save configuration, and run.\n"..
+      "  "..c.."es run     "..dm_muted.."Execute a single enchantment cycle.\n"..
+      "  "..c.."es stats   "..dm_muted.."Display session statistics.\n"..
+      "  "..c.."es missing "..dm_muted.."Display missing material statistics.\n"..
+      "  "..c.."es reset   "..dm_muted.."Reset session statistics.\n\n"..
+      dm_header_color.."Configuration Commands:\n"..
+      "  "..c.."es set container <name>         "..dm_muted.."Set container holding enchantment items.\n"..
+      "  "..c.."es set sleeper <name>           "..dm_muted.."Set sleeper target.\n"..
+      "  "..c.."es set sleepmode <sleep|potion> "..dm_muted.."Choose restoration behavior type.\n"..
+      "  "..c.."es set potion <item>            "..dm_muted.."Set item used for quaffing.\n"..
+      "  "..c.."es sound                        "..dm_muted.."Toggle formula discovery sound\n\n"..
+      dm_header_color.."Control:\n"..
+      "  "..c.."es enable / es disable          "..dm_muted.."Enable or disable EnchanterAssist entirely.\n"
+    )
     return
   end
 end)
