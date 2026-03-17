@@ -29,7 +29,7 @@ local function checkBackgroundContrast()
       cecho(win, "\nDetected a light/white terminal background while Dark Mode is enabled.\n\n")
       cecho(win, "For readability, switch to Light Mode or keep Dark Mode if you prefer.\n\n")
       cechoLink(win, "<dim_gray><u>[<green>Switch to Light Mode<dim_gray>]",
-        [[DMAlertWindow.Hide(); Darkmists.GlobalSettings.lightMode = true; Darkmists.SaveSettings(); tempTimer(0,'DarkmistsTheme.buildTheme(); Darkmists.SafeReload()')]],
+        [[DMAlertWindow.Hide(); Darkmists.GlobalSettings.lightMode = true; Darkmists.SaveSettings(); DarkmistsTheme.buildTheme(); Darkmists.SafeReload();]],
         "Switch to Light Mode for better contrast", true)
       cechoLink(win, "  <dim_gray><u>[<red>Ignore<dim_gray>]",
         [[DMAlertWindow.Hide()]],
@@ -45,7 +45,7 @@ local function checkBackgroundContrast()
       cecho(win, "\nDetected a dark/black terminal background while Light Mode is enabled.\n\n")
       cecho(win, "For readability, switch to Dark Mode or keep Light Mode if you prefer.\n\n")
       cechoLink(win, "<dim_gray><u>[<green>Switch to Dark Mode<dim_gray>]",
-        [[DMAlertWindow.Hide(); Darkmists.GlobalSettings.lightMode = false; Darkmists.SaveSettings(); tempTimer(0,'DarkmistsTheme.buildTheme(); Darkmists.SafeReload()')]],
+        [[DMAlertWindow.Hide(); Darkmists.GlobalSettings.lightMode = false; Darkmists.SaveSettings(); DarkmistsTheme.buildTheme(); Darkmists.SafeReload();]],
         "Switch to Dark Mode for better contrast", true)
       cechoLink(win, "  <dim_gray><u>[<red>Ignore<dim_gray>]",
         [[DMAlertWindow.Hide()]],

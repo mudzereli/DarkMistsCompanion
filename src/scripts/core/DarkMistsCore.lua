@@ -293,6 +293,13 @@ function Darkmists.ResetUILayoutCache()
   Darkmists.GlobalSettings.layoutCacheVersion = Darkmists.LAYOUT_CACHE_VERSION
   Darkmists.SaveSettings()
   Darkmists.Log("Darkmists Core","<orange>UI cache cleared.")
+
+  -- Rebuild theme and refresh layout so UI colors/styles are applied after
+  -- resetting the layout cache. Use pcall to avoid hard failures during reset.
+  if DarkmistsTheme and DarkmistsTheme.buildTheme then
+    pcall(DarkmistsTheme.buildTheme)
+  end
+  pcall(Darkmists.RefreshUILayout, { syncStatusBar = true })
 end
 
 function Darkmists.ShowUIIntroMessage(force)
@@ -321,16 +328,25 @@ function Darkmists.ShowUIIntroMessage(force)
       if isMinimal then
         cecho(win, "<steel_blue> Command: <green>dmc ui<steel_blue>\n")
         cecho(win, "<dim_gray> (Toggle command — turns UI <green>ON<dim_gray> or <red>OFF<dim_gray>)\n\n")
-        cechoLink(win, "<dim_gray><u>[<green>ENABLE FULL UI NOW<dim_gray>]", [[Darkmists.EnableUI()]], "Enable the full Dark Mists Companion UI", true)
+        cechoLink(win, "<dim_gray><u>[<green>ENABLE FULL UI NOW<dim_gray>]",
+          [[Darkmists.GlobalSettings.hasSeenUIIntroMessage = true; Darkmists.SaveSettings(); Darkmists.EnableUI()]],
+          "Enable the full Dark Mists Companion UI", true)
       else
         cecho(win, "<dim_gray> Click to switch back to Minimal UI.\n\n")
-        cechoLink(win, "<dim_gray><u>[<red>DISABLE FULL UI NOW<dim_gray>]", [[Darkmists.DisableUI()]], "Switch to minimal UI", true)
+        cechoLink(win, "<dim_gray><u>[<red>DISABLE FULL UI NOW<dim_gray>]",
+          [[Darkmists.GlobalSettings.hasSeenUIIntroMessage = true; Darkmists.SaveSettings(); Darkmists.DisableUI()]],
+          "Switch to minimal UI", true)
       end
-    end, { width = 640, height = 300 })
+    end, { width = 640, height = 300,
+      onClose = function()
+        Darkmists.GlobalSettings.hasSeenUIIntroMessage = true
+        Darkmists.SaveSettings()
+      end
+    })
 
-    -- persist that we've shown it once (user can close with X)
-    Darkmists.GlobalSettings.hasSeenUIIntroMessage = true
-    Darkmists.SaveSettings()
+    -- Persisting the "seen" flag is deferred until the user explicitly clicks
+    -- the Enable/Disable action in the panel so closing the panel does NOT
+    -- mark the intro as seen.
 
   end)
 end
