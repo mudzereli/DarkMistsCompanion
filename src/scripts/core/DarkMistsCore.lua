@@ -597,35 +597,35 @@ function Darkmists.RegisterEvents()
 
       Darkmists._resizePending = false
       Darkmists.RefreshUILayout({ syncStatusBar = true })
-
-    -- Hook into dmapi events so we can show the packaged-map prompt after a world enter
-    -- Mark a pending flag when the world enter event fires (DMAPI's reset handler will send 'score')
-    DarkmistsEvents.add("Darkmists.map.prompt.pending", "dmapi.world.enter", function()
-      Darkmists._pendingMapPrompt = true
-    end)
-
-    -- After vitals update (score processed), if a pending prompt exists show the map prompt
-        DarkmistsEvents.add("Darkmists.map.prompt.aftervitals", "dmapi.player.vitals.updated", function()
-          if Darkmists._pendingMapPrompt then
-            -- only show the packaged-map prompt when the full UI is loaded and enabled
-            if Darkmists.UI_LOADED and not Darkmists.GlobalSettings.minimalMode and Darkmists.GlobalSettings.hasSeenUIIntroMessage then
-              Darkmists._pendingMapPrompt = false
-              if not Darkmists.GlobalSettings.hasSeenMapPrompt then
-                tempTimer(2, function()
-                  if not Darkmists.GlobalSettings.hasSeenMapPrompt then
-                    Darkmists.PromptLoadMap()
-                  end
-                end)
-              end
-            else
-              -- keep pending; EnableUI() or later vitals update will handle it
-              Darkmists._pendingMapPrompt = true
-            end
-          end
-    end)
     end
 
     tempTimer(0.4, applyResize)
+  end)
+
+  -- Hook into dmapi events so we can show the packaged-map prompt after a world enter
+  -- Mark a pending flag when the world enter event fires (DMAPI's reset handler will send 'score')
+  DarkmistsEvents.add("Darkmists.map.prompt.pending", "dmapi.world.enter", function()
+    Darkmists._pendingMapPrompt = true
+  end)
+
+-- After vitals update (score processed), if a pending prompt exists show the map prompt
+  DarkmistsEvents.add("Darkmists.map.prompt.aftervitals", "dmapi.player.vitals.updated", function()
+    if Darkmists._pendingMapPrompt then
+      -- only show the packaged-map prompt when the full UI is loaded and enabled
+      if Darkmists.UI_LOADED and not Darkmists.GlobalSettings.minimalMode and Darkmists.GlobalSettings.hasSeenUIIntroMessage then
+        Darkmists._pendingMapPrompt = false
+        if not Darkmists.GlobalSettings.hasSeenMapPrompt then
+          tempTimer(2, function()
+            if not Darkmists.GlobalSettings.hasSeenMapPrompt then
+              Darkmists.PromptLoadMap()
+            end
+          end)
+        end
+      else
+        -- keep pending; EnableUI() or later vitals update will handle it
+        Darkmists._pendingMapPrompt = true
+      end
+    end
   end)
 
   DarkmistsEvents.add("DarkmistsPackageUninstall","sysUninstallPackage",function (_,pkgName)
@@ -655,6 +655,7 @@ function Darkmists.CleanupUI(opts)
   if DarkMistsMiniMap and DarkMistsMiniMap.destroy then pcall(DarkMistsMiniMap.destroy) end
   if ButtonBar and ButtonBar.destroy then pcall(ButtonBar.destroy) end
   if StatusBar and StatusBar.cleanup then pcall(StatusBar.cleanup) end
+  if DMAlertWindow and DMAlertWindow.Hide then pcall(DMAlertWindow.Hide) end
   
   if opts.uninstall then
     Darkmists.Log("Darkmists Core", "Resetting window borders to default...")
