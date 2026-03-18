@@ -432,13 +432,16 @@ do
       return
     end
 
+    local limit = 100
+    local shown = math.min(#results, limit)
     cecho(string.format(
       "\n"..dm_warn.."[ID] Items in area matching '%s' (%d):"..dm_text.."\n",
       query,
       #results
     ))
 
-    for i, item in ipairs(results) do
+    for i = 1, shown do
+      local item = results[i]
       cecho(string.format("   "..dm_text.."%d) ", i))
       local areaTag = item.area and ("[" .. item.area .. "] ") or ""
       cechoLink(
@@ -448,6 +451,10 @@ do
         "Click: tooltip | Shift+Click: full identify",
         true
       )
+    end
+
+    if #results > limit then
+      cecho(dm_warn.."Refine your search."..dm_text.."\n")
     end
   end)
 
@@ -474,8 +481,11 @@ do
     end
 
     -- Multiple matches: show clickable list
+    local limit = 50
+    local shown = math.min(#results, limit)
     cecho(dm_warn.."[ID] Multiple matches:"..dm_text.."\n")
-    for i, item in ipairs(results) do
+    for i = 1, shown do
+      local item = results[i]
       cecho(string.format("   "..dm_text.."%d) ", i))
       cechoLink(
         ItemTracker.settings.itemLinkColor .. item.name .. dm_text.."\n",
