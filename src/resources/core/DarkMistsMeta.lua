@@ -447,7 +447,7 @@ do
       cechoLink(
         dm_muted .. areaTag .. dm_text ..
         ItemTracker.settings.itemLinkColor .. item.name .. dm_text.."\n",
-        function() ItemTracker.handleClick(item.name) end,
+        ItemTracker.getHandler(item.name),
         "Click: tooltip | Shift+Click: full identify",
         true
       )
@@ -489,7 +489,7 @@ do
       cecho(string.format("   "..dm_text.."%d) ", i))
       cechoLink(
         ItemTracker.settings.itemLinkColor .. item.name .. dm_text.."\n",
-        function() ItemTracker.handleClick(item.name) end,
+        ItemTracker.getHandler(item.name),
         "Click: tooltip | Shift+Click: full identify",
         true
       )
