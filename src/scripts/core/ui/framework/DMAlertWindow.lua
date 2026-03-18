@@ -2,6 +2,8 @@
 DMAlertWindow = DMAlertWindow or {}
 
 local panel = {}
+local _queue = {}
+local _current = nil -- holds the opts table for the currently-displayed alert
 
 local function ensure_init()
   if panel.inited then return end
@@ -53,6 +55,15 @@ end
 function DMAlertWindow.Show(title, renderFunc, opts)
   ensure_init()
   opts = opts or {}
+
+  -- If an alert is currently visible, queue this one to show later
+  if _current then
+    table.insert(_queue, { title = title, render = renderFunc, opts = opts })
+    return
+  end
+
+  -- store opts for the currently visible alert so Hide() can call onClose
+  _current = opts or {}
 
   local w = opts.width or panel.w
   local h = opts.height or panel.h
@@ -119,5 +130,26 @@ function DMAlertWindow.Hide()
   hideWindow(panel.header)
   hideWindow(panel.close)
   hideWindow(panel.border)
+
+  -- If the current alert provided an onClose hook, run it now (safely)
+  if _current and type(_current.onClose) == "function" then
+    pcall(_current.onClose)
+  end
+
+  -- clear current and show next queued alert if any
+  _current = nil
+  if #_queue > 0 then
+    local next = table.remove(_queue, 1)
+    -- show next on next tick to avoid re-entrancy
+    tempTimer(0, function()
+      DMAlertWindow.Show(next.title, next.render, next.opts)
+    end)
+  end
 end
+
+-- Schedule an alert explicitly (alias for Show but kept for clarity)
+function DMAlertWindow.ScheduleAlert(title, renderFunc, opts)
+  return DMAlertWindow.Show(title, renderFunc, opts)
+end
+
 return DMAlertWindow
