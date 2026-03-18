@@ -344,7 +344,10 @@ function Darkmists.ShowUIIntroMessage(force)
       end
     })
 
-    -- Contrast check is called in the same tick so it queues immediately
+    -- Persisting the "seen" flag is deferred until the user explicitly clicks
+    -- the Enable/Disable action in the panel so closing the panel does NOT
+    -- mark the intro as seen.
+
   end)
 end
 
@@ -615,10 +618,9 @@ function Darkmists.Init()
   end
 
   Darkmists.ShowUIIntroMessage()
-  -- Contrast check fires at the same offset as the intro. If the intro also
-  -- fires, it registers its Show() first so contrast queues behind it.
-  -- If the intro was skipped (already seen), contrast shows on its own.
-  tempTimer(1.5, DarkmistsTheme.checkBackgroundContrast)
+  -- checkBackgroundContrast is called here so it queues after the intro alert,
+  -- never inside buildTheme() which may be called multiple times
+  DarkmistsTheme.checkBackgroundContrast()
 end
 
 function Darkmists.LoadUIScripts()
