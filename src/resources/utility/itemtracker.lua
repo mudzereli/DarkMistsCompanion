@@ -497,6 +497,20 @@ end
 
 -- Handle click on item link (tooltip or full display based on modifiers)
 function ItemTracker.handleClick(name)
+  -- Reject clicks that land outside the main console's horizontal bounds.
+  -- Mudlet's cinsertLink hit detection is Y-based: a link at scrolled-to Y=N fires for
+  -- ANY click at Y=N across the full window width, including Geyser panels on the right.
+  -- getMousePosition() is reliable at callback time; getLineNumber() is NOT (it reflects
+  -- the cursor position, not the clicked link's position).
+  local mx = getMousePosition()
+  local winW = getMainWindowSize()
+  local b = getBorderSizes()
+  local leftBorderPx  = b.left
+  local rightBorderPx = winW - b.right
+  if mx < leftBorderPx or mx > rightBorderPx then
+    return
+  end
+
   if holdingModifiers(mudlet.keymodifier.Shift) then
     -- Shift+Click: full identify in chat
     ItemTracker.hideTooltip()
