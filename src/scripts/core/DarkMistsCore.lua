@@ -555,6 +555,22 @@ function Darkmists.RegisterEvents()
       Darkmists.CleanupUI({ uninstall = true })
     end
   end)
+
+  -- When the package is installed, perform a single, guarded resetProfile() to
+  -- ensure the package has a clean runtime state. Use a short delay so the
+  -- installer finishes and set a session-only guard to avoid loops.
+  DarkmistsEvents.add("DarkmistsPackageInstall","sysInstallPackage",function (_,pkgName)
+    if pkgName == Darkmists.NAME then
+      -- Use a persisted flag because in-memory state is wiped by resetProfile().
+      if Darkmists.GlobalSettings._installResetDone then return end
+      Darkmists.GlobalSettings._installResetDone = true
+      Darkmists.SaveSettings()
+      tempTimer(1, function()
+        Darkmists.Log("Darkmists Core", ("%sPackage Install Detected: %s — performing safe reset"):format(DarkmistsTheme.warnTag, tostring(pkgName)))
+        pcall(resetProfile)
+      end)
+    end
+  end)
 end
 
 function Darkmists.SafeReload()
@@ -590,6 +606,13 @@ end
 function Darkmists.Init()
   Darkmists.Log("<medium_sea_green>Darkmists Core", ("<slate_gray>Loaded Darkmists Core <steel_blue>v%s<r>"):format(Darkmists.VERSION))
   local hadSettings = Darkmists.LoadSettings()
+  -- If we previously persisted the one-shot install-reset guard, clear it now
+  -- so future installs will be able to trigger the guarded reset again.
+  if Darkmists.GlobalSettings._installResetDone then
+    Darkmists.GlobalSettings._installResetDone = nil
+    Darkmists.SaveSettings()
+    Darkmists.Log("Darkmists Core", "Cleared one-time install reset guard from settings.")
+  end
   DarkmistsTheme.buildTheme()
   Darkmists.RegisterEvents()
   -- Version-based settings policy:
