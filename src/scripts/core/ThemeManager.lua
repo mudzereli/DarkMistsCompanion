@@ -1,6 +1,7 @@
 -- =============================================================================
 -- ThemeManager.lua
 -- =============================================================================
+---@type DarkmistsTheme
 DarkmistsTheme = DarkmistsTheme or {}
 
 -- Session guard to avoid repeating background warnings
