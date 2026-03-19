@@ -406,8 +406,8 @@ function Darkmists.createTabPanel(id, title, tabName)
 end
 
 function Darkmists.Log(pluginName, msg)
-  local output = "\n<dim_gray>[<%s>%s<dim_gray>] <slate_gray>%s"
-  cecho(output:format(Darkmists.getDefaultTextColor(), pluginName, msg))
+  local output = "\n" .. (DarkmistsTheme.mutedTag or "") .. "[" .. (Darkmists.getDefaultTextColorTag() or "") .. pluginName .. (DarkmistsTheme.mutedTag or "") .. "] " .. (DarkmistsTheme.silverTag or "") .. msg
+  pcall(DMLogger.write, pluginName, msg)
 end
 
 function Darkmists.LogDebug(pluginName, msg)

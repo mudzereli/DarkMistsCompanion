@@ -1,5 +1,11 @@
 [
        {
+              "name": "ThemeManager",
+              "isActive": "yes",
+              "script": "",
+              "isFolder": "no"
+       },
+       {
               "name": "ui",
               "isActive": "yes",
               "script": "",
@@ -19,12 +25,6 @@
        },
        {
               "name": "EventManager",
-              "isActive": "yes",
-              "script": "",
-              "isFolder": "no"
-       },
-       {
-              "name": "ThemeManager",
               "isActive": "yes",
               "script": "",
               "isFolder": "no"

@@ -1,5 +1,11 @@
 [
        {
+              "name": "DMLogger",
+              "isActive": "yes",
+              "script": "",
+              "isFolder": "no"
+       },
+       {
               "name": "framework",
               "isActive": "yes",
               "script": "",
