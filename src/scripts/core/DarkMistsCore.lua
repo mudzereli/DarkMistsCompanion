@@ -29,6 +29,7 @@ Darkmists.GITHUB_URL_STABLE = "https://github.com/mudzereli/DarkMistsCompanion/r
 Darkmists.GITHUB_URL_BETA = "https://github.com/mudzereli/DarkMistsCompanion/raw/refs/heads/beta/build/DarkMistsCompanion.mpackage"
 Darkmists.UI_LOADED = false
 Darkmists.LAYOUT_CACHE_VERSION = "@VERSION@"
+Darkmists.saveFilePath = saveFilePath
 Darkmists._resizePending = false
 
 Darkmists.DefaultSettings = {
@@ -134,8 +135,8 @@ function Darkmists.PromptLoadMap()
   -- Prefer showing the packaged-map prompt in the reusable alert window.
   DMAlertWindow.Show("Warning: Load Packaged Map", function(win)
     cecho(win, "\n")
-    cecho(win, "<red>Loading the packaged map will overwrite your current map in Mudlet.\n\n")
-    cechoLink(win, "<dim_gray><u>[<green>Load Packaged Map<dim_gray>]",
+    cecho(win, DarkmistsTheme.badTag .. "Loading the packaged map will overwrite your current map in Mudlet.\n\n")
+    cechoLink(win, DarkmistsTheme.mutedTag .. "<u>[" .. DarkmistsTheme.goodTag .. "Load Packaged Map" .. DarkmistsTheme.mutedTag .. "]",
       [[DMAlertWindow.Hide(); Darkmists.LoadMapDat()]],
       "Load the packaged map (may overwrite existing map)",
       true
@@ -151,18 +152,17 @@ end
 function Darkmists.PromptSafeReload(opts)
   opts = opts or {}
   local title = opts.title or "Reload UI"
-  local body = opts.body or ([[
-Reloading the UI will reset the Dark Mists interface and apply any pending layout or theme changes. If you have unsaved settings, save them first.
-
-Click <green>Reload Now<r> to proceed, or close this panel to cancel.
-  ]])
+  local body = opts.body or (
+    "Reloading the UI will reset the Dark Mists interface and apply any pending layout or theme changes. If you have unsaved settings, save them first.\n\n" ..
+    DarkmistsTheme.goodTag .. "Reload Now<r>" .. " to proceed, or close this panel to cancel.\n  "
+  )
 
   DMAlertWindow.Show(title, function(win)
     cecho(win, "\n")
     cecho(win, body)
     -- Use a string that hides the panel then defers the actual reload to avoid
     -- stale C++ callback references (safe pattern used elsewhere).
-    cechoLink(win, "<dim_gray><u>[<green>Reload Now<dim_gray>]",
+    cechoLink(win, DarkmistsTheme.mutedTag .. "<u>[" .. DarkmistsTheme.goodTag .. "Reload Now" .. DarkmistsTheme.mutedTag .. "]",
       [[DMAlertWindow.Hide(); tempTimer(0, 'Darkmists.SafeReload()')]],
       "Reload the UI (safe)", true
     )
@@ -207,7 +207,7 @@ end
 
 function Darkmists.SetUpdateChannel(channel)
   if channel ~= "stable" and channel ~= "beta" then
-    Darkmists.Log("Darkmists Core", ("<red>Unknown update channel: %s"):format(tostring(channel)))
+    Darkmists.Log("Darkmists Core", DarkmistsTheme.badTag .. (("Unknown update channel: %s"):format(tostring(channel))))
     return
   end
   Darkmists.GlobalSettings.updateChannel = channel
@@ -263,7 +263,7 @@ function Darkmists.GetBorderPercentages()
 end
 
 function Darkmists.ResetUILayoutCache()
-  Darkmists.Log("Darkmists Core","<red>Resetting incompatible UI layout cache...")
+  Darkmists.Log("Darkmists Core", DarkmistsTheme.badTag .. "Resetting incompatible UI layout cache...")
 
   local home = getMudletHomeDir()
 
@@ -292,7 +292,7 @@ function Darkmists.ResetUILayoutCache()
   -- update stored layout cache version so we don't repeatedly trigger a reset
   Darkmists.GlobalSettings.layoutCacheVersion = Darkmists.LAYOUT_CACHE_VERSION
   Darkmists.SaveSettings()
-  Darkmists.Log("Darkmists Core","<orange>UI cache cleared.")
+  Darkmists.Log("Darkmists Core", DarkmistsTheme.warnTag .. "UI cache cleared.")
 
   -- Rebuild theme and refresh layout so UI colors/styles are applied after
   -- resetting the layout cache. Use pcall to avoid hard failures during reset.
@@ -312,31 +312,31 @@ function Darkmists.ShowUIIntroMessage(force)
     local title = ("🔮 DARK MISTS COMPANION — v%s"):format(tostring(Darkmists.VERSION or "unknown"))
     DMAlertWindow.Show(title, function(win)
       cecho(win, "\n")
-      if isMinimal then
-        cecho(win, "<ansi_yellow> You are currently using Minimal UI Mode.\n\n")
-      else
-        cecho(win, "<ansi_yellow> You are currently using Full UI Mode.\n\n")
-      end
+        if isMinimal then
+          cecho(win, DarkmistsTheme.yellowTag .. " You are currently using Minimal UI Mode.\n\n")
+        else
+          cecho(win, DarkmistsTheme.yellowTag .. " You are currently using Full UI Mode.\n\n")
+        end
 
-      cecho(win, "<steel_blue> Full UI provides:\n")
-      cecho(win, "  <steel_blue>• Chat History Window\n")
-      cecho(win, "  <steel_blue>• Who List Panel\n")
-      cecho(win, "  <steel_blue>• Affect & Buff Duration Tracker\n")
-      cecho(win, "  <steel_blue>• Player Status & Combat Panels\n")
-      cecho(win, "  <steel_blue>• Dockable & Customizable UI Windows\n\n")
+        cecho(win, DarkmistsTheme.infoTag .. " Full UI provides:\n")
+        cecho(win, "  " .. DarkmistsTheme.infoTag .. "• Chat History Window\n")
+        cecho(win, "  " .. DarkmistsTheme.infoTag .. "• Who List Panel\n")
+        cecho(win, "  " .. DarkmistsTheme.infoTag .. "• Affect & Buff Duration Tracker\n")
+        cecho(win, "  " .. DarkmistsTheme.infoTag .. "• Player Status & Combat Panels\n")
+        cecho(win, "  " .. DarkmistsTheme.infoTag .. "• Dockable & Customizable UI Windows\n\n")
 
-      if isMinimal then
-        cecho(win, "<steel_blue> Command: <green>dmc ui<steel_blue>\n")
-        cecho(win, "<dim_gray> (Toggle command — turns UI <green>ON<dim_gray> or <red>OFF<dim_gray>)\n\n")
-        cechoLink(win, "<dim_gray><u>[<green>ENABLE FULL UI NOW<dim_gray>]",
-          [[Darkmists.GlobalSettings.hasSeenUIIntroMessage = true; Darkmists.SaveSettings(); Darkmists.EnableUI()]],
-          "Enable the full Dark Mists Companion UI", true)
-      else
-        cecho(win, "<dim_gray> Click to switch back to Minimal UI.\n\n")
-        cechoLink(win, "<dim_gray><u>[<red>DISABLE FULL UI NOW<dim_gray>]",
-          [[Darkmists.GlobalSettings.hasSeenUIIntroMessage = true; Darkmists.SaveSettings(); Darkmists.DisableUI()]],
-          "Switch to minimal UI", true)
-      end
+        if isMinimal then
+          cecho(win, DarkmistsTheme.infoTag .. " Command: " .. DarkmistsTheme.goodTag .. "dmc ui" .. DarkmistsTheme.infoTag .. "\n")
+          cecho(win, DarkmistsTheme.mutedTag .. " (Toggle command — turns UI " .. DarkmistsTheme.goodTag .. "ON" .. DarkmistsTheme.mutedTag .. " or " .. DarkmistsTheme.badTag .. "OFF" .. DarkmistsTheme.mutedTag .. ")\n\n")
+          cechoLink(win, DarkmistsTheme.mutedTag .. "<u>[" .. DarkmistsTheme.goodTag .. "ENABLE FULL UI NOW" .. DarkmistsTheme.mutedTag .. "]",
+            [[Darkmists.GlobalSettings.hasSeenUIIntroMessage = true; Darkmists.SaveSettings(); Darkmists.EnableUI()]],
+            "Enable the full Dark Mists Companion UI", true)
+        else
+          cecho(win, DarkmistsTheme.mutedTag .. " Click to switch back to Minimal UI.\n\n")
+          cechoLink(win, DarkmistsTheme.mutedTag .. "<u>[" .. DarkmistsTheme.badTag .. "DISABLE FULL UI NOW" .. DarkmistsTheme.mutedTag .. "]",
+            [[Darkmists.GlobalSettings.hasSeenUIIntroMessage = true; Darkmists.SaveSettings(); Darkmists.DisableUI()]],
+            "Switch to minimal UI", true)
+        end
     end, { width = 640, height = 300,
       onClose = function()
         Darkmists.GlobalSettings.hasSeenUIIntroMessage = true
@@ -431,19 +431,19 @@ function Darkmists.LoadSettings()
 
     -- Merge settings (preserve values even if layoutCacheVersion missing)
     DMUtil.deep_copy_into(Darkmists.GlobalSettings, settings)
-    Darkmists.Log("<medium_sea_green>Darkmists Core", ("<slate_gray>Settings Loaded From: <steel_blue>%s<r>"):format(saveFilePath))
-    Darkmists.Log("<medium_sea_green>Darkmists Core","<slate_gray>You may need to Reload UI for changes to take effect!")
+    Darkmists.Log("Darkmists Core", (DarkmistsTheme.mutedTag .. "Settings Loaded From: " .. DarkmistsTheme.infoTag .. "%s<r>"):format(saveFilePath))
+    Darkmists.Log("Darkmists Core", DarkmistsTheme.mutedTag .. "You may need to Reload UI for changes to take effect!")
     -- return true indicating a settings file existed
     return true
   else
-    Darkmists.Log("<medium_sea_green>Darkmists Core","<slate_gray>No Pre-Existing Settings File Found!")
+    Darkmists.Log("Darkmists Core", DarkmistsTheme.mutedTag .. "No Pre-Existing Settings File Found!")
     return false
   end
 end
 
 function Darkmists.ApplyDefaultSettings()
   DMUtil.deep_copy_into(Darkmists.GlobalSettings, Darkmists.DefaultSettings)
-  Darkmists.Log("<medium_sea_green>Darkmists Core","<slate_gray>Default Settings Applied!")
+  Darkmists.Log("Darkmists Core", DarkmistsTheme.mutedTag .. "Default Settings Applied!")
 end
 
 function Darkmists.SetWindowBorderPercent(region, percent)
@@ -574,7 +574,7 @@ function Darkmists.RegisterEvents()
 end
 
 function Darkmists.SafeReload()
-  Darkmists.Log("Darkmists Core","<red>Resetting Profile. UI Reload Incoming....")
+  Darkmists.Log("Darkmists Core", DarkmistsTheme.badTag .. "Resetting Profile. UI Reload Incoming....")
 
   Darkmists.CleanupUI()
 
@@ -604,7 +604,7 @@ function Darkmists.CleanupUI(opts)
 end
 
 function Darkmists.Init()
-  Darkmists.Log("<medium_sea_green>Darkmists Core", ("<slate_gray>Loaded Darkmists Core <steel_blue>v%s<r>"):format(Darkmists.VERSION))
+  Darkmists.Log("Darkmists Core", (DarkmistsTheme.mutedTag .. "Loaded Darkmists Core " .. DarkmistsTheme.infoTag .. "v%s<r>"):format(Darkmists.VERSION))
   local hadSettings = Darkmists.LoadSettings()
   -- If we previously persisted the one-shot install-reset guard, clear it now
   -- so future installs will be able to trigger the guarded reset again.
