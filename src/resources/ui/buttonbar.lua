@@ -240,6 +240,9 @@ ButtonBar:addDropdown("⚙️ Settings", {
     {label = "🗺️ Load Map", action = function()
         Darkmists.PromptLoadMap()
     end},
+    {label = "📜 Log Console", action = function()
+      pcall(DMLogger.toggle)
+    end},
     {label = "📝 Advanced", children = {
       {label = "🧼 Reset All Settings", action = function() 
         cecho(("Removing: %s (exists=%s)\n"):format(tostring(Darkmists.saveFilePath), tostring(io.exists(Darkmists.saveFilePath))))
@@ -279,9 +282,6 @@ ButtonBar:addDropdown("⚙️ Settings", {
         end},
         {label = "🐞 DMAPI Debug", action = function() expandAlias("dmapi debug") end},
         {label = "📚 DMAPI Extension", action = function() Darkmists.OpenDMAPIDocs() end},
-        {label = "📜 Log Console", action = function()
-          pcall(DMLogger.toggle)
-        end},
       }},
     }}
     --[[
