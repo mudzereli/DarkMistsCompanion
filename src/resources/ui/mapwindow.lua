@@ -156,8 +156,16 @@ local function initMiniMap()
   DarkMistsMiniMap.update()
   install_sanitize_override()
   if DarkMistsMiniMap.container then
-    DarkMistsMiniMap.container:show()
-    DarkMistsMiniMap.container:raiseAll()
+    -- Delay showing briefly to avoid being overridden by any auto-load
+    -- or restore logic that may run immediately after creation (observed
+    -- behavior during package updates). A short timer ensures the final
+    -- visibility state is the visible one we expect.
+    tempTimer(0.05, function()
+      if DarkMistsMiniMap.container then
+        DarkMistsMiniMap.container:show()
+        DarkMistsMiniMap.container:raiseAll()
+      end
+    end)
   end
 end
 -- Public initializer: create now if connected, otherwise register a one-shot
