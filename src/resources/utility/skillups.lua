@@ -28,7 +28,7 @@ function SkillUps.addSkillUp(skillName)
     table.remove(SkillUps.history)
   end
   
-  local c = Darkmists.getDefaultTextColorTag()
+  local c = "<r>"
   DMLogger.notify("SkillUps",string.format("%s%s <dim_gray>improved at %s%s!", 
     c, skillName, 
     c, timestamp))
@@ -39,7 +39,7 @@ end
 -- ===================================================================
 
 function SkillUps.display()
-  local c = Darkmists.getDefaultTextColorTag()
+  local c = "<r>"
   if #SkillUps.history == 0 then
     DMLogger.notify("SkillUps","<red>No skill ups recorded yet!")
     return
@@ -96,7 +96,7 @@ DarkmistsEvents.add(
 -- ALIAS
 -- ===================================================================
 DarkmistsAlias.add([[^skillups?$]], function()
-  local c = Darkmists.getDefaultTextColorTag()
+  local c = "<r>"
   cecho([[
 <ansi_cyan>SkillUps Module:
     <dim_gray>The SkillUps module tracks recent skill improvements as they occur.
@@ -127,4 +127,4 @@ end)
 -- INIT
 -- ===================================================================
 
-DMLogger.log("SkillUps",("<forest_green>Tracker initialized. Type '%sskillups<forest_green>' to view history."):format(Darkmists.getDefaultTextColorTag()))
+DMLogger.log("SkillUps",("<forest_green>Tracker initialized. Type '%sskillups<forest_green>' to view history."):format("<r>"))

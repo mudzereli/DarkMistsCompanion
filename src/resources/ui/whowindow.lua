@@ -87,7 +87,7 @@ local function displayHeader(age)
   resetFormat()
 
   -- create a clickable link to refresh the list (sends `who` command)
-  local linkColor = Darkmists.getDefaultTextColorTag()
+  local linkColor = "<r>"
 
   WhoWindow.console:cechoLink(
     linkColor .. "<u>[Refresh]",

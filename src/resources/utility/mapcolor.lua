@@ -686,7 +686,7 @@ function MapColors.ReportUncoloredRooms()
   cecho("\n<red>[UNCOLORED ROOMS]\n")
   local count = 0
 
-  local c = Darkmists.getDefaultTextColorTag()
+  local c = "<r>"
   for _, id in ipairs(MapColors._allRoomIds) do
     if getRoomEnv(id) == -1 then
       count = count + 1
@@ -736,7 +736,7 @@ function MapColors.SuggestKeywordsForUncolored(minLen, minCount)
   table.sort(sorted, function(a, b) return a.count > b.count end)
 
   -- Display results
-  local c = Darkmists.getDefaultTextColorTag()
+  local c = "<r>"
   for _, entry in ipairs(sorted) do
     cecho(("\n<ansi_cyan>%-15s %s→ would color <ansi_cyan>%d %srooms"):format(entry.word, c, entry.count, c))
   end
@@ -821,7 +821,7 @@ function MapColors.UpdateMapColors()
     if stats.count > 0 then
       statCount = statCount + 1
       if statCount <= 20 then  -- Only show top 20 to reduce output lag
-        local c = Darkmists.getDefaultTextColorTag()
+        local c = "<r>"
         local str = "\n"..c.."[<cword>%-12s"..c.."] room count → <cword>%d"..c
         str = decho2cecho(str:gsub("<cword>", getHColorString(stats.terrain)))
         cecho(str:format(word, stats.count))
@@ -1060,7 +1060,7 @@ function MapColors.AuditAreaByRoomID(roomID)
   end
 
   -- Display results
-  local c = Darkmists.getDefaultTextColorTag()
+  local c = "<r>"
   cecho(string.format("<forest_green>[Mapper Audit]\n"..c.."Area: <dark_khaki>%s\n", areaName))
   cecho(string.format(c.."Total unconnected exit stubs: <red>%d\n\n", stubCount))
 
@@ -1170,7 +1170,7 @@ function MapColors.AuditAllAreasWithStubs()
         end
 
         -- Only display areas with stubs
-        local c = Darkmists.getDefaultTextColorTag()
+        local c = "<r>"
         if stubCount > 0 then
           cecho(string.format("\n<dark_khaki>%s <dim_gray>(ID %d)\n", areaName, areaID))
           cecho(string.format(c.."  Unconnected exit stubs: <red>%d\n", stubCount))

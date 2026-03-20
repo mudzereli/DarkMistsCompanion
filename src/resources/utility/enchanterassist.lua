@@ -376,8 +376,7 @@ function EnchanterAssist.stats()
 
   local n = #EnchanterAssist.allmats
 
-  cecho(--Darkmists.Log(
-    --EnchanterAssist.color.."EnchanterAssist",
+  cecho(
     "\n" .. ea_info .. "===== EnchanterAssist Progress ====="
   )
 
@@ -402,8 +401,7 @@ function EnchanterAssist.stats()
       lineColor = ea_good
     end
 
-    cecho(--Darkmists.Log(
-      --EnchanterAssist.color.."EnchanterAssist",
+    cecho(
       string.format(
         "\n%s%d-part | %7d / %7d (%6.2f%%)",
         lineColor,

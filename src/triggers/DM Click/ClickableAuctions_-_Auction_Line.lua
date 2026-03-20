@@ -13,14 +13,14 @@ if #name >= 28 then
 end
 
 cechoLink(
-  string.format("<forest_green>%7s  "..Darkmists.getDefaultTextColorTag().."%-28s", id, name),
+  string.format("<forest_green>%7s  ".."<r>".."%-28s", id, name),
   function()
       send("auc browse " .. id)
   end,
   string.format("Click: auc browse %s", id),
   true
 )
-cecho(Darkmists.getDefaultTextColorTag().."  ")
+cecho("<r>".."  ")
 cechoLink(
   string.format("<dark_khaki>%7s", buyout),
   function()
@@ -30,9 +30,9 @@ cechoLink(
   string.format("Click: auc buyout %s", id),
   true
 )
-cecho(Darkmists.getDefaultTextColorTag().."  ")
-cecho(Darkmists.getDefaultTextColorTag()..("%11s"):format(time))
-cecho(Darkmists.getDefaultTextColorTag().."  ")
+cecho("<r>".."  ")
+cecho("<r>"..("%11s"):format(time))
+cecho("<r>".."  ")
 cechoLink(
   string.format("<dark_khaki>%11s", bid),
   function()

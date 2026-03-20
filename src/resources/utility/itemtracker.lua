@@ -86,7 +86,7 @@ if Darkmists.GlobalSettings.lightMode then
   settings.tooltipBorderColor = {0, 0, 0, 255}
 end
 
-local defaultTextColor = Darkmists.getDefaultTextColorTag()
+local defaultTextColor = "<r>"
 
 -- Pre-format cecho color tags once
 settings.itemLinkColor          = string.format("<%s>", settings.itemLinkColor)

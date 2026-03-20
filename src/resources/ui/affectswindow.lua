@@ -151,7 +151,7 @@ function AffectsWindow.displayHeader()
   resetFormat()
 
   -- Added separator + themed refresh link
-  local linkColor = Darkmists.getDefaultTextColorTag()
+  local linkColor = "<r>"
 
   AffectsWindow.console:cechoLink(
     linkColor .. "<u>[Refresh]<r>",

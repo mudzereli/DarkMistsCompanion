@@ -44,8 +44,8 @@ function DMClickables.ClickablePractices()
 
     local found = false
     local output = {}
-    local txtColor = Darkmists.getDefaultTextColorTag()
-
+    local txtColor = "<r>"
+    
     -- collect skills first - UPDATED to include dash
     for skill, pct in raw:gmatch("([%a%-][%a%s'%-]-)%s+(%d+)%%") do
     found = true

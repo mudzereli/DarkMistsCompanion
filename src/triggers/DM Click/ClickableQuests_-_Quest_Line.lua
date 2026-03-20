@@ -1,6 +1,6 @@
 local questNum = matches[2]
 local rest = matches[3]
-local txtColor = Darkmists.getDefaultTextColorTag()
+local txtColor = "<r>"
 
 replaceLine("")
 
