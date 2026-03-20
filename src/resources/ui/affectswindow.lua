@@ -384,7 +384,7 @@ function AffectsWindow.refreshDisplay()
       DarkmistsTheme.accentTag,
       affect.name:sub(1,ln),
       DarkmistsTheme.textTag,
-      DarkmistsTheme.mutedTag,
+      DarkmistsTheme.textTag,
       mod:sub(1,lm),
       DarkmistsTheme.textTag,
       dur
