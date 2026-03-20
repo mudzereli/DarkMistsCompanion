@@ -190,10 +190,6 @@
 ---@field cyanTag string
 ---@field sky string
 ---@field skyTag string
----@field lightBlue string
----@field lightBlueTag string
----@field darkBlue string
----@field darkBlueTag string
 ---@field purple string
 ---@field purpleTag string
 ---@field pink string
@@ -221,7 +217,7 @@
 ---@field accent string
 ---@field accentTag string
 ---@field highlight string
----@field highlightTag string   
+---@field highlightTag string
 ---@field buildTheme fun()
 ---@field buildNeutralTheme fun()
 ---@field checkBackgroundContrast fun()

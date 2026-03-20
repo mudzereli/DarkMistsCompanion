@@ -35,8 +35,6 @@ function DarkmistsTheme.buildNeutralTheme()
   t.blue      = "steel_blue"
   t.cyan      = "cadet_blue"
   t.sky       = "light_steel_blue"
-  t.lightBlue = "cornflower_blue"
-  t.darkBlue  = "dark_slate_blue"
   t.purple    = "medium_purple"
   t.pink      = "pale_violet_red"
   t.brown     = "sienna"
@@ -61,10 +59,10 @@ function DarkmistsTheme.checkBackgroundContrast()
   if _dm_theme_bg_warn_shown then return end
   if not Darkmists or not Darkmists.GlobalSettings then return end
 
-  local ok, r, g, b, a = pcall(getBackgroundColor, "main")
+  local ok, r, g, b = pcall(getBackgroundColor, "main")
   if not ok or type(r) ~= "number" then
     -- try without param as some Mudlet builds map to default
-    ok, r, g, b, a = pcall(getBackgroundColor)
+    ok, r, g, b = pcall(getBackgroundColor)
   end
   if not ok or type(r) ~= "number" then return end
 
@@ -89,7 +87,7 @@ function DarkmistsTheme.checkBackgroundContrast()
   end
 
   -- If background is dark but theme is light, suggest switching to dark
-  if (not isLightBg) and Darkmists.GlobalSettings.lightMode then
+  if not isLightBg and Darkmists.GlobalSettings.lightMode then
     _dm_theme_bg_warn_shown = true
     DMAlertWindow.Show("Theme Contrast Notice", function(win)
       cecho(win, "\nDetected a dark/black terminal background while Light Mode is enabled.\n\n")
@@ -115,27 +113,25 @@ function DarkmistsTheme.buildTheme()
   -- Named hues
   t.red    = light and "firebrick"         or "tomato"
   t.orange = light and "chocolate"         or "orange"
-  t.yellow = light and "goldenrod"         or "yellow"
+  t.yellow = light and "dark_khaki"        or "khaki"
   t.green  = light and "sea_green"         or "spring_green"
-  t.blue   = light and "royal_blue"        or "deep_sky_blue"
-  t.cyan   = light and "cadet_blue"        or "ansi_cyan"
+  t.blue   = light and "steel_blue"        or "dodger_blue"
+  t.cyan   = light and "dark_slate_gray"   or "medium_turquoise"
   t.sky    = light and "steel_blue"        or "light_steel_blue"
-  t.lightBlue = "cornflower_blue"
-  t.darkBlue  = "dark_slate_blue"
   t.purple = light and "dark_violet"       or "medium_purple"
   t.pink   = light and "medium_violet_red" or "deep_pink"
   t.brown  = light and "sienna"            or "peru"
   t.olive  = light and "olive_drab"        or "yellow_green"
-  t.silver = light and "slate_gray"        or "light_gray"
-  t.gold   = light and "goldenrod"         or "gold"
+  t.silver = light and "dim_gray"          or "slate_gray"
+  t.gold   = light and "dark_khaki"        or "light_goldenrod"
 
   -- Semantic aliases
   t.good      = t.green
   t.warn      = t.orange
   t.bad       = t.red
   t.info      = t.blue
-  t.muted     = light and "dim_gray"   or "slate_gray"
-  t.text      = t.text
+  t.muted     = t.silver
+  -- t.text is intentionally mode-independent; value set once in buildNeutralTheme()
   t.accent    = t.cyan
   t.highlight = t.yellow
 
@@ -153,13 +149,12 @@ local function printPalette(bg)
   for key, value in pairs(DarkmistsTheme) do
     if type(value) == "string" and not key:find("Tag$") then
       cecho(string.format(
-        "<%s:%s> %-8s <%s:%s> Sample Text <reset>\n",
+        "<%s:%s> %-10s <%s:%s> Sample Text <reset>\n",
         fg, bg, key, value, bg
       ))
     end
   end
 end
-
 
 -- =============================================================================
 -- Theme test
