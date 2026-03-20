@@ -672,7 +672,6 @@ function Darkmists.LoadUIScripts()
   if Darkmists.UI_LOADED then return end
   DMLogger.container:show()
 
-  dofile(getMudletHomeDir() .. "/DarkMistsCompanion/ui/framework/GeyserAdjustableTabWindow.lua")
   dofile(getMudletHomeDir() .. "/DarkMistsCompanion/ui/framework/DMTabFrame.lua")
   dofile(getMudletHomeDir() .. "/DarkMistsCompanion/ui/statusbars.lua")
   dofile(getMudletHomeDir() .. "/DarkMistsCompanion/ui/whowindow.lua")

@@ -5,7 +5,7 @@
 DarkmistsTrigger = DarkmistsTrigger or {}
 DarkmistsTrigger.registry = DarkmistsTrigger.registry or {}
 
-local debug = true
+local debug = false -- set to false to disable trigger debug messages
 
 function DarkmistsTrigger.addRegex(pattern, code, expireAfter)
   local key = "regex:" .. tostring(pattern)
