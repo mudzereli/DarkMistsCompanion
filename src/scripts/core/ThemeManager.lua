@@ -4,8 +4,8 @@
 ---@type DarkmistsTheme
 DarkmistsTheme = DarkmistsTheme or {}
 
--- Session guard to avoid repeating background warnings
-local _dm_theme_bg_warn_shown = false
+-- Session guard to avoid repeating background contrast warnings
+local _bgWarnShown = false
 
 -- ---------------------------------------------------------------------------
 -- Neutral theme: mid-value colors readable on both black and white backgrounds.
@@ -28,6 +28,7 @@ end
 
 function DarkmistsTheme.buildNeutralTheme()
   local t = DarkmistsTheme
+  -- Named hues
   t.red       = "indian_red"
   t.orange    = "peru"
   t.yellow    = "dark_goldenrod"
@@ -41,6 +42,7 @@ function DarkmistsTheme.buildNeutralTheme()
   t.olive     = "olive_drab"
   t.silver    = "slate_gray"
   t.gold      = "goldenrod"
+  -- Semantic aliases
   t.good      = "medium_sea_green"
   t.warn      = "peru"
   t.bad       = "indian_red"
@@ -52,11 +54,34 @@ function DarkmistsTheme.buildNeutralTheme()
   buildTags(t)
 end
 
--- Detect main background color and warn/offer to switch theme for contrast
+-- Internal helper: show a DMAlertWindow prompting the user to switch theme modes.
+-- switchToLight=true → recommend switching from dark to light; false → the reverse.
+local function showContrastAlert(switchToLight)
+  _bgWarnShown = true
+  local bgDesc    = switchToLight and "light/white" or "dark/black"
+  local modeDesc  = switchToLight and "Dark Mode"   or "Light Mode"
+  local switchLbl = switchToLight and "Light Mode"  or "Dark Mode"
+  local modeVal   = switchToLight and "true"        or "false"
+
+  DMAlertWindow.Show("Theme Contrast Notice", function(win)
+    cecho(win, string.format("\nDetected a %s terminal background while %s is enabled.\n\n", bgDesc, modeDesc))
+    cecho(win, string.format("For readability, switch to %s or keep %s if you prefer.\n\n", switchLbl, modeDesc))
+    cechoLink(win,
+      string.format("<dim_gray><u>[<green>Switch to %s<dim_gray>]", switchLbl),
+      string.format("DMAlertWindow.Hide(); Darkmists.GlobalSettings.lightMode = %s; Darkmists.GlobalSettings.hasSeenUIIntroMessage = false; Darkmists.SaveSettings(); DarkmistsTheme.buildTheme(); Darkmists.SafeReload();", modeVal),
+      string.format("Switch to %s for better contrast", switchLbl),
+      true)
+    cechoLink(win, "  <dim_gray><u>[<red>Ignore<dim_gray>]",
+      [[DMAlertWindow.Hide()]],
+      "Keep current theme", true)
+  end, { width = 520, height = 200 })
+end
+
+-- Detect main background color and warn/offer to switch theme for contrast.
 -- Exposed as DarkmistsTheme.checkBackgroundContrast() so Init() can call it
 -- explicitly after ShowUIIntroMessage, keeping buildTheme() side-effect free.
 function DarkmistsTheme.checkBackgroundContrast()
-  if _dm_theme_bg_warn_shown then return end
+  if _bgWarnShown then return end
   if not Darkmists or not Darkmists.GlobalSettings then return end
 
   local ok, r, g, b = pcall(getBackgroundColor, "main")
@@ -70,36 +95,11 @@ function DarkmistsTheme.checkBackgroundContrast()
   local L = 0.2126 * r + 0.7152 * g + 0.0722 * b
   local isLightBg = (L >= 200)
 
-  -- If background is light but theme is dark, suggest switching to light
+  -- Suggest switching if background brightness and current theme mode are mismatched
   if isLightBg and not Darkmists.GlobalSettings.lightMode then
-    _dm_theme_bg_warn_shown = true
-    DMAlertWindow.Show("Theme Contrast Notice", function(win)
-      cecho(win, "\nDetected a light/white terminal background while Dark Mode is enabled.\n\n")
-      cecho(win, "For readability, switch to Light Mode or keep Dark Mode if you prefer.\n\n")
-      cechoLink(win, "<dim_gray><u>[<green>Switch to Light Mode<dim_gray>]",
-        [[DMAlertWindow.Hide(); Darkmists.GlobalSettings.lightMode = true; Darkmists.GlobalSettings.hasSeenUIIntroMessage = false; Darkmists.SaveSettings(); DarkmistsTheme.buildTheme(); Darkmists.SafeReload();]],
-        "Switch to Light Mode for better contrast", true)
-      cechoLink(win, "  <dim_gray><u>[<red>Ignore<dim_gray>]",
-        [[DMAlertWindow.Hide()]],
-        "Keep current theme", true)
-    end, { width = 520, height = 200 })
-    return
-  end
-
-  -- If background is dark but theme is light, suggest switching to dark
-  if not isLightBg and Darkmists.GlobalSettings.lightMode then
-    _dm_theme_bg_warn_shown = true
-    DMAlertWindow.Show("Theme Contrast Notice", function(win)
-      cecho(win, "\nDetected a dark/black terminal background while Light Mode is enabled.\n\n")
-      cecho(win, "For readability, switch to Dark Mode or keep Light Mode if you prefer.\n\n")
-      cechoLink(win, "<dim_gray><u>[<green>Switch to Dark Mode<dim_gray>]",
-        [[DMAlertWindow.Hide(); Darkmists.GlobalSettings.lightMode = false; Darkmists.GlobalSettings.hasSeenUIIntroMessage = false; Darkmists.SaveSettings(); DarkmistsTheme.buildTheme(); Darkmists.SafeReload();]],
-        "Switch to Dark Mode for better contrast", true)
-      cechoLink(win, "  <dim_gray><u>[<red>Ignore<dim_gray>]",
-        [[DMAlertWindow.Hide()]],
-        "Keep current theme", true)
-    end, { width = 520, height = 200 })
-    return
+    showContrastAlert(true)   -- light bg + dark theme → suggest light mode
+  elseif not isLightBg and Darkmists.GlobalSettings.lightMode then
+    showContrastAlert(false)  -- dark bg + light theme → suggest dark mode
   end
 end
 
@@ -131,7 +131,7 @@ function DarkmistsTheme.buildTheme()
   t.bad       = t.red
   t.info      = t.blue
   t.muted     = t.silver
-  -- t.text is intentionally mode-independent; value set once in buildNeutralTheme()
+  t.text      = t.text
   t.accent    = t.cyan
   t.highlight = t.yellow
 
