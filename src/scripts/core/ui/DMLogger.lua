@@ -39,10 +39,22 @@ function DMLogger.create()
   DMLogger.container:raiseAll()
 end
 
-function DMLogger.write(plugin, msg)
+-- Helper: common prefix for log/notify outputs (local/private)
+local function make_prefix(plugin)
+  return "\n" .. DarkmistsTheme.mutedTag .. "[" .. "<r>" .. tostring(plugin) .. DarkmistsTheme.mutedTag .. "] " .. DarkmistsTheme.silverTag
+end
+
+function DMLogger.log(plugin, msg)
   if not DMLogger.console then DMLogger.create() end
-  local prefix = "\n"..DarkmistsTheme.mutedTag .. "[<r>" .. tostring(plugin) .. (DarkmistsTheme.mutedTag) .. "] " .. (DarkmistsTheme.silverTag)
-  DMLogger.console:cecho(prefix .. tostring(msg))
+  local prefix = make_prefix(plugin)
+  DMLogger.console:cecho(prefix .. tostring(msg) .. "<r>")
+end
+
+-- Notify to main window (visible to player)
+function DMLogger.notify(plugin, msg)
+  plugin = plugin or "System"
+  local prefix = make_prefix(plugin)
+  cecho(prefix .. tostring(msg) .. "<r>")
 end
 
 function DMLogger.toggle()
@@ -65,6 +77,6 @@ function DMLogger.clear()
 end
 
 DMLogger.create()
-DMLogger.container:hide()
+--DMLogger.container:hide()
 
 return DMLogger

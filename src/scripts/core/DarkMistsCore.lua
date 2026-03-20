@@ -118,7 +118,7 @@ end
 -- =============================================================================
 
 function Darkmists.LoadMapDat()
-  Darkmists.Log("Darkmists Core", ("Loading Map from: %s"):format(mapDatPath))
+  Darkmists.Log(DarkmistsTheme.purpleTag .. "Darkmists Core", ("Loading Map from: %s"):format(mapDatPath))
   loadMap(mapDatPath)
   -- post-load adjustments commonly expected after loading packaged map
   tempTimer(2,function()
@@ -187,7 +187,7 @@ end
 
 function Darkmists.OpenSettingsFile()
   DMUtil.openLocalFile(saveFilePath)
-  Darkmists.Log("Darkmists Core","Settings File Opened. After Editing, you must use LOAD SETTINGS!")
+  DMLogger.notify("Darkmists Core","Settings File Opened. After Editing, you must use LOAD SETTINGS!")
 end
 
 function Darkmists.OpenWebsite()
@@ -207,17 +207,17 @@ end
 
 function Darkmists.SetUpdateChannel(channel)
   if channel ~= "stable" and channel ~= "beta" then
-    Darkmists.Log("Darkmists Core", DarkmistsTheme.badTag .. (("Unknown update channel: %s"):format(tostring(channel))))
+    Darkmists.Log(DarkmistsTheme.purpleTag .. "Darkmists Core", DarkmistsTheme.badTag .. (("Unknown update channel: %s"):format(tostring(channel))))
     return
   end
   Darkmists.GlobalSettings.updateChannel = channel
   Darkmists.SaveSettings()
-  Darkmists.Log("Darkmists Core", ("Update channel set to: %s"):format(channel))
+  Darkmists.Log(DarkmistsTheme.purpleTag .. "Darkmists Core", ("Update channel set to: %s"):format(channel))
 end
 
 function Darkmists.UpdateFromGitHub(channel)
   channel = channel or Darkmists.GlobalSettings.updateChannel
-  Darkmists.Log("Darkmists Core", ("Updating Dark Mists Companion from GitHub... (channel=%s)"):format(tostring(channel)))
+  Darkmists.Log(DarkmistsTheme.purpleTag .. "Darkmists Core", ("Updating Dark Mists Companion from GitHub... (channel=%s)"):format(tostring(channel)))
 
   local url = Darkmists.getGithubUrl(channel)
   
@@ -263,7 +263,7 @@ function Darkmists.GetBorderPercentages()
 end
 
 function Darkmists.ResetUILayoutCache()
-  Darkmists.Log("Darkmists Core", DarkmistsTheme.badTag .. "Resetting incompatible UI layout cache...")
+  Darkmists.Log(DarkmistsTheme.purpleTag .. "Darkmists Core", DarkmistsTheme.badTag .. "Resetting incompatible UI layout cache...")
 
   local home = getMudletHomeDir()
 
@@ -292,7 +292,7 @@ function Darkmists.ResetUILayoutCache()
   -- update stored layout cache version so we don't repeatedly trigger a reset
   Darkmists.GlobalSettings.layoutCacheVersion = Darkmists.LAYOUT_CACHE_VERSION
   Darkmists.SaveSettings()
-  Darkmists.Log("Darkmists Core", DarkmistsTheme.warnTag .. "UI cache cleared.")
+  Darkmists.Log(DarkmistsTheme.purpleTag .. "Darkmists Core", DarkmistsTheme.warnTag .. "UI cache cleared.")
 
   -- Rebuild theme and refresh layout so UI colors/styles are applied after
   -- resetting the layout cache. Use pcall to avoid hard failures during reset.
@@ -358,7 +358,7 @@ end
 function Darkmists.ApplyFirstRunUILayout()
   if Darkmists.GlobalSettings.hasInitializedUILayout then return end
 
-  Darkmists.Log("Darkmists Core", "Applying first-run UI layout...")
+  Darkmists.Log(DarkmistsTheme.purpleTag .. "Darkmists Core", "Applying first-run UI layout...")
 
   -- Default dock: right 30%
   Darkmists.SetWindowBorderPercent("right", 30)
@@ -406,12 +406,7 @@ function Darkmists.createTabPanel(id, title, tabName)
 end
 
 function Darkmists.Log(pluginName, msg)
-  local output = "\n" .. (DarkmistsTheme.mutedTag or "") .. "[" .. (Darkmists.getDefaultTextColorTag() or "") .. pluginName .. (DarkmistsTheme.mutedTag or "") .. "] " .. (DarkmistsTheme.silverTag or "") .. msg
-  pcall(DMLogger.write, pluginName, msg)
-end
-
-function Darkmists.LogDebug(pluginName, msg)
-  debugc(("\n[%s] %s"):format(pluginName, msg))
+  pcall(DMLogger.log, pluginName, msg)
 end
 
 function Darkmists.SaveSettings()
@@ -419,7 +414,7 @@ function Darkmists.SaveSettings()
   local settings = Darkmists.GlobalSettings
 ---@diagnostic disable-next-line: undefined-field
   table.save(saveFilePath, settings)
-  Darkmists.Log("Darkmists Core", ("Settings Saved To: %s!"):format(saveFilePath))
+  Darkmists.Log(DarkmistsTheme.purpleTag .. "Darkmists Core", ("Settings Saved To: %s%s!"):format(DarkmistsTheme.infoTag, saveFilePath))
 end
 
 function Darkmists.LoadSettings()
@@ -431,19 +426,19 @@ function Darkmists.LoadSettings()
 
     -- Merge settings (preserve values even if layoutCacheVersion missing)
     DMUtil.deep_copy_into(Darkmists.GlobalSettings, settings)
-    Darkmists.Log("Darkmists Core", (DarkmistsTheme.mutedTag .. "Settings Loaded From: " .. DarkmistsTheme.infoTag .. "%s<r>"):format(saveFilePath))
-    Darkmists.Log("Darkmists Core", DarkmistsTheme.mutedTag .. "You may need to Reload UI for changes to take effect!")
+    Darkmists.Log(DarkmistsTheme.purpleTag .. "Darkmists Core", (DarkmistsTheme.mutedTag .. "Settings Loaded From: " .. DarkmistsTheme.infoTag .. "%s<r>"):format(saveFilePath))
+    Darkmists.Log(DarkmistsTheme.purpleTag .. "Darkmists Core", DarkmistsTheme.mutedTag .. "You may need to Reload UI for changes to take effect!")
     -- return true indicating a settings file existed
     return true
   else
-    Darkmists.Log("Darkmists Core", DarkmistsTheme.mutedTag .. "No Pre-Existing Settings File Found!")
+    Darkmists.Log(DarkmistsTheme.purpleTag .. "Darkmists Core", DarkmistsTheme.mutedTag .. "No Pre-Existing Settings File Found!")
     return false
   end
 end
 
 function Darkmists.ApplyDefaultSettings()
   DMUtil.deep_copy_into(Darkmists.GlobalSettings, Darkmists.DefaultSettings)
-  Darkmists.Log("Darkmists Core", DarkmistsTheme.mutedTag .. "Default Settings Applied!")
+  Darkmists.Log(DarkmistsTheme.purpleTag .. "Darkmists Core", DarkmistsTheme.mutedTag .. "Default Settings Applied!")
 end
 
 function Darkmists.SetWindowBorderPercent(region, percent)
@@ -467,7 +462,7 @@ function Darkmists.SetWindowBorderPercent(region, percent)
     setBorderRight(scaledSize)
   end
 
-  Darkmists.LogDebug("Darkmists Core", "Window Borders Adjusted")
+  Darkmists.Log(DarkmistsTheme.purpleTag .. "Darkmists Core", "Window Borders Adjusted")
 end
 
 function Darkmists.UpdateMainWindowWrap()
@@ -551,7 +546,7 @@ function Darkmists.RegisterEvents()
 
   DarkmistsEvents.add("DarkmistsPackageUninstall","sysUninstallPackage",function (_,pkgName)
     if pkgName == Darkmists.NAME then
-      Darkmists.Log("Darkmists Core", ("Package Uninstall Detected: %s"):format(tostring(pkgName)))
+      Darkmists.Log(DarkmistsTheme.purpleTag .. "Darkmists Core", ("Package Uninstall Detected: %s"):format(tostring(pkgName)))
       Darkmists.CleanupUI({ uninstall = true })
     end
   end)
@@ -566,7 +561,7 @@ function Darkmists.RegisterEvents()
       Darkmists.GlobalSettings._installResetDone = true
       Darkmists.SaveSettings()
       tempTimer(1, function()
-        Darkmists.Log("Darkmists Core", ("%sPackage Install Detected: %s — performing safe reset"):format(DarkmistsTheme.warnTag, tostring(pkgName)))
+        Darkmists.Log(DarkmistsTheme.purpleTag .. "Darkmists Core", ("%sPackage Install Detected: %s — performing safe reset"):format(DarkmistsTheme.warnTag, tostring(pkgName)))
         pcall(resetProfile)
       end)
     end
@@ -574,7 +569,7 @@ function Darkmists.RegisterEvents()
 end
 
 function Darkmists.SafeReload()
-  Darkmists.Log("Darkmists Core", DarkmistsTheme.badTag .. "Resetting Profile. UI Reload Incoming....")
+  Darkmists.Log(DarkmistsTheme.purpleTag .. "Darkmists Core", DarkmistsTheme.badTag .. "Resetting Profile. UI Reload Incoming....")
 
   Darkmists.CleanupUI()
 
@@ -595,7 +590,7 @@ function Darkmists.CleanupUI(opts)
   if DMAlertWindow and DMAlertWindow.Hide then pcall(DMAlertWindow.Hide) end
   
   if opts.uninstall then
-    Darkmists.Log("Darkmists Core", "Resetting window borders to default...")
+    Darkmists.Log(DarkmistsTheme.purpleTag .. "Darkmists Core", "Resetting window borders to default...")
     Darkmists.ResetUILayoutCache()
     tempTimer(0.5, function()
       setBorderTop(0); setBorderBottom(0); setBorderLeft(0); setBorderRight(0)
@@ -604,14 +599,15 @@ function Darkmists.CleanupUI(opts)
 end
 
 function Darkmists.Init()
-  Darkmists.Log("Darkmists Core", (DarkmistsTheme.mutedTag .. "Loaded Darkmists Core " .. DarkmistsTheme.infoTag .. "v%s<r>"):format(Darkmists.VERSION))
+  DMLogger.container:show()
+  DMLogger.notify("Darkmists Core", (DarkmistsTheme.mutedTag .. "Loaded Darkmists Core " .. DarkmistsTheme.infoTag .. "v%s<r>"):format(Darkmists.VERSION))
   local hadSettings = Darkmists.LoadSettings()
   -- If we previously persisted the one-shot install-reset guard, clear it now
   -- so future installs will be able to trigger the guarded reset again.
   if Darkmists.GlobalSettings._installResetDone then
     Darkmists.GlobalSettings._installResetDone = nil
     Darkmists.SaveSettings()
-    Darkmists.Log("Darkmists Core", "Cleared one-time install reset guard from settings.")
+    Darkmists.Log(DarkmistsTheme.purpleTag .. "Darkmists Core", "Cleared one-time install reset guard from settings.")
   end
   DarkmistsTheme.buildTheme()
   Darkmists.RegisterEvents()
@@ -644,6 +640,29 @@ function Darkmists.Init()
   -- checkBackgroundContrast is called here so it queues after the intro alert,
   -- never inside buildTheme() which may be called multiple times
   DarkmistsTheme.checkBackgroundContrast()
+
+  -- Utility Scripts that use DMAPI
+  dofile(getMudletHomeDir() .. "/DarkMistsCompanion/utility/itemtracker.lua")
+  dofile(getMudletHomeDir() .. "/DarkMistsCompanion/utility/statroller.lua")
+  dofile(getMudletHomeDir() .. "/DarkMistsCompanion/utility/mapdestinations.lua")
+  dofile(getMudletHomeDir() .. "/DarkMistsCompanion/utility/enchanterassist.lua")
+  dofile(getMudletHomeDir() .. "/DarkMistsCompanion/utility/skillups.lua")
+  dofile(getMudletHomeDir() .. "/DarkMistsCompanion/utility/clickables.lua")
+  dofile(getMudletHomeDir() .. "/DarkMistsCompanion/ui/buttonbar.lua")
+
+  -- UI Scripts
+  if not Darkmists.GlobalSettings.minimalMode then
+    Darkmists.LoadUIScripts()
+    tempTimer(0.4, function()
+      Darkmists.RefreshUILayout({ syncStatusBar = true })
+    end)
+  end
+
+  -- Meta Help / Command
+  dofile(getMudletHomeDir() .. "/DarkMistsCompanion/core/DarkMistsMeta.lua")
+
+  tempTimer(1, function() DMLogger.container:hide() end)
+  DMLogger.notify("Darkmists Core", "All Scripts Loaded!")
 end
 
 function Darkmists.LoadUIScripts()
@@ -665,7 +684,7 @@ function Darkmists.LoadUIScripts()
   end
 
   Darkmists.UI_LOADED = true
-  Darkmists.Log("Darkmists Core", "UI Scripts Loaded")
+  Darkmists.Log(DarkmistsTheme.purpleTag .. "Darkmists Core", "UI Scripts Loaded")
 end
 
 function Darkmists.EnableUI()
@@ -696,7 +715,7 @@ function Darkmists.EnableUI()
     end)
   end
 
-  Darkmists.Log("Darkmists Core", "UI Enabled")
+  Darkmists.Log(DarkmistsTheme.purpleTag .. "Darkmists Core", "UI Enabled")
 end
 
 function Darkmists.DisableUI()
@@ -709,7 +728,7 @@ function Darkmists.DisableUI()
     DarkMistsMiniMap.container = nil
   end
 
-  Darkmists.Log("Darkmists Core", "Switching to Minimal UI...")
+  Darkmists.Log(DarkmistsTheme.purpleTag .. "Darkmists Core", "Switching to Minimal UI...")
   Darkmists.SafeReload()
 end
 
@@ -717,25 +736,3 @@ end
 -- MODULE LOAD ORDER
 -- =============================================================================
 Darkmists.Init()
-
--- Utility Scripts that use DMAPI
-dofile(getMudletHomeDir() .. "/DarkMistsCompanion/utility/itemtracker.lua")
-dofile(getMudletHomeDir() .. "/DarkMistsCompanion/utility/statroller.lua")
-dofile(getMudletHomeDir() .. "/DarkMistsCompanion/utility/mapdestinations.lua")
-dofile(getMudletHomeDir() .. "/DarkMistsCompanion/utility/enchanterassist.lua")
-dofile(getMudletHomeDir() .. "/DarkMistsCompanion/utility/skillups.lua")
-dofile(getMudletHomeDir() .. "/DarkMistsCompanion/utility/clickables.lua")
-dofile(getMudletHomeDir() .. "/DarkMistsCompanion/ui/buttonbar.lua")
-
--- UI Scripts
-if not Darkmists.GlobalSettings.minimalMode then
-  Darkmists.LoadUIScripts()
-  tempTimer(0.4, function()
-    Darkmists.RefreshUILayout({ syncStatusBar = true })
-  end)
-end
-
--- Meta Help / Command
-dofile(getMudletHomeDir() .. "/DarkMistsCompanion/core/DarkMistsMeta.lua")
-
-Darkmists.Log("Darkmists Core", "All Scripts Loaded!")

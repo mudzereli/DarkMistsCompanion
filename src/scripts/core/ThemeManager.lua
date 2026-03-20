@@ -142,7 +142,8 @@ function DarkmistsTheme.buildTheme()
   t.accent = light and "slate_blue" or "cornflower_blue"
 
   buildTags(t)
-  Darkmists.Log("<medium_sea_green>Darkmists Core",("<slate_gray>Theme Built! Light Mode: <steel_blue>%s<r>"):format(tostring(light)))
+  Darkmists.Log(DarkmistsTheme.purpleTag .. "Darkmists Core",
+    (DarkmistsTheme.silverTag .. "Theme Built! Light Mode: " .. DarkmistsTheme.infoTag .. "%s<r>"):format(tostring(light)))
 end
 
 -- ---------------------------------------------------------------------------

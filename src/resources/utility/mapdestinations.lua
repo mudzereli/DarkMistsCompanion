@@ -46,9 +46,7 @@ function MapDestinations.checkAreaArrival()
 
   local currentAreaId = getRoomArea(currentRoom)
   if currentAreaId and currentAreaId == target.areaId then
-    if Darkmists and Darkmists.Log then
-      Darkmists.Log("WALK", ("<green>Arrived in area <white>%s<green>, stopping walk."):format(target.areaName or tostring(target.areaId)))
-    end
+    DMLogger.notify("WALK", ("<green>Arrived in area <white>%s<green>, stopping walk."):format(target.areaName or tostring(target.areaId)))
     MapDestinations.clearAreaWalkTarget()
     MapDestinations.stopCurrentSpeedwalk()
   end

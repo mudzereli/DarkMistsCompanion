@@ -768,7 +768,7 @@ function dmapi.core.log(message, level)
     formattedMessage = "<dim_gray>" .. prefix .. "<r>" .. tostring(message)
   end
 
-  DMLogger.write(dmapi.meta.name, formattedMessage)
+  DMLogger.log(dmapi.meta.name, formattedMessage)
 end
 
 --- Log a warning message

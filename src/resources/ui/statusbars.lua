@@ -466,7 +466,7 @@ function StatusBar.registerEvents()
     elseif showXP and StatusBar.xpGauge and StatusBar.xpGauge.hidden then
       StatusBar.xpGauge:show()
       StatusBar.reflow()
-      Darkmists.Log("StatusBars","<yellow>XP bar shaown (max level not reached)")
+      Darkmists.Log("StatusBars","<yellow>XP bar shown (max level not reached)")
     end
   end)
 
