@@ -381,10 +381,10 @@ function AffectsWindow.refreshDisplay()
     local lm = AffectsWindow.config.textLengthAffectMod
     AffectsWindow.console:cecho(string.format(
       "%s%-"..tostring(ln).."s%s : %s%-"..tostring(lm).."s %s: %s\n",
-      DarkmistsTheme.textTag,
+      DarkmistsTheme.accentTag,
       affect.name:sub(1,ln),
       DarkmistsTheme.textTag,
-      DarkmistsTheme.accentTag,
+      DarkmistsTheme.mutedTag,
       mod:sub(1,lm),
       DarkmistsTheme.textTag,
       dur
