@@ -179,3 +179,5 @@ function DarkmistsTheme.test()
 
   cecho("\n")
 end
+
+DarkmistsTheme.buildNeutralTheme() -- initialize with a safe default before settings are loaded

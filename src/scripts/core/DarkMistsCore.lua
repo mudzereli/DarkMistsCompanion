@@ -600,7 +600,6 @@ function Darkmists.CleanupUI(opts)
 end
 
 function Darkmists.Init()
-  DarkmistsTheme.buildNeutralTheme()
   DMLogger.create()
   DMLogger.container:show()
   dmapi.init()
