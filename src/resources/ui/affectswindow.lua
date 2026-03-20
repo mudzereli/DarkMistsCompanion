@@ -48,6 +48,7 @@ function AffectsWindow.create()
     height = "98%",
     color = Darkmists.getDefaultBackgroundColor()
   }, AffectsWindow.window)
+  tempTimer(0, function() AffectsWindow.console:fg("ansi_white") end)
   AffectsWindow.console:setFontSize(AffectsWindow.config.fontSize)
   AffectsWindow.console:setFont(AffectsWindow.config.fontName)
   AffectsWindow.console:enableAutoWrap()

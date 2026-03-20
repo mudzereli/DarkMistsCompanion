@@ -113,7 +113,6 @@ end
 function DarkmistsTheme.buildTheme()
   local t     = DarkmistsTheme
   local light = Darkmists.GlobalSettings.lightMode
-  local tagKeys = {}
 
   -- Named hues
   t.red    = light and "firebrick"         or "tomato"
@@ -138,7 +137,7 @@ function DarkmistsTheme.buildTheme()
   t.bad    = t.red
   t.info   = t.blue
   t.muted  = light and "dim_gray"   or "slate_gray"
-  t.text   = light and "black"      or "white"
+  t.text   = t.text
   t.accent = light and "slate_blue" or "cornflower_blue"
 
   buildTags(t)
