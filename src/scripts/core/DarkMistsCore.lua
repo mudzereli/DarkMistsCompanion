@@ -600,7 +600,10 @@ function Darkmists.CleanupUI(opts)
 end
 
 function Darkmists.Init()
+  DarkmistsTheme.buildNeutralTheme()
+  DMLogger.create()
   DMLogger.container:show()
+  dmapi.init()
   DMLogger.notify("Darkmists Core", (DarkmistsTheme.mutedTag .. "Loaded Darkmists Core " .. DarkmistsTheme.infoTag .. "v%s<r>"):format(Darkmists.VERSION))
   local hadSettings = Darkmists.LoadSettings()
   -- If we previously persisted the one-shot install-reset guard, clear it now

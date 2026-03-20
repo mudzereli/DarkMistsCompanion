@@ -54,9 +54,6 @@ function DarkmistsTheme.buildNeutralTheme()
   buildTags(t)
 end
 
--- Auto-run at load: safe colors available immediately, no dependencies
-DarkmistsTheme.buildNeutralTheme()
-
 -- Detect main background color and warn/offer to switch theme for contrast
 -- Exposed as DarkmistsTheme.checkBackgroundContrast() so Init() can call it
 -- explicitly after ShowUIIntroMessage, keeping buildTheme() side-effect free.

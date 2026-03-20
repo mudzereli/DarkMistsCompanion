@@ -1775,144 +1775,145 @@ end
 -- EVENT HANDLERS
 -- ============================================================================
 
--- Helper to add event handlers using DarkmistsEvents when available,
--- falling back to registerNamedEventHandler for init-order safety.
--- Helper to add event handlers using DarkmistsEvents (no fallback).
--- NOTE: Handlers are added directly via DarkmistsEvents.add
+function dmapi.RegisterEvents()
 
---- Handle sleep state changes
-DarkmistsEvents.add(
-  "dmapi.player.sleep.blocked.handler",
-  "dmapi.player.sleep.blocked",
-  function()
-    dmapi.player.setSleeping(true)
-  end,
-  false
-)
+  --- Handle sleep state changes
+  DarkmistsEvents.add(
+    "dmapi.player.sleep.blocked.handler",
+    "dmapi.player.sleep.blocked",
+    function()
+      dmapi.player.setSleeping(true)
+    end,
+    false
+  )
 
-DarkmistsEvents.add(
-  "dmapi.player.sleep.enter.handler",
-  "dmapi.player.sleep.enter",
-  function()
-    dmapi.player.setSleeping(true)
-  end,
-  false
-)
+  DarkmistsEvents.add(
+    "dmapi.player.sleep.enter.handler",
+    "dmapi.player.sleep.enter",
+    function()
+      dmapi.player.setSleeping(true)
+    end,
+    false
+  )
 
-DarkmistsEvents.add(
-  "dmapi.player.sleep.exit.handler",
-  "dmapi.player.sleep.exit",
-  function()
-    dmapi.player.setSleeping(false)
-  end,
-  false
-)
+  DarkmistsEvents.add(
+    "dmapi.player.sleep.exit.handler",
+    "dmapi.player.sleep.exit",
+    function()
+      dmapi.player.setSleeping(false)
+    end,
+    false
+  )
 
---- Track last command sent
-DarkmistsEvents.add(
-  "dmapi.command.tracker",
-  "sysDataSendRequest",
-  function(_, command)
-    if not command or command == "" then return end
-    dmapi.core.state.lastCommand = command
-    dmapi.core.raiseEvent("dmapi.core.command.sent", {command = command})
-  end,
-  false
-)
+  --- Track last command sent
+  DarkmistsEvents.add(
+    "dmapi.command.tracker",
+    "sysDataSendRequest",
+    function(_, command)
+      if not command or command == "" then return end
+      dmapi.core.state.lastCommand = command
+      dmapi.core.raiseEvent("dmapi.core.command.sent", {command = command})
+    end,
+    false
+  )
 
---- Reset vitals on world enter
-DarkmistsEvents.add(
-  "dmapi.world.enter.reset",
-  "dmapi.world.enter",
-  function()
-    dmapi.player.reset()
-    dmapi.player.vitals.hpMax = 1
-    dmapi.player.vitals.mnMax = 1
-    dmapi.player.vitals.mvMax = 1
-    dmapi.player.online = true
-    if dmapi.settings.debugLevel > 0 then
-      dmapi.core.log("Connected - vitals reset. Use 'score' or 'dmapi setvitals'")
-    end
-    send("")
-    send("")
-    send("score")
-  end,
-  false
-)
-
---- End combat after 2 consecutive prompts without combat activity
-DarkmistsEvents.add(
-  "dmapi.combat.end.tracker",
-  "dmapi.player.vitals.updated",
-  function()
-    if dmapi.player.combat.active then
-      dmapi.core.state.combatMissedPrompts = dmapi.core.state.combatMissedPrompts + 1
-      
-      if dmapi.core.state.combatMissedPrompts >= 2 then
-        dmapi.player.combat.active = false
-        local target = dmapi.player.combat.target
-        dmapi.player.combat.round = 0
-        dmapi.player.combat.target = nil
-        dmapi.player.combat.targetHpPct = 0
-        dmapi.core.state.combatMissedPrompts = 0
-        
-        dmapi.core.raiseEvent("dmapi.player.combat.end", {
-          target = target,
-          round = dmapi.player.combat.round
-        })
+  --- Reset vitals on world enter
+  DarkmistsEvents.add(
+    "dmapi.world.enter.reset",
+    "dmapi.world.enter",
+    function()
+      dmapi.player.reset()
+      dmapi.player.vitals.hpMax = 1
+      dmapi.player.vitals.mnMax = 1
+      dmapi.player.vitals.mvMax = 1
+      dmapi.player.online = true
+      if dmapi.settings.debugLevel > 0 then
+        dmapi.core.log("Connected - vitals reset. Use 'score' or 'dmapi setvitals'")
       end
-    end
-  end,
-  false
-)
-
---- Auto-guess vitals on first level update
-DarkmistsEvents.add(
-  "dmapi.vitals.autoguess",
-  "dmapi.player.level.updated",
-  function(_, data)
-    if dmapi.player.vitals.hpMax == 1 then
-      expandAlias(string.format("dmapi guessvitals %d", data.level))
-    end
-  end,
-  false
-)
-
-DarkmistsEvents.add(
-  "dmapi.vitals.checkscore",
-  "dmapi.player.vitals.updated",
-  function(_, data)
-    if dmapi.player.vitals.hpMax == 1 then
+      send("")
+      send("")
       send("score")
-    end
-  end,
-  false
-)
+    end,
+    false
+  )
 
-DarkmistsEvents.add(
-  "dmapi.player.online false",
-  "sysDisconnectionEvent",
-  function()
-    if not dmapi then return end
-    if not dmapi.player then return end
-    dmapi.player.online = false
-  end,
-  false
-)
+  --- End combat after 2 consecutive prompts without combat activity
+  DarkmistsEvents.add(
+    "dmapi.combat.end.tracker",
+    "dmapi.player.vitals.updated",
+    function()
+      if dmapi.player.combat.active then
+        dmapi.core.state.combatMissedPrompts = dmapi.core.state.combatMissedPrompts + 1
+        
+        if dmapi.core.state.combatMissedPrompts >= 2 then
+          dmapi.player.combat.active = false
+          local target = dmapi.player.combat.target
+          dmapi.player.combat.round = 0
+          dmapi.player.combat.target = nil
+          dmapi.player.combat.targetHpPct = 0
+          dmapi.core.state.combatMissedPrompts = 0
+          
+          dmapi.core.raiseEvent("dmapi.player.combat.end", {
+            target = target,
+            round = dmapi.player.combat.round
+          })
+        end
+      end
+    end,
+    false
+  )
+
+  --- Auto-guess vitals on first level update
+  DarkmistsEvents.add(
+    "dmapi.vitals.autoguess",
+    "dmapi.player.level.updated",
+    function(_, data)
+      if dmapi.player.vitals.hpMax == 1 then
+        expandAlias(string.format("dmapi guessvitals %d", data.level))
+      end
+    end,
+    false
+  )
+
+  DarkmistsEvents.add(
+    "dmapi.vitals.checkscore",
+    "dmapi.player.vitals.updated",
+    function(_, data)
+      if dmapi.player.vitals.hpMax == 1 then
+        send("score")
+      end
+    end,
+    false
+  )
+
+  DarkmistsEvents.add(
+    "dmapi.player.online false",
+    "sysDisconnectionEvent",
+    function()
+      if not dmapi then return end
+      if not dmapi.player then return end
+      dmapi.player.online = false
+    end,
+    false
+  )
+end
 
 -- ============================================================================
 -- INITIALIZATION
 -- ============================================================================
 
-dmapi.core.log(string.format(
-  "Loading %s v%s by %s",
-  dmapi.meta.name,
-  dmapi.meta.version,
-  dmapi.meta.author
-))
+function dmapi.init()
+  dmapi.core.log(string.format(
+    "Loading %s v%s by %s",
+    dmapi.meta.name,
+    dmapi.meta.version,
+    dmapi.meta.author
+  ))
 
   dmapi.RegisterAliases()
-dmapi.core.state.initialized = true
-dmapi.core.raiseEvent("dmapi.core.loaded")
+  dmapi.RegisterEvents()
+  dmapi.core.state.initialized = true
+  dmapi.core.raiseEvent("dmapi.core.loaded")
 
-dmapi.core.log("Loaded successfully. Type 'dmapi' for commands.")
+  dmapi.core.log("Loaded successfully. Type 'dmapi' for commands.")
+end

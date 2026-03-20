@@ -12,14 +12,13 @@ DMLogger.config = {
   visible = false
 }
 
+local ok, r, g, b, a = pcall(getBackgroundColor, "main") -- try named window
+if not ok or type(r) ~= "number" then ok, r, g, b, a = pcall(getBackgroundColor) end
+r = r or 0; g = g or 0; b = b or 0
+local bgHex = string.format("#%02x%02x%02x", r, g, b)
+
 function DMLogger.create()
   if DMLogger.console then return end
-
-  -- Get a background color that matches the client UI and convert to hex
-  local ok, r, g, b, a = pcall(getBackgroundColor, "main")
-  if not ok or type(r) ~= "number" then ok, r, g, b, a = pcall(getBackgroundColor) end
-  r = r or 0; g = g or 0; b = b or 0
-  local bgHex = string.format("#%02x%02x%02x", r, g, b)
 
   -- Create an adjustable container and a mini-console inside it
   DMLogger.container = Adjustable.Container:new({
@@ -51,9 +50,9 @@ end
 local function make_prefix(plugin, with_time)
   local p = "\n"
   if with_time then
-    p = p .. DarkmistsTheme.mutedTag .. "[" .. DarkmistsTheme.textTag .. os.date("%H:%M:%S") .. DarkmistsTheme.mutedTag .. "] " .. DarkmistsTheme.silverTag
+    p = p .. DarkmistsTheme.mutedTag .. "[" .. DarkmistsTheme.textTag .. os.date("%H:%M:%S") .. DarkmistsTheme.mutedTag .. "] " .. DarkmistsTheme.textTag
   end
-  p = p .. DarkmistsTheme.mutedTag .. "[" .. DarkmistsTheme.textTag .. tostring(plugin) .. DarkmistsTheme.mutedTag .. "] " .. DarkmistsTheme.silverTag
+  p = p .. DarkmistsTheme.mutedTag .. "[" .. DarkmistsTheme.textTag .. tostring(plugin) .. DarkmistsTheme.mutedTag .. "] " .. DarkmistsTheme.textTag
   return p
 end
 
@@ -88,7 +87,5 @@ end
 function DMLogger.clear()
   if DMLogger.console then DMLogger.console:clear() end
 end
-
-DMLogger.create()
 
 return DMLogger
