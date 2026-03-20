@@ -443,6 +443,30 @@ function StatusBar.toggle()
   end
 end
 
+function StatusBar.setMoveable(enabled)
+  local moveable = not not enabled
+
+  StatusBar.config.moveable = moveable
+  Darkmists.GlobalSettings.statusBarsMoveable = moveable
+  Darkmists.SaveSettings()
+
+  StatusBar.recreate()
+
+  -- Non-moveable bars should respect border anchoring after recreate.
+  if not moveable then
+    tempTimer(0.05, function()
+      StatusBar.syncToBorders()
+      StatusBar.reflow()
+    end)
+  end
+
+  Darkmists.Log("StatusBars", string.format("Moveable mode: %s", tostring(moveable)))
+end
+
+function StatusBar.toggleMoveable()
+  StatusBar.setMoveable(not StatusBar.config.moveable)
+end
+
 -- ===================================================================
 -- EVENT HANDLERS
 -- ===================================================================
