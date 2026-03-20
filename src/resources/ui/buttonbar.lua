@@ -243,6 +243,14 @@ ButtonBar:addDropdown("⚙️ Settings", {
     {label = "📜 Log Console", action = function()
       pcall(DMLogger.toggle)
     end},
+    {label="📊 Status Bars", children={
+      {label="👁️ Show", action=function() StatusBar.enable() end},
+      {label="❌ Hide", action=function() StatusBar.disable() end},
+      {label="🔄 Reload", action=function() StatusBar.recreate() end},
+      {label="↔️ Moveable Bar Toggle", action=function() 
+        StatusBar.toggleMoveable()
+      end},
+    }},
     {label = "📝 Advanced", children = {
       {label = "🧼 Reset All Settings", action = function() 
         cecho(("Removing: %s (exists=%s)\n"):format(tostring(Darkmists.saveFilePath), tostring(io.exists(Darkmists.saveFilePath))))
@@ -320,11 +328,7 @@ ButtonBar:addDropdown("⚙️ Settings", {
       {label="❌ Hide", action=function() StatusBar.config.enabled = false StatusBar.hideAll() end},
       {label="🔄 Reload", action=function() StatusBar.recreate() end},
       {label="↔️ Moveable Bar Toggle", action=function() 
-        local s = Darkmists.GlobalSettings
-        local m = s.statusBarsMoveable
-        s.statusBarsMoveable = not m
-        StatusBar.config.moveable = s.statusBarsMoveable
-        StatusBar.recreate() 
+        StatusBar.toggleMoveable()
       end},
     }},
     {label="🖼️ Borders", children = {
