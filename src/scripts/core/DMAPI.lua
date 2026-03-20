@@ -1690,83 +1690,86 @@ end
 -- ============================================================================
 
 --- Main dmapi command handler
-DarkmistsAlias.add([[^dmapi(?:\s+(\w+))?(?:\s+(.*))?$]], function()
-  local cmd = matches[2]
-  local args = matches[3]
-  
-  if not cmd then
-    dmapi.core.log("Commands: debug, status, reset, setvitals, guessvitals")
-    return
-  end
-  
-  if cmd == "debug" then
-    dmapi.settings.debugLevel = (dmapi.settings.debugLevel + 1) % 3
-    dmapi.core.log(string.format("Debug level: %d", dmapi.settings.debugLevel))
-    return
-  end
-  
-  if cmd == "status" then
-    local status = dmapi.player.getStatus()
-    dmapi.core.log(string.format("Level %d | %s | %s | %s | %s | %s",
-      status.level,
-      status.hp,
-      status.mn,
-      status.mv,
-      status.xp,
-      status.currency
-    ))
-    dmapi.core.log(string.format("Combat: %s | Kills: %d | Deaths: %d",
-      tostring(status.combat),
-      status.kills,
-      status.deaths
-    ))
-    return
-  end
-  
-  if cmd == "reset" then
-    dmapi.player.reset()
-    return
-  end
-  
-  dmapi.core.log("Unknown command. Use 'dmapi' for help.")
-end)
+function dmapi.RegisterAliases()
+  -- Main dmapi command handler
+  DarkmistsAlias.add([[^dmapi(?:\s+(\w+))?(?:\s+(.*))?$]], function()
+    local cmd = matches[2]
+    local args = matches[3]
 
---- Set vitals command
-DarkmistsAlias.add([[^dmapi setvitals\s+(\d+)\s+(\d+)\s+(\d+)$]], function()
-  local hpMax = tonumber(matches[2])
-  local mnMax = tonumber(matches[3])
-  local mvMax = tonumber(matches[4])
-  
-  dmapi.player.vitals.hpMax = hpMax
-  dmapi.player.vitals.mnMax = mnMax
-  dmapi.player.vitals.mvMax = mvMax
-  
-  if dmapi.settings.debugLevel > 0 then
+    if not cmd then
+      dmapi.core.log("Commands: debug, status, reset, setvitals, guessvitals")
+      return
+    end
+
+    if cmd == "debug" then
+      dmapi.settings.debugLevel = (dmapi.settings.debugLevel + 1) % 3
+      dmapi.core.log(string.format("Debug level: %d", dmapi.settings.debugLevel))
+      return
+    end
+
+    if cmd == "status" then
+      local status = dmapi.player.getStatus()
+      dmapi.core.log(string.format("Level %d | %s | %s | %s | %s | %s",
+        status.level,
+        status.hp,
+        status.mn,
+        status.mv,
+        status.xp,
+        status.currency
+      ))
+      dmapi.core.log(string.format("Combat: %s | Kills: %d | Deaths: %d",
+        tostring(status.combat),
+        status.kills,
+        status.deaths
+      ))
+      return
+    end
+
+    if cmd == "reset" then
+      dmapi.player.reset()
+      return
+    end
+
+    dmapi.core.log("Unknown command. Use 'dmapi' for help.")
+  end)
+
+  --- Set vitals command
+  DarkmistsAlias.add([[^dmapi setvitals\s+(\d+)\s+(\d+)\s+(\d+)$]], function()
+    local hpMax = tonumber(matches[2])
+    local mnMax = tonumber(matches[3])
+    local mvMax = tonumber(matches[4])
+
+    dmapi.player.vitals.hpMax = hpMax
+    dmapi.player.vitals.mnMax = mnMax
+    dmapi.player.vitals.mvMax = mvMax
+
+    if dmapi.settings.debugLevel > 0 then
+      dmapi.core.log(string.format(
+        "Vitals set - HP: %d | MN: %d | MV: %d",
+        hpMax, mnMax, mvMax
+      ))
+    end
+  end)
+
+  --- Guess vitals from level
+  DarkmistsAlias.add([[^dmapi guessvitals\s+(\d+)$]], function()
+    local level = tonumber(matches[2])
+
+    -- Estimate: ~15 HP/MN/MV per level (adjust based on class/race)
+    dmapi.player.vitals.hpMax = 15 * level
+    dmapi.player.vitals.mnMax = 15 * level
+    dmapi.player.vitals.mvMax = 15 * level
+    dmapi.player.vitals.estimated = true 
+
     dmapi.core.log(string.format(
-      "Vitals set - HP: %d | MN: %d | MV: %d",
-      hpMax, mnMax, mvMax
+      "Vitals estimated for level %d - HP: %d | MN: %d | MV: %d",
+      level,
+      dmapi.player.vitals.hpMax,
+      dmapi.player.vitals.mnMax,
+      dmapi.player.vitals.mvMax
     ))
-  end
-end)
-
---- Guess vitals from level
-DarkmistsAlias.add([[^dmapi guessvitals\s+(\d+)$]], function()
-  local level = tonumber(matches[2])
-  
-  -- Estimate: ~15 HP/MN/MV per level (adjust based on class/race)
-  dmapi.player.vitals.hpMax = 15 * level
-  dmapi.player.vitals.mnMax = 15 * level
-  dmapi.player.vitals.mvMax = 15 * level
-  dmapi.player.vitals.estimated = true 
-
-  dmapi.core.log(string.format(
-    "Vitals estimated for level %d - HP: %d | MN: %d | MV: %d",
-    level,
-    dmapi.player.vitals.hpMax,
-    dmapi.player.vitals.mnMax,
-    dmapi.player.vitals.mvMax
-  ))
-end)
+  end)
+end
 
 -- ============================================================================
 -- EVENT HANDLERS
@@ -1908,6 +1911,7 @@ dmapi.core.log(string.format(
   dmapi.meta.author
 ))
 
+  dmapi.RegisterAliases()
 dmapi.core.state.initialized = true
 dmapi.core.raiseEvent("dmapi.core.loaded")
 
