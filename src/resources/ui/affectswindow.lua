@@ -333,7 +333,7 @@ function AffectsWindow.refreshDisplay()
 
   AffectsWindow.console:clear()
   AffectsWindow.displayHeader()
-  AffectsWindow.console:cecho(DarkmistsTheme.cyanTag .. "You are affected by the following:\n")
+  AffectsWindow.console:cecho(DarkmistsTheme.blueTag .. "You are affected by the following:\n")
 
   local now = os.time()
   local activeAffects  = {}
@@ -452,13 +452,11 @@ end
 -- ============================================================================
 
 function AffectsWindow.registerTriggers()
-  if AffectsWindow.affectHeaderTrigger then killTrigger(AffectsWindow.affectHeaderTrigger) end
-  if AffectsWindow.affectLineTrigger   then killTrigger(AffectsWindow.affectLineTrigger)   end
-  if AffectsWindow.noAffectsTrigger    then killTrigger(AffectsWindow.noAffectsTrigger)   end
-
   -- If we have no effects, just capture an empty affect list
   -- If we DONT do this, then EXPIRED effects will just show EXPIRING forever
-  AffectsWindow.affectHeaderTrigger = tempTrigger(
+  DarkmistsTrigger.addKeyed(
+    "affectsNoAffects",
+    "substring",
     "You are not affected by anything.",
     function()
       AffectsWindow.startCapture()
@@ -468,7 +466,9 @@ function AffectsWindow.registerTriggers()
   )
 
   -- Start Capturing Normally when we see the header
-  AffectsWindow.affectHeaderTrigger = tempTrigger(
+  DarkmistsTrigger.addKeyed(
+    "affectsHeader",
+    "substring",
     "You are affected by the following:",
     function()
       AffectsWindow.startCapture()
@@ -476,8 +476,9 @@ function AffectsWindow.registerTriggers()
   )
 
   -- If we saw the header, capture/copy all incoming lines
-  AffectsWindow.affectLineTrigger = tempRegexTrigger(
-    --"^.+\\s+:\\s+modifies.+$",
+  DarkmistsTrigger.addKeyed(
+    "affectsLine",
+    "regex",
     ".*",
     function()
       if AffectsWindow.capturing then

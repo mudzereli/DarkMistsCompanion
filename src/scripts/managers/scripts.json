@@ -16,5 +16,11 @@
               "isActive": "yes",
               "script": "",
               "isFolder": "no"
+       },
+       {
+              "name": "TriggerManager",
+              "isActive": "yes",
+              "script": "",
+              "isFolder": "no"
        }
 ]
