@@ -667,6 +667,7 @@ end
 
 function Darkmists.LoadUIScripts()
   if Darkmists.UI_LOADED then return end
+  DMLogger.container:show()
 
   dofile(getMudletHomeDir() .. "/DarkMistsCompanion/ui/framework/GeyserAdjustableTabWindow.lua")
   dofile(getMudletHomeDir() .. "/DarkMistsCompanion/ui/framework/DMTabFrame.lua")
@@ -715,6 +716,7 @@ function Darkmists.EnableUI()
     end)
   end
 
+  tempTimer(1, function() DMLogger.container:hide() end)
   Darkmists.Log(DarkmistsTheme.purpleTag .. "Darkmists Core", "UI Enabled")
 end
 

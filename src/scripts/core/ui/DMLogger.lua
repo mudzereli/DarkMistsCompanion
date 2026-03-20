@@ -77,6 +77,5 @@ function DMLogger.clear()
 end
 
 DMLogger.create()
---DMLogger.container:hide()
 
 return DMLogger
