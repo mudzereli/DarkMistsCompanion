@@ -40,20 +40,27 @@ function DMLogger.create()
 end
 
 -- Helper: common prefix for log/notify outputs (local/private)
-local function make_prefix(plugin)
-  return "\n" .. DarkmistsTheme.mutedTag .. "[" .. "<r>" .. tostring(plugin) .. DarkmistsTheme.mutedTag .. "] " .. DarkmistsTheme.silverTag
+-- Helper: build a single prefix used by both log and notify.
+-- when `with_time` is truthy the prefix includes a leading [HH:MM:SS]
+local function make_prefix(plugin, with_time)
+  local p = "\n"
+  if with_time then
+    p = p .. DarkmistsTheme.mutedTag .. "[" .. "<r>" .. os.date("%H:%M:%S") .. DarkmistsTheme.mutedTag .. "] " .. DarkmistsTheme.silverTag
+  end
+  p = p .. DarkmistsTheme.mutedTag .. "[" .. "<r>" .. tostring(plugin) .. DarkmistsTheme.mutedTag .. "] " .. DarkmistsTheme.silverTag
+  return p
 end
 
 function DMLogger.log(plugin, msg)
   if not DMLogger.console then DMLogger.create() end
-  local prefix = make_prefix(plugin)
+  local prefix = make_prefix(plugin or "System", true)
   DMLogger.console:cecho(prefix .. tostring(msg) .. "<r>")
 end
 
--- Notify to main window (visible to player)
+-- Notify to main window (visible to player) — no timestamp per request
 function DMLogger.notify(plugin, msg)
   plugin = plugin or "System"
-  local prefix = make_prefix(plugin)
+  local prefix = make_prefix(plugin, false)
   cecho(prefix .. tostring(msg) .. "<r>")
 end
 

@@ -246,10 +246,6 @@ function Darkmists.getDefaultBackgroundColor()
   return ifLight("white", "black")
 end
 
-function Darkmists.getDefaultTextColorTag()
-  return ("<%s>"):format(Darkmists.getDefaultTextColor())
-end
-
 function Darkmists.GetBorderPercentages()
   local px = getBorderSizes()
   local winW, winH = getMainWindowSize()
@@ -447,6 +443,11 @@ function Darkmists.SetWindowBorderPercent(region, percent)
   local isVertical = (region == "top" or region == "bottom")
   local baseSize = isVertical and mainHeight or mainWidth
   local scaledSize = (percent / 100) * baseSize
+  -- Only apply and log if the stored percent actually changed
+  local prev = (Darkmists.GlobalSettings.borders and Darkmists.GlobalSettings.borders[region]) or 0
+  if prev == percent then
+    return
+  end
 
   -- Persist the percent value
   Darkmists.GlobalSettings.borders[region] = percent
