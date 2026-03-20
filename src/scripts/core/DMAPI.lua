@@ -757,21 +757,18 @@ end
 -- @param level string Optional log level (info, warn, error)
 function dmapi.core.log(message, level)
   level = level or "info"
-  local color = "<dim_gray>"
-  
+  local prefix = string.format("[%s] ", string.upper(level))
+  local formattedMessage = prefix .. tostring(message)
+
   if level == "warn" then
-    color = "<yellow>"
+    formattedMessage = "<yellow>" .. prefix .. "<r>" .. tostring(message)
   elseif level == "error" then
-    color = "<red>"
+    formattedMessage = "<red>" .. prefix .. "<r>" .. tostring(message)
+  else
+    formattedMessage = "<dim_gray>" .. prefix .. "<r>" .. tostring(message)
   end
-  
-  cecho(string.format(
-    "\n<gray>[%s%s<gray>] %s%s",
-    dmapi.settings.themeColor,
-    dmapi.meta.name,
-    color,
-    message
-  ))
+
+  DMLogger.log(dmapi.meta.name, formattedMessage)
 end
 
 --- Log a warning message

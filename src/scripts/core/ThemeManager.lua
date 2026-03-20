@@ -1,13 +1,65 @@
 -- =============================================================================
 -- ThemeManager.lua
 -- =============================================================================
+---@type DarkmistsTheme
 DarkmistsTheme = DarkmistsTheme or {}
 
 -- Session guard to avoid repeating background warnings
 local _dm_theme_bg_warn_shown = false
 
+-- ---------------------------------------------------------------------------
+-- Neutral theme: mid-value colors readable on both black and white backgrounds.
+-- Runs immediately at file load with zero dependencies — no Darkmists, no
+-- GlobalSettings needed. buildTheme() overwrites this once settings are loaded.
+-- ---------------------------------------------------------------------------
+local function buildTags(t)
+  -- Collect keys first; cannot mutate the table while pairs() is iterating it
+  -- (adding keys mid-iteration is undefined in Lua and can produce *TagTag etc.)
+  local keys = {}
+  for k, v in pairs(t) do
+    if type(v) == "string" and not k:find("Tag$") then
+      keys[#keys + 1] = k
+    end
+  end
+  for _, k in ipairs(keys) do
+    t[k .. "Tag"] = ("<%s>"):format(t[k])
+  end
+end
+
+function DarkmistsTheme.buildNeutralTheme()
+  local t = DarkmistsTheme
+  t.red       = "indian_red"
+  t.orange    = "peru"
+  t.yellow    = "dark_goldenrod"
+  t.green     = "medium_sea_green"
+  t.blue      = "steel_blue"
+  t.cyan      = "cadet_blue"
+  t.sky       = "light_steel_blue"
+  t.lightBlue = "cornflower_blue"
+  t.darkBlue  = "dark_slate_blue"
+  t.purple    = "medium_purple"
+  t.pink      = "pale_violet_red"
+  t.brown     = "sienna"
+  t.olive     = "olive_drab"
+  t.silver    = "slate_gray"
+  t.gold      = "goldenrod"
+  t.good      = "medium_sea_green"
+  t.warn      = "peru"
+  t.bad       = "indian_red"
+  t.info      = "steel_blue"
+  t.muted     = "slate_gray"
+  t.text      = "ansi_white"
+  t.accent    = "cornflower_blue"
+  buildTags(t)
+end
+
+-- Auto-run at load: safe colors available immediately, no dependencies
+DarkmistsTheme.buildNeutralTheme()
+
 -- Detect main background color and warn/offer to switch theme for contrast
-local function checkBackgroundContrast()
+-- Exposed as DarkmistsTheme.checkBackgroundContrast() so Init() can call it
+-- explicitly after ShowUIIntroMessage, keeping buildTheme() side-effect free.
+function DarkmistsTheme.checkBackgroundContrast()
   if _dm_theme_bg_warn_shown then return end
   if not Darkmists or not Darkmists.GlobalSettings then return end
 
@@ -29,7 +81,7 @@ local function checkBackgroundContrast()
       cecho(win, "\nDetected a light/white terminal background while Dark Mode is enabled.\n\n")
       cecho(win, "For readability, switch to Light Mode or keep Dark Mode if you prefer.\n\n")
       cechoLink(win, "<dim_gray><u>[<green>Switch to Light Mode<dim_gray>]",
-        [[DMAlertWindow.Hide(); Darkmists.GlobalSettings.lightMode = true; Darkmists.SaveSettings(); DarkmistsTheme.buildTheme(); Darkmists.SafeReload();]],
+        [[DMAlertWindow.Hide(); Darkmists.GlobalSettings.lightMode = true; Darkmists.GlobalSettings.hasSeenUIIntroMessage = false; Darkmists.SaveSettings(); DarkmistsTheme.buildTheme(); Darkmists.SafeReload();]],
         "Switch to Light Mode for better contrast", true)
       cechoLink(win, "  <dim_gray><u>[<red>Ignore<dim_gray>]",
         [[DMAlertWindow.Hide()]],
@@ -45,7 +97,7 @@ local function checkBackgroundContrast()
       cecho(win, "\nDetected a dark/black terminal background while Light Mode is enabled.\n\n")
       cecho(win, "For readability, switch to Dark Mode or keep Light Mode if you prefer.\n\n")
       cechoLink(win, "<dim_gray><u>[<green>Switch to Dark Mode<dim_gray>]",
-        [[DMAlertWindow.Hide(); Darkmists.GlobalSettings.lightMode = false; Darkmists.SaveSettings(); DarkmistsTheme.buildTheme(); Darkmists.SafeReload();]],
+        [[DMAlertWindow.Hide(); Darkmists.GlobalSettings.lightMode = false; Darkmists.GlobalSettings.hasSeenUIIntroMessage = false; Darkmists.SaveSettings(); DarkmistsTheme.buildTheme(); Darkmists.SafeReload();]],
         "Switch to Dark Mode for better contrast", true)
       cechoLink(win, "  <dim_gray><u>[<red>Ignore<dim_gray>]",
         [[DMAlertWindow.Hide()]],
@@ -89,21 +141,9 @@ function DarkmistsTheme.buildTheme()
   t.text   = light and "black"      or "white"
   t.accent = light and "slate_blue" or "cornflower_blue"
 
-  -- Build cecho tags
-  for k, v in pairs(t) do
-    if type(v) == "string" and not k:find("Tag$") then
-      table.insert(tagKeys, k)
-    end
-  end
-
-  for _, key in ipairs(tagKeys) do
-    local value = t[key]
-    if type(value) == "string" then
-      t[key .. "Tag"] = ("<%s>"):format(value)
-    end
-  end
-  checkBackgroundContrast()
-  Darkmists.Log("<medium_sea_green>Darkmists Core",("<slate_gray>Theme Built! Light Mode: <steel_blue>%s<r>"):format(tostring(light)))
+  buildTags(t)
+  Darkmists.Log(DarkmistsTheme.purpleTag .. "Darkmists Core",
+    (DarkmistsTheme.silverTag .. "Theme Built! Light Mode: " .. DarkmistsTheme.infoTag .. "%s<r>"):format(tostring(light)))
 end
 
 -- ---------------------------------------------------------------------------

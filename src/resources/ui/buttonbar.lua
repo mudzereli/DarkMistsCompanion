@@ -180,7 +180,7 @@ ButtonBar:addDropdown("🧰 Modules", {
   {label="👣 Walk", children={
     {label="📜 Destinations", action=function() expandAlias("walk list") end},
     {label="📍 Add Current Room", action=function()
-        Darkmists.Log("WALK","<red>finish entering a short destination keyword then press ENTER!")
+        DMLogger.notify("WALK","<red>finish entering a short destination keyword then press ENTER!")
         clearCmdLine()
         appendCmdLine("walk add ")
         end},
@@ -227,23 +227,31 @@ ButtonBar:addDropdown("⚙️ Settings", {
     {label = "📊 Toggle UI", action = function() Darkmists.ShowUIIntroMessage(true) end},
     {label="🌞 Light Mode", action=function()
       Darkmists.GlobalSettings.lightMode = true
-      Darkmists.Log("Settings","Light Mode Enabled - Reload UI for Changes to Take place")
+      DMLogger.notify("Settings","Light Mode Enabled - Reload UI for Changes to Take place")
       Darkmists.SaveSettings()
       Darkmists.PromptSafeReload()
     end},
     {label="🌚 Dark Mode", action=function()
       Darkmists.GlobalSettings.lightMode = false
-      Darkmists.Log("Settings","Dark Mode Enabled - Reload UI for Changes to Take place")
+      DMLogger.notify("Settings","Dark Mode Enabled - Reload UI for Changes to Take place")
       Darkmists.SaveSettings()
       Darkmists.PromptSafeReload()
     end},
     {label = "🗺️ Load Map", action = function()
         Darkmists.PromptLoadMap()
     end},
+    {label = "📜 Log Console", action = function()
+      pcall(DMLogger.toggle)
+    end},
     {label = "📝 Advanced", children = {
       {label = "🧼 Reset All Settings", action = function() 
-        saveWindowLayout()
+        cecho(("Removing: %s (exists=%s)\n"):format(tostring(Darkmists.saveFilePath), tostring(io.exists(Darkmists.saveFilePath))))
+        if io.exists(Darkmists.saveFilePath) then
+          pcall(os.remove, Darkmists.saveFilePath)
+          Darkmists.GlobalSettings = Darkmists.DefaultSettings
+        end
         Darkmists.ResetUILayoutCache()
+        Darkmists.PromptSafeReload()
       end},
       {label = "💾 Save Settings", action = function() 
         saveWindowLayout()
@@ -288,7 +296,7 @@ ButtonBar:addDropdown("⚙️ Settings", {
         local new_value = not WhoWindow.config.deleteOriginalLines
         WhoWindow.config.deleteOriginalLines = new_value
         Darkmists.GlobalSettings.whoWindowDeleteOriginalLines = new_value
-        Darkmists.Log("WhoWindow",("<red>Delete Original Lines: %s"):format(tostring(new_value)))
+        DMLogger.notify("WhoWindow",("<red>Delete Original Lines: %s"):format(tostring(new_value)))
         Darkmists.SaveSettings()
       end},
     }},
@@ -299,7 +307,7 @@ ButtonBar:addDropdown("⚙️ Settings", {
         local new_value = not AffectsWindow.config.deleteOriginalLines
         AffectsWindow.config.deleteOriginalLines = new_value
         Darkmists.GlobalSettings.affectsWindowDeleteOriginalLines = new_value
-        Darkmists.Log("AffectsWindow",("<red>Delete Original Lines: %s"):format(tostring(new_value)))
+        DMLogger.notify("AffectsWindow",("<red>Delete Original Lines: %s"):format(tostring(new_value)))
         Darkmists.SaveSettings()
       end},
     }},
@@ -395,4 +403,4 @@ ButtonBar:addDropdown("❓ Help", {
 
 })
 
-Darkmists.Log("ButtonBar","Loaded!")
+DMLogger.log("ButtonBar","Loaded!")

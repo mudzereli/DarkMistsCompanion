@@ -432,22 +432,29 @@ do
       return
     end
 
+    local limit = 100
+    local shown = math.min(#results, limit)
     cecho(string.format(
       "\n"..dm_warn.."[ID] Items in area matching '%s' (%d):"..dm_text.."\n",
       query,
       #results
     ))
 
-    for i, item in ipairs(results) do
+    for i = 1, shown do
+      local item = results[i]
       cecho(string.format("   "..dm_text.."%d) ", i))
       local areaTag = item.area and ("[" .. item.area .. "] ") or ""
       cechoLink(
         dm_muted .. areaTag .. dm_text ..
         ItemTracker.settings.itemLinkColor .. item.name .. dm_text.."\n",
-        function() ItemTracker.handleClick(item.name) end,
+        ItemTracker.getHandler(item.name),
         "Click: tooltip | Shift+Click: full identify",
         true
       )
+    end
+
+    if #results > limit then
+      cecho(dm_warn.."Refine your search."..dm_text.."\n")
     end
   end)
 
@@ -474,12 +481,15 @@ do
     end
 
     -- Multiple matches: show clickable list
+    local limit = 50
+    local shown = math.min(#results, limit)
     cecho(dm_warn.."[ID] Multiple matches:"..dm_text.."\n")
-    for i, item in ipairs(results) do
+    for i = 1, shown do
+      local item = results[i]
       cecho(string.format("   "..dm_text.."%d) ", i))
       cechoLink(
         ItemTracker.settings.itemLinkColor .. item.name .. dm_text.."\n",
-        function() ItemTracker.handleClick(item.name) end,
+        ItemTracker.getHandler(item.name),
         "Click: tooltip | Shift+Click: full identify",
         true
       )
@@ -494,7 +504,7 @@ end
 local function renderWalkList(filter)
   local c = dm_text
 
-  Darkmists.Log("WALK","Destinations by Area:")
+  DMLogger.notify("WALK","Destinations by Area:")
 
   local grouped = MapDestinations.getGroupedFiltered(filter)
   if not next(grouped) then
@@ -563,7 +573,7 @@ DarkmistsAlias.add("^walk(?:\\s+(.*))?$", function()
 
   if arg == "stop" then
     MapDestinations.stop()
-    Darkmists.Log("WALK", dm_bad.."Walking Stopped!")
+    DMLogger.notify("WALK", dm_bad.."Walking Stopped!")
     return
   end
 
@@ -582,16 +592,16 @@ DarkmistsAlias.add("^walk(?:\\s+(.*))?$", function()
 
       if not ok then
         if a == "NO_CURRENT_ROOM" then
-          Darkmists.Log("WALK", dm_bad.."No Current Room found on Map")
+          DMLogger.notify("WALK", dm_bad.."No Current Room found on Map")
         elseif a == "INVALID_NAME" then
-          Darkmists.Log("WALK", dm_bad.."Invalid destination name")
+          DMLogger.notify("WALK", dm_bad.."Invalid destination name")
         end
         return
       end
 
       local destName, roomId = a, b
 
-      Darkmists.Log("WALK",
+      DMLogger.notify("WALK",
         ("Added destination: %s%s%s → %s[%s%d%s] %s%s")
           :format(c, destName, dm_good, dm_muted, c, roomId, dm_muted, c, cRoomName)
       )
@@ -605,11 +615,11 @@ DarkmistsAlias.add("^walk(?:\\s+(.*))?$", function()
 
       if not ok then
         if a == "INVALID_NAME" then
-          Darkmists.Log("WALK", dm_bad.."Invalid destination name")
+          DMLogger.notify("WALK", dm_bad.."Invalid destination name")
         elseif a == "INVALID_ROOM" then
-          Darkmists.Log("WALK", dm_bad.."Invalid room id")
+          DMLogger.notify("WALK", dm_bad.."Invalid room id")
         elseif a == "ROOM_MISSING" then
-          Darkmists.Log("WALK",
+          DMLogger.notify("WALK",
             ("%sRoom does not exist: %s%d"):format(dm_bad, c, b)
           )
         end
@@ -618,7 +628,7 @@ DarkmistsAlias.add("^walk(?:\\s+(.*))?$", function()
 
       local destName, roomId = a, b
 
-      Darkmists.Log("WALK",
+      DMLogger.notify("WALK",
         ("Added destination: %s%s%s → %s[%s%d%s] %s%s")
           :format(c, destName, dm_good, dm_muted, c, roomId, dm_muted, c, roomName)
       )
@@ -634,12 +644,12 @@ DarkmistsAlias.add("^walk(?:\\s+(.*))?$", function()
 
     if not ok then
       if code == "NOT_FOUND" then
-        Darkmists.Log("WALK",
+        DMLogger.notify("WALK",
           ("%sNo destination named %s%s"):format(dm_bad, c, data)
         )
       end
     else
-      Darkmists.Log("WALK",
+      DMLogger.notify("WALK",
         ("%sRemoved destination %s%s"):format(dm_warn, c, data)
       )
     end
@@ -654,30 +664,30 @@ DarkmistsAlias.add("^walk(?:\\s+(.*))?$", function()
 
       if not ok then
         if code == "ALREADY_IN_AREA" then
-          Darkmists.Log("WALK",
+          DMLogger.notify("WALK",
             ("%sYou are already in %s%s"):format(dm_warn, c, data)
           )
         elseif code == "AREA_NOT_FOUND" then
-          Darkmists.Log("WALK",
+          DMLogger.notify("WALK",
             ("%sNo area matching %s%s"):format(dm_bad, c, data)
           )
         elseif code == "AREA_EMPTY" then
-          Darkmists.Log("WALK",
+          DMLogger.notify("WALK",
             ("%sArea has no indexed rooms: %s%s"):format(dm_bad, c, data)
           )
         elseif code == "INVALID_SEARCH" then
-          Darkmists.Log("WALK", dm_bad.."Invalid area search.")
+          DMLogger.notify("WALK", dm_bad.."Invalid area search.")
         elseif code == "NO_AREAS" then
-          Darkmists.Log("WALK", dm_bad.."Area table unavailable.")
+          DMLogger.notify("WALK", dm_bad.."Area table unavailable.")
         elseif code == "NO_CURRENT_ROOM" then
-          Darkmists.Log("WALK", dm_bad.."Current room unknown!")
+          DMLogger.notify("WALK", dm_bad.."Current room unknown!")
         elseif code == "NO_PATH" then
-          Darkmists.Log("WALK",("%sNo known path to area %s%s"):format(dm_bad, c, data))
+          DMLogger.notify("WALK",("%sNo known path to area %s%s"):format(dm_bad, c, data))
         end
         return
       end
 
-      Darkmists.Log("WALK",
+      DMLogger.notify("WALK",
         ("%sWalking to area %s%s %s[%s%d%s]")
           :format(dm_header_color, c, data, dm_muted, c, code, dm_muted)
       )
@@ -690,30 +700,30 @@ DarkmistsAlias.add("^walk(?:\\s+(.*))?$", function()
 
   if not ok then
     if a == "NOT_FOUND" then
-      Darkmists.Log("WALK",
+      DMLogger.notify("WALK",
         ("%sNo destination named %s%s"):format(dm_bad, c, b)
       )
     elseif a == "INVALID_NAME" then
-      Darkmists.Log("WALK", dm_bad.."Invalid name given!")
+      DMLogger.notify("WALK", dm_bad.."Invalid name given!")
     elseif a == "NO_CURRENT_ROOM" then
-      Darkmists.Log("WALK", dm_bad.."Current room unknown!")
+      DMLogger.notify("WALK", dm_bad.."Current room unknown!")
     elseif a == "ALREADY_THERE" then
-      Darkmists.Log("WALK",
+      DMLogger.notify("WALK",
         ("%sYou are already at %s%s"):format(dm_bad, c, b)
       )
     elseif a == "ROOM_MISSING" then
-      Darkmists.Log("WALK",
+      DMLogger.notify("WALK",
         ("%sDestination room no longer exists for %s%s"):format(dm_bad, c, b)
       )
     elseif a == "NO_PATH" then
-      Darkmists.Log("WALK",
+      DMLogger.notify("WALK",
         ("%sNo known path to %s%s"):format(dm_bad, c, b)
       )
     end
     return
   end
 
-  Darkmists.Log("WALK",
+  DMLogger.notify("WALK",
     ("%sGenerating path to %s%s %s[%s%d%s] %s%s")
       :format(dm_header_color, c, arg, dm_muted, c, a, dm_muted, c, b)
   )
@@ -756,7 +766,7 @@ DarkmistsAlias.add("^es run$", function() EnchanterAssist.run() end)
 
 DarkmistsAlias.add("^es auto$", function()
   EnchanterAssist.autoRun = not EnchanterAssist.autoRun
-  Darkmists.Log(EnchanterAssist.color.."EnchanterAssist","AutoRun: " .. tostring(EnchanterAssist.autoRun))
+  DMLogger.notify(EnchanterAssist.color.."EnchanterAssist","AutoRun: " .. tostring(EnchanterAssist.autoRun))
 end)
 
 DarkmistsAlias.add("^es 1$", function() EnchanterAssist.partCount = 1 EnchanterAssist._comboIndices = nil EnchanterAssist.save() EnchanterAssist.run() end)
@@ -779,14 +789,14 @@ DarkmistsAlias.add("^es missing$", EnchanterAssist.statsMissing)
 DarkmistsAlias.add("^es set container (.+)$", function()
   EnchanterAssist.container = matches[2]
   EnchanterAssist.save()
-  Darkmists.Log(EnchanterAssist.color.."EnchanterAssist","Container set to: " .. EnchanterAssist.container)
+  DMLogger.notify(EnchanterAssist.color.."EnchanterAssist","Container set to: " .. EnchanterAssist.container)
 end)
 
 -- es set sleeper <name>
 DarkmistsAlias.add("^es set sleeper (.+)$", function()
   EnchanterAssist.sleeper = matches[2]
   EnchanterAssist.save()
-  Darkmists.Log(EnchanterAssist.color.."EnchanterAssist","Sleeper set to: " .. EnchanterAssist.sleeper)
+  DMLogger.notify(EnchanterAssist.color.."EnchanterAssist","Sleeper set to: " .. EnchanterAssist.sleeper)
 end)
 
 -- es set sleepmode <sleep|potion>
@@ -797,14 +807,14 @@ DarkmistsAlias.add("^es set sleepmode (sleep|potion)$", function()
     EnchanterAssist.sleepType = 0
   end
   EnchanterAssist.save()
-  Darkmists.Log(EnchanterAssist.color.."EnchanterAssist","Sleep mode set to: " .. matches[2])
+  DMLogger.notify(EnchanterAssist.color.."EnchanterAssist","Sleep mode set to: " .. matches[2])
 end)
 
 -- es set potion <item>
 DarkmistsAlias.add("^es set potion (.+)$", function()
   EnchanterAssist.drainItem = matches[2]
   EnchanterAssist.save()
-  Darkmists.Log(EnchanterAssist.color.."EnchanterAssist","Potion item set to: " .. EnchanterAssist.drainItem)
+  DMLogger.notify(EnchanterAssist.color.."EnchanterAssist","Potion item set to: " .. EnchanterAssist.drainItem)
 end)
 
 -- es enable / disable
@@ -814,14 +824,14 @@ DarkmistsAlias.add("^es (enable|disable)$", function()
   else
     EnchanterAssist.enabled = false
   end
-  Darkmists.Log(EnchanterAssist.color.."EnchanterAssist","Status: " .. tostring(EnchanterAssist.enabled))
+  DMLogger.notify(EnchanterAssist.color.."EnchanterAssist","Status: " .. tostring(EnchanterAssist.enabled))
 end)
 
 DarkmistsAlias.add("^es sound$", function()
   EnchanterAssist.playSoundOnDiscover =
     not EnchanterAssist.playSoundOnDiscover
   EnchanterAssist.save()
-  Darkmists.Log(
+  DMLogger.notify(
     EnchanterAssist.color.."EnchanterAssist",
     "Play sound on discover: " ..
       tostring(EnchanterAssist.playSoundOnDiscover)

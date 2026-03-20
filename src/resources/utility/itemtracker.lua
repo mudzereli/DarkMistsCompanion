@@ -56,6 +56,9 @@ ItemTracker = {
     tooltipItemDetailsColor = "white"
   },
 
+  -- Per-item-name click handler cache (one closure per unique name, reused by cinsertLink)
+  _handlerCache = {},
+
   -- Tooltip state (internal use only)
   tooltip = {
     win = nil,
@@ -263,6 +266,20 @@ function ItemTracker.showTooltip(name)
   DarkmistsEvents.add("ItemTrackerTooltipClick", "sysWindowMousePressEvent", ItemTracker.hideTooltip)
 end
 
+-- Return a cached click-handler for `name`, creating it lazily.
+-- This consolidates handler creation in one place so cechoLink/cinsertLink
+-- reuse the same function object per unique item name.
+function ItemTracker.getHandler(name)
+  if not name then return nil end
+  local h = ItemTracker._handlerCache[name]
+  if not h then
+    local n = name
+    h = function() ItemTracker.handleClick(n) end
+    ItemTracker._handlerCache[name] = h
+  end
+  return h
+end
+
 -- ============================================================================
 -- Data Loading and Indexing
 -- ============================================================================
@@ -288,8 +305,9 @@ function ItemTracker.load(path)
     return false
   end
 
-  ItemTracker.items, ItemTracker.by_name, ItemTracker.by_area, ItemTracker.sorted_names =
-    {}, {}, {}, {}
+  ItemTracker.items, ItemTracker.by_name, ItemTracker.by_area, ItemTracker.sorted_names,
+    ItemTracker._handlerCache =
+    {}, {}, {}, {}, {}
 
   local dropped = 0
 
@@ -454,14 +472,17 @@ function ItemTracker.renderLineWithLinks(line)
   replace("")
   moveCursor(pos0, lineNo)
 
+  -- Use a cached handler for this item name so cinsertLink reuses the same function
+  -- reference for every line containing this item. Caps handler count at the number
+  -- of distinct item names rather than the number of rendered lines.
   cinsertLink(
     ItemTracker.settings.itemLinkColor .. itemText .. defaultTextColor,
-    function() ItemTracker.handleClick(itemText) end,
+    ItemTracker.getHandler(itemText),
     "Click: tooltip | Shift+Click: full identify",
     true
   )
-  moveCursorEnd()
   resetFormat()
+  moveCursorEnd()
   return true
 end
 
@@ -497,6 +518,20 @@ end
 
 -- Handle click on item link (tooltip or full display based on modifiers)
 function ItemTracker.handleClick(name)
+  -- Reject clicks that land outside the main console's horizontal bounds.
+  -- Mudlet's cinsertLink hit detection is Y-based: a link at scrolled-to Y=N fires for
+  -- ANY click at Y=N across the full window width, including Geyser panels on the right.
+  -- getMousePosition() is reliable at callback time; getLineNumber() is NOT (it reflects
+  -- the cursor position, not the clicked link's position).
+  local mx = getMousePosition()
+  local winW = getMainWindowSize()
+  local b = getBorderSizes()
+  local leftBorderPx  = b.left
+  local rightBorderPx = winW - b.right
+  if mx < leftBorderPx or mx > rightBorderPx then
+    return
+  end
+
   if holdingModifiers(mudlet.keymodifier.Shift) then
     -- Shift+Click: full identify in chat
     ItemTracker.hideTooltip()

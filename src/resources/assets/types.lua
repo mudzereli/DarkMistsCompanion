@@ -170,3 +170,57 @@
 ---@field core dmapi.Core
 ---@field player dmapi.Player
 ---@field world dmapi.World
+
+-- ============================================================================
+-- THEME
+-- ============================================================================
+
+---@class DarkmistsTheme
+---@field red string
+---@field redTag string
+---@field orange string
+---@field orangeTag string
+---@field yellow string
+---@field yellowTag string
+---@field green string
+---@field greenTag string
+---@field blue string
+---@field blueTag string
+---@field cyan string
+---@field cyanTag string
+---@field sky string
+---@field skyTag string
+---@field lightBlue string
+---@field lightBlueTag string
+---@field darkBlue string
+---@field darkBlueTag string
+---@field purple string
+---@field purpleTag string
+---@field pink string
+---@field pinkTag string
+---@field brown string
+---@field brownTag string
+---@field olive string
+---@field oliveTag string
+---@field silver string
+---@field silverTag string
+---@field gold string
+---@field goldTag string
+---@field good string
+---@field goodTag string
+---@field warn string
+---@field warnTag string
+---@field bad string
+---@field badTag string
+---@field info string
+---@field infoTag string
+---@field muted string
+---@field mutedTag string
+---@field text string
+---@field textTag string
+---@field accent string
+---@field accentTag string
+---@field buildTheme fun()
+---@field buildNeutralTheme fun()
+---@field checkBackgroundContrast fun()
+---@field test fun()

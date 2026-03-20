@@ -29,7 +29,7 @@ function SkillUps.addSkillUp(skillName)
   end
   
   local c = Darkmists.getDefaultTextColorTag()
-  Darkmists.Log("SkillUps",string.format("%s%s <dim_gray>improved at %s%s!", 
+  DMLogger.notify("SkillUps",string.format("%s%s <dim_gray>improved at %s%s!", 
     c, skillName, 
     c, timestamp))
 end
@@ -41,7 +41,7 @@ end
 function SkillUps.display()
   local c = Darkmists.getDefaultTextColorTag()
   if #SkillUps.history == 0 then
-    Darkmists.Log("SkillUps","<red>No skill ups recorded yet!")
+    DMLogger.notify("SkillUps","<red>No skill ups recorded yet!")
     return
   end
   
@@ -76,7 +76,7 @@ end
 
 function SkillUps.reset()
   SkillUps.history = {}
-  Darkmists.Log("SkillUps","<red>Skill improvement history reset.")
+  DMLogger.notify("SkillUps","<red>Skill improvement history reset.")
 end
 
 
@@ -127,4 +127,4 @@ end)
 -- INIT
 -- ===================================================================
 
-Darkmists.Log("SkillUps",("<forest_green>Tracker initialized. Type '%sskillups<forest_green>' to view history."):format(Darkmists.getDefaultTextColorTag()))
+DMLogger.log("SkillUps",("<forest_green>Tracker initialized. Type '%sskillups<forest_green>' to view history."):format(Darkmists.getDefaultTextColorTag()))

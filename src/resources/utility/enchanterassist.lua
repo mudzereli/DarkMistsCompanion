@@ -268,7 +268,7 @@ function EnchanterAssist.run()
       msg = msg .. ea_text .. EnchanterAssist.state
     end
 
-    Darkmists.Log(ea_plugin, msg)
+    DMLogger.notify(ea_plugin, msg)
     return
   end
 
@@ -277,7 +277,7 @@ function EnchanterAssist.run()
   local r = EnchanterAssist.partCount
 
   if n < r then
-      Darkmists.Log(
+      DMLogger.notify(
         ea_plugin,
         ea_warn .. "Not enough materials available."
       )
@@ -313,7 +313,7 @@ function EnchanterAssist.run()
           EnchanterAssist.sawFlare = false
           EnchanterAssist.sessionTrials = EnchanterAssist.sessionTrials + 1
 
-            Darkmists.Log(ea_plugin,
+            DMLogger.notify(ea_plugin,
               ea_muted .. "TRY " .. ea_text .. key .. "\n")
 
           EnchanterAssist.state = "brewing"
@@ -329,7 +329,7 @@ function EnchanterAssist.run()
   end
 
   -- exhausted
-  Darkmists.Log(
+  DMLogger.notify(
       ea_plugin,
       ea_bad .. "No new combinations remain for "..r.."-part."
   )
@@ -461,7 +461,7 @@ function EnchanterAssist.reset()
   EnchanterAssist._shuffleMaterials()
 
   EnchanterAssist.save()
-  Darkmists.Log(ea_plugin, ea_good .. "Reset complete, Attempts Preserved.")
+  DMLogger.notify(ea_plugin, ea_good .. "Reset complete, Attempts Preserved.")
 end
 
 function EnchanterAssist.statsMissing()
@@ -514,7 +514,7 @@ function EnchanterAssist.on_line(ln)
                   EnchanterAssist.attempted,
                   EnchanterAssist.pendingKey) then
 
-              Darkmists.Log(
+              DMLogger.notify(
                 ea_plugin,
                 ea_good .. "Already Known Formula: " .. ea_text .. EnchanterAssist.pendingKey
               )
@@ -535,7 +535,7 @@ function EnchanterAssist.on_line(ln)
   if ln:match("^You are too tired to complete the process") then
     -- If autorun is OFF, do not force rest.
     if not EnchanterAssist.autoRun then
-        Darkmists.Log(
+        DMLogger.notify(
           ea_plugin,
           ea_warn .. "Too tired - Manual mode, not forcing rest."
         )
@@ -549,7 +549,7 @@ function EnchanterAssist.on_line(ln)
 
     EnchanterAssist.state = "resting"
 
-    Darkmists.Log(
+    DMLogger.notify(
       ea_plugin,
       ea_good .. "Too tired - Forcing Rest"
     )
@@ -582,7 +582,7 @@ function EnchanterAssist.on_line(ln)
 
   local m = ln:match("^You do not have essence of (%w+)%.")
   if m then
-    Darkmists.Log(ea_plugin, ea_warn .. "Missing Essence: " .. ea_text .. m)
+    DMLogger.notify(ea_plugin, ea_warn .. "Missing Essence: " .. ea_text .. m)
     dmapi.core.send("put", "key", EnchanterAssist.container)
     EnchanterAssist._add(EnchanterAssist.missing, string.lower(m))
     EnchanterAssist._comboIndices = nil
@@ -594,20 +594,20 @@ function EnchanterAssist.on_line(ln)
   if ln:match("^You lack the materials")
   or ln:match("^You must only use raw materials")
   or ln:match("^Alchemy only needs one of each kind of ingredient") then
-    Darkmists.Log(ea_plugin, ea_bad .. "Bad Materials")
+    DMLogger.notify(ea_plugin, ea_bad .. "Bad Materials")
     --EnchanterAssist.finishAttempt()
     return
   end
   
   if  ln:match("^You botch the brew, and your alchemy process") then
     --EnchanterAssist.finishAttempt()
-    Darkmists.Log(ea_plugin, ea_bad .. "Skill check failed.")
+    DMLogger.notify(ea_plugin, ea_bad .. "Skill check failed.")
     return
   end
 
   if ln:match("^Your alchemy process results in a gooey mess") then
     if EnchanterAssist.state == "brewing" and not EnchanterAssist._contains(EnchanterAssist.attempted, EnchanterAssist.pendingKey) then
-      Darkmists.Log(ea_plugin, ea_warn .. "No formula from: " .. ea_text .. EnchanterAssist.pendingKey)
+      DMLogger.notify(ea_plugin, ea_warn .. "No formula from: " .. ea_text .. EnchanterAssist.pendingKey)
       EnchanterAssist._add(EnchanterAssist.attempted, EnchanterAssist.pendingKey)
       EnchanterAssist.save()
     end
@@ -625,7 +625,7 @@ function EnchanterAssist.on_line(ln)
         .. " " .. ea_muted .. "("
         .. ea_text .. EnchanterAssist.pendingKey
         .. ea_muted .. ")"
-      Darkmists.Log(ea_plugin, msg)
+      DMLogger.notify(ea_plugin, msg)
       EnchanterAssist._playDiscoverSound()
       dmapi.core.send("alc info",formula)
       EnchanterAssist._add(EnchanterAssist.attempted, EnchanterAssist.pendingKey)
