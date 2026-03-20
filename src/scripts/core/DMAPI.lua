@@ -761,11 +761,11 @@ function dmapi.core.log(message, level)
   local formattedMessage = prefix .. tostring(message)
 
   if level == "warn" then
-    formattedMessage = "<yellow>" .. prefix .. "<r>" .. tostring(message)
+    formattedMessage = DarkmistsTheme.warnTag .. prefix .. DarkmistsTheme.textTag .. tostring(message)
   elseif level == "error" then
-    formattedMessage = "<red>" .. prefix .. "<r>" .. tostring(message)
+    formattedMessage = DarkmistsTheme.badTag .. prefix .. DarkmistsTheme.textTag .. tostring(message)
   else
-    formattedMessage = "<dim_gray>" .. prefix .. "<r>" .. tostring(message)
+    formattedMessage = DarkmistsTheme.mutedTag .. prefix .. DarkmistsTheme.textTag .. tostring(message)
   end
 
   DMLogger.log(dmapi.meta.name, formattedMessage)

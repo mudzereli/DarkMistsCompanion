@@ -144,7 +144,7 @@ function DarkmistsTheme.buildTheme()
 
   buildTags(t)
   Darkmists.Log(DarkmistsTheme.purpleTag .. "Darkmists Core",
-    (DarkmistsTheme.silverTag .. "Theme Built! Light Mode: " .. DarkmistsTheme.infoTag .. "%s<r>"):format(tostring(light)))
+    (DarkmistsTheme.silverTag .. "Theme Built! Light Mode: %s%s%s"):format(DarkmistsTheme.infoTag, tostring(light), DarkmistsTheme.textTag))
 end
 
 -- ---------------------------------------------------------------------------

@@ -75,22 +75,21 @@ end
 -- @param age number Seconds since last update
 local function displayHeader(age)
   -- choose colorized template based on global light/dark setting
-  local disp
-  if Darkmists.GlobalSettings.lightMode then
-    disp = "<dark_green>Players Online: <black>%d <black>| <ansi_yellow>Age: <black>%ds <black>| "
-  else
-    disp = "<green:black>Players Online: <white>%d <dim_gray>| <light_goldenrod>Age: <white>%ds <dim_gray>| <white>"
-  end
-
-  -- formatted header (count + seconds since last update)
-  WhoWindow.console:cecho(string.format(disp, WhoWindow.playerCount, age))
+  WhoWindow.console:cecho(string.format(
+    "%sPlayers Online: %s%d %s| %sAge: %s%ds %s| ",
+    DarkmistsTheme.goodTag,
+    DarkmistsTheme.infoTag,
+    WhoWindow.playerCount,
+    DarkmistsTheme.textTag,
+    DarkmistsTheme.highlightTag,
+    DarkmistsTheme.textTag,
+    age,
+    DarkmistsTheme.textTag
+  ))
   resetFormat()
 
-  -- create a clickable link to refresh the list (sends `who` command)
-  local linkColor = "<r>"
-
   WhoWindow.console:cechoLink(
-    linkColor .. "<u>[Refresh]",
+    DarkmistsTheme.textTag .. "<u>[Refresh]",
     function() send("who") end,
     "Refresh player list",
     true
