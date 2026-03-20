@@ -26,10 +26,14 @@ AffectsWindow.window         = nil
 AffectsWindow.capturing      = false
 AffectsWindow.lastUpdateTime = nil
 AffectsWindow.ageTimer       = nil
+AffectsWindow.hasFullFormat  = false
 
-AffectsWindow.affectsContent = {}   -- Raw captured output
 AffectsWindow.affectsList    = {}   -- Canonical affect records (active + expired)
 AffectsWindow.currentKeys    = {}   -- Snapshot keys for current capture
+
+local function shouldDeleteOriginalLines()
+  return AffectsWindow.config.deleteOriginalLines
+end
 
 -- ============================================================================
 -- WINDOW CREATION
@@ -38,7 +42,7 @@ AffectsWindow.currentKeys    = {}   -- Snapshot keys for current capture
 function AffectsWindow.create()
   if AffectsWindow.window then return end
 
-  AffectsWindow.window = Darkmists.createTabPanel("AffectsWindow","Current Affects","Affects")
+  AffectsWindow.window = Darkmists.createTabPanel("AffectsWindow", "Current Affects", "Affects")
     
   AffectsWindow.console = Geyser.MiniConsole:new({
     name   = "AffectsWindowConsole",
@@ -65,9 +69,8 @@ end
 -- Start a new snapshot capture
 function AffectsWindow.startCapture()
   AffectsWindow.hasFullFormat = false
-  AffectsWindow.capturing      = true
+  AffectsWindow.capturing = true
   AffectsWindow.lastUpdateTime = os.time()
-  AffectsWindow.affectsContent = {}
 
   -- Reset snapshot keyset
   AffectsWindow.currentKeys = {}
@@ -83,23 +86,25 @@ end
 -- End capture and expire missing affects
 function AffectsWindow.stopCaptureAndDisplay()
   if not AffectsWindow.capturing then return end
-  if AffectsWindow.config.deleteOriginalLines then
+  if shouldDeleteOriginalLines() then
     -- Acknowledge Captured Lines but only if we're deleting stuff
     cecho("\n" .. DarkmistsTheme.infoTag .. "Affects List Captured.")
   end
   AffectsWindow.capturing = false
 
   -- Expire any active affect whose key did not appear this snapshot
+  local affectsList = AffectsWindow.affectsList
+  local currentKeys = AffectsWindow.currentKeys
   local expiredByName = {}
 
-  for i = #AffectsWindow.affectsList, 1, -1 do
-    local affect = AffectsWindow.affectsList[i]
+  for i = #affectsList, 1, -1 do
+    local affect = affectsList[i]
 
-    if not affect.expired and not AffectsWindow.currentKeys[affect.key] then
+    if not affect.expired and not currentKeys[affect.key] then
       if expiredByName[affect.name] then
-        table.remove(AffectsWindow.affectsList, i)
+        table.remove(affectsList, i)
       else
-        affect.expired    = true
+        affect.expired = true
         affect.expireTime = os.time()
         expiredByName[affect.name] = true
       end
@@ -137,10 +142,11 @@ end
 function AffectsWindow.displayHeader()
   if not AffectsWindow.window or not AffectsWindow.lastUpdateTime then return end
 
+  local console = AffectsWindow.console
   local realElapsed = os.time() - AffectsWindow.lastUpdateTime
-  local age         = AffectsWindow.getAge()
+  local age = AffectsWindow.getAge()
 
-  AffectsWindow.console:cecho(string.format(
+  console:cecho(string.format(
     "%sAge: %s%ss %s(%s%s) %s| ",
     DarkmistsTheme.yellowTag,
     DarkmistsTheme.textTag,
@@ -153,24 +159,24 @@ function AffectsWindow.displayHeader()
   resetFormat()
 
   -- Added separator + themed refresh link
-  local linkColor = DarkmistsTheme.textTag
+  local textLinkColor = DarkmistsTheme.textTag
+  local clearLinkColor = DarkmistsTheme.redTag
 
-  AffectsWindow.console:cechoLink(
-    linkColor .. "<u>[Refresh]" .. DarkmistsTheme.textTag,
+  console:cechoLink(
+    textLinkColor .. "<u>[Refresh]" .. DarkmistsTheme.textTag,
     function() send("affects") end,
     "Refresh affects list",
     true
   )
-  AffectsWindow.console:cecho(" ")
-  linkColor = DarkmistsTheme.redTag
-  AffectsWindow.console:cechoLink(
-    linkColor .. "<u>[Clear Expired]" .. DarkmistsTheme.textTag,
+  console:cecho(" ")
+  console:cechoLink(
+    clearLinkColor .. "<u>[Clear Expired]" .. DarkmistsTheme.textTag,
     function() AffectsWindow.clearExpiredAffects() end,
     "Remove all expired affects",
     true
   )
 
-  AffectsWindow.console:cecho("\n\n")
+  console:cecho("\n\n")
 end
 
 function AffectsWindow.parseDuration(text)
@@ -220,7 +226,7 @@ function AffectsWindow.copyCurrentLine()
 
   -- Exit if we get a condition line
   -- This happens when you type AFF during combat.
-  for _,v in ipairs(dmapi.core.state.COMBAT_CONDITIONS) do
+  for _, v in ipairs(dmapi.core.state.COMBAT_CONDITIONS) do
     if line:match(v) then return end
   end
 
@@ -270,14 +276,13 @@ function AffectsWindow.copyCurrentLine()
 
   -- Not an affect line
   if not name then
-    table.insert(AffectsWindow.affectsContent, line)
-    if AffectsWindow.config.deleteOriginalLines then
+    if shouldDeleteOriginalLines() then
       deleteLine()
     end
     return
   end
 
-  if AffectsWindow.config.deleteOriginalLines then
+  if shouldDeleteOriginalLines() then
     deleteLine()
   end
 
@@ -288,14 +293,14 @@ function AffectsWindow.copyCurrentLine()
   lastSpellName = name
 
   local duration = AffectsWindow.parseDuration(dur)
-  local key      = name .. "|" .. mod .. "|" .. val
+  local key = name .. "|" .. mod .. "|" .. val
 
   AffectsWindow.currentKeys[key] = true
 
   -- Refresh existing active entry
   for _, affect in ipairs(AffectsWindow.affectsList) do
     if not affect.expired and affect.key == key then
-      affect.captureTime = os.time()
+      affect.captureTime  = os.time()
       affect.durationMins = duration
       return
     end
@@ -305,7 +310,9 @@ function AffectsWindow.copyCurrentLine()
   for i, affect in ipairs(AffectsWindow.affectsList) do
     if affect.expired and affect.name == name then
       AffectsWindow.affectsList[i] = {
-        name = name, modifier = mod, modValue = val,
+        name = name,
+        modifier = mod,
+        modValue = val,
         durationMins = duration,
         captureTime = os.time(),
         expired = false,
@@ -316,7 +323,9 @@ function AffectsWindow.copyCurrentLine()
   end
 
   table.insert(AffectsWindow.affectsList, {
-    name = name, modifier = mod, modValue = val,
+    name = name,
+    modifier = mod,
+    modValue = val,
     durationMins = duration,
     captureTime = os.time(),
     expired = false,
@@ -331,31 +340,34 @@ end
 function AffectsWindow.refreshDisplay()
   if not AffectsWindow.window or not AffectsWindow.lastUpdateTime then return end
 
-  AffectsWindow.console:clear()
+  local console = AffectsWindow.console
+  local cfg = AffectsWindow.config
+
+  console:clear()
   AffectsWindow.displayHeader()
-  AffectsWindow.console:cecho(DarkmistsTheme.blueTag .. "You are affected by the following:\n")
+  console:cecho(DarkmistsTheme.blueTag .. "You are affected by the following:\n")
 
   local now = os.time()
-  local activeAffects  = {}
+  local activeAffects = {}
   local expiredAffects = {}
 
   for _, affect in ipairs(AffectsWindow.affectsList) do
     if affect.expired then
       local expiredMins =
-        math.floor(((now - affect.expireTime) * AffectsWindow.config.timeRatio) / 60)
+        math.floor(((now - affect.expireTime) * cfg.timeRatio) / 60)
 
       table.insert(expiredAffects, {
         affect = affect,
-        mins   = -expiredMins
+        mins = -expiredMins
       })
     else
       local remainingMins =
         affect.durationMins -
-        math.floor(((now - affect.captureTime) * AffectsWindow.config.timeRatio) / 60)
+        math.floor(((now - affect.captureTime) * cfg.timeRatio) / 60)
 
       table.insert(activeAffects, {
         affect = affect,
-        mins   = remainingMins
+        mins = remainingMins
       })
     end
   end
@@ -374,18 +386,18 @@ function AffectsWindow.refreshDisplay()
   -- Render active affects
   for _, item in ipairs(activeAffects) do
     local affect = item.affect
-    local dur    = AffectsWindow.formatDuration(item.mins, false)
-    local mod    = string.format("%s %s", affect.modValue, affect.modifier)
+    local dur = AffectsWindow.formatDuration(item.mins, false)
+    local mod = string.format("%s %s", affect.modValue, affect.modifier)
 
-    local ln = AffectsWindow.config.textLengthAffectName
-    local lm = AffectsWindow.config.textLengthAffectMod
-    AffectsWindow.console:cecho(string.format(
-      "%s%-"..tostring(ln).."s%s : %s%-"..tostring(lm).."s %s: %s\n",
+    local ln = cfg.textLengthAffectName
+    local lm = cfg.textLengthAffectMod
+    console:cecho(string.format(
+      "%s%-" .. tostring(ln) .. "s%s : %s%-" .. tostring(lm) .. "s %s: %s\n",
       DarkmistsTheme.accentTag,
-      affect.name:sub(1,ln),
+      affect.name:sub(1, ln),
       DarkmistsTheme.textTag,
       DarkmistsTheme.textTag,
-      mod:sub(1,lm),
+      mod:sub(1, lm),
       DarkmistsTheme.textTag,
       dur
     ))
@@ -394,27 +406,27 @@ function AffectsWindow.refreshDisplay()
   -- Render expired affects with clickable X
   for _, item in ipairs(expiredAffects) do
     local affect = item.affect
-    local dur    = AffectsWindow.formatDuration(item.mins, true)
-    local mod    = string.format("%s %s", affect.modValue, affect.modifier)
-    local name   = affect.name
+    local dur = AffectsWindow.formatDuration(item.mins, true)
+    local mod = string.format("%s %s", affect.modValue, affect.modifier)
+    local name = affect.name
 
-    local ln = AffectsWindow.config.textLengthAffectName - 4
-    local lm = AffectsWindow.config.textLengthAffectMod
-    AffectsWindow.console:cecho(string.format(
-      DarkmistsTheme.mutedTag .. "%-"..tostring(ln).."s ",
-      name:sub(1,ln)
+    local ln = cfg.textLengthAffectName - 4
+    local lm = cfg.textLengthAffectMod
+    console:cecho(string.format(
+      DarkmistsTheme.mutedTag .. "%-" .. tostring(ln) .. "s ",
+      name:sub(1, ln)
     ))
 
-    AffectsWindow.console:cechoLink(
+    console:cechoLink(
       DarkmistsTheme.badTag .. "<u>[X]" .. DarkmistsTheme.textTag,
       [[AffectsWindow.removeExpiredAffect("]] .. name .. [[")]],
       "Remove expired affect",
       true
     )
 
-    AffectsWindow.console:cecho(string.format(
-      DarkmistsTheme.mutedTag .. " : %-"..tostring(lm).."s : %s\n",
-      mod:sub(1,lm),
+    console:cecho(string.format(
+      DarkmistsTheme.mutedTag .. " : %-" .. tostring(lm) .. "s : %s\n",
+      mod:sub(1, lm),
       dur
     ))
   end
@@ -430,8 +442,8 @@ function AffectsWindow.getAge()
   local mins = math.floor(((os.time() - AffectsWindow.lastUpdateTime)
                * AffectsWindow.config.timeRatio) / 60)
 
-  if mins == 0 then return DarkmistsTheme.goodTag.."Just updated" end
-  if mins < 60 then return string.format("%s%dm", DarkmistsTheme.cyanTag,mins) end
+  if mins == 0 then return DarkmistsTheme.goodTag .. "Just updated" end
+  if mins < 60 then return string.format("%s%dm", DarkmistsTheme.cyanTag, mins) end
 
   local h, r = math.floor(mins / 60), mins % 60
   return r > 0 and string.format("%s%dh %dm", DarkmistsTheme.warnTag, h, r)
@@ -451,7 +463,14 @@ end
 -- TRIGGERS
 -- ============================================================================
 
-function AffectsWindow.registerTriggers()
+function AffectsWindow.init()
+  local function stopCaptureIfActive()
+    if AffectsWindow.capturing then
+      AffectsWindow.stopCaptureAndDisplay()
+      AffectsWindow.refreshDisplay()
+    end
+  end
+
   -- If we have no effects, just capture an empty affect list
   -- If we DONT do this, then EXPIRED effects will just show EXPIRING forever
   DarkmistsTrigger.addKeyed(
@@ -460,8 +479,7 @@ function AffectsWindow.registerTriggers()
     "You are not affected by anything.",
     function()
       AffectsWindow.startCapture()
-      AffectsWindow.stopCaptureAndDisplay()
-      AffectsWindow.refreshDisplay()
+      stopCaptureIfActive()
     end
   )
 
@@ -491,15 +509,10 @@ function AffectsWindow.registerTriggers()
   DarkmistsEvents.add(
     "affectsPromptHandler",
     "dmapi.world.prompt",
-    function()
-      if AffectsWindow.capturing then
-        AffectsWindow.stopCaptureAndDisplay()
-        AffectsWindow.refreshDisplay()
-      end
-    end
+    stopCaptureIfActive
   )
 
-  Darkmists.Log("AffectsWindow","Triggers registered")
+  Darkmists.Log("AffectsWindow", "Triggers registered")
 end
 
 -- ============================================================================
@@ -507,5 +520,5 @@ end
 -- ============================================================================
 
 AffectsWindow.create()
-AffectsWindow.registerTriggers()
+AffectsWindow.init()
 Darkmists.Log("AffectsWindow","Initialized. Type 'aff' to capture affects!")
