@@ -15,19 +15,25 @@ DMLogger.config = {
 function DMLogger.create()
   if DMLogger.console then return end
 
+  -- Get a background color that matches the client UI and convert to hex
+  local ok, r, g, b, a = pcall(getBackgroundColor, "main")
+  if not ok or type(r) ~= "number" then ok, r, g, b, a = pcall(getBackgroundColor) end
+  r = r or 0; g = g or 0; b = b or 0
+  local bgHex = string.format("#%02x%02x%02x", r, g, b)
+
   -- Create an adjustable container and a mini-console inside it
   DMLogger.container = Adjustable.Container:new({
     name = "DM Log Console",
     x = "20%", y = "20%",
     width = "60%", height = "60%",
-    color = "#000000"
+    color = bgHex
   })
 
   DMLogger.console = Geyser.MiniConsole:new({
     name = "DMLoggerConsole",
     x = "1%", y = "1%",
     width = "98%", height = "98%",
-    color = "#000000"
+    color = bgHex
   }, DMLogger.container)
 
   DMLogger.console:setFont(DMLogger.config.fontName)
@@ -45,23 +51,23 @@ end
 local function make_prefix(plugin, with_time)
   local p = "\n"
   if with_time then
-    p = p .. DarkmistsTheme.mutedTag .. "[" .. "<r>" .. os.date("%H:%M:%S") .. DarkmistsTheme.mutedTag .. "] " .. DarkmistsTheme.silverTag
+    p = p .. DarkmistsTheme.mutedTag .. "[" .. DarkmistsTheme.textTag .. os.date("%H:%M:%S") .. DarkmistsTheme.mutedTag .. "] " .. DarkmistsTheme.silverTag
   end
-  p = p .. DarkmistsTheme.mutedTag .. "[" .. "<r>" .. tostring(plugin) .. DarkmistsTheme.mutedTag .. "] " .. DarkmistsTheme.silverTag
+  p = p .. DarkmistsTheme.mutedTag .. "[" .. DarkmistsTheme.textTag .. tostring(plugin) .. DarkmistsTheme.mutedTag .. "] " .. DarkmistsTheme.silverTag
   return p
 end
 
 function DMLogger.log(plugin, msg)
   if not DMLogger.console then DMLogger.create() end
   local prefix = make_prefix(plugin or "System", true)
-  DMLogger.console:cecho(prefix .. tostring(msg) .. "<r>")
+  DMLogger.console:cecho(prefix .. tostring(msg) .. DarkmistsTheme.textTag)
 end
 
 -- Notify to main window (visible to player) — no timestamp per request
 function DMLogger.notify(plugin, msg)
   plugin = plugin or "System"
   local prefix = make_prefix(plugin, false)
-  cecho(prefix .. tostring(msg) .. "<r>")
+  cecho(prefix .. tostring(msg) .. DarkmistsTheme.textTag)
 end
 
 function DMLogger.toggle()
