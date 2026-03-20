@@ -1,6 +1,24 @@
 [
        {
+              "name": "framework",
+              "isActive": "yes",
+              "script": "",
+              "isFolder": "yes"
+       },
+       {
+              "name": "managers",
+              "isActive": "yes",
+              "script": "",
+              "isFolder": "yes"
+       },
+       {
               "name": "core",
+              "isActive": "yes",
+              "script": "",
+              "isFolder": "yes"
+       },
+       {
+              "name": "api",
               "isActive": "yes",
               "script": "",
               "isFolder": "yes"
