@@ -76,13 +76,13 @@ end
 local function displayHeader(age)
   -- choose colorized template based on global light/dark setting
   WhoWindow.console:cecho(string.format(
-    "%sPlayers Online: %s%d %s| %sAge: %s%ds %s| ",
+    "%sPlayers Online: %s%d %s| %sAge: %s%ds%s | ",
     DarkmistsTheme.goodTag,
     DarkmistsTheme.infoTag,
     WhoWindow.playerCount,
     DarkmistsTheme.textTag,
     DarkmistsTheme.highlightTag,
-    DarkmistsTheme.textTag,
+    DarkmistsTheme.infoTag,
     age,
     DarkmistsTheme.textTag
   ))
