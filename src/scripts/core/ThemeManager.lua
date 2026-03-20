@@ -50,6 +50,7 @@ function DarkmistsTheme.buildNeutralTheme()
   t.muted     = "slate_gray"
   t.text      = "ansi_white"
   t.accent    = "cornflower_blue"
+  t.highlight = "dark_goldenrod"
   buildTags(t)
 end
 
@@ -132,13 +133,14 @@ function DarkmistsTheme.buildTheme()
   t.gold   = light and "goldenrod"         or "gold"
 
   -- Semantic aliases
-  t.good   = t.green
-  t.warn   = t.orange
-  t.bad    = t.red
-  t.info   = t.blue
-  t.muted  = light and "dim_gray"   or "slate_gray"
-  t.text   = t.text
-  t.accent = light and "slate_blue" or "cornflower_blue"
+  t.good      = t.green
+  t.warn      = t.orange
+  t.bad       = t.red
+  t.info      = t.blue
+  t.muted     = light and "dim_gray"   or "slate_gray"
+  t.text      = t.text
+  t.accent    = t.cyan
+  t.highlight = t.yellow
 
   buildTags(t)
   Darkmists.Log(DarkmistsTheme.purpleTag .. "Darkmists Core",

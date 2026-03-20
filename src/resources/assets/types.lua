@@ -220,6 +220,8 @@
 ---@field textTag string
 ---@field accent string
 ---@field accentTag string
+---@field highlight string
+---@field highlightTag string   
 ---@field buildTheme fun()
 ---@field buildNeutralTheme fun()
 ---@field checkBackgroundContrast fun()
