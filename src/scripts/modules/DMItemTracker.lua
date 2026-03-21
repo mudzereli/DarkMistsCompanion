@@ -15,7 +15,7 @@
 local WHO_HEADER_PATTERN = "^%[[^%]]*[A-Za-z][^%]]*%]"
 
 local function apply_theme_colors(target)
-  target.itemLinkColor = DarkmistsTheme.purpleTag
+  target.itemLinkColor = DarkmistsTheme.goldTag
   target.tooltipItemDetailsColor = "white"
   target.tooltipItemNameColor = "black"
   target.tooltipHeaderBGColor = {255, 255, 255, 255}
@@ -458,9 +458,13 @@ function ItemTracker.renderLineWithLinks(line)
   end
 
   -- Skip while DMAPI room capture is active (room parsing in progress)
-  if dmapi and dmapi.core and dmapi.core.state
-  and dmapi.core.state.capturingRoom then
-    return false
+  if dmapi and dmapi.core and dmapi.core.state then
+    if dmapi.core.state.capturingRoom then
+      return false
+    end
+    if dmapi.player and not dmapi.player.online then
+      return false
+    end
   end
 
   local _, s, e = ItemTracker.findFirstItemInLine(line)
