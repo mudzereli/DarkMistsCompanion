@@ -696,5 +696,8 @@ function StatusBar.init()
 
   StatusBar.create()
   StatusBar.registerEvents()
+  if StatusBar.config.moveable then
+    StatusBar.setMoveable(true)  -- enforce moveable mode on init
+  end
   Darkmists.Log(DarkmistsTheme.redTag.. "StatusBars","Status Bar Loaded (UI Ready)")
 end

@@ -604,7 +604,7 @@ function Darkmists.LoadUIScripts()
   DMLogger.show()
 
   dofile(getMudletHomeDir() .. "/DarkMistsCompanion/ui/framework/DMTabFrame.lua")
-  dofile(getMudletHomeDir() .. "/DarkMistsCompanion/ui/statusbars.lua")
+  StatusBar.init()
   dofile(getMudletHomeDir() .. "/DarkMistsCompanion/ui/whowindow.lua")
   dofile(getMudletHomeDir() .. "/DarkMistsCompanion/ui/chathistory.lua")
   dofile(getMudletHomeDir() .. "/DarkMistsCompanion/ui/affectswindow.lua")
