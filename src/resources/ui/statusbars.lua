@@ -160,7 +160,7 @@ local function registerFirstVitalsHandler()
     "dmapi.player.vitals.updated",
     function()
       if not isEnabled() then return end
-      Darkmists.Log("StatusBars","Vitals received — showing bars")
+      Darkmists.Log(DarkmistsTheme.redTag.. "StatusBars","Vitals received — showing bars")
       StatusBar.showAll()  -- state transition: hidden → visible
       StatusBar.reflow()
     end,
@@ -199,7 +199,7 @@ StatusBar.cleanup()  -- ensure reload safety
 -- GAUGE CREATION
 -- ===================================================================
 function StatusBar.create()
-  Darkmists.Log("StatusBars","Creating interface...")
+  Darkmists.Log(DarkmistsTheme.redTag.. "StatusBars","Creating interface...")
 
   local cfg = StatusBar.config
 
@@ -294,7 +294,7 @@ function StatusBar.create()
   StatusBar.updateXP()
   StatusBar.reflow()
 
-  Darkmists.Log("StatusBars","Created successfully (hidden until login)")
+  Darkmists.Log(DarkmistsTheme.redTag.. "StatusBars","Created successfully (hidden until login)")
 end
 
 -- ===================================================================
@@ -416,7 +416,7 @@ function StatusBar.recreate()
     StatusBar.registerEvents()
     StatusBar.showAll()
   end)
-  Darkmists.Log("StatusBars","Status Bars Recreated")
+  Darkmists.Log(DarkmistsTheme.redTag.. "StatusBars","Status Bars Recreated")
 end
 
 function StatusBar.syncToBorders()
@@ -544,7 +544,7 @@ function StatusBar.showAll()
   StatusBar.updateXP()
   StatusBar.updateEnemy()
   StatusBar.reflow()
-  Darkmists.Log("StatusBars","Bars shown")
+  Darkmists.Log(DarkmistsTheme.redTag.. "StatusBars","Bars shown")
 end
 
 function StatusBar.hideAll()
@@ -560,7 +560,7 @@ function StatusBar.hideAll()
   end
 
   Darkmists.SetWindowBorderPercent("bottom", 0)
-  Darkmists.Log("StatusBars","Bars hidden")
+  Darkmists.Log(DarkmistsTheme.redTag.. "StatusBars","Bars hidden")
 end
 
 function StatusBar.hideEnemy()
@@ -594,7 +594,7 @@ function StatusBar.setMoveable(enabled)
     end)
   end
 
-  Darkmists.Log("StatusBars", string.format("Moveable mode: %s", tostring(moveable)))
+  Darkmists.Log(DarkmistsTheme.redTag.. "StatusBars", string.format("Moveable mode: %s", tostring(moveable)))
 end
 
 function StatusBar.toggleMoveable()
@@ -609,7 +609,7 @@ function StatusBar.enable()
   StatusBar.showAll()
   StatusBar.reflow()
 
-  Darkmists.Log("StatusBars", "<green>Status bars enabled")
+  Darkmists.Log(DarkmistsTheme.redTag.. "StatusBars", "<green>Status bars enabled")
 end
 
 function StatusBar.disable()
@@ -620,7 +620,7 @@ function StatusBar.disable()
   StatusBar.container:attachToBorder("none")
   StatusBar.hideAll()
 
-  Darkmists.Log("StatusBars", "<red>Status bars disabled")
+  Darkmists.Log(DarkmistsTheme.redTag.. "StatusBars", "<red>Status bars disabled")
 end
 
 -- ===================================================================
@@ -642,11 +642,11 @@ function StatusBar.registerEvents()
     if (not showXP) and StatusBar.xpGauge and (not StatusBar.xpGauge.hidden) then
       StatusBar.xpGauge:hide()
       StatusBar.reflow()
-      Darkmists.Log("StatusBars","<yellow>XP bar hidden (max level reached)")
+      Darkmists.Log(DarkmistsTheme.redTag.. "StatusBars","<yellow>XP bar hidden (max level reached)")
     elseif showXP and StatusBar.xpGauge and StatusBar.xpGauge.hidden then
       StatusBar.xpGauge:show()
       StatusBar.reflow()
-      Darkmists.Log("StatusBars","<yellow>XP bar shown (max level not reached)")
+      Darkmists.Log(DarkmistsTheme.redTag.. "StatusBars","<yellow>XP bar shown (max level not reached)")
     end
   end)
 
@@ -669,32 +669,32 @@ function StatusBar.registerEvents()
 
   DarkmistsEvents.add("StatusBarWorldExit", "dmapi.world.exit", function()
     StatusBar.hideAll()
-    Darkmists.Log("StatusBars","<yellow>Disconnect detected")
+    Darkmists.Log(DarkmistsTheme.redTag.. "StatusBars","<yellow>Disconnect detected")
   end)
 
   DarkmistsEvents.add("StatusBarDisconnection", "sysDisconnectionEvent", function()
     StatusBar.hideAll()
-    Darkmists.Log("StatusBars","<red>System disconnect - hiding bars")
+    Darkmists.Log(DarkmistsTheme.redTag.. "StatusBars","<red>System disconnect - hiding bars")
   end)
 
   DarkmistsEvents.add("StatusBarWorldEnter", "dmapi.world.enter", function()
-    Darkmists.Log("StatusBars","World entered — awaiting vitals")
+    Darkmists.Log(DarkmistsTheme.redTag.. "StatusBars","World entered — awaiting vitals")
     registerFirstVitalsHandler() -- reset oneshot lifecycle on reconnect
   end)
 
-  Darkmists.Log("StatusBars","Events Registered!")
+  Darkmists.Log(DarkmistsTheme.redTag.. "StatusBars","Events Registered!")
 end
 
 -- ===================================================================
 -- INITIALIZATION
 -- ===================================================================
-tempTimer(0, function()
+function StatusBar.init()
   if not isEnabled() then
-    Darkmists.Log("StatusBars","Status Bars disabled in config")
+    Darkmists.Log(DarkmistsTheme.redTag.. "StatusBars","Status Bars disabled in config")
     return
   end
 
   StatusBar.create()
   StatusBar.registerEvents()
-  Darkmists.Log("StatusBars","Status Bar Loaded (UI Ready)")
-end)
+  Darkmists.Log(DarkmistsTheme.redTag.. "StatusBars","Status Bar Loaded (UI Ready)")
+end
