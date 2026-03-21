@@ -601,7 +601,7 @@ end
 
 function Darkmists.LoadUIScripts()
   if Darkmists.UI_LOADED then return end
-  DMLogger.container:show()
+  DMLogger.show()
 
   dofile(getMudletHomeDir() .. "/DarkMistsCompanion/ui/framework/DMTabFrame.lua")
   dofile(getMudletHomeDir() .. "/DarkMistsCompanion/ui/statusbars.lua")
@@ -649,7 +649,7 @@ function Darkmists.EnableUI()
     end)
   end
 
-  tempTimer(1, function() DMLogger.container:hide() end)
+  tempTimer(1, function() DMLogger.hide() end)
   Darkmists.Log(DarkmistsTheme.purpleTag .. "Darkmists Core", "UI Enabled")
 end
 
@@ -669,8 +669,8 @@ end
 
 function Darkmists.Init()
   DMLogger.create()
-  DMLogger.container:show()
-  DMLogger.log("Darkmists Core", (DarkmistsTheme.mutedTag .. "Initializing Darkmists Core " .. DarkmistsTheme.infoTag .. "v%s<r>"):format(Darkmists.VERSION))
+  DMLogger.show()
+  DMLogger.log(DarkmistsTheme.purpleTag .. "Darkmists Core", (DarkmistsTheme.mutedTag .. "Initializing Darkmists Core " .. DarkmistsTheme.infoTag .. "v%s<r>"):format(Darkmists.VERSION))
   dmapi.init()
   local hadSettings = Darkmists.LoadSettings()
   -- If we previously persisted the one-shot install-reset guard, clear it now
@@ -732,8 +732,8 @@ function Darkmists.Init()
   -- Meta Help / Command
   dofile(getMudletHomeDir() .. "/DarkMistsCompanion/core/DarkMistsMeta.lua")
 
-  tempTimer(1, function() DMLogger.container:hide() end)
-  DMLogger.notify("Darkmists Core", (DarkmistsTheme.mutedTag .. "Loaded Darkmists Core " .. DarkmistsTheme.infoTag .. "v%s<r>"):format(Darkmists.VERSION))
+  tempTimer(1, function() DMLogger.hide() end)
+  DMLogger.notify(DarkmistsTheme.purpleTag .. "Darkmists Core", (DarkmistsTheme.mutedTag .. "Loaded Darkmists Core " .. DarkmistsTheme.infoTag .. "v%s<r>"):format(Darkmists.VERSION))
 end
 
 -- =============================================================================

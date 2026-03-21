@@ -17,8 +17,12 @@ if not ok or type(r) ~= "number" then ok, r, g, b, a = pcall(getBackgroundColor)
 r = r or 0; g = g or 0; b = b or 0
 local bgHex = string.format("#%02x%02x%02x", r, g, b)
 
+local function has_ui()
+  return DMLogger.container and DMLogger.console
+end
+
 function DMLogger.create()
-  if DMLogger.console then return end
+  if has_ui() then return end
 
   -- Create an adjustable container and a mini-console inside it
   DMLogger.container = Adjustable.Container:new({
@@ -42,6 +46,14 @@ function DMLogger.create()
 
   DMLogger.container:show()
   DMLogger.container:raiseAll()
+  DMLogger.visible = true
+end
+
+local function ensure_created()
+  if has_ui() then return end
+  DMLogger.container = nil
+  DMLogger.console = nil
+  DMLogger.create()
 end
 
 -- Helper: common prefix for log/notify outputs (local/private)
@@ -57,7 +69,7 @@ local function make_prefix(plugin, with_time)
 end
 
 function DMLogger.log(plugin, msg)
-  if not DMLogger.console then DMLogger.create() end
+  ensure_created()
   local prefix = make_prefix(plugin or "System", true)
   DMLogger.console:cecho(prefix .. tostring(msg) .. DarkmistsTheme.textTag)
 end
@@ -69,18 +81,27 @@ function DMLogger.notify(plugin, msg)
   cecho(prefix .. tostring(msg) .. DarkmistsTheme.textTag)
 end
 
-function DMLogger.toggle()
-  if not DMLogger.container then
-    DMLogger.create()
+function DMLogger.show()
+  ensure_created()
+  DMLogger.container:show()
+  DMLogger.container:raiseAll()
+  DMLogger.visible = true
+end
+
+function DMLogger.hide()
+  if not has_ui() then
+    DMLogger.visible = false
     return
   end
+  DMLogger.container:hide()
+  DMLogger.visible = false
+end
+
+function DMLogger.toggle()
   if DMLogger.visible then
-    DMLogger.container:hide()
-    DMLogger.visible = false
+    DMLogger.hide()
   else
-    DMLogger.container:show()
-    DMLogger.container:raiseAll()
-    DMLogger.visible = true
+    DMLogger.show()
   end
 end
 
