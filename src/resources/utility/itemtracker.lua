@@ -240,12 +240,12 @@ function ItemTracker.showTooltip(name)
   local px = mx + s.cursorOffset
   local py = my + s.cursorOffset
 
-  local borders = Darkmists.GlobalSettings.borders or {}
+  local borders = getBorderSizes()
 
-  local safeLeft   = ((borders.left   or 0) / 100) * winW + s.screenMargin
-  local safeRight  = winW - ((borders.right  or 0) / 100) * winW - s.screenMargin
-  local safeTop    = ((borders.top    or 0) / 100) * winH + s.screenMargin
-  local safeBottom = winH - ((borders.bottom or 0) / 100) * winH - s.screenMargin
+  local safeLeft   = (borders.left or 0) + s.screenMargin
+  local safeRight  = winW - (borders.right or 0) - s.screenMargin
+  local safeTop    = (borders.top or 0) + s.screenMargin
+  local safeBottom = winH - (borders.bottom or 0) - s.screenMargin
 
   if px + t.width > safeRight then px = safeRight - t.width end
   if px < safeLeft then px = safeLeft end
