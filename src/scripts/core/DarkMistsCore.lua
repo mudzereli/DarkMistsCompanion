@@ -599,75 +599,6 @@ function Darkmists.CleanupUI(opts)
   end
 end
 
-function Darkmists.Init()
-  DMLogger.create()
-  DMLogger.container:show()
-  dmapi.init()
-  DMLogger.notify("Darkmists Core", (DarkmistsTheme.mutedTag .. "Loaded Darkmists Core " .. DarkmistsTheme.infoTag .. "v%s<r>"):format(Darkmists.VERSION))
-  local hadSettings = Darkmists.LoadSettings()
-  -- If we previously persisted the one-shot install-reset guard, clear it now
-  -- so future installs will be able to trigger the guarded reset again.
-  if Darkmists.GlobalSettings._installResetDone then
-    Darkmists.GlobalSettings._installResetDone = nil
-    Darkmists.SaveSettings()
-    Darkmists.Log(DarkmistsTheme.purpleTag .. "Darkmists Core", "Cleared one-time install reset guard from settings.")
-  end
-  DarkmistsTheme.buildTheme()
-  Darkmists.RegisterEvents()
-  -- Version-based settings policy:
-  -- If a saved settings file existed and its stored layout version matches the
-  -- current package version, keep the user's settings. Otherwise (no saved
-  -- settings, or a mismatched version), remove the saved file, apply defaults
-  -- and persist defaults so the package starts clean for the new version.
-  if hadSettings and Darkmists.GlobalSettings.layoutCacheVersion == Darkmists.LAYOUT_CACHE_VERSION then
-    -- same version: keep loaded settings
-  else
-    -- version mismatch or no settings: remove any existing saved file and reset
-    if io.exists(saveFilePath) then
-      pcall(os.remove, saveFilePath)
-    end
-    Darkmists.ApplyDefaultSettings()
-    Darkmists.GlobalSettings.layoutCacheVersion = Darkmists.LAYOUT_CACHE_VERSION
-    Darkmists.SaveSettings()
-    -- Reset UI layout cache to avoid stale UI artifacts from previous versions
-    Darkmists.ResetUILayoutCache()
-  end
-
-  if Darkmists.GlobalSettings.minimalMode then
-    setBorderTop(0); setBorderBottom(0); setBorderLeft(0); setBorderRight(0)
-  else
-    tempTimer(0, Darkmists.UpdateMainWindowWrap)
-  end
-
-  Darkmists.ShowUIIntroMessage()
-  -- checkBackgroundContrast is called here so it queues after the intro alert,
-  -- never inside buildTheme() which may be called multiple times
-  DarkmistsTheme.checkBackgroundContrast()
-
-  -- Utility Scripts that use DMAPI
-  dofile(getMudletHomeDir() .. "/DarkMistsCompanion/utility/itemtracker.lua")
-  dofile(getMudletHomeDir() .. "/DarkMistsCompanion/utility/statroller.lua")
-  dofile(getMudletHomeDir() .. "/DarkMistsCompanion/utility/mapdestinations.lua")
-  dofile(getMudletHomeDir() .. "/DarkMistsCompanion/utility/enchanterassist.lua")
-  dofile(getMudletHomeDir() .. "/DarkMistsCompanion/utility/skillups.lua")
-  dofile(getMudletHomeDir() .. "/DarkMistsCompanion/utility/clickables.lua")
-  dofile(getMudletHomeDir() .. "/DarkMistsCompanion/ui/buttonbar.lua")
-
-  -- UI Scripts
-  if not Darkmists.GlobalSettings.minimalMode then
-    Darkmists.LoadUIScripts()
-    tempTimer(0.4, function()
-      Darkmists.RefreshUILayout({ syncStatusBar = true })
-    end)
-  end
-
-  -- Meta Help / Command
-  dofile(getMudletHomeDir() .. "/DarkMistsCompanion/core/DarkMistsMeta.lua")
-
-  tempTimer(1, function() DMLogger.container:hide() end)
-  DMLogger.notify("Darkmists Core", "All Scripts Loaded!")
-end
-
 function Darkmists.LoadUIScripts()
   if Darkmists.UI_LOADED then return end
   DMLogger.container:show()
@@ -734,6 +665,75 @@ function Darkmists.DisableUI()
 
   Darkmists.Log(DarkmistsTheme.purpleTag .. "Darkmists Core", "Switching to Minimal UI...")
   Darkmists.SafeReload()
+end
+
+function Darkmists.Init()
+  DMLogger.create()
+  DMLogger.container:show()
+  DMLogger.log("Darkmists Core", (DarkmistsTheme.mutedTag .. "Initializing Darkmists Core " .. DarkmistsTheme.infoTag .. "v%s<r>"):format(Darkmists.VERSION))
+  dmapi.init()
+  local hadSettings = Darkmists.LoadSettings()
+  -- If we previously persisted the one-shot install-reset guard, clear it now
+  -- so future installs will be able to trigger the guarded reset again.
+  if Darkmists.GlobalSettings._installResetDone then
+    Darkmists.GlobalSettings._installResetDone = nil
+    Darkmists.SaveSettings()
+    Darkmists.Log(DarkmistsTheme.purpleTag .. "Darkmists Core", "Cleared one-time install reset guard from settings.")
+  end
+  DarkmistsTheme.buildTheme()
+  Darkmists.RegisterEvents()
+  -- Version-based settings policy:
+  -- If a saved settings file existed and its stored layout version matches the
+  -- current package version, keep the user's settings. Otherwise (no saved
+  -- settings, or a mismatched version), remove the saved file, apply defaults
+  -- and persist defaults so the package starts clean for the new version.
+  if hadSettings and Darkmists.GlobalSettings.layoutCacheVersion == Darkmists.LAYOUT_CACHE_VERSION then
+    -- same version: keep loaded settings
+  else
+    -- version mismatch or no settings: remove any existing saved file and reset
+    if io.exists(saveFilePath) then
+      pcall(os.remove, saveFilePath)
+    end
+    Darkmists.ApplyDefaultSettings()
+    Darkmists.GlobalSettings.layoutCacheVersion = Darkmists.LAYOUT_CACHE_VERSION
+    Darkmists.SaveSettings()
+    -- Reset UI layout cache to avoid stale UI artifacts from previous versions
+    Darkmists.ResetUILayoutCache()
+  end
+
+  if Darkmists.GlobalSettings.minimalMode then
+    setBorderTop(0); setBorderBottom(0); setBorderLeft(0); setBorderRight(0)
+  else
+    tempTimer(0, Darkmists.UpdateMainWindowWrap)
+  end
+
+  Darkmists.ShowUIIntroMessage()
+  -- checkBackgroundContrast is called here so it queues after the intro alert,
+  -- never inside buildTheme() which may be called multiple times
+  DarkmistsTheme.checkBackgroundContrast()
+
+  -- Utility Scripts that use DMAPI
+  ItemTracker.init()
+  dofile(getMudletHomeDir() .. "/DarkMistsCompanion/utility/statroller.lua")
+  dofile(getMudletHomeDir() .. "/DarkMistsCompanion/utility/mapdestinations.lua")
+  dofile(getMudletHomeDir() .. "/DarkMistsCompanion/utility/enchanterassist.lua")
+  dofile(getMudletHomeDir() .. "/DarkMistsCompanion/utility/skillups.lua")
+  dofile(getMudletHomeDir() .. "/DarkMistsCompanion/utility/clickables.lua")
+  dofile(getMudletHomeDir() .. "/DarkMistsCompanion/ui/buttonbar.lua")
+
+  -- UI Scripts
+  if not Darkmists.GlobalSettings.minimalMode then
+    Darkmists.LoadUIScripts()
+    tempTimer(0.4, function()
+      Darkmists.RefreshUILayout({ syncStatusBar = true })
+    end)
+  end
+
+  -- Meta Help / Command
+  dofile(getMudletHomeDir() .. "/DarkMistsCompanion/core/DarkMistsMeta.lua")
+
+  tempTimer(1, function() DMLogger.container:hide() end)
+  DMLogger.notify("Darkmists Core", (DarkmistsTheme.mutedTag .. "Loaded Darkmists Core " .. DarkmistsTheme.infoTag .. "v%s<r>"):format(Darkmists.VERSION))
 end
 
 -- =============================================================================

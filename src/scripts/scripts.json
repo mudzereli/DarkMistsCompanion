@@ -22,5 +22,11 @@
               "isActive": "yes",
               "script": "",
               "isFolder": "yes"
+       },
+       {
+              "name": "modules",
+              "isActive": "yes",
+              "script": "",
+              "isFolder": "yes"
        }
 ]
