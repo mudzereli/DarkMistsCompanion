@@ -44,8 +44,8 @@ function DMClickables.ClickablePractices()
 
     local found = false
     local output = {}
-    local txtColor = Darkmists.getDefaultTextColorTag()
-
+    local txtColor = "<r>"
+    
     -- collect skills first - UPDATED to include dash
     for skill, pct in raw:gmatch("([%a%-][%a%s'%-]-)%s+(%d+)%%") do
     found = true
@@ -93,7 +93,7 @@ function DMClickables.ClickablePractices()
     end
     
     cechoLink(
-        string.format("%s%-19s", c, skillDisplay),
+        string.format("%s%-20s", c, skillDisplay),
         function()
         if holdingModifiers(mudlet.keymodifier.Shift) then
             send("prac " .. skill)

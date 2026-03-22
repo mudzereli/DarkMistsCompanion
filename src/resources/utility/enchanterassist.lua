@@ -31,7 +31,6 @@ EnchanterAssist._lastVitalsCheck = 0
 EnchanterAssist._comboIndices = nil
 EnchanterAssist._wrapped     = false
 EnchanterAssist._savePath    = getMudletHomeDir() .. "/ea_data.lua"
-
 EnchanterAssist.color = DarkmistsTheme.accentTag
 
 local ea_plugin = EnchanterAssist.color .. "EnchanterAssist"
@@ -49,8 +48,8 @@ local ea_orange = DarkmistsTheme.orange
 local ea_green = DarkmistsTheme.green
 local ea_blue = DarkmistsTheme.blue
 local ea_cyan = DarkmistsTheme.cyan
-local ea_light_blue = DarkmistsTheme.lightBlue
-local ea_dark_blue = DarkmistsTheme.darkBlue
+local ea_light_blue = DarkmistsTheme.blue
+local ea_dark_blue = DarkmistsTheme.blue
 local ea_purple = DarkmistsTheme.purple
 local ea_pink = DarkmistsTheme.pink
 local ea_brown = DarkmistsTheme.brown
@@ -134,7 +133,7 @@ function EnchanterAssist._playDiscoverSound()
   if not EnchanterAssist.playSoundOnDiscover then return end
 
   local soundPath = getMudletHomeDir() ..
-    "/DarkMistsCompanion/assets/sounds/double-beep.mp3"
+    "/DarkMistsCompanion/assets/sounds/bubbling.wav"
 
   -- Normalize slashes (safety for Windows)
   soundPath = soundPath:gsub("\\", "/")
@@ -269,7 +268,7 @@ function EnchanterAssist.run()
       msg = msg .. ea_text .. EnchanterAssist.state
     end
 
-    Darkmists.Log(ea_plugin, msg)
+    DMLogger.notify(ea_plugin, msg)
     return
   end
 
@@ -278,7 +277,7 @@ function EnchanterAssist.run()
   local r = EnchanterAssist.partCount
 
   if n < r then
-      Darkmists.Log(
+      DMLogger.notify(
         ea_plugin,
         ea_warn .. "Not enough materials available."
       )
@@ -314,7 +313,7 @@ function EnchanterAssist.run()
           EnchanterAssist.sawFlare = false
           EnchanterAssist.sessionTrials = EnchanterAssist.sessionTrials + 1
 
-            Darkmists.Log(ea_plugin,
+            DMLogger.notify(ea_plugin,
               ea_muted .. "TRY " .. ea_text .. key .. "\n")
 
           EnchanterAssist.state = "brewing"
@@ -330,7 +329,7 @@ function EnchanterAssist.run()
   end
 
   -- exhausted
-  Darkmists.Log(
+  DMLogger.notify(
       ea_plugin,
       ea_bad .. "No new combinations remain for "..r.."-part."
   )
@@ -368,7 +367,6 @@ function EnchanterAssist.finishAttempt()
   EnchanterAssist.pendingKey = nil
 
   EnchanterAssist.state = "idle"
-
   if EnchanterAssist.autoRun then
       EnchanterAssist.run()
   end
@@ -378,8 +376,7 @@ function EnchanterAssist.stats()
 
   local n = #EnchanterAssist.allmats
 
-  cecho(--Darkmists.Log(
-    --EnchanterAssist.color.."EnchanterAssist",
+  cecho(
     "\n" .. ea_info .. "===== EnchanterAssist Progress ====="
   )
 
@@ -404,8 +401,7 @@ function EnchanterAssist.stats()
       lineColor = ea_good
     end
 
-    cecho(--Darkmists.Log(
-      --EnchanterAssist.color.."EnchanterAssist",
+    cecho(
       string.format(
         "\n%s%d-part | %7d / %7d (%6.2f%%)",
         lineColor,
@@ -463,7 +459,7 @@ function EnchanterAssist.reset()
   EnchanterAssist._shuffleMaterials()
 
   EnchanterAssist.save()
-  Darkmists.Log(ea_plugin, ea_good .. "Reset complete, Attempts Preserved.")
+  DMLogger.notify(ea_plugin, ea_good .. "Reset complete, Attempts Preserved.")
 end
 
 function EnchanterAssist.statsMissing()
@@ -516,7 +512,7 @@ function EnchanterAssist.on_line(ln)
                   EnchanterAssist.attempted,
                   EnchanterAssist.pendingKey) then
 
-              Darkmists.Log(
+              DMLogger.notify(
                 ea_plugin,
                 ea_good .. "Already Known Formula: " .. ea_text .. EnchanterAssist.pendingKey
               )
@@ -537,7 +533,7 @@ function EnchanterAssist.on_line(ln)
   if ln:match("^You are too tired to complete the process") then
     -- If autorun is OFF, do not force rest.
     if not EnchanterAssist.autoRun then
-        Darkmists.Log(
+        DMLogger.notify(
           ea_plugin,
           ea_warn .. "Too tired - Manual mode, not forcing rest."
         )
@@ -551,7 +547,7 @@ function EnchanterAssist.on_line(ln)
 
     EnchanterAssist.state = "resting"
 
-    Darkmists.Log(
+    DMLogger.notify(
       ea_plugin,
       ea_good .. "Too tired - Forcing Rest"
     )
@@ -584,7 +580,7 @@ function EnchanterAssist.on_line(ln)
 
   local m = ln:match("^You do not have essence of (%w+)%.")
   if m then
-    Darkmists.Log(ea_plugin, ea_warn .. "Missing Essence: " .. ea_text .. m)
+    DMLogger.notify(ea_plugin, ea_warn .. "Missing Essence: " .. ea_text .. m)
     dmapi.core.send("put", "key", EnchanterAssist.container)
     EnchanterAssist._add(EnchanterAssist.missing, string.lower(m))
     EnchanterAssist._comboIndices = nil
@@ -596,20 +592,20 @@ function EnchanterAssist.on_line(ln)
   if ln:match("^You lack the materials")
   or ln:match("^You must only use raw materials")
   or ln:match("^Alchemy only needs one of each kind of ingredient") then
-    Darkmists.Log(ea_plugin, ea_bad .. "Bad Materials")
+    DMLogger.notify(ea_plugin, ea_bad .. "Bad Materials")
     --EnchanterAssist.finishAttempt()
     return
   end
   
   if  ln:match("^You botch the brew, and your alchemy process") then
     --EnchanterAssist.finishAttempt()
-    Darkmists.Log(ea_plugin, ea_bad .. "Skill check failed.")
+    DMLogger.notify(ea_plugin, ea_bad .. "Skill check failed.")
     return
   end
 
   if ln:match("^Your alchemy process results in a gooey mess") then
     if EnchanterAssist.state == "brewing" and not EnchanterAssist._contains(EnchanterAssist.attempted, EnchanterAssist.pendingKey) then
-      Darkmists.Log(ea_plugin, ea_warn .. "No formula from: " .. ea_text .. EnchanterAssist.pendingKey)
+      DMLogger.notify(ea_plugin, ea_warn .. "No formula from: " .. ea_text .. EnchanterAssist.pendingKey)
       EnchanterAssist._add(EnchanterAssist.attempted, EnchanterAssist.pendingKey)
       EnchanterAssist.save()
     end
@@ -627,7 +623,7 @@ function EnchanterAssist.on_line(ln)
         .. " " .. ea_muted .. "("
         .. ea_text .. EnchanterAssist.pendingKey
         .. ea_muted .. ")"
-      Darkmists.Log(ea_plugin, msg)
+      DMLogger.notify(ea_plugin, msg)
       EnchanterAssist._playDiscoverSound()
       dmapi.core.send("alc info",formula)
       EnchanterAssist._add(EnchanterAssist.attempted, EnchanterAssist.pendingKey)
@@ -643,113 +639,112 @@ end
 -- REST LOGIC (DMAPI VITALS)
 -- ============================================================================
 
-registerNamedEventHandler(
-  "darkmists.enchanter",
-  "EnchanterAssist.newline",
-  "dmapi.core.line",
-  function(_,data)
-    EnchanterAssist.on_line(data.line)
+-- Use DarkmistsEvents so handlers are deduped/managed across reloads
+DarkmistsEvents.add("EnchanterAssist.NewLine", "dmapi.core.line", function(_, data)
+  EnchanterAssist.on_line(data.line)
+end)
+
+DarkmistsEvents.add("EnchanterAssist.Vitals", "dmapi.player.vitals.updated", function()
+
+  -- Only process vitals when either:
+  --  • autorun is enabled (normal operation), or
+  --  • we're currently in `resting` and need to detect recovery even if autorun
+  --    was temporarily disabled. In all other cases, skip processing.
+  if not EnchanterAssist.autoRun then
+    if EnchanterAssist.state ~= "resting" then
+      return
+    end
   end
-)
 
-registerNamedEventHandler(
-  "darkmists.enchanter",
-  "EnchanterAssist.vitals",
-  "dmapi.player.vitals.updated",
-  function()
+  local v = dmapi.player.vitals
+  local manaPct = v.mnPct or 0
+  local movePct = v.mvPct or 0
 
-    if not EnchanterAssist.autoRun then return end
+  local low  = (manaPct < 20) or (movePct < 20)
+  local high = (manaPct > 90) and (movePct > 90)
 
-    local v = dmapi.player.vitals
-    local manaPct = v.mnPct or 0
-    local movePct = v.mvPct or 0
+  -------------------------------------------------
+  -- IF SLEEPING
+  -------------------------------------------------
+  if dmapi.player.status.sleeping then
 
-    local low  = (manaPct < 20) or (movePct < 20)
-    local high = (manaPct > 90) and (movePct > 90)
+    -- Start refresh timer if not running
+    EnchanterAssist._ensureSleepTimer()
 
-    -------------------------------------------------
-    -- IF SLEEPING
-    -------------------------------------------------
-    if dmapi.player.status.sleeping then
-
-      -- Start refresh timer if not running
-      EnchanterAssist._ensureSleepTimer()
-
-      -- Wake when fully recovered
-      if high then
-        if EnchanterAssist.sleepRefreshTimer then
-          killTimer(EnchanterAssist.sleepRefreshTimer)
-          EnchanterAssist.sleepRefreshTimer = nil
-        end
-
-        EnchanterAssist.state = "idle"
-        dmapi.core.send("wake")
-
-        tempTimer(0.3, function()
-          if EnchanterAssist.autoRun and EnchanterAssist.state == "idle" then
-            EnchanterAssist.run()
-          end
-        end)
+    -- Wake when fully recovered
+    if high then
+      if EnchanterAssist.sleepRefreshTimer then
+        killTimer(EnchanterAssist.sleepRefreshTimer)
+        EnchanterAssist.sleepRefreshTimer = nil
       end
 
-      return
-    end
-
-    local now = getEpoch()
-
-    -- throttle to once every 3 seconds
-    if EnchanterAssist.state ~= "resting"
-      and now - EnchanterAssist._lastVitalsCheck < 3 then
-      return
-    end
-
-    EnchanterAssist._lastVitalsCheck = now
-    -- Exit resting (potion mode support)
-    if high and EnchanterAssist.state == "resting" and not dmapi.player.status.sleeping then
       EnchanterAssist.state = "idle"
-      tempTimer(0.2, function()
-        if EnchanterAssist.autoRun then
+      dmapi.core.send("wake")
+
+      tempTimer(0.3, function()
+        if EnchanterAssist.autoRun and EnchanterAssist.state == "idle" then
           EnchanterAssist.run()
         end
       end)
     end
-    -------------------------------------------------
-    -- IF LOW RESOURCES
-    -------------------------------------------------
-    if low then
 
-      -- Never interrupt brewing
-      if EnchanterAssist.state == "brewing" then
-        return
+    return
+  end
+
+  local now = getEpoch()
+
+  -- throttle to once every 3 seconds
+  if EnchanterAssist.state ~= "resting"
+    and now - EnchanterAssist._lastVitalsCheck < 3 then
+    return
+  end
+
+  EnchanterAssist._lastVitalsCheck = now
+  -- Exit resting (potion mode support)
+  if high and EnchanterAssist.state == "resting" and not dmapi.player.status.sleeping then
+    EnchanterAssist.state = "idle"
+    tempTimer(0.2, function()
+      if EnchanterAssist.autoRun then
+        EnchanterAssist.run()
       end
+    end)
+  end
+  -------------------------------------------------
+  -- IF LOW RESOURCES
+  -------------------------------------------------
+  if low then
 
-      -- Already trying to rest? Don't resend commands
-      if EnchanterAssist.state == "resting" then
-        return
-      end
-
-      EnchanterAssist.state = "resting"
-
-      if EnchanterAssist.sleepType == 1 then
-        dmapi.core.send("get", EnchanterAssist.sleeper, EnchanterAssist.container)
-        dmapi.core.send("drop", EnchanterAssist.sleeper)
-        dmapi.core.send("sleep", EnchanterAssist.sleeper)
-      else
-        if manaPct < 20 then
-          dmapi.core.send("get", EnchanterAssist.drainItem, EnchanterAssist.container)
-          dmapi.core.send("quaff", EnchanterAssist.drainItem)
-        end
-        if movePct < 20 then
-          dmapi.core.send("get", "refreshment", EnchanterAssist.container)
-          dmapi.core.send("recite", "refreshment", "self")
-        end
-      end
-
+    -- Never interrupt brewing
+    if EnchanterAssist.state == "brewing" then
       return
     end
 
+    -- Already trying to rest? Don't resend commands
+    if EnchanterAssist.state == "resting" then
+      return
+    end
+
+    EnchanterAssist.state = "resting"
+
+    if EnchanterAssist.sleepType == 1 then
+      dmapi.core.send("get", EnchanterAssist.sleeper, EnchanterAssist.container)
+      dmapi.core.send("drop", EnchanterAssist.sleeper)
+      dmapi.core.send("sleep", EnchanterAssist.sleeper)
+    else
+      if manaPct < 20 then
+        dmapi.core.send("get", EnchanterAssist.drainItem, EnchanterAssist.container)
+        dmapi.core.send("quaff", EnchanterAssist.drainItem)
+      end
+      if movePct < 20 then
+        dmapi.core.send("get", "refreshment", EnchanterAssist.container)
+        dmapi.core.send("recite", "refreshment", "self")
+      end
+    end
+
+    return
   end
-)
+
+end)
 
 -- ============================================================================
 -- LOAD STATE

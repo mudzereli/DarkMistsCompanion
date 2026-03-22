@@ -1,4 +1,4 @@
-local cmain = Darkmists.getDefaultTextColorTag()
+local cmain = "<r>"
 local chighlight = "<forest_green>"
 local ln = line
 replaceLine("")

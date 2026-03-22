@@ -1,18 +1,24 @@
 [
        {
-              "name": "DMUtil",
+              "name": "ThemeManager",
               "isActive": "yes",
               "script": "",
               "isFolder": "no"
        },
        {
-              "name": "DMLogger",
+              "name": "AliasManager",
               "isActive": "yes",
               "script": "",
               "isFolder": "no"
        },
        {
-              "name": "DarkMistsCore",
+              "name": "EventManager",
+              "isActive": "yes",
+              "script": "",
+              "isFolder": "no"
+       },
+       {
+              "name": "TriggerManager",
               "isActive": "yes",
               "script": "",
               "isFolder": "no"

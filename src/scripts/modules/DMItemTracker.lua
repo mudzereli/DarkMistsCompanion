@@ -14,6 +14,32 @@
 
 local WHO_HEADER_PATTERN = "^%[[^%]]*[A-Za-z][^%]]*%]"
 
+local function apply_theme_colors(target)
+  target.itemLinkColor = DarkmistsTheme.goldTag
+  target.tooltipItemDetailsColor = "white"
+  target.tooltipItemNameColor = "black"
+  target.tooltipHeaderBGColor = {255, 255, 255, 255}
+  target.tooltipTextColor = {255, 255, 255, 255}
+  target.tooltipBGColor = {0, 0, 0, 255}
+  target.tooltipBorderColor = {255, 255, 255, 255}
+  target.tooltipEmptyColor = "slate_gray"
+
+  if Darkmists.GlobalSettings.lightMode then
+    target.itemLinkColor = DarkmistsTheme.purpleTag
+    target.tooltipItemDetailsColor = "black"
+    target.tooltipItemNameColor = "white"
+    target.tooltipHeaderBGColor = {0, 0, 0, 255}
+    target.tooltipTextColor = {0, 0, 0, 255}
+    target.tooltipBGColor = {255, 255, 255, 255}
+    target.tooltipBorderColor = {0, 0, 0, 255}
+  end
+
+  --target.itemLinkColor = string.format("<%s>", target.itemLinkColor)
+  target.tooltipItemNameColor = string.format("<%s>", target.tooltipItemNameColor)
+  target.tooltipItemDetailsColor = string.format("<%s>", target.tooltipItemDetailsColor)
+  target.tooltipEmptyColor = string.format("<%s>", target.tooltipEmptyColor)
+end
+
 ItemTracker = {
   name = "DM Item Tracker",
   version = "1.3.1",
@@ -44,17 +70,22 @@ ItemTracker = {
     screenMargin = 10,
     statusBarHeight = 110,
 
-    -- Colors (RGBA)
-    tooltipHeaderBGColor = {255, 255, 255, 255},
-    tooltipTextColor = {255, 255, 255, 255},
-    tooltipBGColor = {0, 0, 0, 255},
-    tooltipBorderColor = {255, 255, 255, 255},
+    -- Theme-derived colors
+    tooltipHeaderBGColor = nil,
+    tooltipTextColor = nil,
+    tooltipBGColor = nil,
+    tooltipBorderColor = nil,
 
     -- MUD colors
-    itemLinkColor = Darkmists.GlobalSettings.itemTrackerLinkColorDarkMode,
-    tooltipItemNameColor = "black",
-    tooltipItemDetailsColor = "white"
+    itemLinkColor = nil,
+    tooltipItemNameColor = nil,
+    tooltipItemDetailsColor = nil,
+    tooltipEmptyColor = nil,
+    defaultTextColor = nil
   },
+
+  -- Per-item-name click handler cache (one closure per unique name, reused by cinsertLink)
+  _handlerCache = {},
 
   -- Tooltip state (internal use only)
   tooltip = {
@@ -65,31 +96,8 @@ ItemTracker = {
     height = 0
   },
 }
-
--- ============================================================================
--- Settings Initialization
--- ============================================================================
-
 local settings = ItemTracker.settings
-
--- Apply light mode overrides
-if Darkmists.GlobalSettings.lightMode then
-  settings.itemLinkColor = Darkmists.GlobalSettings.itemTrackerLinkColorLightMode
-  settings.tooltipItemDetailsColor = "black"
-  settings.tooltipItemNameColor = "white"
-  settings.tooltipHeaderBGColor = {0, 0, 0, 255}
-  settings.tooltipTextColor = {0, 0, 0, 255}
-  settings.tooltipBGColor = {255, 255, 255, 255}
-  settings.tooltipBorderColor = {0, 0, 0, 255}
-end
-
-local defaultTextColor = Darkmists.getDefaultTextColorTag()
-
--- Pre-format cecho color tags once
-settings.itemLinkColor          = string.format("<%s>", settings.itemLinkColor)
-settings.tooltipItemNameColor   = string.format("<%s>", settings.tooltipItemNameColor)
-settings.tooltipItemDetailsColor= string.format("<%s>", settings.tooltipItemDetailsColor)
-
+local defaultTextColor = "<r>"
 -- ============================================================================
 -- Utility Functions
 -- ============================================================================
@@ -150,7 +158,7 @@ function ItemTracker.initTooltip()
   disableScrolling(t.header)
   setMiniConsoleFontSize(t.header, s.tooltipHeaderFontSize)
   setBackgroundColor(t.header, unpack(s.tooltipHeaderBGColor))
-  setFgColor(t.header, 255, 255, 255)
+  setFgColor(t.header, unpack(s.tooltipTextColor))
   hideWindow(t.header)
 
   t.win = "itemTooltip"
@@ -237,12 +245,12 @@ function ItemTracker.showTooltip(name)
   local px = mx + s.cursorOffset
   local py = my + s.cursorOffset
 
-  local borders = Darkmists.GlobalSettings.borders or {}
+  local borders = getBorderSizes()
 
-  local safeLeft   = ((borders.left   or 0) / 100) * winW + s.screenMargin
-  local safeRight  = winW - ((borders.right  or 0) / 100) * winW - s.screenMargin
-  local safeTop    = ((borders.top    or 0) / 100) * winH + s.screenMargin
-  local safeBottom = winH - ((borders.bottom or 0) / 100) * winH - s.screenMargin
+  local safeLeft   = (borders.left or 0) + s.screenMargin
+  local safeRight  = winW - (borders.right or 0) - s.screenMargin
+  local safeTop    = (borders.top or 0) + s.screenMargin
+  local safeBottom = winH - (borders.bottom or 0) - s.screenMargin
 
   if px + t.width > safeRight then px = safeRight - t.width end
   if px < safeLeft then px = safeLeft end
@@ -263,20 +271,35 @@ function ItemTracker.showTooltip(name)
   DarkmistsEvents.add("ItemTrackerTooltipClick", "sysWindowMousePressEvent", ItemTracker.hideTooltip)
 end
 
+-- Return a cached click-handler for `name`, creating it lazily.
+-- This consolidates handler creation in one place so cechoLink/cinsertLink
+-- reuse the same function object per unique item name.
+function ItemTracker.getHandler(name)
+  if not name then return nil end
+  local h = ItemTracker._handlerCache[name]
+  if not h then
+    local n = name
+    h = function() ItemTracker.handleClick(n) end
+    ItemTracker._handlerCache[name] = h
+  end
+  return h
+end
+
 -- ============================================================================
 -- Data Loading and Indexing
 -- ============================================================================
 
 function ItemTracker.load(path)
-  Darkmists.Log("ItemTracker",
-    string.format("<forest_green>Loading %s v%s by %s",
-      ItemTracker.name, ItemTracker.version, ItemTracker.author
+  Darkmists.Log(DarkmistsTheme.yellowTag .. "ItemTracker",
+    string.format("%sLoading %s v%s by %s%s",
+      DarkmistsTheme.goodTag,
+      ItemTracker.name, ItemTracker.version, ItemTracker.author, defaultTextColor
     )
   )
 
   local f, err = io.open(path, "r")
   if not f then
-    Darkmists.Log("ItemTracker", "<red>Failed to open JSON: " .. tostring(err))
+    Darkmists.Log(DarkmistsTheme.yellowTag .. "ItemTracker", DarkmistsTheme.badTag .. "Failed to open JSON: " .. tostring(err) .. defaultTextColor)
     return false
   end
 
@@ -284,12 +307,13 @@ function ItemTracker.load(path)
   f:close()
 
   if type(data) ~= "table" then
-    Darkmists.Log("ItemTracker", "<red>JSON root is not a list")
+    Darkmists.Log(DarkmistsTheme.yellowTag .. "ItemTracker", DarkmistsTheme.badTag .. "JSON root is not a list" .. defaultTextColor)
     return false
   end
 
-  ItemTracker.items, ItemTracker.by_name, ItemTracker.by_area, ItemTracker.sorted_names =
-    {}, {}, {}, {}
+  ItemTracker.items, ItemTracker.by_name, ItemTracker.by_area, ItemTracker.sorted_names,
+    ItemTracker._handlerCache =
+    {}, {}, {}, {}, {}
 
   local dropped = 0
 
@@ -323,8 +347,13 @@ function ItemTracker.load(path)
 
   table.sort(ItemTracker.sorted_names, function(a, b) return #a > #b end)
 
-  Darkmists.Log("ItemTracker",
-    string.format("<white>Loaded <green>%d<white> items (<yellow>%d dropped<white>)", #ItemTracker.items, dropped)
+  Darkmists.Log(DarkmistsTheme.yellowTag .. "ItemTracker",
+    string.format("%sLoaded %s%d%s items (%s%d dropped%s)",
+      defaultTextColor,
+      DarkmistsTheme.goodTag, #ItemTracker.items,
+      defaultTextColor,
+      DarkmistsTheme.warnTag, dropped,
+      defaultTextColor)
   )
 
   return true
@@ -429,9 +458,13 @@ function ItemTracker.renderLineWithLinks(line)
   end
 
   -- Skip while DMAPI room capture is active (room parsing in progress)
-  if dmapi and dmapi.core and dmapi.core.state
-  and dmapi.core.state.capturingRoom then
-    return false
+  if dmapi and dmapi.core and dmapi.core.state then
+    if dmapi.core.state.capturingRoom then
+      return false
+    end
+    if dmapi.player and not dmapi.player.online then
+      return false
+    end
   end
 
   local _, s, e = ItemTracker.findFirstItemInLine(line)
@@ -454,14 +487,17 @@ function ItemTracker.renderLineWithLinks(line)
   replace("")
   moveCursor(pos0, lineNo)
 
+  -- Use a cached handler for this item name so cinsertLink reuses the same function
+  -- reference for every line containing this item. Caps handler count at the number
+  -- of distinct item names rather than the number of rendered lines.
   cinsertLink(
     ItemTracker.settings.itemLinkColor .. itemText .. defaultTextColor,
-    function() ItemTracker.handleClick(itemText) end,
+    ItemTracker.getHandler(itemText),
     "Click: tooltip | Shift+Click: full identify",
     true
   )
-  moveCursorEnd()
   resetFormat()
+  moveCursorEnd()
   return true
 end
 
@@ -479,7 +515,7 @@ function ItemTracker.show(item)
       cecho(defaultTextColor .. line .. "\n")
     end
   else
-    cecho("<dim_gray>(no details)"..defaultTextColor.."\n")
+    cecho(settings.tooltipEmptyColor .. "(no details)"..defaultTextColor.."\n")
   end
 
   cecho(s.itemLinkColor .. "===[ " .. item.name .. " ]==="..defaultTextColor.."\n\n")
@@ -497,6 +533,20 @@ end
 
 -- Handle click on item link (tooltip or full display based on modifiers)
 function ItemTracker.handleClick(name)
+  -- Reject clicks that land outside the main console's horizontal bounds.
+  -- Mudlet's cinsertLink hit detection is Y-based: a link at scrolled-to Y=N fires for
+  -- ANY click at Y=N across the full window width, including Geyser panels on the right.
+  -- getMousePosition() is reliable at callback time; getLineNumber() is NOT (it reflects
+  -- the cursor position, not the clicked link's position).
+  local mx = getMousePosition()
+  local winW = getMainWindowSize()
+  local b = getBorderSizes()
+  local leftBorderPx  = b.left
+  local rightBorderPx = winW - b.right
+  if mx < leftBorderPx or mx > rightBorderPx then
+    return
+  end
+
   if holdingModifiers(mudlet.keymodifier.Shift) then
     -- Shift+Click: full identify in chat
     ItemTracker.hideTooltip()
@@ -511,5 +561,8 @@ end
 -- Initialization
 -- ============================================================================
 
-ItemTracker.load(getMudletHomeDir() .. "/DarkMistsCompanion/assets/darkmists_items.json")
-ItemTracker.initTooltip()
+function ItemTracker.init()
+  apply_theme_colors(ItemTracker.settings)
+  ItemTracker.load(getMudletHomeDir() .. "/DarkMistsCompanion/assets/darkmists_items.json")
+  ItemTracker.initTooltip()
+end

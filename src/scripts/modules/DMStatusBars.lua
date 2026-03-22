@@ -12,14 +12,9 @@ StatusBar = StatusBar or {}
 -- ===================================================================
 -- CONFIGURATION
 -- ===================================================================
-StatusBar.config = {
-  colors = Darkmists.GlobalSettings.statusBarColors,
-  containerHeightPct = Darkmists.GlobalSettings.statusBarTotalHeightPercent,
-  fontColor = Darkmists.GlobalSettings.statusBarFontColor,
-  moveable = Darkmists.GlobalSettings.statusBarsMoveable,
-  enabled = true,
-  maxLevel = 51,
-}
+-- Config is populated in StatusBar.init() so GlobalSettings is guaranteed
+-- to be loaded. A stub is kept here so pre-init guards (isEnabled) are safe.
+StatusBar.config = StatusBar.config or {}
 StatusBar._layoutLock = false
 
 -- ===================================================================
@@ -55,6 +50,87 @@ local function shouldShowEnemy()
      and dmapi.player.online
 end
 
+local function getStatusSummary()
+  local status = (dmapi.player and dmapi.player.status) or {}
+
+  -- Convert a Mudlet cecho color name to a valid CSS color name for HTML spans.
+  -- ansi_* colors strip the prefix; all others remove underscores (CSS is case-insensitive).
+  local function toHtmlColor(name)
+    return name:match("^ansi_") and name:sub(6) or name:gsub("_", "")
+  end
+
+  local goodClr  = toHtmlColor(DarkmistsTheme.good)
+  local warnClr  = toHtmlColor(DarkmistsTheme.warn)
+  local badClr   = toHtmlColor(DarkmistsTheme.bad)
+  local isLightMode = Darkmists and Darkmists.GlobalSettings and Darkmists.GlobalSettings.lightMode
+  local labelClr = isLightMode and "black" or "white"
+
+  local function span(color, text)
+    return ("<span style='color: %s;'>%s</span>"):format(color, text)
+  end
+
+  local postureColor = (status.sleeping or status.resting) and warnClr or goodClr
+  local posture = status.sleeping and "Sleeping"
+    or status.resting and "Resting"
+    or "Awake"
+
+  local hungerMap = {
+    [-1] = { "Full",             goodClr },
+    [0]  = { "Not Hungry",       goodClr },
+    [1]  = { "Hungry",           warnClr },
+    [2]  = { "Famished",         warnClr },
+    [3]  = { "Starving",         badClr  },
+    [4]  = { "Starvation",       badClr  },
+  }
+  local thirstMap = {
+    [0] = { "Not Thirsty",       goodClr },
+    [1] = { "Thirsty",           warnClr },
+    [2] = { "Parched",           warnClr },
+    [3] = { "Dehydrating",       badClr  },
+    [4] = { "Dying of Thirst",   badClr  },
+  }
+
+  local hEntry = hungerMap[status.hungry]  or { "Hunger ?", labelClr }
+  local tEntry = thirstMap[status.thirsty] or { "Thirst ?", labelClr }
+  local sep    = span(labelClr, "  •  ")
+
+  local parts = {
+    span(labelClr, "State: ")  .. span(postureColor, posture),
+    span(labelClr, "Hunger: ") .. span(hEntry[2], hEntry[1]),
+    span(labelClr, "Thirst: ") .. span(tEntry[2], tEntry[1]),
+  }
+  if status.stunned then
+    parts[#parts + 1] = span(badClr, "Stunned")
+  end
+
+  return table.concat(parts, sep)
+end
+
+local function setEnemyGaugeDisplayMode(mode)
+  if not StatusBar.enemyGauge then return end
+  if StatusBar._enemyGaugeDisplayMode == mode then return end
+
+  if mode == "status" then
+    local isLightMode = Darkmists and Darkmists.GlobalSettings and Darkmists.GlobalSettings.lightMode
+    local neutralColors = isLightMode and {
+      bar = "255,255,255,45",
+      backdrop = "240,240,240,25"
+    } or {
+      bar = "0,0,0,55",
+      backdrop = "0,0,0,30"
+    }
+    local front, back = createBarStyle(neutralColors)
+    StatusBar.enemyGauge.front:setStyleSheet(front)
+    StatusBar.enemyGauge.back:setStyleSheet(back)
+  else
+    local front, back = createBarStyle(StatusBar.config.colors.enemy)
+    StatusBar.enemyGauge.front:setStyleSheet(front)
+    StatusBar.enemyGauge.back:setStyleSheet(back)
+  end
+
+  StatusBar._enemyGaugeDisplayMode = mode
+end
+
 -- Ensure gauge max value is never 0 (Geyser requirement)
 local function safeMax(value)
   return (value and value > 0) and value or 1
@@ -68,13 +144,18 @@ local function shouldShowVitals()
      and safeMax(dmapi.player.vitals.hpMax) > 1
 end
 
+local function isEnabled()
+  return StatusBar.config and StatusBar.config.enabled
+end
+
 -- One-shot handler that waits for the first valid vitals packet
 local function registerFirstVitalsHandler()
   DarkmistsEvents.add(
     "StatusBarFirstVitalsHandler",
     "dmapi.player.vitals.updated",
     function()
-      Darkmists.Log("StatusBars","Vitals received — showing bars")
+      if not isEnabled() then return end
+      Darkmists.Log(DarkmistsTheme.redTag.. "StatusBars","Vitals received — showing bars")
       StatusBar.showAll()  -- state transition: hidden → visible
       StatusBar.reflow()
     end,
@@ -101,6 +182,9 @@ function StatusBar.cleanup()
     StatusBar.container = nil
   end
 
+  -- Reset display-mode guard so the freshly-created gauge always gets styled.
+  StatusBar._enemyGaugeDisplayMode = nil
+
   Darkmists.SetWindowBorderPercent("bottom",0)
 end
 
@@ -110,7 +194,7 @@ StatusBar.cleanup()  -- ensure reload safety
 -- GAUGE CREATION
 -- ===================================================================
 function StatusBar.create()
-  Darkmists.Log("StatusBars","Creating interface...")
+  Darkmists.Log(DarkmistsTheme.redTag.. "StatusBars","Creating interface...")
 
   local cfg = StatusBar.config
 
@@ -205,7 +289,7 @@ function StatusBar.create()
   StatusBar.updateXP()
   StatusBar.reflow()
 
-  Darkmists.Log("StatusBars","Created successfully (hidden until login)")
+  Darkmists.Log(DarkmistsTheme.redTag.. "StatusBars","Created successfully (hidden until login)")
 end
 
 -- ===================================================================
@@ -214,6 +298,7 @@ end
 
 -- Update HP/MN/MV bars with current values
 function StatusBar.update()
+  if not isEnabled() then return end
   local vitals = dmapi.player.vitals
   if not vitals then return end
 
@@ -247,6 +332,7 @@ end
 
 -- Update XP bar with progress to next level
 function StatusBar.updateXP()
+  if not isEnabled() then return end
   if not StatusBar.xpGauge or not dmapi.player.experience then return end
   if not shouldShowXP() then
     StatusBar.xpGauge:hide()
@@ -272,15 +358,42 @@ end
 
 -- Update enemy HP bar during combat
 function StatusBar.updateEnemy(enemyData)
+  if not isEnabled() then return end
   if not StatusBar.enemyGauge then return end
 
-  local targetName = enemyData.target or "Enemy"
+  if StatusBar.config.moveable and not shouldShowEnemy() then
+    setEnemyGaugeDisplayMode("status")
+    StatusBar.enemyGauge:setValue(100, 100,
+      ("<center><span style='font-size: 10pt; color: rgb(%s); font-weight: bold;'>%s</span></center>")
+        :format(StatusBar.config.fontColor, getStatusSummary()))
+
+    if StatusBar.enemyGauge.hidden then
+      StatusBar.enemyGauge:show()
+      StatusBar.reflow()
+    end
+    return
+  end
+
+  if not shouldShowEnemy() then
+    if StatusBar.enemyGauge and not StatusBar.enemyGauge.hidden then
+      StatusBar.enemyGauge:hide()
+      StatusBar.reflow()
+    end
+    return
+  end
+
+  local targetName = (enemyData and enemyData.target)
+    or dmapi.player.combat.target
+    or "Enemy"
   if #targetName > 40 then
     targetName = targetName:sub(1, 37) .. "..."
   end
 
-  local hpPct = enemyData.hpPct or 100
+  local hpPct = (enemyData and enemyData.hpPct)
+    or dmapi.player.combat.targetHpPct
+    or 100
 
+  setEnemyGaugeDisplayMode("enemy")
   StatusBar.enemyGauge:setValue(hpPct, 100,
     ("<center><span style='font-size: 11pt; color: rgb(%s); font-weight: bold;'>%s - %d%%</span></center>")
       :format(StatusBar.config.fontColor, targetName, hpPct))
@@ -298,15 +411,25 @@ function StatusBar.recreate()
     StatusBar.registerEvents()
     StatusBar.showAll()
   end)
-  Darkmists.Log("StatusBars","Status Bars Recreated")
+  Darkmists.Log(DarkmistsTheme.redTag.. "StatusBars","Status Bars Recreated")
 end
 
 function StatusBar.syncToBorders()
-  if not StatusBar.container or StatusBar.config.moveable then return end
+  if not StatusBar.container then return end
 
   local borders = Darkmists.GetBorderPercentages()
   local left = borders.left or 0
   local right = borders.right or 0
+
+  if StatusBar.config.moveable then
+    -- For moveable containers: update width/position to follow the window,
+    -- but skip re-pinning (attachToBorder/lockContainer) to avoid dismissing
+    -- any open context menus.
+    StatusBar.container:move(left .. "%", nil)
+    StatusBar.container:resize((100 - left - right) .. "%", nil)
+    StatusBar.reflow(true)
+    return
+  end
 
   StatusBar.container:move(left .. "%", nil)
   StatusBar.container:resize((100 - left - right) .. "%", nil)
@@ -315,13 +438,18 @@ function StatusBar.syncToBorders()
   StatusBar.updateXP()
 end
 
-function StatusBar.reflow()
+function StatusBar.reflow(skipPin)
   if not StatusBar.container then return end
+  if not isEnabled() then
+    Darkmists.SetWindowBorderPercent("bottom", 0)
+    return
+  end
 
   local cfg = StatusBar.config
   local container = StatusBar.container
 
-  local showEnemy = StatusBar.enemyGauge and not StatusBar.enemyGauge.hidden
+  -- In moveable mode, reserve the top lane to avoid vertical resize jitter.
+  local showEnemy = StatusBar.enemyGauge and (cfg.moveable or not StatusBar.enemyGauge.hidden)
   local showXP = StatusBar.xpGauge and not StatusBar.xpGauge.hidden and shouldShowXP()
 
   -- Unit weights (enemy=2, vitals=2, xp=1)
@@ -382,12 +510,26 @@ function StatusBar.reflow()
   elseif StatusBar.xpGauge then
     StatusBar.xpGauge:hide()
   end
+
+  if cfg.moveable and not skipPin then
+    tempTimer(0, function()
+      if StatusBar.container and StatusBar.config.moveable then
+        StatusBar.container:attachToBorder("bottom")
+        StatusBar.container:lockContainer("normal")
+      end
+    end)
+  end
+
 end
 
 -- ===================================================================
 -- VISIBILITY CONTROL
 -- ===================================================================
 function StatusBar.showAll()
+  if not isEnabled() then
+    StatusBar.hideAll()
+    return
+  end
   if not shouldShowVitals() then return end
   StatusBar.reflow()
 
@@ -405,8 +547,9 @@ function StatusBar.showAll()
 
   StatusBar.update()
   StatusBar.updateXP()
+  StatusBar.updateEnemy()
   StatusBar.reflow()
-  Darkmists.Log("StatusBars","Bars shown")
+  Darkmists.Log(DarkmistsTheme.redTag.. "StatusBars","Bars shown")
 end
 
 function StatusBar.hideAll()
@@ -422,15 +565,11 @@ function StatusBar.hideAll()
   end
 
   Darkmists.SetWindowBorderPercent("bottom", 0)
-  Darkmists.Log("StatusBars","Bars hidden")
+  Darkmists.Log(DarkmistsTheme.redTag.. "StatusBars","Bars hidden")
 end
 
 function StatusBar.hideEnemy()
-  if shouldShowEnemy() then return end
-  if StatusBar.enemyGauge and not StatusBar.enemyGauge.hidden then
-    StatusBar.enemyGauge:hide()
-    StatusBar.reflow()
-  end
+  StatusBar.updateEnemy()
 end
 
 function StatusBar.toggle()
@@ -441,6 +580,52 @@ function StatusBar.toggle()
       StatusBar.hideAll()
     end
   end
+end
+
+function StatusBar.setMoveable(enabled)
+  local moveable = not not enabled
+
+  StatusBar.config.moveable = moveable
+  Darkmists.GlobalSettings.statusBarsMoveable = moveable
+  Darkmists.SaveSettings()
+
+  StatusBar.recreate()
+
+  -- Non-moveable bars should respect border anchoring after recreate.
+  if not moveable then
+    tempTimer(0.05, function()
+      StatusBar.syncToBorders()
+      StatusBar.reflow()
+    end)
+  end
+
+  Darkmists.Log(DarkmistsTheme.redTag.. "StatusBars", string.format("Moveable mode: %s", tostring(moveable)))
+end
+
+function StatusBar.toggleMoveable()
+  StatusBar.setMoveable(not StatusBar.config.moveable)
+end
+
+function StatusBar.enable()
+  StatusBar.config.enabled = true
+  Darkmists.GlobalSettings.statusBarsEnabled = true
+  Darkmists.SaveSettings()
+
+  StatusBar.showAll()
+  StatusBar.reflow()
+
+  Darkmists.Log(DarkmistsTheme.redTag.. "StatusBars", "<green>Status bars enabled")
+end
+
+function StatusBar.disable()
+  StatusBar.config.enabled = false
+  Darkmists.GlobalSettings.statusBarsEnabled = false
+  Darkmists.SaveSettings()
+
+  StatusBar.container:attachToBorder("none")
+  StatusBar.hideAll()
+
+  Darkmists.Log(DarkmistsTheme.redTag.. "StatusBars", "<red>Status bars disabled")
 end
 
 -- ===================================================================
@@ -462,11 +647,11 @@ function StatusBar.registerEvents()
     if (not showXP) and StatusBar.xpGauge and (not StatusBar.xpGauge.hidden) then
       StatusBar.xpGauge:hide()
       StatusBar.reflow()
-      Darkmists.Log("StatusBars","<yellow>XP bar hidden (max level reached)")
+      Darkmists.Log(DarkmistsTheme.redTag.. "StatusBars","<yellow>XP bar hidden (max level reached)")
     elseif showXP and StatusBar.xpGauge and StatusBar.xpGauge.hidden then
       StatusBar.xpGauge:show()
       StatusBar.reflow()
-      Darkmists.Log("StatusBars","<yellow>XP bar shaown (max level not reached)")
+      Darkmists.Log(DarkmistsTheme.redTag.. "StatusBars","<yellow>XP bar shown (max level not reached)")
     end
   end)
 
@@ -479,29 +664,55 @@ function StatusBar.registerEvents()
 
   DarkmistsEvents.add("StatusBarCombatEnd", "dmapi.player.combat.end", StatusBar.hideEnemy)
 
+  DarkmistsEvents.add("StatusBarHungerUpdate", "dmapi.player.hunger.update", StatusBar.updateEnemy)
+  DarkmistsEvents.add("StatusBarThirstUpdate", "dmapi.player.thirst.update", StatusBar.updateEnemy)
+  DarkmistsEvents.add("StatusBarSleepEnter", "dmapi.player.sleep.enter", StatusBar.updateEnemy)
+  DarkmistsEvents.add("StatusBarSleepExit", "dmapi.player.sleep.exit", StatusBar.updateEnemy)
+  DarkmistsEvents.add("StatusBarSleepBlocked", "dmapi.player.sleep.blocked", StatusBar.updateEnemy)
+  DarkmistsEvents.add("StatusBarRestEnter", "dmapi.player.rest.enter", StatusBar.updateEnemy)
+  DarkmistsEvents.add("StatusBarRestExit", "dmapi.player.rest.exit", StatusBar.updateEnemy)
+
   DarkmistsEvents.add("StatusBarWorldExit", "dmapi.world.exit", function()
     StatusBar.hideAll()
-    Darkmists.Log("StatusBars","<yellow>Disconnect detected")
+    Darkmists.Log(DarkmistsTheme.redTag.. "StatusBars","<yellow>Disconnect detected")
   end)
 
   DarkmistsEvents.add("StatusBarDisconnection", "sysDisconnectionEvent", function()
     StatusBar.hideAll()
-    Darkmists.Log("StatusBars","<red>System disconnect - hiding bars")
+    Darkmists.Log(DarkmistsTheme.redTag.. "StatusBars","<red>System disconnect - hiding bars")
   end)
 
   DarkmistsEvents.add("StatusBarWorldEnter", "dmapi.world.enter", function()
-    Darkmists.Log("StatusBars","World entered — awaiting vitals")
+    Darkmists.Log(DarkmistsTheme.redTag.. "StatusBars","World entered — awaiting vitals")
     registerFirstVitalsHandler() -- reset oneshot lifecycle on reconnect
   end)
 
-  Darkmists.Log("StatusBars","Events Registered!")
+  Darkmists.Log(DarkmistsTheme.redTag.. "StatusBars","Events Registered!")
 end
 
 -- ===================================================================
 -- INITIALIZATION
 -- ===================================================================
-tempTimer(0, function()
+function StatusBar.init()
+  -- Rebuild config from live GlobalSettings on every init (reload-safe).
+  StatusBar.config = {
+    colors = Darkmists.GlobalSettings.statusBarColors,
+    containerHeightPct = Darkmists.GlobalSettings.statusBarTotalHeightPercent,
+    fontColor = Darkmists.GlobalSettings.statusBarFontColor,
+    moveable = Darkmists.GlobalSettings.statusBarsMoveable,
+    enabled = true,
+    maxLevel = 51,
+  }
+
+  if not isEnabled() then
+    Darkmists.Log(DarkmistsTheme.redTag.. "StatusBars","Status Bars disabled in config")
+    return
+  end
+
   StatusBar.create()
   StatusBar.registerEvents()
-  Darkmists.Log("StatusBars","Status Bar Loaded (UI Ready)")
-end)
+  if StatusBar.config.moveable then
+    StatusBar.setMoveable(true)  -- enforce moveable mode on init
+  end
+  Darkmists.Log(DarkmistsTheme.redTag.. "StatusBars","Status Bar Loaded (UI Ready)")
+end

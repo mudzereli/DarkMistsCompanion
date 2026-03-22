@@ -21,7 +21,7 @@ end
 if #stats == 0 then return end
 
 replaceLine("")
-cecho(Darkmists.getDefaultTextColorTag().."You can train: ")
+cecho("<r>You can train: ")
 
 for _, stat in ipairs(stats) do
   cechoLink(

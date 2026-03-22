@@ -37,7 +37,7 @@ local function section(title)
   local right = string.rep("━", remaining)
 
   cecho("ScorePanelConsole",
-    ("\n%s━━%s%s<reset>\n"):format(divider, sectionTag..cleanTitle, divider..right))
+    ("\n%s━━%s%s%s\n"):format(divider, sectionTag..cleanTitle, divider..right, DarkmistsTheme.textTag))
 end
 
 local function diffColor(base, mod)

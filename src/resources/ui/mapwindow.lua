@@ -65,6 +65,7 @@ end
 -- -------------------------------------------------------------------
 function DarkMistsMiniMap.update()
   if not map then return end -- defensive; should not occur if mapper data properly loaded
+  if not map.configs then return end  -- defensive; should not occur if mapper data properly loaded
   local name, id, area
 
   -- Prefer selected room
@@ -113,13 +114,79 @@ end
 -- Initialization
 -- -------------------------------------------------------------------
 
-tempTimer(0, function()
+-- Install an override for the mapper's `sanitizeRoomName` function.
+-- This replaces the original implementation with the project's preferred behavior
+-- while keeping the override local to this module. If `map` is not yet present,
+-- retry once shortly after load.
+local function install_sanitize_override()
+  local function sanitizeRoomName(roomtitle)
+    if type(roomtitle) ~= "string" then
+      return roomtitle
+    end
+
+    -- remove immortal VNUMs like [Room 12345] at end of room titles,
+    -- which disrupts the minimap's ability to match selected rooms to mapper data.
+    roomtitle = roomtitle:gsub("%s*%[[Rr][Oo][Oo][Mm]%s+%d+%]%s*$", "")
+
+    -- original behavior (keep this)
+    if not roomtitle:match("   ") then
+      return roomtitle
+    end
+
+    local parts = roomtitle:split("  ")
+    table.sort(parts, function(a,b) return #a < #b end)
+    local longestpart = parts[#parts]
+
+    local trimmed = utf8.match(longestpart, "[%w ]+"):trim()
+    return trimmed
+  end
+
+  if map then
+    map.sanitizeRoomName = sanitizeRoomName
+  end
+end
+
+-- Initialize the minimap when connected (or immediately if already connected).
+local function initMiniMap()
+  if DarkMistsMiniMap.container then return end
   DarkMistsMiniMap.create()
   DarkMistsMiniMap.registerEvents()
   Darkmists.Log("MiniMapContainer","MiniMap Created!")
-  tempTimer(0, function()
-    DarkMistsMiniMap.update()
-    DarkMistsMiniMap.container:show()
-    DarkMistsMiniMap.container:raiseAll()
-  end)
-end)
+  -- update and show immediately
+  DarkMistsMiniMap.update()
+  install_sanitize_override()
+  if DarkMistsMiniMap.container then
+    -- Delay showing briefly to avoid being overridden by any auto-load
+    -- or restore logic that may run immediately after creation (observed
+    -- behavior during package updates). A short timer ensures the final
+    -- visibility state is the visible one we expect.
+    tempTimer(0.05, function()
+      if DarkMistsMiniMap.container then
+        DarkMistsMiniMap.container:show()
+        DarkMistsMiniMap.container:raiseAll()
+      end
+    end)
+  end
+end
+-- Public initializer: create now if connected, otherwise register a one-shot
+-- sysConnectionEvent handler and unregister it after first successful connect.
+function DarkMistsMiniMap.Init()
+  local _, _, connected = getConnectionInfo()
+  if connected then
+    initMiniMap()
+    return
+  end
+
+  -- Register a one-shot connection handler via DarkmistsEvents so it will be
+  -- automatically removed after it fires once.
+  DarkmistsEvents.add("DarkMistsMiniMap.OnConnect", "sysConnectionEvent",
+    function()
+      local _,_,c = getConnectionInfo()
+      if c then
+        initMiniMap()
+      end
+    end,
+    true
+  )
+end
+

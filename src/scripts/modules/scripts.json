@@ -1,18 +1,12 @@
 [
        {
-              "name": "DMUtil",
+              "name": "DMItemTracker",
               "isActive": "yes",
               "script": "",
               "isFolder": "no"
        },
        {
-              "name": "DMLogger",
-              "isActive": "yes",
-              "script": "",
-              "isFolder": "no"
-       },
-       {
-              "name": "DarkMistsCore",
+              "name": "DMStatusBars",
               "isActive": "yes",
               "script": "",
               "isFolder": "no"

@@ -1,7 +1,9 @@
 -- DMAlertWindow: lightweight centered alert panel (header + close + body)
 DMAlertWindow = DMAlertWindow or {}
 
-local panel = {}
+local panel    = {}   -- internal UI state and default dimensions
+local _queue   = {}   -- pending alerts waiting to be shown
+local _current = nil  -- opts table for the currently-displayed alert
 
 local function ensure_init()
   if panel.inited then return end
@@ -11,24 +13,24 @@ local function ensure_init()
   panel.close  = "dmalert_close"
   panel.body   = "dmalert_body"
 
-  createMiniConsole(panel.border, 0,0,1,1)
+  createMiniConsole(panel.border, 0, 0, 1, 1)
   disableScrolling(panel.border)
-  createMiniConsole(panel.header, 0,0,1,1)
+  createMiniConsole(panel.header, 0, 0, 1, 1)
   disableScrolling(panel.header)
-  createMiniConsole(panel.close, 0,0,1,1)
+  createMiniConsole(panel.close, 0, 0, 1, 1)
   disableScrolling(panel.close)
-  createMiniConsole(panel.body, 0,0,1,1)
+  createMiniConsole(panel.body, 0, 0, 1, 1)
   disableScrolling(panel.body)
 
-  panel.w = 640
-  panel.h = 300
-  panel.headerH = 30
-  panel.borderSize = 6
+  -- Default panel dimensions; consumers may override via opts
+  panel.w            = 640
+  panel.h            = 300
+  panel.headerH      = 30
+  panel.borderSize   = 6
+  panel.bodyFontSize = 12
 
-  -- sensible defaults; consumers may override by providing opts
   setMiniConsoleFontSize(panel.header, 14)
   setMiniConsoleFontSize(panel.close, 14)
-  panel.bodyFontSize = 12
   setMiniConsoleFontSize(panel.body, panel.bodyFontSize)
 
   setBackgroundColor(panel.border, 24,24,24)
@@ -54,23 +56,33 @@ function DMAlertWindow.Show(title, renderFunc, opts)
   ensure_init()
   opts = opts or {}
 
+  -- Queue if an alert is already visible
+  if _current then
+    table.insert(_queue, { title = title, render = renderFunc, opts = opts })
+    return
+  end
+
+  -- Track current alert so Hide() can call its onClose hook
+  _current = opts
+
   local w = opts.width or panel.w
   local h = opts.height or panel.h
   local headerH = opts.headerH or panel.headerH
   local borderSize = opts.borderSize or panel.borderSize
 
+  -- Constrain to the usable window area (respecting UI borders)
   local winW, winH = getMainWindowSize()
-  local borders = getBorderSizes()
-  local left = borders.left or 0
-  local right = borders.right or 0
-  local top = borders.top or 0
+  local borders    = getBorderSizes()
+  local left   = borders.left   or 0
+  local right  = borders.right  or 0
+  local top    = borders.top    or 0
   local bottom = borders.bottom or 0
 
   local usableW = math.max(0, winW - left - right)
   local usableH = math.max(0, winH - top - bottom)
 
-  if w > usableW then w = usableW end
-  if h > usableH then h = usableH end
+  w = math.min(w, usableW)
+  h = math.min(h, usableH)
 
   local px = left + math.floor((usableW - w) / 2)
   local py = top + math.floor((usableH - h) / 2)
@@ -80,18 +92,17 @@ function DMAlertWindow.Show(title, renderFunc, opts)
   resizeWindow(panel.close, 44, headerH)
   resizeWindow(panel.body, w - (borderSize*2), h - headerH - (borderSize*2))
 
-  moveWindow(panel.border, px, py)
-  moveWindow(panel.header, px + borderSize, py + borderSize)
-  moveWindow(panel.close, px + w - borderSize - 44, py + borderSize)
-  moveWindow(panel.body, px + borderSize, py + borderSize + headerH)
+  moveWindow(panel.border, px,                       py)
+  moveWindow(panel.header, px + borderSize,          py + borderSize)
+  moveWindow(panel.close,  px + w - borderSize - 44, py + borderSize)
+  moveWindow(panel.body,   px + borderSize,          py + borderSize + headerH)
 
-  -- Recalculate wrap columns for the body based on the resized pixel width
-  local bodyPixelWidth = (w - (borderSize * 2))
-  local bodyFontSize = opts.bodyFontSize or panel.bodyFontSize or 12
+  -- Recalculate wrap column from actual pixel width and font metrics
+  local bodyFontSize = opts.bodyFontSize or panel.bodyFontSize
   setMiniConsoleFontSize(panel.body, bodyFontSize)
-  local charWidth = select(1, calcFontSize(bodyFontSize)) or 8
+  local charWidth = calcFontSize(bodyFontSize) or 8  -- calcFontSize returns charW, charH
   if charWidth <= 0 then charWidth = 8 end
-  local wrapAt = math.max(20, math.floor(bodyPixelWidth / charWidth) - 2)
+  local wrapAt = math.max(20, math.floor((w - borderSize * 2) / charWidth) - 2)
   setWindowWrap(panel.body, wrapAt)
 
   clearWindow(panel.header)
@@ -119,6 +130,25 @@ function DMAlertWindow.Hide()
   hideWindow(panel.header)
   hideWindow(panel.close)
   hideWindow(panel.border)
+
+  -- Run onClose hook if supplied (pcall so callback errors don't break the queue)
+  if _current and type(_current.onClose) == "function" then
+    pcall(_current.onClose)
+  end
+
+  -- Show next queued alert on next tick to avoid re-entrancy
+  _current = nil
+  if #_queue > 0 then
+    local nextAlert = table.remove(_queue, 1)
+    tempTimer(0, function()
+      DMAlertWindow.Show(nextAlert.title, nextAlert.render, nextAlert.opts)
+    end)
+  end
+end
+
+-- Schedule an alert explicitly (alias for Show but kept for clarity)
+function DMAlertWindow.ScheduleAlert(title, renderFunc, opts)
+  return DMAlertWindow.Show(title, renderFunc, opts)
 end
 
 return DMAlertWindow
