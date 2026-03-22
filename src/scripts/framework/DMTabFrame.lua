@@ -12,7 +12,7 @@ DMTabFrame = DMTabFrame or {
 -- TAB_FONT_SMALL_MAX_ADJUST_PX: max extra shrink in small-window mode (negative values)
 -- TAB_LABEL_PADDING_PX: visual tab padding (not direct font size)
 local TAB_FONT_BASE_PX = 12
-local TAB_FONT_SCALE_FACTOR = 0.4
+local TAB_FONT_SCALE_FACTOR = 0.32
 local TAB_FONT_OFFSET_PX = 1
 local TAB_FONT_SMALL_HEIGHT_THRESHOLD = 60
 local TAB_FONT_SMALL_RAMP_RANGE = 14
