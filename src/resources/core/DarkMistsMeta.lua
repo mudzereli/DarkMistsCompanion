@@ -521,15 +521,30 @@ local function renderWalkList(filter)
   for _, areaName in ipairs(areaNames) do
     for _, entry in ipairs(grouped[areaName]) do
       local roomName = getRoomName(entry.room) or "UNKNOWN"
+      local destinationName = DMUtil.cap(entry.name, 16)
+      local namePadding = string.rep(" ", math.max(0, 23 - #destinationName))
 
-      cechoLink(string.format(
-        "\n%s[%s%-16s%s] %s%-23s %s→ %s[%s%5d%s] %s%-32s",
+      cecho(string.format(
+        "\n%s[%s%-16s%s] %s",
         dm_warn,
         c,
         DMUtil.cap(areaName, 16),
         dm_warn,
-        c,
-        ("<u>%s</u>"):format(DMUtil.cap(entry.name, 16)),
+        c
+      ))
+
+      cechoLink(
+        ("%s<u>%s</u>"):format(c, destinationName),
+        function()
+          expandAlias(("walk %s"):format(entry.name))
+        end,
+        ("Click: walk %s"):format(entry.name),
+        true
+      )
+
+      cecho(string.format(
+        "%s%s→ %s[%s%5d%s] %s%-32s",
+        namePadding,
         dm_muted,
         dm_muted,
         c,
@@ -537,12 +552,7 @@ local function renderWalkList(filter)
         dm_muted,
         c,
         DMUtil.cap(roomName,32)
-      ),
-      function()
-        expandAlias(("walk %s"):format(entry.name))
-      end,
-      ("Click: walk %s"):format(entry.name),
-      true)
+      ))
     end
   end
 end
