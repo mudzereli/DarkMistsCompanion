@@ -10,5 +10,11 @@
               "isActive": "yes",
               "script": "",
               "isFolder": "no"
+       },
+       {
+              "name": "DMTabFrame",
+              "isActive": "yes",
+              "script": "",
+              "isFolder": "no"
        }
 ]

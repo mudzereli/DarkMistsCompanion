@@ -603,7 +603,7 @@ function Darkmists.LoadUIScripts()
   if Darkmists.UI_LOADED then return end
   DMLogger.show()
 
-  dofile(getMudletHomeDir() .. "/DarkMistsCompanion/ui/framework/DMTabFrame.lua")
+  DMTabFrame.init()
   StatusBar.init()
   dofile(getMudletHomeDir() .. "/DarkMistsCompanion/ui/whowindow.lua")
   dofile(getMudletHomeDir() .. "/DarkMistsCompanion/ui/chathistory.lua")
