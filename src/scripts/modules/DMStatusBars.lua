@@ -12,14 +12,9 @@ StatusBar = StatusBar or {}
 -- ===================================================================
 -- CONFIGURATION
 -- ===================================================================
-StatusBar.config = {
-  colors = Darkmists.GlobalSettings.statusBarColors,
-  containerHeightPct = Darkmists.GlobalSettings.statusBarTotalHeightPercent,
-  fontColor = Darkmists.GlobalSettings.statusBarFontColor,
-  moveable = Darkmists.GlobalSettings.statusBarsMoveable,
-  enabled = true,
-  maxLevel = 51,
-}
+-- Config is populated in StatusBar.init() so GlobalSettings is guaranteed
+-- to be loaded. A stub is kept here so pre-init guards (isEnabled) are safe.
+StatusBar.config = StatusBar.config or {}
 StatusBar._layoutLock = false
 
 -- ===================================================================
@@ -420,11 +415,21 @@ function StatusBar.recreate()
 end
 
 function StatusBar.syncToBorders()
-  if not StatusBar.container or StatusBar.config.moveable then return end
+  if not StatusBar.container then return end
 
   local borders = Darkmists.GetBorderPercentages()
   local left = borders.left or 0
   local right = borders.right or 0
+
+  if StatusBar.config.moveable then
+    -- For moveable containers: update width/position to follow the window,
+    -- but skip re-pinning (attachToBorder/lockContainer) to avoid dismissing
+    -- any open context menus.
+    StatusBar.container:move(left .. "%", nil)
+    StatusBar.container:resize((100 - left - right) .. "%", nil)
+    StatusBar.reflow(true)
+    return
+  end
 
   StatusBar.container:move(left .. "%", nil)
   StatusBar.container:resize((100 - left - right) .. "%", nil)
@@ -433,7 +438,7 @@ function StatusBar.syncToBorders()
   StatusBar.updateXP()
 end
 
-function StatusBar.reflow()
+function StatusBar.reflow(skipPin)
   if not StatusBar.container then return end
   if not isEnabled() then
     Darkmists.SetWindowBorderPercent("bottom", 0)
@@ -506,7 +511,7 @@ function StatusBar.reflow()
     StatusBar.xpGauge:hide()
   end
 
-  if cfg.moveable then
+  if cfg.moveable and not skipPin then
     tempTimer(0, function()
       if StatusBar.container and StatusBar.config.moveable then
         StatusBar.container:attachToBorder("bottom")
@@ -689,6 +694,16 @@ end
 -- INITIALIZATION
 -- ===================================================================
 function StatusBar.init()
+  -- Rebuild config from live GlobalSettings on every init (reload-safe).
+  StatusBar.config = {
+    colors = Darkmists.GlobalSettings.statusBarColors,
+    containerHeightPct = Darkmists.GlobalSettings.statusBarTotalHeightPercent,
+    fontColor = Darkmists.GlobalSettings.statusBarFontColor,
+    moveable = Darkmists.GlobalSettings.statusBarsMoveable,
+    enabled = true,
+    maxLevel = 51,
+  }
+
   if not isEnabled() then
     Darkmists.Log(DarkmistsTheme.redTag.. "StatusBars","Status Bars disabled in config")
     return
