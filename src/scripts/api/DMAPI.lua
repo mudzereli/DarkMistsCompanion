@@ -457,7 +457,7 @@ function dmapi.parsers.prompt(line)
     local hpPct, hpRegen = extractPercentWithRegen("hp")
     if hpPct then
       if dmapi.player.vitals.hpMax == 1 then
-        dmapi.core.warn("Max HP = 1. Use 'dmapi setvitals <hp> <mn> <mv>' to set correct values")
+        dmapi.core.log("Max HP = 1. Use 'dmapi setvitals <hp> <mn> <mv>' to set correct values", "warn")
       end
       data.hp = math.ceil(hpPct / 100 * dmapi.player.vitals.hpMax)
       data.hpRegen = hpRegen
@@ -771,16 +771,23 @@ function dmapi.core.log(message, level)
   DMLogger.log(dmapi.meta.name, formattedMessage)
 end
 
---- Log a warning message
--- @param message string The warning message
-function dmapi.core.warn(message)
-  dmapi.core.log(message, "warn")
-end
+--- Log a message to main window
+-- @param message string The message to log
+-- @param level string Optional log level (info, warn, error)
+function dmapi.core.debug(message, level)
+  level = level or "info"
+  local prefix = string.format("[%s] ", string.upper(level))
+  local formattedMessage = prefix .. tostring(message)
 
---- Log an error message
--- @param message string The error message
-function dmapi.core.error(message)
-  dmapi.core.log(message, "error")
+  if level == "warn" then
+    formattedMessage = DarkmistsTheme.warnTag .. prefix .. DarkmistsTheme.textTag .. tostring(message)
+  elseif level == "error" then
+    formattedMessage = DarkmistsTheme.badTag .. prefix .. DarkmistsTheme.textTag .. tostring(message)
+  else
+    formattedMessage = DarkmistsTheme.mutedTag .. prefix .. DarkmistsTheme.textTag .. tostring(message)
+  end
+
+  DMLogger.notify(dmapi.meta.name, formattedMessage)
 end
 
 --- Send a command to the MUD
@@ -808,12 +815,12 @@ function dmapi.core.raiseEvent(eventName, ...)
   if dmapi.settings.debugLevel > 1 then
     local data = {...}
     if #data > 0 then
-      dmapi.core.log(string.format("%s : %s", eventName, yajl.to_string(data[1])))
+      dmapi.core.debug(string.format("%s : %s", eventName, yajl.to_string(data[1])))
     else
-      dmapi.core.log(eventName)
+      dmapi.core.debug(eventName)
     end
   elseif dmapi.settings.debugLevel > 0 then
-    dmapi.core.log(eventName)
+    dmapi.core.debug(eventName)
   end
   
   raiseEvent(eventName, ...)
@@ -1592,7 +1599,7 @@ end
 function dmapi.player.setSleeping(sleeping)
   dmapi.player.status.sleeping = sleeping
   if dmapi.settings.debugLevel > 0 then
-    dmapi.core.log(string.format("Sleep status: %s", tostring(sleeping)))
+    dmapi.core.debug(string.format("Sleep status: %s", tostring(sleeping)))
   end
 end
 
@@ -1647,7 +1654,7 @@ function dmapi.player.reset()
     deaths = 0
   }
   if dmapi.settings.debugLevel > 0 then
-    dmapi.core.log("Player state reset")
+    dmapi.core.debug("Player state reset")
   end
 end
 
@@ -1703,7 +1710,7 @@ function dmapi.RegisterAliases()
 
     if cmd == "debug" then
       dmapi.settings.debugLevel = (dmapi.settings.debugLevel + 1) % 3
-      dmapi.core.log(string.format("Debug level: %d", dmapi.settings.debugLevel))
+      dmapi.core.debug(string.format("Debug level: %d", dmapi.settings.debugLevel))
       return
     end
 
@@ -1744,7 +1751,7 @@ function dmapi.RegisterAliases()
     dmapi.player.vitals.mvMax = mvMax
 
     if dmapi.settings.debugLevel > 0 then
-      dmapi.core.log(string.format(
+      dmapi.core.debug(string.format(
         "Vitals set - HP: %d | MN: %d | MV: %d",
         hpMax, mnMax, mvMax
       ))
@@ -1828,7 +1835,7 @@ function dmapi.RegisterEvents()
       dmapi.player.vitals.mvMax = 1
       dmapi.player.online = true
       if dmapi.settings.debugLevel > 0 then
-        dmapi.core.log("Connected - vitals reset. Use 'score' or 'dmapi setvitals'")
+        dmapi.core.debug("Connected - vitals reset. Use 'score' or 'dmapi setvitals'")
       end
       send("")
       send("")
