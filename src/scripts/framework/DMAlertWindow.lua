@@ -5,6 +5,27 @@ local panel    = {}   -- internal UI state and default dimensions
 local _queue   = {}   -- pending alerts waiting to be shown
 local _current = nil  -- opts table for the currently-displayed alert
 
+local function _applyTheme()
+  local light = Darkmists and Darkmists.GlobalSettings and Darkmists.GlobalSettings.lightMode
+  if light then
+    setBackgroundColor(panel.border, 210,210,210)
+    setBackgroundColor(panel.header, 190,190,190)
+    setBackgroundColor(panel.close,  190,190,190)
+    setBackgroundColor(panel.body,   235,235,235)
+    setFgColor(panel.header, 30,30,30)
+    setFgColor(panel.close,  160,30,30)
+    setFgColor(panel.body,   40,40,40)
+  else
+    setBackgroundColor(panel.border, 24,24,24)
+    setBackgroundColor(panel.header, 40,40,40)
+    setBackgroundColor(panel.close,  40,40,40)
+    setBackgroundColor(panel.body,   18,18,18)
+    setFgColor(panel.header, 255,255,255)
+    setFgColor(panel.close,  255,128,128)
+    setFgColor(panel.body,   220,220,220)
+  end
+end
+
 local function ensure_init()
   if panel.inited then return end
 
@@ -33,14 +54,7 @@ local function ensure_init()
   setMiniConsoleFontSize(panel.close, 14)
   setMiniConsoleFontSize(panel.body, panel.bodyFontSize)
 
-  setBackgroundColor(panel.border, 24,24,24)
-  setBackgroundColor(panel.header, 40,40,40)
-  setBackgroundColor(panel.close, 40,40,40)
-  setBackgroundColor(panel.body, 18,18,18)
-
-  setFgColor(panel.header, 255,255,255)
-  setFgColor(panel.close, 255,128,128)
-  setFgColor(panel.body, 220,220,220)
+  _applyTheme()
 
   setWindowWrap(panel.body, 80)
 
@@ -64,6 +78,8 @@ function DMAlertWindow.Show(title, renderFunc, opts)
 
   -- Track current alert so Hide() can call its onClose hook
   _current = opts
+
+  _applyTheme()
 
   local w = opts.width or panel.w
   local h = opts.height or panel.h
