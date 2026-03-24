@@ -111,6 +111,19 @@
     margin-top: 0.25rem;
   }
 
+  .event-payload {
+    margin-top: 0.6rem;
+    background: var(--code);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 0.6rem 0.75rem;
+    color: var(--text);
+    font-family: ui-monospace, monospace;
+    font-size: 0.8rem;
+    white-space: pre-wrap;
+    line-height: 1.4;
+  }
+
   code {
     background: var(--code);
     padding: 0.15rem 0.4rem;
@@ -179,6 +192,7 @@ const dmapi = {
         ["dmapi.world.connect", "Initial server greeting received"],
         ["dmapi.world.pendingreturn", "Game is awaiting return key"],
         ["dmapi.world.prompt", "Prompt parsed"],
+        ["dmapi.world.room.name.updated", "Room name updated"],
         ["dmapi.world.room.exits.updated", "Room exits updated"],
         ["dmapi.world.weather.update", "Weather or day/night changed"],
       ]
@@ -196,9 +210,12 @@ const dmapi = {
         ["dmapi.player.sleep.blocked", "Sleep attempt blocked"],
         ["dmapi.player.rest.enter", "Player started resting"],
         ["dmapi.player.rest.exit", "Player stopped resting"],
+        ["dmapi.player.affect.stunoff", "Stun effect ended"],
+        ["dmapi.player.drink.empty", "Drink container is empty"],
         ["dmapi.player.hunger.update", "Hunger state changed"],
         ["dmapi.player.thirst.update", "Thirst state changed"],
         ["dmapi.player.inventory.itemnotfound", "Item lookup failed"],
+        ["dmapi.player.stats.attributes.updated", "Player attributes updated"],
       ]
     },
 
@@ -230,14 +247,26 @@ const dmapi = {
     communication: {
       title: "Communication Events",
       events: [
+        ["dmapi.communication.emotedsayreceived", "Emoted say received"],
+        ["dmapi.communication.emotedsaysent", "Emoted say sent"],
         ["dmapi.communication.tellreceived", "Tell received"],
         ["dmapi.communication.tellsent", "Tell sent"],
         ["dmapi.communication.sayreceived", "Say received"],
         ["dmapi.communication.saysent", "Say sent"],
+        ["dmapi.communication.mpsayreceived", "Mental projection say received"],
+        ["dmapi.communication.mpsaysent", "Mental projection say sent"],
+        ["dmapi.communication.mptellreceived", "Mental projection tell received"],
+        ["dmapi.communication.mptellsent", "Mental projection tell sent"],
         ["dmapi.communication.gtellreceived", "Group tell received"],
         ["dmapi.communication.gtellsent", "Group tell sent"],
         ["dmapi.communication.yellreceived", "Yell received"],
         ["dmapi.communication.yellsent", "Yell sent"],
+        ["dmapi.communication.yellpanicreceived", "Panic yell received"],
+        ["dmapi.communication.yellpanicsent", "Panic yell sent"],
+        ["dmapi.communication.mentalblastreceived", "Mental blast received"],
+        ["dmapi.communication.mentalblastsent", "Mental blast sent"],
+        ["dmapi.communication.mentalblastpanicreceived", "Panic mental blast received"],
+        ["dmapi.communication.mentalblastpanicsent", "Panic mental blast sent"],
         ["dmapi.communication.oocreceived", "OOC received"],
         ["dmapi.communication.oocsent", "OOC sent"],
         ["dmapi.communication.newbiechannel", "Newbie channel message"],
@@ -251,12 +280,100 @@ const dmapi = {
       events: [
         ["dmapi.player.currency.update", "Currency snapshot updated"],
         ["dmapi.player.currency.gain", "Currency gained"],
+        ["dmapi.player.bank.balance", "Bank balance updated"],
+        ["dmapi.player.bank.deposit", "Bank deposit recorded"],
+        ["dmapi.player.bank.withdraw", "Bank withdrawal recorded"],
+        ["dmapi.player.bank.withdraw.fail", "Bank withdrawal failed"],
+        ["dmapi.player.house.balance", "House balance updated"],
         ["dmapi.player.experience.gain", "Experience gained"],
         ["dmapi.player.skill.improved", "Skill improved"],
         ["dmapi.player.equipment.zapped", "Equipment zapped"],
       ]
     }
   }
+};
+
+const eventPayloads = {
+  "dmapi.core.loaded": "No payload",
+  "dmapi.core.command.sent": "{\n  command: string\n}",
+  "dmapi.core.line": "{\n  line: string\n}",
+
+  "dmapi.world.enter": "Optional payload from one-line mapping:\n{\n  line: string\n}",
+  "dmapi.world.exit": "No payload",
+  "dmapi.world.connect": "{\n  line: string\n}",
+  "dmapi.world.pendingreturn": "{\n  line: string\n}",
+  "dmapi.world.prompt": "{\n  hp: number,\n  mn: number,\n  mv: number,\n  rg?: number,\n  tnl: number,\n  hpRegen?: number,\n  mnRegen?: number,\n  mvRegen?: number,\n  estimated?: boolean,\n  line: string\n}",
+  "dmapi.world.room.name.updated": "string (room name)",
+  "dmapi.world.room.exits.updated": "{\n  exits: string[],\n  line: string\n}",
+  "dmapi.world.weather.update": "{\n  weather: string,\n  isDay: boolean,\n  line: string\n}",
+
+  "dmapi.player.vitals.updated": "{\n  hp: number,\n  mn: number,\n  mv: number,\n  hpMax?: number,\n  mnMax?: number,\n  mvMax?: number,\n  rg?: number,\n  tnl?: number,\n  hpRegen?: number,\n  mnRegen?: number,\n  mvRegen?: number,\n  estimated?: boolean,\n  line: string\n}",
+  "dmapi.player.level.updated": "{\n  level: number,\n  years: number,\n  hours: number,\n  line: string\n}",
+  "dmapi.player.levelup": "{\n  hpGain: number,\n  hpMax: number,\n  mnGain: number,\n  mnMax: number,\n  mvGain: number,\n  mvMax: number,\n  prac: number,\n  pracTotal: number,\n  line: string\n}",
+  "dmapi.player.death": "{\n  deaths: number,\n  line: string\n}",
+  "dmapi.player.sleep.enter": "{\n  sleepOn?: string,\n  line: string\n}",
+  "dmapi.player.sleep.exit": "{\n  line: string\n}",
+  "dmapi.player.sleep.blocked": "{\n  line: string\n}",
+  "dmapi.player.rest.enter": "{\n  line: string\n}",
+  "dmapi.player.rest.exit": "{\n  line: string\n}",
+  "dmapi.player.affect.stunoff": "{\n  line: string\n}",
+  "dmapi.player.drink.empty": "{\n  line: string\n}",
+  "dmapi.player.hunger.update": "{\n  intensity: number,\n  line: string\n}",
+  "dmapi.player.thirst.update": "{\n  intensity: number,\n  line: string\n}",
+  "dmapi.player.inventory.itemnotfound": "{\n  line: string\n}",
+  "dmapi.player.stats.attributes.updated": "{\n  str: { base: number, mod: number },\n  int: { base: number, mod: number },\n  wis: { base: number, mod: number },\n  dex: { base: number, mod: number },\n  con: { base: number, mod: number },\n  line: string\n}",
+
+  "dmapi.player.navigation.blocked": "{\n  line: string\n}",
+  "dmapi.player.navigation.exhausted": "{\n  line: string\n}",
+  "dmapi.player.navigation.darkness": "{\n  line: string\n}",
+  "dmapi.player.navigation.blinded": "{\n  line: string\n}",
+  "dmapi.player.navigation.closed": "{\n  name: string,\n  line: string\n}",
+  "dmapi.player.navigation.locked": "{\n  line: string\n}",
+
+  "dmapi.player.combat.start": "{\n  target: string,\n  line: string\n}",
+  "dmapi.player.combat.mobstate": "{\n  target: string,\n  condition: string,\n  hpPct: number,\n  line: string\n}",
+  "dmapi.player.combat.round": "{\n  target: string,\n  condition: string,\n  hpPct: number,\n  round: number,\n  line: string,\n  timestamp: number\n}",
+  "dmapi.player.combat.end": "{\n  target: string,\n  round: number\n}",
+  "dmapi.player.combat.kill": "{\n  mob: string,\n  kills: number,\n  line: string\n}",
+  "dmapi.player.combat.disarmed": "{\n  disarmer: string,\n  line: string\n}",
+  "dmapi.player.combat.flee": "{\n  line: string\n}",
+
+  "dmapi.communication.emotedsayreceived": "{\n  sender: string,\n  emote: string,\n  message: string,\n  line: string\n}",
+  "dmapi.communication.emotedsaysent": "{\n  sender: string,\n  emote: string,\n  message: string,\n  line: string\n}",
+  "dmapi.communication.tellreceived": "{\n  sender: string,\n  receiver: string,\n  message: string,\n  line: string\n}",
+  "dmapi.communication.tellsent": "{\n  sender: string,\n  receiver: string,\n  message: string,\n  line: string\n}",
+  "dmapi.communication.sayreceived": "{\n  sender: string,\n  message: string,\n  line: string\n}",
+  "dmapi.communication.saysent": "{\n  sender: string,\n  message: string,\n  line: string\n}",
+  "dmapi.communication.mpsayreceived": "{\n  sender: string,\n  message: string,\n  line: string\n}",
+  "dmapi.communication.mpsaysent": "{\n  sender: string,\n  message: string,\n  line: string\n}",
+  "dmapi.communication.mptellreceived": "{\n  sender: string,\n  receiver: string,\n  message: string,\n  line: string\n}",
+  "dmapi.communication.mptellsent": "{\n  sender: string,\n  receiver: string,\n  message: string,\n  line: string\n}",
+  "dmapi.communication.gtellreceived": "{\n  sender: string,\n  message: string,\n  line: string\n}",
+  "dmapi.communication.gtellsent": "{\n  sender: string,\n  message: string,\n  line: string\n}",
+  "dmapi.communication.yellreceived": "{\n  sender: string,\n  message: string,\n  line: string\n}",
+  "dmapi.communication.yellsent": "{\n  sender: string,\n  message: string,\n  line: string\n}",
+  "dmapi.communication.yellpanicreceived": "{\n  sender: string,\n  message: string,\n  line: string\n}",
+  "dmapi.communication.yellpanicsent": "{\n  sender: string,\n  message: string,\n  line: string\n}",
+  "dmapi.communication.mentalblastreceived": "{\n  sender: string,\n  message: string,\n  line: string\n}",
+  "dmapi.communication.mentalblastsent": "{\n  sender: string,\n  message: string,\n  line: string\n}",
+  "dmapi.communication.mentalblastpanicreceived": "{\n  sender: string,\n  message: string,\n  line: string\n}",
+  "dmapi.communication.mentalblastpanicsent": "{\n  sender: string,\n  message: string,\n  line: string\n}",
+  "dmapi.communication.oocreceived": "{\n  sender: string,\n  receiver: string,\n  message: string,\n  line: string\n}",
+  "dmapi.communication.oocsent": "{\n  sender: string,\n  receiver: string,\n  message: string,\n  line: string\n}",
+  "dmapi.communication.newbiechannel": "{\n  sender: string,\n  message: string,\n  line: string\n}",
+  "dmapi.communication.newbiechanneldiscord": "{\n  sender: string,\n  message: string,\n  line: string\n}",
+  "dmapi.communication.housechannel": "{\n  sender: string,\n  receiver: string,\n  message: string,\n  line: string\n}",
+
+  "dmapi.player.currency.update": "{\n  gold: number,\n  silver: number,\n  experience: number,\n  experienceToLevel: number,\n  line: string\n}",
+  "dmapi.player.currency.gain": "{\n  silver: number,\n  gold: number,\n  source: string,\n  line: string\n}",
+  "dmapi.player.bank.balance": "{\n  gold: number,\n  silver: number,\n  line: string\n}",
+  "dmapi.player.bank.deposit": "{\n  amount: number,\n  currency: string,\n  line: string\n}",
+  "dmapi.player.bank.withdraw": "{\n  amount: number,\n  currency: string,\n  fee: number,\n  feeCurrency: string,\n  total: number,\n  line: string\n}",
+  "dmapi.player.bank.withdraw.fail": "{\n  line: string\n}",
+  "dmapi.player.house.balance": "{\n  gold: number,\n  line: string\n}",
+  "dmapi.player.experience.gain": "{\n  amount: number,\n  total: number,\n  tnl: number,\n  line: string\n}",
+  "dmapi.player.skill.improved": "{\n  skill: string,\n  line: string\n}",
+  "dmapi.player.equipment.zapped": "{\n  item: string,\n  line: string\n}"
 };
 
 /* ============================================================================
@@ -282,10 +399,26 @@ for (const [key, domain] of Object.entries(dmapi.domains)) {
   domain.events.forEach(([name, desc]) => {
     const div = document.createElement("div");
     div.className = "event";
-    div.innerHTML = `
-      <div class="event-name">${name}</div>
-      <div class="event-desc">${desc}</div>
-    `;
+
+    const eventName = document.createElement("div");
+    eventName.className = "event-name";
+    eventName.textContent = name;
+
+    const eventDesc = document.createElement("div");
+    eventDesc.className = "event-desc";
+    eventDesc.textContent = desc;
+
+    div.appendChild(eventName);
+    div.appendChild(eventDesc);
+
+    const payload = eventPayloads[name];
+    if (payload) {
+      const payloadBlock = document.createElement("pre");
+      payloadBlock.className = "event-payload";
+      payloadBlock.textContent = payload;
+      div.appendChild(payloadBlock);
+    }
+
     section.appendChild(div);
   });
 
