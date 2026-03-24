@@ -719,7 +719,7 @@ function Darkmists.Init()
   dofile(getMudletHomeDir() .. "/DarkMistsCompanion/utility/enchanterassist.lua")
   dofile(getMudletHomeDir() .. "/DarkMistsCompanion/utility/skillups.lua")
   dofile(getMudletHomeDir() .. "/DarkMistsCompanion/utility/clickables.lua")
-  dofile(getMudletHomeDir() .. "/DarkMistsCompanion/ui/buttonbar.lua")
+  ButtonBar.init()
 
   -- UI Scripts
   if not Darkmists.GlobalSettings.minimalMode then
