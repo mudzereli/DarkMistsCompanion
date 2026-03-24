@@ -435,7 +435,7 @@ end
 function ButtonBar.init()
   local ok = ButtonBar.build()
   if ok then
-    DMLogger.log("ButtonBar","Loaded!")
+    DMLogger.log(DarkmistsTheme.oliveTag.."ButtonBar","Loaded!")
   end
   return ok
 end
