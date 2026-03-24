@@ -11,19 +11,13 @@ StatRoller = {
     leniency = Darkmists.GlobalSettings.statRollerLeniency,
     keepalive_interval = 20,   -- seconds between keepalive sends
     keepalive_command  = " ",  -- space = safest (Enter also works)
-    textColor = Darkmists.getDefaultTextColor(),
-    colors = {
-      green = "green",
-      gray = "gray",
-      cyan = "cyan",
-      yellow = "yellow",
-      red = "red"
-    }
   },
   state = {
     nRollsCompleted = 0,
     first_ts = nil,
     last_ts  = nil,
+    leniency_prompt_shown = false,
+    leniency_prompt_timer = nil,
   },
   current_stats = { str=0,int=0,wis=0,dex=0,con=0,total=0 },
   maximum_stats = { str=0,int=0,wis=0,dex=0,con=0,total=0 },
@@ -32,37 +26,90 @@ StatRoller = {
   recent_totals = {},
   _spin = 0,
 }
-if Darkmists.GlobalSettings.lightMode then
-  StatRoller.settings.colors.green = "forest_green"
-  StatRoller.settings.colors.gray = "dim_gray"
-  StatRoller.settings.colors.cyan = "ansi_cyan"
-  StatRoller.settings.colors.yellow = "dark_khaki"
-  StatRoller.settings.colors.gray = "dim_gray"
-end
 
 -- ---------- utils ----------
-local function color(tag, s) return "<" .. tag .. ">" .. s .. "<"..StatRoller.settings.textColor..">" end
 local function pad(n, w) return string.format("%" .. tostring(w) .. "d", n or 0) end
 local function getopt(k, default) local v = StatRoller.settings and StatRoller.settings[k]; return (v==nil) and default or v end
 local function now() return (getEpoch and getEpoch()) or os.time() end
+
+local textTag = DarkmistsTheme.textTag
+local mutedTag = DarkmistsTheme.mutedTag
+local goodTag = DarkmistsTheme.goodTag
+local infoTag = DarkmistsTheme.infoTag
+local warnTag = DarkmistsTheme.warnTag
+local badTag = DarkmistsTheme.badTag
+local highlightTag = DarkmistsTheme.highlightTag
+local pluginColor = DarkmistsTheme.orangeTag
+
+function StatRoller.set_leniency(value)
+  value = tonumber(value) or 0
+  if value < 0 then value = 0 end
+  if value > 3 then value = 3 end
+
+  StatRoller.settings.leniency = value
+  Darkmists.GlobalSettings.statRollerLeniency = value
+  Darkmists.SaveSettings()
+
+  DMLogger.notify(pluginColor .. "StatRoller", infoTag .. "Leniency set to " .. goodTag .. tostring(value))
+end
+
+function StatRoller.prompt_leniency()
+  StatRoller.state.leniency_prompt_timer = nil
+
+  local current = tonumber(Darkmists.GlobalSettings.statRollerLeniency) or tonumber(StatRoller.settings.leniency) or 0
+  StatRoller.settings.leniency = current
+
+  DMLogger.notify(
+    pluginColor .. "StatRoller",
+    highlightTag .. "Choose leniency " .. mutedTag .. "(current " .. goodTag .. tostring(current) .. mutedTag .. "):"
+  )
+
+  for value = 0, 3 do
+    local tag = value == current and goodTag or highlightTag
+    cechoLink(
+      tag .. "[" .. tostring(value) .. "]" .. textTag,
+      string.format("StatRoller.set_leniency(%d)", value),
+      string.format("Set stat roller leniency to %d", value),
+      true
+    )
+
+    if value < 3 then
+      cecho(mutedTag .. " " .. textTag)
+    else
+      cecho("\n")
+    end
+  end
+end
+
+function StatRoller.schedule_leniency_prompt(delay)
+  if StatRoller.state.leniency_prompt_timer then
+    killTimer(StatRoller.state.leniency_prompt_timer)
+    StatRoller.state.leniency_prompt_timer = nil
+  end
+
+  StatRoller.state.leniency_prompt_timer = tempTimer(delay or 0.25, function()
+    StatRoller.prompt_leniency()
+  end)
+end
 
 local function progress_bar(cur, maxv, width, fg, bg)
   width = tonumber(width) or 1
   if width < 1 then width = 1 end
   cur  = tonumber(cur) or 0
   maxv = tonumber(maxv) or 0
-  if maxv <= 0 then return color(StatRoller.settings.colors.gray, string.rep("░", width)) end
+  if maxv <= 0 then return mutedTag .. string.rep("░", width) .. textTag end
   if cur < 0 then cur = 0 elseif cur > maxv then cur = maxv end
   local filled = math.floor((cur / maxv) * width + 0.5); if filled > width then filled = width end
-  return color(fg or StatRoller.settings.colors.green, string.rep("█", filled)) .. color(bg or StatRoller.settings.colors.gray, string.rep("░", width - filled))
+  return (fg or goodTag) .. string.rep("█", filled) .. textTag
+    .. (bg or mutedTag) .. string.rep("░", width - filled) .. textTag
 end
 
 local function fmt_delta(delta, maxv)
   delta = tonumber(delta) or 0
-  if delta == 0 then return color(StatRoller.settings.colors.green, "0") end
+  if delta == 0 then return goodTag .. "0" .. textTag end
   local pct = (maxv and maxv > 0) and (delta / maxv) or 1
-  local tag = (pct <= 0.05) and StatRoller.settings.colors.yellow or StatRoller.settings.colors.red
-  return color(tag, tostring(delta))
+  local tag = (pct <= 0.05) and warnTag or badTag
+  return tag .. tostring(delta) .. textTag
 end
 
 -- ===== Trend helpers: scale by recent MIN..MAX ===============================
@@ -85,7 +132,7 @@ end
 local function sparkline(samples, minv, maxv, width)
   width = tonumber(width) or 1
   if width < 1 then width = 1 end
-  if #samples == 0 then return color(StatRoller.settings.colors.gray, string.rep("·", width)) end
+  if #samples == 0 then return mutedTag .. string.rep("·", width) .. textTag end
 
   local out = {}
   local start = math.max(1, #samples - width + 1)
@@ -97,7 +144,7 @@ local function sparkline(samples, minv, maxv, width)
   if maxv <= minv then
     -- flat series: draw a mid-level line
     local mid = math.max(1, math.min(#SPARKS, math.floor(#SPARKS / 2)))
-    return color(StatRoller.settings.colors.cyan, string.rep(SPARKS[mid], math.min(width, #samples - start + 1)))
+    return infoTag .. string.rep(SPARKS[mid], math.min(width, #samples - start + 1)) .. textTag
   end
 
   for i = start, #samples do
@@ -107,7 +154,7 @@ local function sparkline(samples, minv, maxv, width)
     if idx < 1 then idx = 1 elseif idx > #SPARKS then idx = #SPARKS end
     out[#out+1] = SPARKS[idx]
   end
-  return color(StatRoller.settings.colors.cyan, table.concat(out))
+  return infoTag .. table.concat(out) .. textTag
 end
 
 -- ---------- parsing ----------
@@ -141,7 +188,7 @@ local function update_records(stats)
   if stats.total > (StatRoller.best_total or 0) then
     StatRoller.best_total = stats.total
     StatRoller.best_stats = { str=stats.str, int=stats.int, wis=stats.wis, dex=stats.dex, con=stats.con, total=stats.total }
-    cecho("\n" .. color(StatRoller.settings.colors.green, "[SR] New best total: " .. stats.total .. "!"))
+    DMLogger.notify(pluginColor .. "StatRoller", goodTag .. "New best total: " .. tostring(stats.total) .. "!")
   end
 end
 
@@ -175,17 +222,17 @@ function StatRoller.echo_hud()
   local status, bar
   local bw = getopt("barWidth", 24)
   if calibrating then
-    status = color(StatRoller.settings.colors.yellow, ("CAL %d/%d"):format(rolls, N))
-    bar    = progress_bar(rolls, N, bw, StatRoller.settings.colors.yellow, StatRoller.settings.colors.gray)
+    status = warnTag .. ("CAL %d/%d"):format(rolls, N) .. textTag
+    bar    = progress_bar(rolls, N, bw, warnTag, mutedTag)
   else
-    local phase = (cs.total >= ms.total and ms.total > 0) and color(StatRoller.settings.colors.green,"READY") or color(StatRoller.settings.colors.yellow,"ROLLING")
-    status = color(StatRoller.settings.colors.cyan, "LIVE ") .. color(StatRoller.settings.colors.gray, "• ") .. phase
-    bar    = progress_bar(cs.total, ms.total, bw, StatRoller.settings.colors.green, StatRoller.settings.colors.gray)
+    local phase = (cs.total >= ms.total and ms.total > 0) and (goodTag .. "READY" .. textTag) or (warnTag .. "ROLLING" .. textTag)
+    status = infoTag .. "LIVE " .. textTag .. mutedTag .. "• " .. textTag .. phase
+    bar    = progress_bar(cs.total, ms.total, bw, goodTag, mutedTag)
   end
 
   local totals = (cs.total >= ms.total and ms.total > 0)
-    and (color(StatRoller.settings.colors.green, pad(cs.total,2)) .. color(StatRoller.settings.colors.gray,"/") .. color(StatRoller.settings.colors.green, pad(ms.total,2)))
-    or  (color(StatRoller.settings.textColor, pad(cs.total,2)) .. color(StatRoller.settings.colors.gray,"/") .. color(StatRoller.settings.textColor, pad(ms.total,2)))
+    and (goodTag .. pad(cs.total,2) .. textTag .. mutedTag .. "/" .. textTag .. goodTag .. pad(ms.total,2) .. textTag)
+    or  (textTag .. pad(cs.total,2) .. mutedTag .. "/" .. textTag .. pad(ms.total,2))
 
   local rpm = roll_rate()
   local elapsed = 0
@@ -195,41 +242,42 @@ function StatRoller.echo_hud()
   local mm = math.floor(elapsed / 60); local ss = elapsed % 60
 
   local bestStr = StatRoller.best_total and StatRoller.best_total > 0
-    and color(StatRoller.settings.colors.green, tostring(StatRoller.best_total)) or color(StatRoller.settings.colors.gray,"-")
+    and (goodTag .. tostring(StatRoller.best_total) .. textTag) or (mutedTag .. "-" .. textTag)
 
-  cecho(("\n%s %s %s  %s %s  %s %s  %s %s  %s %s  %s %s")
+  cecho(("\n%s %s %s\n%s %s  %s %s %s %s  %s %s  %s %s")
     :format(
-      color(StatRoller.settings.colors.gray,"[SR]"), color(StatRoller.settings.textColor, spin), status,
-      color(StatRoller.settings.colors.gray,"Total"), totals,
-      color(StatRoller.settings.colors.gray,"Δ"), fmt_delta(delta, ms.total),
-      color(StatRoller.settings.colors.gray,"Rolls"), color(StatRoller.settings.textColor, tostring(rolls)),
-      color(StatRoller.settings.colors.gray,"RPM"), color(StatRoller.settings.textColor, string.format("%.1f", rpm)),
-      color(StatRoller.settings.colors.gray,"Elapsed"), color(StatRoller.settings.textColor, string.format("%02d:%02d", mm, ss))
+      mutedTag .. "["..pluginColor.."StatRoller"..mutedTag.."]" .. textTag, textTag .. spin .. textTag, status,
+      mutedTag .. "Total" .. textTag, totals,
+      mutedTag .. "Δ" .. textTag, fmt_delta(delta, ms.total),
+      mutedTag .. "Rolls" .. textTag, textTag .. tostring(rolls) .. textTag,
+      mutedTag .. "RPM" .. textTag, textTag .. string.format("%.1f", rpm) .. textTag,
+      mutedTag .. "Elapsed" .. textTag, textTag .. string.format("%02d:%02d", mm, ss) .. textTag
     ))
-
+  
+  cecho("\n")
   -- Trend sparkline scaled to recent MIN..MAX
   local w = getopt("sparklineWidth", 16)
   if #StatRoller.recent_totals > 0 then
     local minv, maxv = recent_range(StatRoller.recent_totals, w)
     local sl = sparkline(StatRoller.recent_totals, minv, maxv, w)
-    cecho(("  %s %s  %s %s")
+    cecho(("%s %s  %s %s")
       :format(
-        color(StatRoller.settings.colors.gray,"Trend"),
+        mutedTag .. "Trend" .. textTag,
         sl,
-        color(StatRoller.settings.colors.gray,"Range"),
-        color(StatRoller.settings.textColor, ("%d–%d"):format(minv, maxv))
+        mutedTag .. "Range" .. textTag,
+        textTag .. ("%d–%d"):format(minv, maxv) .. textTag
       ))
-    cecho(("  %s %s"):format(color(StatRoller.settings.colors.gray,"Best"), bestStr))
+    cecho(("  %s %s"):format(mutedTag .. "Best" .. textTag, bestStr))
   else
-    cecho(("  %s %s"):format(color(StatRoller.settings.colors.gray,"Best"), bestStr))
+    cecho(("  %s %s"):format(mutedTag .. "Best" .. textTag, bestStr))
   end
 
   if getopt("showDetails", true) then
     local function statPair(lbl, cur, maxv)
-      local curC = (maxv > 0 and cur >= maxv) and StatRoller.settings.colors.green or StatRoller.settings.textColor
-      return color(StatRoller.settings.colors.gray, lbl) .. " " .. color(curC, pad(cur,2)) .. color(StatRoller.settings.colors.gray,"/") .. color(StatRoller.settings.textColor, pad(maxv,2))
+      local curTag = (maxv > 0 and cur >= maxv) and goodTag or textTag
+      return mutedTag .. lbl .. textTag .. " " .. curTag .. pad(cur,2) .. textTag .. mutedTag .. "/" .. textTag .. textTag .. pad(maxv,2)
     end
-    cecho(("\n   %s  %s  %s  %s  %s")
+    cecho(("\n%s  %s  %s  %s  %s")
       :format(
         statPair("STR", cs.str, ms.str),
         statPair("INT", cs.int, ms.int),
@@ -253,26 +301,72 @@ function StatRoller._start_keepalive()
     true
   )
 
-  cecho("\n<"..StatRoller.settings.colors.cyan..">[SR] Keepalive enabled\n")
+  DMLogger.notify(pluginColor .. "StatRoller", infoTag .. "Keepalive enabled")
 end
 
 function StatRoller._stop_keepalive()
   if StatRoller._keepalive_timer then
     killTimer(StatRoller._keepalive_timer)
     StatRoller._keepalive_timer = nil
-    cecho("\n<"..StatRoller.settings.colors.yellow..">[SR] Keepalive disabled\n")
+    DMLogger.notify(pluginColor .. "StatRoller", warnTag .. "Keepalive disabled")
   end
+end
+
+function StatRoller.reset_session()
+  if StatRoller._keepalive_timer then
+    killTimer(StatRoller._keepalive_timer)
+    StatRoller._keepalive_timer = nil
+  end
+
+  if StatRoller.state.leniency_prompt_timer then
+    killTimer(StatRoller.state.leniency_prompt_timer)
+    StatRoller.state.leniency_prompt_timer = nil
+  end
+
+  StatRoller.state.nRollsCompleted = 0
+  StatRoller.state.first_ts = nil
+  StatRoller.state.last_ts = nil
+  StatRoller.state.done = false
+  StatRoller.state.leniency_prompt_shown = false
+
+  StatRoller.current_stats.str = 0
+  StatRoller.current_stats.int = 0
+  StatRoller.current_stats.wis = 0
+  StatRoller.current_stats.dex = 0
+  StatRoller.current_stats.con = 0
+  StatRoller.current_stats.total = 0
+
+  StatRoller.maximum_stats.str = 0
+  StatRoller.maximum_stats.int = 0
+  StatRoller.maximum_stats.wis = 0
+  StatRoller.maximum_stats.dex = 0
+  StatRoller.maximum_stats.con = 0
+  StatRoller.maximum_stats.total = 0
+
+  StatRoller.best_total = 0
+  StatRoller.best_stats = nil
+  StatRoller.recent_totals = {}
+  StatRoller._spin = 0
 end
 
 -- ---------- entrypoint ----------
 function StatRoller.on_line(line)
   if line:match("^%[R%]oll stats      %- achieve maximum rolling potential %(random rolls%)") then
-    --cecho("\nStatRoller.enabled = true")
+    StatRoller.reset_session()
     StatRoller.enabled = true
+    StatRoller.settings.leniency = tonumber(Darkmists.GlobalSettings.statRollerLeniency) or tonumber(StatRoller.settings.leniency) or 0
+    if not StatRoller.state.leniency_prompt_shown then
+      StatRoller.schedule_leniency_prompt(0.25)
+      StatRoller.state.leniency_prompt_shown = true
+    end
   end
   if line:match("^Point Sacrifice: 3 points left") then
-    --cecho("\nStatRoller.enabled = false")
     StatRoller.enabled = false
+    StatRoller.state.leniency_prompt_shown = false
+    if StatRoller.state.leniency_prompt_timer then
+      killTimer(StatRoller.state.leniency_prompt_timer)
+      StatRoller.state.leniency_prompt_timer = nil
+    end
   end
   if not StatRoller.enabled then return false end
   local stats = StatRoller.parse_stats_strict(line)
