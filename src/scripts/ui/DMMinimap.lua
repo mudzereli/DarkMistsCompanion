@@ -62,7 +62,7 @@ function DarkMistsMiniMap.create()
     width = "100%", height = "90%"
   }, DarkMistsMiniMap.container)
 
-  DMLogger.notify(DarkmistsTheme.greenTag .. "MiniMapContainer","Container Created!")
+  DMLogger.log(DarkmistsTheme.greenTag .. "MiniMapContainer","Container Created!")
 end
 
 function DarkMistsMiniMap.destroy()
@@ -118,10 +118,10 @@ end
 -- Event Management
 -- -------------------------------------------------------------------
 function DarkMistsMiniMap.registerEvents()
-  DMLogger.notify(DarkmistsTheme.greenTag .. "MiniMapContainer","Registering Events with EventHandlerManager")
+  DMLogger.log(DarkmistsTheme.greenTag .. "MiniMapContainer","Registering Events with EventHandlerManager")
   DarkmistsEvents.add("MiniMapMousePress", "sysMapWindowMousePressEvent", DarkMistsMiniMap.update)
   DarkmistsEvents.add("MiniMapPrompt", "dmapi.world.prompt", DarkMistsMiniMap.update)
-  DMLogger.notify(DarkmistsTheme.greenTag .. "MiniMapContainer","Events Registered!")
+  DMLogger.log(DarkmistsTheme.greenTag .. "MiniMapContainer","Events Registered!")
 end
 
 -- -------------------------------------------------------------------
@@ -165,7 +165,7 @@ local function initMiniMap()
   if DarkMistsMiniMap.container then return end
   DarkMistsMiniMap.create()
   DarkMistsMiniMap.registerEvents()
-  DMLogger.notify(DarkmistsTheme.greenTag .. "MiniMapContainer","MiniMap Created!")
+  DMLogger.log(DarkmistsTheme.greenTag .. "MiniMapContainer","MiniMap Created!")
   -- update and show immediately
   DarkMistsMiniMap.update()
   install_sanitize_override()
