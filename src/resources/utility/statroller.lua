@@ -1,31 +1,16 @@
 -- file: scripts/statroller_update.lua
 -- Engaging HUD with Trend scaled to recent min..max
 
-StatRoller = {
-  enabled = true,
-  settings = {
-    nCalibrationLines = 20,
-    showDetails = true,
-    barWidth = 24,
-    sparklineWidth = 16,   -- window size for trend + range
-    leniency = Darkmists.GlobalSettings.statRollerLeniency,
-    keepalive_interval = 20,   -- seconds between keepalive sends
-    keepalive_command  = " ",  -- space = safest (Enter also works)
-  },
-  state = {
-    nRollsCompleted = 0,
-    first_ts = nil,
-    last_ts  = nil,
-    leniency_prompt_shown = false,
-    leniency_prompt_timer = nil,
-  },
-  current_stats = { str=0,int=0,wis=0,dex=0,con=0,total=0 },
-  maximum_stats = { str=0,int=0,wis=0,dex=0,con=0,total=0 },
-  best_total = 0,
-  best_stats = nil,
-  recent_totals = {},
-  _spin = 0,
-}
+StatRoller = StatRoller or {}
+StatRoller.settings = StatRoller.settings or {}
+StatRoller.state = StatRoller.state or {}
+StatRoller.current_stats = StatRoller.current_stats or {}
+StatRoller.maximum_stats = StatRoller.maximum_stats or {}
+StatRoller.recent_totals = StatRoller.recent_totals or {}
+StatRoller.enabled = StatRoller.enabled ~= false
+StatRoller.best_total = tonumber(StatRoller.best_total) or 0
+StatRoller.best_stats = StatRoller.best_stats or nil
+StatRoller._spin = tonumber(StatRoller._spin) or 0
 
 -- ---------- utils ----------
 local function pad(n, w) return string.format("%" .. tostring(w) .. "d", n or 0) end
@@ -40,8 +25,68 @@ local warnTag = DarkmistsTheme.warnTag
 local badTag = DarkmistsTheme.badTag
 local highlightTag = DarkmistsTheme.highlightTag
 local pluginColor = DarkmistsTheme.orangeTag
+local pluginName = pluginColor .. "StatRoller"
+
+local DEFAULT_SETTINGS = {
+  nCalibrationLines = 20,
+  showDetails = true,
+  barWidth = 24,
+  sparklineWidth = 16,
+  keepalive_interval = 20,
+  keepalive_command = " ",
+}
+
+local DEFAULT_STATE = {
+  nRollsCompleted = 0,
+  first_ts = nil,
+  last_ts = nil,
+  leniency_prompt_shown = false,
+  awaiting_leniency_choice = false,
+}
+
+local function apply_defaults(target, defaults)
+  for key, value in pairs(defaults) do
+    if target[key] == nil then
+      target[key] = value
+    end
+  end
+end
+
+local function ensure_stat_block(block)
+  block.str = tonumber(block.str) or 0
+  block.int = tonumber(block.int) or 0
+  block.wis = tonumber(block.wis) or 0
+  block.dex = tonumber(block.dex) or 0
+  block.con = tonumber(block.con) or 0
+  block.total = tonumber(block.total) or 0
+end
+
+local function notify(msg)
+  DMLogger.notify(pluginName, msg)
+end
+
+local function reset_stat_block(block)
+  block.str, block.int, block.wis, block.dex, block.con, block.total = 0, 0, 0, 0, 0, 0
+end
+
+local function clear_keepalive_timer()
+  if StatRoller._keepalive_timer then
+    killTimer(StatRoller._keepalive_timer)
+    StatRoller._keepalive_timer = nil
+    return true
+  end
+  return false
+end
+
+local function ensure_initialized()
+  if not StatRoller._initialized then
+    StatRoller.init()
+  end
+end
 
 function StatRoller.set_leniency(value)
+  ensure_initialized()
+
   value = tonumber(value) or 0
   if value < 0 then value = 0 end
   if value > 3 then value = 3 end
@@ -49,20 +94,35 @@ function StatRoller.set_leniency(value)
   StatRoller.settings.leniency = value
   Darkmists.GlobalSettings.statRollerLeniency = value
   Darkmists.SaveSettings()
+  StatRoller.state.awaiting_leniency_choice = false
 
-  DMLogger.notify(pluginColor .. "StatRoller", infoTag .. "Leniency set to " .. goodTag .. tostring(value))
+  notify(infoTag .. "Leniency set to " .. goodTag .. tostring(value))
+
+  if StatRoller.enabled and (StatRoller.state.nRollsCompleted or 0) > 0 then
+    local N = tonumber(getopt("nCalibrationLines", 20)) or 20
+    local L = tonumber(getopt("leniency", 0)) or 0
+    local keep = (StatRoller.current_stats.total >= math.max(0, (StatRoller.maximum_stats.total or 0) - L))
+
+    if (StatRoller.state.nRollsCompleted < N) or not keep then
+      StatRoller.state.done = false
+      StatRoller._stop_keepalive()
+      send("N")
+    else
+      if not StatRoller.state.done then
+        StatRoller.state.done = true
+        StatRoller._start_keepalive()
+      end
+    end
+  end
 end
 
 function StatRoller.prompt_leniency()
-  StatRoller.state.leniency_prompt_timer = nil
+  ensure_initialized()
 
   local current = tonumber(Darkmists.GlobalSettings.statRollerLeniency) or tonumber(StatRoller.settings.leniency) or 0
   StatRoller.settings.leniency = current
 
-  DMLogger.notify(
-    pluginColor .. "StatRoller",
-    highlightTag .. "Choose leniency " .. mutedTag .. "(current " .. goodTag .. tostring(current) .. mutedTag .. "):"
-  )
+  notify(highlightTag .. "Choose leniency " .. mutedTag .. "(current " .. goodTag .. tostring(current) .. mutedTag .. "):")
 
   for value = 0, 3 do
     local tag = value == current and goodTag or highlightTag
@@ -79,17 +139,6 @@ function StatRoller.prompt_leniency()
       cecho("\n")
     end
   end
-end
-
-function StatRoller.schedule_leniency_prompt(delay)
-  if StatRoller.state.leniency_prompt_timer then
-    killTimer(StatRoller.state.leniency_prompt_timer)
-    StatRoller.state.leniency_prompt_timer = nil
-  end
-
-  StatRoller.state.leniency_prompt_timer = tempTimer(delay or 0.25, function()
-    StatRoller.prompt_leniency()
-  end)
 end
 
 local function progress_bar(cur, maxv, width, fg, bg)
@@ -188,7 +237,7 @@ local function update_records(stats)
   if stats.total > (StatRoller.best_total or 0) then
     StatRoller.best_total = stats.total
     StatRoller.best_stats = { str=stats.str, int=stats.int, wis=stats.wis, dex=stats.dex, con=stats.con, total=stats.total }
-    DMLogger.notify(pluginColor .. "StatRoller", goodTag .. "New best total: " .. tostring(stats.total) .. "!")
+    notify(goodTag .. "New best total: " .. tostring(stats.total) .. "!")
   end
 end
 
@@ -219,15 +268,16 @@ function StatRoller.echo_hud()
   StatRoller._spin = (StatRoller._spin % #frames) + 1
   local spin = frames[StatRoller._spin]
 
-  local status, bar
+  local status
+  local _bar
   local bw = getopt("barWidth", 24)
   if calibrating then
     status = warnTag .. ("CAL %d/%d"):format(rolls, N) .. textTag
-    bar    = progress_bar(rolls, N, bw, warnTag, mutedTag)
+    _bar = progress_bar(rolls, N, bw, warnTag, mutedTag)
   else
     local phase = (cs.total >= ms.total and ms.total > 0) and (goodTag .. "READY" .. textTag) or (warnTag .. "ROLLING" .. textTag)
     status = infoTag .. "LIVE " .. textTag .. mutedTag .. "• " .. textTag .. phase
-    bar    = progress_bar(cs.total, ms.total, bw, goodTag, mutedTag)
+    _bar = progress_bar(cs.total, ms.total, bw, goodTag, mutedTag)
   end
 
   local totals = (cs.total >= ms.total and ms.total > 0)
@@ -301,47 +351,29 @@ function StatRoller._start_keepalive()
     true
   )
 
-  DMLogger.notify(pluginColor .. "StatRoller", infoTag .. "Keepalive enabled")
+  notify(infoTag .. "Keepalive enabled")
 end
 
 function StatRoller._stop_keepalive()
-  if StatRoller._keepalive_timer then
-    killTimer(StatRoller._keepalive_timer)
-    StatRoller._keepalive_timer = nil
-    DMLogger.notify(pluginColor .. "StatRoller", warnTag .. "Keepalive disabled")
+  if clear_keepalive_timer() then
+    notify(warnTag .. "Keepalive disabled")
   end
 end
 
 function StatRoller.reset_session()
-  if StatRoller._keepalive_timer then
-    killTimer(StatRoller._keepalive_timer)
-    StatRoller._keepalive_timer = nil
-  end
+  ensure_initialized()
 
-  if StatRoller.state.leniency_prompt_timer then
-    killTimer(StatRoller.state.leniency_prompt_timer)
-    StatRoller.state.leniency_prompt_timer = nil
-  end
+  clear_keepalive_timer()
 
   StatRoller.state.nRollsCompleted = 0
   StatRoller.state.first_ts = nil
   StatRoller.state.last_ts = nil
   StatRoller.state.done = false
   StatRoller.state.leniency_prompt_shown = false
+  StatRoller.state.awaiting_leniency_choice = false
 
-  StatRoller.current_stats.str = 0
-  StatRoller.current_stats.int = 0
-  StatRoller.current_stats.wis = 0
-  StatRoller.current_stats.dex = 0
-  StatRoller.current_stats.con = 0
-  StatRoller.current_stats.total = 0
-
-  StatRoller.maximum_stats.str = 0
-  StatRoller.maximum_stats.int = 0
-  StatRoller.maximum_stats.wis = 0
-  StatRoller.maximum_stats.dex = 0
-  StatRoller.maximum_stats.con = 0
-  StatRoller.maximum_stats.total = 0
+  reset_stat_block(StatRoller.current_stats)
+  reset_stat_block(StatRoller.maximum_stats)
 
   StatRoller.best_total = 0
   StatRoller.best_stats = nil
@@ -349,28 +381,72 @@ function StatRoller.reset_session()
   StatRoller._spin = 0
 end
 
+function StatRoller.init()
+  apply_defaults(StatRoller.settings, DEFAULT_SETTINGS)
+  apply_defaults(StatRoller.state, DEFAULT_STATE)
+
+  ensure_stat_block(StatRoller.current_stats)
+  ensure_stat_block(StatRoller.maximum_stats)
+
+  StatRoller.settings.leniency = tonumber(Darkmists.GlobalSettings.statRollerLeniency)
+    or tonumber(StatRoller.settings.leniency)
+    or 0
+
+  StatRoller.enabled = true
+  StatRoller._initialized = true
+end
+
+function StatRoller.destroy()
+  clear_keepalive_timer()
+
+  if StatRoller.state then
+    StatRoller.state.awaiting_leniency_choice = false
+    StatRoller.state.leniency_prompt_shown = false
+    StatRoller.state.done = false
+  end
+
+  StatRoller._initialized = false
+end
+
 -- ---------- entrypoint ----------
 function StatRoller.on_line(line)
+  ensure_initialized()
+
   if line:match("^%[R%]oll stats      %- achieve maximum rolling potential %(random rolls%)") then
     StatRoller.reset_session()
     StatRoller.enabled = true
+    StatRoller.state.awaiting_leniency_choice = true
     StatRoller.settings.leniency = tonumber(Darkmists.GlobalSettings.statRollerLeniency) or tonumber(StatRoller.settings.leniency) or 0
-    if not StatRoller.state.leniency_prompt_shown then
-      StatRoller.schedule_leniency_prompt(0.25)
-      StatRoller.state.leniency_prompt_shown = true
-    end
   end
   if line:match("^Point Sacrifice: 3 points left") then
     StatRoller.enabled = false
     StatRoller.state.leniency_prompt_shown = false
-    if StatRoller.state.leniency_prompt_timer then
-      killTimer(StatRoller.state.leniency_prompt_timer)
-      StatRoller.state.leniency_prompt_timer = nil
-    end
   end
   if not StatRoller.enabled then return false end
   local stats = StatRoller.parse_stats_strict(line)
   if not stats then return false end
+
+  if StatRoller.state.awaiting_leniency_choice then
+    if not StatRoller.state.leniency_prompt_shown then
+      -- Capture first roll baseline silently; wait for user choice before showing HUD/output.
+      StatRoller.state.nRollsCompleted = StatRoller.state.nRollsCompleted + 1
+      if not StatRoller.state.first_ts then StatRoller.state.first_ts = now() end
+      StatRoller.state.last_ts = now()
+
+      StatRoller.update_current(stats)
+      StatRoller.update_maximum(stats)
+      push_recent(stats.total)
+
+      if stats.total > (StatRoller.best_total or 0) then
+        StatRoller.best_total = stats.total
+        StatRoller.best_stats = { str=stats.str, int=stats.int, wis=stats.wis, dex=stats.dex, con=stats.con, total=stats.total }
+      end
+
+      StatRoller.prompt_leniency()
+      StatRoller.state.leniency_prompt_shown = true
+    end
+    return true
+  end
 
   StatRoller.state.nRollsCompleted = StatRoller.state.nRollsCompleted + 1
   if not StatRoller.state.first_ts then StatRoller.state.first_ts = now() end
