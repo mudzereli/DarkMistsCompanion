@@ -140,7 +140,7 @@ function StatRoller.prompt_leniency()
   for value = 0, 3 do
     local tag = value == current and goodTag or highlightTag
     cechoLink(
-      tag .. "[" .. tostring(value) .. "]" .. textTag,
+      tag .. "<u>[" .. tostring(value) .. "]</u>" .. textTag,
       string.format("StatRoller.set_leniency(%d)", value),
       string.format("Set stat roller leniency to %d", value),
       true
