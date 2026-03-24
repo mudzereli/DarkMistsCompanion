@@ -61,6 +61,19 @@ local function ensure_stat_block(block)
   block.total = tonumber(block.total) or 0
 end
 
+local function refresh_theme_refs()
+  local theme = DarkmistsTheme or {}
+  textTag = theme.textTag or ""
+  mutedTag = theme.mutedTag or ""
+  goodTag = theme.goodTag or ""
+  infoTag = theme.infoTag or ""
+  warnTag = theme.warnTag or ""
+  badTag = theme.badTag or ""
+  highlightTag = theme.highlightTag or ""
+  pluginColor = theme.orangeTag or theme.accentTag or theme.infoTag or ""
+  pluginName = pluginColor .. "StatRoller"
+end
+
 local function notify(msg)
   DMLogger.notify(pluginName, msg)
 end
@@ -382,6 +395,8 @@ function StatRoller.reset_session()
 end
 
 function StatRoller.init()
+  refresh_theme_refs()
+
   apply_defaults(StatRoller.settings, DEFAULT_SETTINGS)
   apply_defaults(StatRoller.state, DEFAULT_STATE)
 
