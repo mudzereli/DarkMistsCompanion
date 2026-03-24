@@ -10,5 +10,11 @@
               "isActive": "yes",
               "script": "",
               "isFolder": "no"
+       },
+       {
+              "name": "DMStatRoller",
+              "isActive": "yes",
+              "script": "",
+              "isFolder": "no"
        }
 ]

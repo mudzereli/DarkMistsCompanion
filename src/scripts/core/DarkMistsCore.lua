@@ -589,6 +589,7 @@ function Darkmists.CleanupUI(opts)
   if ButtonBar and ButtonBar.destroy then pcall(ButtonBar.destroy) end
   if StatusBar and StatusBar.cleanup then pcall(StatusBar.cleanup) end
   if DMAlertWindow and DMAlertWindow.Hide then pcall(DMAlertWindow.Hide) end
+  if StatRoller and StatRoller.destroy then pcall(StatRoller.destroy) end
   
   if opts.uninstall then
     Darkmists.Log(DarkmistsTheme.purpleTag .. "Darkmists Core", "Resetting window borders to default...")
@@ -714,7 +715,7 @@ function Darkmists.Init()
 
   -- Utility Scripts that use DMAPI
   ItemTracker.init()
-  dofile(getMudletHomeDir() .. "/DarkMistsCompanion/utility/statroller.lua")
+  StatRoller.init()
   dofile(getMudletHomeDir() .. "/DarkMistsCompanion/utility/mapdestinations.lua")
   dofile(getMudletHomeDir() .. "/DarkMistsCompanion/utility/enchanterassist.lua")
   dofile(getMudletHomeDir() .. "/DarkMistsCompanion/utility/skillups.lua")
