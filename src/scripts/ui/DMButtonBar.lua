@@ -5,12 +5,24 @@
 ButtonBar = ButtonBar or {}
 
 ButtonBar.bg = "#000000"
-ButtonBar.fontSize = Darkmists.GlobalSettings.fontSize + 3
 ButtonBar.padding = 2
-ButtonBar.fontWidth, ButtonBar.fontheight = calcFontSize(ButtonBar.fontSize)
 ButtonBar.topLevelMaxCharacters = 16
 ButtonBar.dropDownMaxCharacters = 20   -- used for dropdown width calculations
-ButtonBar.height = ButtonBar.fontheight * 1.5
+ButtonBar.fontSize = nil
+ButtonBar.fontWidth = nil
+ButtonBar.fontheight = nil
+ButtonBar.height = nil
+
+function ButtonBar.configure()
+  local globalFontSize = 12
+  if Darkmists and Darkmists.GlobalSettings and Darkmists.GlobalSettings.fontSize then
+    globalFontSize = Darkmists.GlobalSettings.fontSize
+  end
+
+  ButtonBar.fontSize = globalFontSize + 3
+  ButtonBar.fontWidth, ButtonBar.fontheight = calcFontSize(ButtonBar.fontSize)
+  ButtonBar.height = ButtonBar.fontheight * 1.5
+end
 
 -- -----------------------------------------------------------------------------
 -- TEAR DOWN
@@ -28,10 +40,7 @@ end
 -- -----------------------------------------------------------------------------
 function ButtonBar:create()
 
-  if not Geyser or not Adjustable then
-    echo("Geyser not ready yet.\n")
-    return
-  end
+  ButtonBar.configure()
 
   ButtonBar.destroy()
 
@@ -123,6 +132,8 @@ end
 -- BUTTON
 -- -----------------------------------------------------------------------------
 function ButtonBar:addButton(text, action)
+  if not ButtonBar.container then return end
+
   local btn = Geyser.Label:new({
     x = ButtonBar.nextX,
     y = 0,
@@ -146,6 +157,8 @@ end
 -- DROPDOWN
 -- -----------------------------------------------------------------------------
 function ButtonBar:addDropdown(text, items)
+  if not ButtonBar.container then return end
+
   local main = Geyser.Label:new({
     x = ButtonBar.nextX,
     y = 0,
@@ -165,64 +178,69 @@ end
 -- -----------------------------------------------------------------------------
 -- BUILD
 -- -----------------------------------------------------------------------------
-ButtonBar:create()
+function ButtonBar.build()
+  ButtonBar:create()
 
-ButtonBar:addButton("🐲 Website", function() Darkmists.OpenWebsite() end)
+  if not ButtonBar.container then
+    return false
+  end
 
-ButtonBar:addDropdown("🧰 Modules", {
-  -- Skillup Module
-  {label="🎓 Skillups", children={
-    {label="📜 Skillups", action=function() SkillUps.display() end},
-    {label="🔄 Reset Skillups", action=function() SkillUps.reset() end},
-    {label="❓ Skillups", action=function() expandAlias("dmc help skillups") end},
-  }},
-  -- Walk Module
-  {label="👣 Walk", children={
-    {label="📜 Destinations", action=function() expandAlias("walk list") end},
-    {label="📍 Add Current Room", action=function()
-        DMLogger.notify("WALK","<red>finish entering a short destination keyword then press ENTER!")
-        clearCmdLine()
-        appendCmdLine("walk add ")
-        end},
-    {label="🛑 Stop Walking", action=function() expandAlias("walk stop") end},
-    {label="🧭 Zones", action=function() MapColors.AuditCurrentArea() end},
-    {label="❓ Walk", action=function() expandAlias("dmc help walk") end},
-  }},
-  -- Enchant Assist Module
-  {label="🧪 Enchant Assist", children={
-    {label="⚗️ Trials", children={
-      {label="❶ ES Try 1", action=function() expandAlias("es 1") end},
-      {label="❷ ES Try 2", action=function() expandAlias("es 2") end},
-      {label="❸ ES Try 3", action=function() expandAlias("es 3") end},
-      {label="❹ ES Try 4", action=function() expandAlias("es 4") end},
-      {label="❺ ES Try 5", action=function() expandAlias("es 5") end},
+  ButtonBar:addButton("🐲 Website", function() Darkmists.OpenWebsite() end)
+
+  ButtonBar:addDropdown("🧰 Modules", {
+    -- Skillup Module
+    {label="🎓 Skillups", children={
+      {label="📜 Skillups", action=function() SkillUps.display() end},
+      {label="🔄 Reset Skillups", action=function() SkillUps.reset() end},
+      {label="❓ Skillups", action=function() expandAlias("dmc help skillups") end},
     }},
-    {label="📊 Show Stats", action=function() expandAlias("es stats") end},
-    {label="⚡ Run", action=function() expandAlias("es run") end},
-    {label="♾️ Auto", action=function() expandAlias("es auto") end},
-    {label="⚠ Missing Essences", action=function() expandAlias("es missing") end},
-    {label="🧹 Reset Session", action=function() expandAlias("es reset") end},
-    {label="🛠 EA Tools", children={
-      {label="🧪 EA Formula Viewer", action=function() Darkmists.OpenEAFormulaParser() end},
-      {label="📜 Alchemy Mat List", action=function()
-          DMUtil.openLocalFile(getMudletHomeDir() .. "/DarkMistsCompanion/assets/alchemy-mat-list.html")
-        end},
-      {label="🔄 EA Save Converter", action=function() Darkmists.OpenEAConverter() end},
+    -- Walk Module
+    {label="👣 Walk", children={
+      {label="📜 Destinations", action=function() expandAlias("walk list") end},
+      {label="📍 Add Current Room", action=function()
+          DMLogger.notify("WALK","<red>finish entering a short destination keyword then press ENTER!")
+          clearCmdLine()
+          appendCmdLine("walk add ")
+          end},
+      {label="🛑 Stop Walking", action=function() expandAlias("walk stop") end},
+      {label="🧭 Zones", action=function() MapColors.AuditCurrentArea() end},
+      {label="❓ Walk", action=function() expandAlias("dmc help walk") end},
     }},
-    {label="❓ Enchant Assist", action=function() expandAlias("dmc help es") end}
-  }},
-  {label="🔎 Item Tracker", children={
-    {label="🏷️ Item Tracker", action=function()
-      expandAlias("dmc help dmid")
-    end},
-    {label="🔮 Offline Item Browser", action=function() Darkmists.OpenItemViewer() end},
-    {label="❓ Item Tracker", action=function()
-      expandAlias("dmc help dmid")
-    end},
-  }}
-})
+    -- Enchant Assist Module
+    {label="🧪 Enchant Assist", children={
+      {label="⚗️ Trials", children={
+        {label="❶ ES Try 1", action=function() expandAlias("es 1") end},
+        {label="❷ ES Try 2", action=function() expandAlias("es 2") end},
+        {label="❸ ES Try 3", action=function() expandAlias("es 3") end},
+        {label="❹ ES Try 4", action=function() expandAlias("es 4") end},
+        {label="❺ ES Try 5", action=function() expandAlias("es 5") end},
+      }},
+      {label="📊 Show Stats", action=function() expandAlias("es stats") end},
+      {label="⚡ Run", action=function() expandAlias("es run") end},
+      {label="♾️ Auto", action=function() expandAlias("es auto") end},
+      {label="⚠ Missing Essences", action=function() expandAlias("es missing") end},
+      {label="🧹 Reset Session", action=function() expandAlias("es reset") end},
+      {label="🛠 EA Tools", children={
+        {label="🧪 EA Formula Viewer", action=function() Darkmists.OpenEAFormulaParser() end},
+        {label="📜 Alchemy Mat List", action=function()
+            DMUtil.openLocalFile(getMudletHomeDir() .. "/DarkMistsCompanion/assets/alchemy-mat-list.html")
+          end},
+        {label="🔄 EA Save Converter", action=function() Darkmists.OpenEAConverter() end},
+      }},
+      {label="❓ Enchant Assist", action=function() expandAlias("dmc help es") end}
+    }},
+    {label="🔎 Item Tracker", children={
+      {label="🏷️ Item Tracker", action=function()
+        expandAlias("dmc help dmid")
+      end},
+      {label="🔮 Offline Item Browser", action=function() Darkmists.OpenItemViewer() end},
+      {label="❓ Item Tracker", action=function()
+        expandAlias("dmc help dmid")
+      end},
+    }}
+  })
 
-ButtonBar:addDropdown("⚙️ Settings", {
+  ButtonBar:addDropdown("⚙️ Settings", {
     {label = "🔄 Reload UI", action = function() Darkmists.PromptSafeReload() end},
     {label = "📊 Toggle UI", action = function() Darkmists.ShowUIIntroMessage(true) end},
     {label="🌞 Light Mode", action=function()
@@ -360,7 +378,7 @@ ButtonBar:addDropdown("⚙️ Settings", {
     ]]--
   })
 
-ButtonBar:addDropdown("❓ Help", {
+  ButtonBar:addDropdown("❓ Help", {
 
   {label="❔ General", action=function()
     expandAlias("dmc help")
@@ -405,6 +423,21 @@ ButtonBar:addDropdown("❓ Help", {
     end},
   }},
 
-})
+  })
 
-DMLogger.log("ButtonBar","Loaded!")
+  return true
+end
+
+function ButtonBar.rebuild()
+  return ButtonBar.build()
+end
+
+function ButtonBar.init()
+  local ok = ButtonBar.build()
+  if ok then
+    DMLogger.log("ButtonBar","Loaded!")
+  end
+  return ok
+end
+
+-- Load-passive module: DarkmistsCore should call ButtonBar.init() during startup.
