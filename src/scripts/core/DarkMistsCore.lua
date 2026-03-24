@@ -212,7 +212,7 @@ function Darkmists.SetUpdateChannel(channel)
   end
   Darkmists.GlobalSettings.updateChannel = channel
   Darkmists.SaveSettings()
-  Darkmists.Log(DarkmistsTheme.purpleTag .. "Darkmists Core", ("Update channel set to: %s"):format(channel))
+  DMLogger.notify(DarkmistsTheme.purpleTag .. "Darkmists Core", ("Update channel set to: %s"):format(channel))
 end
 
 function Darkmists.UpdateFromGitHub(channel)
@@ -590,7 +590,7 @@ function Darkmists.CleanupUI(opts)
   if StatusBar and StatusBar.cleanup then pcall(StatusBar.cleanup) end
   if DMAlertWindow and DMAlertWindow.Hide then pcall(DMAlertWindow.Hide) end
   if StatRoller and StatRoller.destroy then pcall(StatRoller.destroy) end
-  
+
   if opts.uninstall then
     Darkmists.Log(DarkmistsTheme.purpleTag .. "Darkmists Core", "Resetting window borders to default...")
     Darkmists.ResetUILayoutCache()
