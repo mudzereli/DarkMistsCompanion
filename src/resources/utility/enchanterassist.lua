@@ -18,6 +18,7 @@ EnchanterAssist.missing      = {}
 EnchanterAssist.pendingKey   = nil
 EnchanterAssist.sleepRefreshTimer = nil
 EnchanterAssist.sawFlare     = false
+EnchanterAssist._attemptResolved = false
 EnchanterAssist.state        = "idle"
 EnchanterAssist.sessionTrials   = 0
 EnchanterAssist.sessionFormulas = {}
@@ -181,6 +182,21 @@ function EnchanterAssist._nCr(n, r)
   return math.floor(result + 0.5)
 end
 
+function EnchanterAssist._abortAttempt(reason)
+  if EnchanterAssist.state ~= "brewing" and not EnchanterAssist.pendingKey then
+    return
+  end
+
+  EnchanterAssist.state = "idle"
+  EnchanterAssist.pendingKey = nil
+  EnchanterAssist.sawFlare = false
+  EnchanterAssist._attemptResolved = false
+
+  if reason and reason ~= "" then
+    DMLogger.notify(ea_plugin, ea_warn .. "Attempt canceled: " .. ea_text .. reason)
+  end
+end
+
 local highlightMap = {
   ["^(.*) is momentarily encased in an aura of semitranslucent power%."] = {ea_cyan, "(SAVES)"},
   ["^(.*) glows a brief light blue%."] = {ea_light_blue, "(ATTRIBUTES)"},
@@ -311,6 +327,7 @@ function EnchanterAssist.run()
 
           EnchanterAssist.pendingKey = key
           EnchanterAssist.sawFlare = false
+          EnchanterAssist._attemptResolved = false
           EnchanterAssist.sessionTrials = EnchanterAssist.sessionTrials + 1
 
             DMLogger.notify(ea_plugin,
@@ -365,6 +382,7 @@ end
 function EnchanterAssist.finishAttempt()
   EnchanterAssist.sawFlare   = false
   EnchanterAssist.pendingKey = nil
+  EnchanterAssist._attemptResolved = false
 
   EnchanterAssist.state = "idle"
   if EnchanterAssist.autoRun then
@@ -451,6 +469,7 @@ function EnchanterAssist.reset()
   EnchanterAssist.state = "idle"
   EnchanterAssist.pendingKey = nil
   EnchanterAssist.sawFlare = false
+  EnchanterAssist._attemptResolved = false
   EnchanterAssist.sessionTrials     = 0
   EnchanterAssist.sessionFormulas = {}
   EnchanterAssist.missing = {}
@@ -505,27 +524,31 @@ function EnchanterAssist.on_line(ln)
 
   if ln:match("^Total:%s+%d+ essences stored across %d+ materials %(%d+/%d+ total known%)$") then
       if EnchanterAssist.state == "brewing" then
-
-          -- silent-known case
-          if EnchanterAssist.sawFlare
-            and not EnchanterAssist._contains(
-                  EnchanterAssist.attempted,
-                  EnchanterAssist.pendingKey) then
-
-              DMLogger.notify(
-                ea_plugin,
-                ea_good .. "Already Known Formula: " .. ea_text .. EnchanterAssist.pendingKey
-              )
-
-              EnchanterAssist._add(
+        -- silent-known case
+        if EnchanterAssist.sawFlare
+          and not EnchanterAssist._contains(
                 EnchanterAssist.attempted,
-                EnchanterAssist.pendingKey
-              )
+                EnchanterAssist.pendingKey) then
 
-              EnchanterAssist.save()
-          end
+            DMLogger.notify(
+              ea_plugin,
+              ea_good .. "Already Known Formula: " .. ea_text .. EnchanterAssist.pendingKey
+            )
 
-          EnchanterAssist.finishAttempt()
+            EnchanterAssist._add(
+              EnchanterAssist.attempted,
+              EnchanterAssist.pendingKey
+            )
+
+            EnchanterAssist.save()
+            EnchanterAssist._attemptResolved = true
+        end
+
+        if not EnchanterAssist._attemptResolved then
+          return
+        end
+
+        EnchanterAssist.finishAttempt()
       end
       return
   end
@@ -581,11 +604,9 @@ function EnchanterAssist.on_line(ln)
   local m = ln:match("^You do not have essence of (%w+)%.")
   if m then
     DMLogger.notify(ea_plugin, ea_warn .. "Missing Essence: " .. ea_text .. m)
-    dmapi.core.send("put", "key", EnchanterAssist.container)
-    EnchanterAssist._add(EnchanterAssist.missing, string.lower(m))
-    EnchanterAssist._comboIndices = nil
-    EnchanterAssist.save()
-    --EnchanterAssist.finishAttempt()
+    if EnchanterAssist.state == "brewing" then
+      EnchanterAssist._attemptResolved = true
+    end
     return
   end
 
@@ -593,12 +614,16 @@ function EnchanterAssist.on_line(ln)
   or ln:match("^You must only use raw materials")
   or ln:match("^Alchemy only needs one of each kind of ingredient") then
     DMLogger.notify(ea_plugin, ea_bad .. "Bad Materials")
-    --EnchanterAssist.finishAttempt()
+    if EnchanterAssist.state == "brewing" then
+      EnchanterAssist._attemptResolved = true
+    end
     return
   end
   
   if  ln:match("^You botch the brew, and your alchemy process") then
-    --EnchanterAssist.finishAttempt()
+    if EnchanterAssist.state == "brewing" then
+      EnchanterAssist._attemptResolved = true
+    end
     DMLogger.notify(ea_plugin, ea_bad .. "Skill check failed.")
     return
   end
@@ -609,7 +634,9 @@ function EnchanterAssist.on_line(ln)
       EnchanterAssist._add(EnchanterAssist.attempted, EnchanterAssist.pendingKey)
       EnchanterAssist.save()
     end
-    --EnchanterAssist.finishAttempt()
+    if EnchanterAssist.state == "brewing" then
+      EnchanterAssist._attemptResolved = true
+    end
     return
   end
 
@@ -630,7 +657,9 @@ function EnchanterAssist.on_line(ln)
       EnchanterAssist.save()
     end
     dmapi.core.send("alc", "extract", "key")
-    --EnchanterAssist.finishAttempt()
+    if EnchanterAssist.state == "brewing" then
+      EnchanterAssist._attemptResolved = true
+    end
     return
   end
 end
@@ -744,6 +773,14 @@ DarkmistsEvents.add("EnchanterAssist.Vitals", "dmapi.player.vitals.updated", fun
     return
   end
 
+end)
+
+DarkmistsEvents.add("EnchanterAssist.WorldEnter", "dmapi.world.enter", function()
+  EnchanterAssist._abortAttempt("reconnected")
+end)
+
+DarkmistsEvents.add("EnchanterAssist.Disconnect", "sysDisconnectionEvent", function()
+  EnchanterAssist._abortAttempt("disconnected")
 end)
 
 -- ============================================================================
