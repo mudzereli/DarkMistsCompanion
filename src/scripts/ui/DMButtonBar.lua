@@ -218,6 +218,7 @@ function ButtonBar.build()
       {label="📊 Show Stats", action=function() expandAlias("es stats") end},
       {label="⚡ Run", action=function() expandAlias("es run") end},
       {label="♾️ Auto", action=function() expandAlias("es auto") end},
+      {label="🛑 Stop", action=function() EnchanterAssist.hardStop() end},
       {label="⚠ Missing Essences", action=function() expandAlias("es missing") end},
       {label="🧹 Reset Session", action=function() expandAlias("es reset") end},
       {label="🛠 EA Tools", children={

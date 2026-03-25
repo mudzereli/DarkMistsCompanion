@@ -19,6 +19,7 @@ EnchanterAssist.pendingKey   = nil
 EnchanterAssist.sleepRefreshTimer = nil
 EnchanterAssist.sawFlare     = false
 EnchanterAssist._attemptResolved = false
+EnchanterAssist._hardStopRequested = false
 EnchanterAssist.state        = "idle"
 EnchanterAssist.sessionTrials   = 0
 EnchanterAssist.sessionFormulas = {}
@@ -191,10 +192,29 @@ function EnchanterAssist._abortAttempt(reason)
   EnchanterAssist.pendingKey = nil
   EnchanterAssist.sawFlare = false
   EnchanterAssist._attemptResolved = false
+  EnchanterAssist._hardStopRequested = false
 
   if reason and reason ~= "" then
     DMLogger.notify(ea_plugin, ea_warn .. "Attempt canceled: " .. ea_text .. reason)
   end
+end
+
+function EnchanterAssist.hardStop()
+  EnchanterAssist.autoRun = false
+
+  if EnchanterAssist.state == "brewing" then
+    EnchanterAssist._hardStopRequested = true
+    DMLogger.notify(ea_plugin, ea_warn .. "Hard stop armed - finishing current attempt, then stopping.")
+    return
+  end
+
+  EnchanterAssist._hardStopRequested = false
+  EnchanterAssist.state = "idle"
+  EnchanterAssist.pendingKey = nil
+  EnchanterAssist.sawFlare = false
+  EnchanterAssist._attemptResolved = false
+
+  DMLogger.notify(ea_plugin, ea_warn .. "Hard stop complete.")
 end
 
 local highlightMap = {
@@ -385,6 +405,12 @@ function EnchanterAssist.finishAttempt()
   EnchanterAssist._attemptResolved = false
 
   EnchanterAssist.state = "idle"
+  if EnchanterAssist._hardStopRequested then
+      EnchanterAssist._hardStopRequested = false
+      DMLogger.notify(ea_plugin, ea_warn .. "Hard stop complete.")
+      return
+  end
+
   if EnchanterAssist.autoRun then
       EnchanterAssist.run()
   end
@@ -466,6 +492,7 @@ end
 function EnchanterAssist.reset()
   EnchanterAssist._comboIndices = nil
   EnchanterAssist.autoRun = false
+  EnchanterAssist._hardStopRequested = false
   EnchanterAssist.state = "idle"
   EnchanterAssist.pendingKey = nil
   EnchanterAssist.sawFlare = false

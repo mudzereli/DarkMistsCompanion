@@ -760,6 +760,7 @@ DarkmistsAlias.add("^es(?:\\s+(.*))?$", function()
       "  "..c.."es auto    "..dm_muted.."Toggle automatic running mode.\n"..
       "  "..c.."es <1-5>   "..dm_muted.."Set part count (1–5), save configuration, and run.\n"..
       "  "..c.."es run     "..dm_muted.."Execute a single enchantment cycle.\n"..
+      "  "..c.."es stop    "..dm_muted.."Stop after current attempt (or immediately if idle).\n"..
       "  "..c.."es stats   "..dm_muted.."Display session statistics.\n"..
       "  "..c.."es missing "..dm_muted.."Display missing material statistics.\n"..
       "  "..c.."es reset   "..dm_muted.."Reset session statistics.\n\n"..
@@ -777,6 +778,8 @@ DarkmistsAlias.add("^es(?:\\s+(.*))?$", function()
 end)
 
 DarkmistsAlias.add("^es run$", function() EnchanterAssist.run() end)
+
+DarkmistsAlias.add("^es stop$", function() EnchanterAssist.hardStop() end)
 
 DarkmistsAlias.add("^es auto$", function()
   EnchanterAssist.autoRun = not EnchanterAssist.autoRun
