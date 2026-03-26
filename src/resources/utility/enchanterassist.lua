@@ -11,6 +11,7 @@ EnchanterAssist.enabled      = true
 EnchanterAssist.autoRun      = false
 EnchanterAssist.playSoundOnDiscover = true
 EnchanterAssist.partCount    = 5
+EnchanterAssist.deterministicOrder = false
 
 EnchanterAssist.attempted    = {}
 EnchanterAssist.missing      = {}
@@ -183,6 +184,43 @@ function EnchanterAssist._nCr(n, r)
   return math.floor(result + 0.5)
 end
 
+function EnchanterAssist._pickRandomUnattemptedCombination(pool, r)
+  local n = #pool
+  if n < r then
+    return nil, nil
+  end
+
+  local indices = {}
+  for i = 1, r do
+    indices[i] = i
+  end
+
+  local selectedPicks = nil
+  local selectedKey = nil
+  local seen = 0
+
+  while indices do
+    local picks = {}
+    for i = 1, r do
+      table.insert(picks, pool[indices[i]])
+    end
+    table.sort(picks)
+
+    local key = r .. ":" .. table.concat(picks, "|")
+    if not EnchanterAssist.attempted[key] then
+      seen = seen + 1
+      if math.random(seen) == 1 then
+        selectedPicks = picks
+        selectedKey = key
+      end
+    end
+
+    indices = EnchanterAssist._nextCombination(indices, n, r)
+  end
+
+  return selectedPicks, selectedKey
+end
+
 function EnchanterAssist._isBelowRestThreshold()
   if not dmapi or not dmapi.player or not dmapi.player.vitals then
     return false
@@ -308,6 +346,7 @@ function EnchanterAssist.save()
       sleepType = EnchanterAssist.sleepType,
       drainItem = EnchanterAssist.drainItem,
       playSoundOnDiscover = EnchanterAssist.playSoundOnDiscover,
+      deterministicOrder = EnchanterAssist.deterministicOrder,
     },
     attempted = EnchanterAssist.attempted,
     missing   = EnchanterAssist.missing
@@ -332,6 +371,7 @@ function EnchanterAssist.load()
     EnchanterAssist.playSoundOnDiscover = data.config.playSoundOnDiscover ~= false
     EnchanterAssist.sleepType = data.config.sleepType or 1
     EnchanterAssist.drainItem = data.config.drainItem or "potion"
+    EnchanterAssist.deterministicOrder = data.config.deterministicOrder ~= false
   end
   Darkmists.Log(ea_plugin, "Data loaded from: " .. ea_text .. EnchanterAssist._savePath)
 end
@@ -377,49 +417,70 @@ function EnchanterAssist.run()
       return
   end
 
-  -- initialize indices if needed
-  if not EnchanterAssist._comboIndices then
+  if EnchanterAssist.deterministicOrder then
+    -- initialize indices if needed
+    if not EnchanterAssist._comboIndices then
       EnchanterAssist._comboIndices = {}
       for i = 1, r do
-          EnchanterAssist._comboIndices[i] = i
+        EnchanterAssist._comboIndices[i] = i
       end
-  end
+    end
 
-  local indices = EnchanterAssist._comboIndices
+    local indices = EnchanterAssist._comboIndices
 
-  while indices do
+    while indices do
       -- build key from indices
       local picks = {}
       for i = 1, r do
-          table.insert(picks, pool[indices[i]])
+        table.insert(picks, pool[indices[i]])
       end
       table.sort(picks)
 
       local key = r .. ":" .. table.concat(picks, "|")
 
       if not EnchanterAssist.attempted[key] then
-          -- store next state for future call
-          EnchanterAssist._comboIndices =
-              EnchanterAssist._nextCombination(indices, n, r)
+        -- store next state for future call
+        EnchanterAssist._comboIndices =
+            EnchanterAssist._nextCombination(indices, n, r)
 
-          EnchanterAssist.pendingKey = key
-          EnchanterAssist.sawFlare = false
-          EnchanterAssist._attemptResolved = false
-          EnchanterAssist.sessionTrials = EnchanterAssist.sessionTrials + 1
+        EnchanterAssist.pendingKey = key
+        EnchanterAssist.sawFlare = false
+        EnchanterAssist._attemptResolved = false
+        EnchanterAssist.sessionTrials = EnchanterAssist.sessionTrials + 1
 
-            DMLogger.notify(ea_plugin,
-              ea_muted .. "TRY " .. ea_text .. key .. "\n")
+        DMLogger.notify(ea_plugin,
+          ea_muted .. "TRY " .. ea_text .. key .. "\n")
 
-          EnchanterAssist.state = "brewing"
-          dmapi.core.send("get", "key", EnchanterAssist.container)
-          dmapi.core.send("alchemy", "key", table.concat(picks, " "))
-          dmapi.core.send("alchemy essence")
-          dmapi.core.send("\t")
-          return
+        EnchanterAssist.state = "brewing"
+        dmapi.core.send("get", "key", EnchanterAssist.container)
+        dmapi.core.send("alchemy", "key", table.concat(picks, " "))
+        dmapi.core.send("alchemy essence")
+        dmapi.core.send("\t")
+        return
       end
 
       indices = EnchanterAssist._nextCombination(indices, n, r)
       EnchanterAssist._comboIndices = indices
+    end
+  else
+    local picks, key = EnchanterAssist._pickRandomUnattemptedCombination(pool, r)
+
+    if picks and key then
+      EnchanterAssist.pendingKey = key
+      EnchanterAssist.sawFlare = false
+      EnchanterAssist._attemptResolved = false
+      EnchanterAssist.sessionTrials = EnchanterAssist.sessionTrials + 1
+
+      DMLogger.notify(ea_plugin,
+        ea_muted .. "TRY " .. ea_text .. key .. "\n")
+
+      EnchanterAssist.state = "brewing"
+      dmapi.core.send("get", "key", EnchanterAssist.container)
+      dmapi.core.send("alchemy", "key", table.concat(picks, " "))
+      dmapi.core.send("alchemy essence")
+      dmapi.core.send("\t")
+      return
+    end
   end
 
   -- exhausted

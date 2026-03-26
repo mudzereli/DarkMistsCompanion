@@ -769,6 +769,7 @@ DarkmistsAlias.add("^es(?:\\s+(.*))?$", function()
       "  "..c.."es set sleeper <name>           "..dm_muted.."Set sleeper target.\n"..
       "  "..c.."es set sleepmode <sleep|potion> "..dm_muted.."Choose restoration behavior type.\n"..
       "  "..c.."es set potion <item>            "..dm_muted.."Set item used for quaffing.\n"..
+      "  "..c.."es set order <seq|rand>         "..dm_muted.."Set trial selection order mode.\n"..
       "  "..c.."es sound                        "..dm_muted.."Toggle formula discovery sound\n\n"..
       dm_header_color.."Control:\n"..
       "  "..c.."es enable / es disable          "..dm_muted.."Enable or disable EnchanterAssist entirely.\n"
@@ -832,6 +833,19 @@ DarkmistsAlias.add("^es set potion (.+)$", function()
   EnchanterAssist.drainItem = matches[2]
   EnchanterAssist.save()
   DMLogger.notify(EnchanterAssist.color.."EnchanterAssist","Potion item set to: " .. EnchanterAssist.drainItem)
+end)
+
+-- es set order <seq|rand> (also supports deterministic/random)
+DarkmistsAlias.add("^es set order (seq|det|deterministic|rand|random)$", function()
+  local mode = matches[2]
+  EnchanterAssist.deterministicOrder =
+    (mode == "seq" or mode == "det" or mode == "deterministic")
+  EnchanterAssist._comboIndices = nil
+  EnchanterAssist.save()
+  DMLogger.notify(
+    EnchanterAssist.color.."EnchanterAssist",
+    "Order mode set to: " .. (EnchanterAssist.deterministicOrder and "seq" or "rand")
+  )
 end)
 
 -- es enable / disable
