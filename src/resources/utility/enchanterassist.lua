@@ -183,6 +183,58 @@ function EnchanterAssist._nCr(n, r)
   return math.floor(result + 0.5)
 end
 
+function EnchanterAssist._isBelowRestThreshold()
+  if not dmapi or not dmapi.player or not dmapi.player.vitals then
+    return false
+  end
+
+  local v = dmapi.player.vitals
+  local manaPct = v.mnPct or 0
+  local movePct = v.mvPct or 0
+
+  return (manaPct < 20) or (movePct < 20)
+end
+
+function EnchanterAssist._startRestCycle(message)
+  if EnchanterAssist.state == "resting" then
+    return true
+  end
+
+  if dmapi and dmapi.player and dmapi.player.status and dmapi.player.status.sleeping then
+    EnchanterAssist.state = "resting"
+    return true
+  end
+
+  EnchanterAssist.state = "resting"
+
+  if message and message ~= "" then
+    DMLogger.notify(ea_plugin, message)
+  end
+
+  local v = dmapi.player.vitals
+  local manaPct = v.mnPct or 0
+  local movePct = v.mvPct or 0
+
+  if EnchanterAssist.sleepType == 1 then
+    dmapi.core.send("get", EnchanterAssist.sleeper, EnchanterAssist.container)
+    dmapi.core.send("drop", EnchanterAssist.sleeper)
+    dmapi.core.send("sleep", EnchanterAssist.sleeper)
+    tempTimer(3, EnchanterAssist._ensureSleepTimer)
+  else
+    if manaPct < 90 then
+      dmapi.core.send("get", EnchanterAssist.drainItem, EnchanterAssist.container)
+      dmapi.core.send("quaff", EnchanterAssist.drainItem)
+    end
+
+    if movePct < 90 then
+      dmapi.core.send("get", "refreshment", EnchanterAssist.container)
+      dmapi.core.send("recite", "refreshment", "self")
+    end
+  end
+
+  return true
+end
+
 function EnchanterAssist._abortAttempt(reason)
   if EnchanterAssist.state ~= "brewing" and not EnchanterAssist.pendingKey then
     return
@@ -305,6 +357,11 @@ function EnchanterAssist.run()
     end
 
     DMLogger.notify(ea_plugin, msg)
+    return
+  end
+
+  if EnchanterAssist._isBelowRestThreshold() then
+    EnchanterAssist._startRestCycle(ea_warn .. "Low resources - resting before next trial.")
     return
   end
 
@@ -594,36 +651,7 @@ function EnchanterAssist.on_line(ln)
     -- Do NOT mark attempt
     -- Do NOT advance combo index
     -- Keep pendingKey intact so it retries after rest
-
-    EnchanterAssist.state = "resting"
-
-    DMLogger.notify(
-      ea_plugin,
-      ea_good .. "Too tired - Forcing Rest"
-    )
-
-    local v = dmapi.player.vitals
-    local manaPct = v.mnPct or 0
-    local movePct = v.mvPct or 0
-
-    if EnchanterAssist.sleepType == 1 then
-      -- Sleep mode
-      dmapi.core.send("get", EnchanterAssist.sleeper, EnchanterAssist.container)
-      dmapi.core.send("drop", EnchanterAssist.sleeper)
-      dmapi.core.send("sleep", EnchanterAssist.sleeper)
-      tempTimer(3, EnchanterAssist._ensureSleepTimer)
-    else
-      -- Potion mode (match vitals logic exactly)
-      if manaPct < 90 then
-        dmapi.core.send("get", EnchanterAssist.drainItem, EnchanterAssist.container)
-        dmapi.core.send("quaff", EnchanterAssist.drainItem)
-      end
-
-      if movePct < 90 then
-        dmapi.core.send("get", "refreshment", EnchanterAssist.container)
-        dmapi.core.send("recite", "refreshment", "self")
-      end
-    end
+    EnchanterAssist._startRestCycle(ea_good .. "Too tired - Forcing Rest")
 
     return
   end
@@ -769,33 +797,12 @@ DarkmistsEvents.add("EnchanterAssist.Vitals", "dmapi.player.vitals.updated", fun
   -- IF LOW RESOURCES
   -------------------------------------------------
   if low then
-
-    -- Never interrupt brewing
+    -- Never interrupt brewing. Let current attempt resolve, then rest gate blocks next trial.
     if EnchanterAssist.state == "brewing" then
       return
     end
 
-    -- Already trying to rest? Don't resend commands
-    if EnchanterAssist.state == "resting" then
-      return
-    end
-
-    EnchanterAssist.state = "resting"
-
-    if EnchanterAssist.sleepType == 1 then
-      dmapi.core.send("get", EnchanterAssist.sleeper, EnchanterAssist.container)
-      dmapi.core.send("drop", EnchanterAssist.sleeper)
-      dmapi.core.send("sleep", EnchanterAssist.sleeper)
-    else
-      if manaPct < 20 then
-        dmapi.core.send("get", EnchanterAssist.drainItem, EnchanterAssist.container)
-        dmapi.core.send("quaff", EnchanterAssist.drainItem)
-      end
-      if movePct < 20 then
-        dmapi.core.send("get", "refreshment", EnchanterAssist.container)
-        dmapi.core.send("recite", "refreshment", "self")
-      end
-    end
+    EnchanterAssist._startRestCycle()
 
     return
   end
