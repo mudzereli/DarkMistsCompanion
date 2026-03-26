@@ -8,15 +8,29 @@ AffectsWindow = AffectsWindow or {}
 -- Configuration
 -- ---------------------------------------------------------------------------
 
-AffectsWindow.config = {
-  fontSize       = Darkmists.GlobalSettings.fontSize,
-  fontName       = Darkmists.GlobalSettings.fontName,
-  updateInterval = Darkmists.GlobalSettings.affectsWindowUpdateIntervalSeconds,
-  textLengthAffectName = Darkmists.GlobalSettings.affectsWindowAffectNameLength,
-  textLengthAffectMod  = Darkmists.GlobalSettings.affectsWindowAffectModLength,
-  deleteOriginalLines  = Darkmists.GlobalSettings.affectsWindowDeleteOriginalLines,
+AffectsWindow.config = AffectsWindow.config or {
+  fontSize       = 10,
+  fontName       = "Bitstream Vera Sans Mono",
+  updateInterval = 1,
+  textLengthAffectName = 30,
+  textLengthAffectMod  = 20,
+  deleteOriginalLines  = false,
   timeRatio      = 30, -- 1 real second = 30 game seconds
 }
+
+function AffectsWindow.refreshConfig()
+  local gs = Darkmists and Darkmists.GlobalSettings or {}
+  local cfg = AffectsWindow.config
+
+  cfg.fontSize = gs.fontSize or cfg.fontSize
+  cfg.fontName = gs.fontName or cfg.fontName
+  cfg.updateInterval = gs.affectsWindowUpdateIntervalSeconds or cfg.updateInterval
+  cfg.textLengthAffectName = gs.affectsWindowAffectNameLength or cfg.textLengthAffectName
+  cfg.textLengthAffectMod = gs.affectsWindowAffectModLength or cfg.textLengthAffectMod
+  if gs.affectsWindowDeleteOriginalLines ~= nil then
+    cfg.deleteOriginalLines = gs.affectsWindowDeleteOriginalLines
+  end
+end
 
 -- ---------------------------------------------------------------------------
 -- Runtime State
@@ -515,6 +529,7 @@ local function registerHandlers()
 end
 
 function AffectsWindow.init()
+  AffectsWindow.refreshConfig()
   AffectsWindow.create()
   if AffectsWindow.initialized then
     return

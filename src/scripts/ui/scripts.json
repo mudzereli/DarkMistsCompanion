@@ -6,6 +6,12 @@
               "isFolder": "no"
        },
        {
+              "name": "DMAffectsWindow",
+              "isActive": "yes",
+              "script": "",
+              "isFolder": "no"
+       },
+       {
               "name": "DMMinimap",
               "isActive": "yes",
               "script": "",

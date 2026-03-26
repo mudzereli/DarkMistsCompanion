@@ -590,6 +590,7 @@ function Darkmists.CleanupUI(opts)
   if StatusBar and StatusBar.cleanup then pcall(StatusBar.cleanup) end
   if DMAlertWindow and DMAlertWindow.Hide then pcall(DMAlertWindow.Hide) end
   if StatRoller and StatRoller.destroy then pcall(StatRoller.destroy) end
+  if AffectsWindow and AffectsWindow.destroy then pcall(AffectsWindow.destroy) end
 
   if opts.uninstall then
     Darkmists.Log(DarkmistsTheme.purpleTag .. "Darkmists Core", "Resetting window borders to default...")
@@ -608,7 +609,7 @@ function Darkmists.LoadUIScripts()
   StatusBar.init()
   dofile(getMudletHomeDir() .. "/DarkMistsCompanion/ui/whowindow.lua")
   dofile(getMudletHomeDir() .. "/DarkMistsCompanion/ui/chathistory.lua")
-  dofile(getMudletHomeDir() .. "/DarkMistsCompanion/ui/affectswindow.lua")
+  AffectsWindow.init()
   dofile(getMudletHomeDir() .. "/DarkMistsCompanion/ui/scorepanel.lua")
   DarkMistsMiniMap.init()
   dofile(getMudletHomeDir() .. "/DarkMistsCompanion/utility/mapcolor.lua")
