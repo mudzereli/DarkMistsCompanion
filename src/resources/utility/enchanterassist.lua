@@ -32,6 +32,7 @@ EnchanterAssist.drainItem    = "potion"
 
 EnchanterAssist._lastVitalsCheck = 0
 EnchanterAssist._comboIndices = nil
+EnchanterAssist._wakePending = false
 EnchanterAssist._wrapped     = false
 EnchanterAssist._savePath    = getMudletHomeDir() .. "/ea_data.lua"
 EnchanterAssist.color = DarkmistsTheme.accentTag
@@ -233,12 +234,50 @@ function EnchanterAssist._isBelowRestThreshold()
   return (manaPct < 20) or (movePct < 20)
 end
 
+function EnchanterAssist._wakeThenResumeRun(message)
+  if not (dmapi and dmapi.player and dmapi.player.status and dmapi.player.status.sleeping) then
+    return false
+  end
+
+  EnchanterAssist.state = "resting"
+
+  if message and message ~= "" then
+    DMLogger.notify(ea_plugin, message)
+  end
+
+  if EnchanterAssist._wakePending then
+    return true
+  end
+
+  EnchanterAssist._wakePending = true
+  dmapi.core.send("wake")
+
+  tempTimer(0.4, function()
+    EnchanterAssist._wakePending = false
+
+    if dmapi and dmapi.player and dmapi.player.status and dmapi.player.status.sleeping then
+      return
+    end
+
+    if EnchanterAssist.state == "resting" then
+      EnchanterAssist.state = "idle"
+    end
+
+    EnchanterAssist.run()
+  end)
+
+  return true
+end
+
 function EnchanterAssist._startRestCycle(message)
   if EnchanterAssist.state == "resting" then
     return true
   end
 
   if dmapi and dmapi.player and dmapi.player.status and dmapi.player.status.sleeping then
+    if EnchanterAssist.sleepType == 0 then
+      return EnchanterAssist._wakeThenResumeRun(ea_warn .. "Potion mode active - waking before restore.")
+    end
     EnchanterAssist.state = "resting"
     return true
   end
@@ -283,6 +322,7 @@ function EnchanterAssist._abortAttempt(reason)
   EnchanterAssist.sawFlare = false
   EnchanterAssist._attemptResolved = false
   EnchanterAssist._hardStopRequested = false
+  EnchanterAssist._wakePending = false
 
   if reason and reason ~= "" then
     DMLogger.notify(ea_plugin, ea_warn .. "Attempt canceled: " .. ea_text .. reason)
@@ -291,6 +331,7 @@ end
 
 function EnchanterAssist.hardStop()
   EnchanterAssist.autoRun = false
+  EnchanterAssist._wakePending = false
 
   if EnchanterAssist.state == "brewing" then
     EnchanterAssist._hardStopRequested = true
@@ -397,6 +438,10 @@ function EnchanterAssist.run()
     end
 
     DMLogger.notify(ea_plugin, msg)
+    return
+  end
+
+  if EnchanterAssist._wakeThenResumeRun(ea_warn .. "Already sleeping - waking before attempt.") then
     return
   end
 
@@ -609,6 +654,7 @@ end
 
 function EnchanterAssist.reset()
   EnchanterAssist._comboIndices = nil
+  EnchanterAssist._wakePending = false
   EnchanterAssist.autoRun = false
   EnchanterAssist._hardStopRequested = false
   EnchanterAssist.state = "idle"
@@ -617,13 +663,12 @@ function EnchanterAssist.reset()
   EnchanterAssist._attemptResolved = false
   EnchanterAssist.sessionTrials     = 0
   EnchanterAssist.sessionFormulas = {}
-  EnchanterAssist.missing = {}
 
   math.randomseed(os.time())   -- seed once per session
   EnchanterAssist._shuffleMaterials()
 
   EnchanterAssist.save()
-  DMLogger.notify(ea_plugin, ea_good .. "Reset complete, Attempts Preserved.")
+  DMLogger.notify(ea_plugin, ea_good .. "Reset complete, Attempts + Missing materials preserved.")
 end
 
 function EnchanterAssist.statsMissing()
