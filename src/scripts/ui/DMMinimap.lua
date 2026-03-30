@@ -1,13 +1,25 @@
 DarkMistsMiniMap = DarkMistsMiniMap or {}
+DarkMistsMiniMap.dock = DarkMistsMiniMap.dock or nil
 
--- Geometry snapshot at load time (intentional: matches original behavior)
-local dock = Darkmists.getSmartDockGeometry()
+function DarkMistsMiniMap.configure()
+  if Darkmists and Darkmists.getSmartDockGeometry then
+    DarkMistsMiniMap.dock = Darkmists.getSmartDockGeometry()
+  else
+    DarkMistsMiniMap.dock = {
+      x = 0,
+      width = "100%"
+    }
+  end
+end
 
 -- -------------------------------------------------------------------
 -- UI Creation
 -- -------------------------------------------------------------------
 function DarkMistsMiniMap.create()
   if DarkMistsMiniMap.container then return end
+
+  DarkMistsMiniMap.configure()
+  local dock = DarkMistsMiniMap.dock or { x = 0, width = "100%" }
 
   DarkMistsMiniMap.container = Adjustable.Container:new({
     name = "MiniMapContainer",
@@ -50,7 +62,7 @@ function DarkMistsMiniMap.create()
     width = "100%", height = "90%"
   }, DarkMistsMiniMap.container)
 
-  Darkmists.Log("MiniMapContainer","Container Created!")
+  DMLogger.log(DarkmistsTheme.greenTag .. "MiniMapContainer","Container Created!")
 end
 
 function DarkMistsMiniMap.destroy()
@@ -59,6 +71,8 @@ function DarkMistsMiniMap.destroy()
     DarkMistsMiniMap.container:delete()
     DarkMistsMiniMap.container = nil
   end
+  DarkMistsMiniMap.header = nil
+  DarkMistsMiniMap.minimap = nil
 end
 -- -------------------------------------------------------------------
 -- Update Display
@@ -104,10 +118,10 @@ end
 -- Event Management
 -- -------------------------------------------------------------------
 function DarkMistsMiniMap.registerEvents()
-  Darkmists.Log("MiniMapContainer","Registering Events with EventHandlerManager")
+  DMLogger.log(DarkmistsTheme.greenTag .. "MiniMapContainer","Registering Events with EventHandlerManager")
   DarkmistsEvents.add("MiniMapMousePress", "sysMapWindowMousePressEvent", DarkMistsMiniMap.update)
   DarkmistsEvents.add("MiniMapPrompt", "dmapi.world.prompt", DarkMistsMiniMap.update)
-  Darkmists.Log("MiniMapContainer","Events Registered!")
+  DMLogger.log(DarkmistsTheme.greenTag .. "MiniMapContainer","Events Registered!")
 end
 
 -- -------------------------------------------------------------------
@@ -151,7 +165,7 @@ local function initMiniMap()
   if DarkMistsMiniMap.container then return end
   DarkMistsMiniMap.create()
   DarkMistsMiniMap.registerEvents()
-  Darkmists.Log("MiniMapContainer","MiniMap Created!")
+  DMLogger.log(DarkmistsTheme.greenTag .. "MiniMapContainer","MiniMap Created!")
   -- update and show immediately
   DarkMistsMiniMap.update()
   install_sanitize_override()
@@ -168,13 +182,15 @@ local function initMiniMap()
     end)
   end
 end
+
 -- Public initializer: create now if connected, otherwise register a one-shot
 -- sysConnectionEvent handler and unregister it after first successful connect.
-function DarkMistsMiniMap.Init()
+function DarkMistsMiniMap.init()
+  DarkMistsMiniMap.configure()
   local _, _, connected = getConnectionInfo()
   if connected then
     initMiniMap()
-    return
+    return true
   end
 
   -- Register a one-shot connection handler via DarkmistsEvents so it will be
@@ -188,5 +204,12 @@ function DarkMistsMiniMap.Init()
     end,
     true
   )
+
+  return true
+end
+
+function DarkMistsMiniMap.rebuild()
+  DarkMistsMiniMap.destroy()
+  return DarkMistsMiniMap.init()
 end
 

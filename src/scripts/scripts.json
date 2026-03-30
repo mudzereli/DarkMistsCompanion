@@ -28,5 +28,11 @@
               "isActive": "yes",
               "script": "",
               "isFolder": "yes"
+       },
+       {
+              "name": "ui",
+              "isActive": "yes",
+              "script": "",
+              "isFolder": "yes"
        }
 ]

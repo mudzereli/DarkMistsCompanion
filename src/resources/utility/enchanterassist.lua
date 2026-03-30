@@ -11,6 +11,7 @@ EnchanterAssist.enabled      = true
 EnchanterAssist.autoRun      = false
 EnchanterAssist.playSoundOnDiscover = true
 EnchanterAssist.partCount    = 5
+EnchanterAssist.deterministicOrder = false
 
 EnchanterAssist.attempted    = {}
 EnchanterAssist.missing      = {}
@@ -18,6 +19,8 @@ EnchanterAssist.missing      = {}
 EnchanterAssist.pendingKey   = nil
 EnchanterAssist.sleepRefreshTimer = nil
 EnchanterAssist.sawFlare     = false
+EnchanterAssist._attemptResolved = false
+EnchanterAssist._hardStopRequested = false
 EnchanterAssist.state        = "idle"
 EnchanterAssist.sessionTrials   = 0
 EnchanterAssist.sessionFormulas = {}
@@ -29,6 +32,7 @@ EnchanterAssist.drainItem    = "potion"
 
 EnchanterAssist._lastVitalsCheck = 0
 EnchanterAssist._comboIndices = nil
+EnchanterAssist._wakePending = false
 EnchanterAssist._wrapped     = false
 EnchanterAssist._savePath    = getMudletHomeDir() .. "/ea_data.lua"
 EnchanterAssist.color = DarkmistsTheme.accentTag
@@ -181,6 +185,169 @@ function EnchanterAssist._nCr(n, r)
   return math.floor(result + 0.5)
 end
 
+function EnchanterAssist._pickRandomUnattemptedCombination(pool, r)
+  local n = #pool
+  if n < r then
+    return nil, nil
+  end
+
+  local indices = {}
+  for i = 1, r do
+    indices[i] = i
+  end
+
+  local selectedPicks = nil
+  local selectedKey = nil
+  local seen = 0
+
+  while indices do
+    local picks = {}
+    for i = 1, r do
+      table.insert(picks, pool[indices[i]])
+    end
+    table.sort(picks)
+
+    local key = r .. ":" .. table.concat(picks, "|")
+    if not EnchanterAssist.attempted[key] then
+      seen = seen + 1
+      if math.random(seen) == 1 then
+        selectedPicks = picks
+        selectedKey = key
+      end
+    end
+
+    indices = EnchanterAssist._nextCombination(indices, n, r)
+  end
+
+  return selectedPicks, selectedKey
+end
+
+function EnchanterAssist._isBelowRestThreshold()
+  if not dmapi or not dmapi.player or not dmapi.player.vitals then
+    return false
+  end
+
+  local v = dmapi.player.vitals
+  local manaPct = v.mnPct or 0
+  local movePct = v.mvPct or 0
+
+  return (manaPct < 20) or (movePct < 20)
+end
+
+function EnchanterAssist._wakeThenResumeRun(message)
+  if not (dmapi and dmapi.player and dmapi.player.status and dmapi.player.status.sleeping) then
+    return false
+  end
+
+  EnchanterAssist.state = "resting"
+
+  if message and message ~= "" then
+    DMLogger.notify(ea_plugin, message)
+  end
+
+  if EnchanterAssist._wakePending then
+    return true
+  end
+
+  EnchanterAssist._wakePending = true
+  dmapi.core.send("wake")
+
+  tempTimer(0.4, function()
+    EnchanterAssist._wakePending = false
+
+    if dmapi and dmapi.player and dmapi.player.status and dmapi.player.status.sleeping then
+      return
+    end
+
+    if EnchanterAssist.state == "resting" then
+      EnchanterAssist.state = "idle"
+    end
+
+    EnchanterAssist.run()
+  end)
+
+  return true
+end
+
+function EnchanterAssist._startRestCycle(message)
+  if EnchanterAssist.state == "resting" then
+    return true
+  end
+
+  if dmapi and dmapi.player and dmapi.player.status and dmapi.player.status.sleeping then
+    if EnchanterAssist.sleepType == 0 then
+      return EnchanterAssist._wakeThenResumeRun(ea_warn .. "Potion mode active - waking before restore.")
+    end
+    EnchanterAssist.state = "resting"
+    return true
+  end
+
+  EnchanterAssist.state = "resting"
+
+  if message and message ~= "" then
+    DMLogger.notify(ea_plugin, message)
+  end
+
+  local v = dmapi.player.vitals
+  local manaPct = v.mnPct or 0
+  local movePct = v.mvPct or 0
+
+  if EnchanterAssist.sleepType == 1 then
+    dmapi.core.send("get", EnchanterAssist.sleeper, EnchanterAssist.container)
+    dmapi.core.send("drop", EnchanterAssist.sleeper)
+    dmapi.core.send("sleep", EnchanterAssist.sleeper)
+    tempTimer(3, EnchanterAssist._ensureSleepTimer)
+  else
+    if manaPct < 90 then
+      dmapi.core.send("get", EnchanterAssist.drainItem, EnchanterAssist.container)
+      dmapi.core.send("quaff", EnchanterAssist.drainItem)
+    end
+
+    if movePct < 90 then
+      dmapi.core.send("get", "refreshment", EnchanterAssist.container)
+      dmapi.core.send("recite", "refreshment", "self")
+    end
+  end
+
+  return true
+end
+
+function EnchanterAssist._abortAttempt(reason)
+  if EnchanterAssist.state ~= "brewing" and not EnchanterAssist.pendingKey then
+    return
+  end
+
+  EnchanterAssist.state = "idle"
+  EnchanterAssist.pendingKey = nil
+  EnchanterAssist.sawFlare = false
+  EnchanterAssist._attemptResolved = false
+  EnchanterAssist._hardStopRequested = false
+  EnchanterAssist._wakePending = false
+
+  if reason and reason ~= "" then
+    DMLogger.notify(ea_plugin, ea_warn .. "Attempt canceled: " .. ea_text .. reason)
+  end
+end
+
+function EnchanterAssist.hardStop()
+  EnchanterAssist.autoRun = false
+  EnchanterAssist._wakePending = false
+
+  if EnchanterAssist.state == "brewing" then
+    EnchanterAssist._hardStopRequested = true
+    DMLogger.notify(ea_plugin, ea_warn .. "Hard stop armed - finishing current attempt, then stopping.")
+    return
+  end
+
+  EnchanterAssist._hardStopRequested = false
+  EnchanterAssist.state = "idle"
+  EnchanterAssist.pendingKey = nil
+  EnchanterAssist.sawFlare = false
+  EnchanterAssist._attemptResolved = false
+
+  DMLogger.notify(ea_plugin, ea_warn .. "Hard stop complete.")
+end
+
 local highlightMap = {
   ["^(.*) is momentarily encased in an aura of semitranslucent power%."] = {ea_cyan, "(SAVES)"},
   ["^(.*) glows a brief light blue%."] = {ea_light_blue, "(ATTRIBUTES)"},
@@ -220,6 +387,7 @@ function EnchanterAssist.save()
       sleepType = EnchanterAssist.sleepType,
       drainItem = EnchanterAssist.drainItem,
       playSoundOnDiscover = EnchanterAssist.playSoundOnDiscover,
+      deterministicOrder = EnchanterAssist.deterministicOrder,
     },
     attempted = EnchanterAssist.attempted,
     missing   = EnchanterAssist.missing
@@ -244,6 +412,7 @@ function EnchanterAssist.load()
     EnchanterAssist.playSoundOnDiscover = data.config.playSoundOnDiscover ~= false
     EnchanterAssist.sleepType = data.config.sleepType or 1
     EnchanterAssist.drainItem = data.config.drainItem or "potion"
+    EnchanterAssist.deterministicOrder = data.config.deterministicOrder ~= false
   end
   Darkmists.Log(ea_plugin, "Data loaded from: " .. ea_text .. EnchanterAssist._savePath)
 end
@@ -272,6 +441,15 @@ function EnchanterAssist.run()
     return
   end
 
+  if EnchanterAssist._wakeThenResumeRun(ea_warn .. "Already sleeping - waking before attempt.") then
+    return
+  end
+
+  if EnchanterAssist._isBelowRestThreshold() then
+    EnchanterAssist._startRestCycle(ea_warn .. "Low resources - resting before next trial.")
+    return
+  end
+
   local pool = EnchanterAssist._buildPool()
   local n = #pool
   local r = EnchanterAssist.partCount
@@ -284,48 +462,70 @@ function EnchanterAssist.run()
       return
   end
 
-  -- initialize indices if needed
-  if not EnchanterAssist._comboIndices then
+  if EnchanterAssist.deterministicOrder then
+    -- initialize indices if needed
+    if not EnchanterAssist._comboIndices then
       EnchanterAssist._comboIndices = {}
       for i = 1, r do
-          EnchanterAssist._comboIndices[i] = i
+        EnchanterAssist._comboIndices[i] = i
       end
-  end
+    end
 
-  local indices = EnchanterAssist._comboIndices
+    local indices = EnchanterAssist._comboIndices
 
-  while indices do
+    while indices do
       -- build key from indices
       local picks = {}
       for i = 1, r do
-          table.insert(picks, pool[indices[i]])
+        table.insert(picks, pool[indices[i]])
       end
       table.sort(picks)
 
       local key = r .. ":" .. table.concat(picks, "|")
 
       if not EnchanterAssist.attempted[key] then
-          -- store next state for future call
-          EnchanterAssist._comboIndices =
-              EnchanterAssist._nextCombination(indices, n, r)
+        -- store next state for future call
+        EnchanterAssist._comboIndices =
+            EnchanterAssist._nextCombination(indices, n, r)
 
-          EnchanterAssist.pendingKey = key
-          EnchanterAssist.sawFlare = false
-          EnchanterAssist.sessionTrials = EnchanterAssist.sessionTrials + 1
+        EnchanterAssist.pendingKey = key
+        EnchanterAssist.sawFlare = false
+        EnchanterAssist._attemptResolved = false
+        EnchanterAssist.sessionTrials = EnchanterAssist.sessionTrials + 1
 
-            DMLogger.notify(ea_plugin,
-              ea_muted .. "TRY " .. ea_text .. key .. "\n")
+        DMLogger.notify(ea_plugin,
+          ea_muted .. "TRY " .. ea_text .. key .. "\n")
 
-          EnchanterAssist.state = "brewing"
-          dmapi.core.send("get", "key", EnchanterAssist.container)
-          dmapi.core.send("alchemy", "key", table.concat(picks, " "))
-          dmapi.core.send("alchemy essence")
-          dmapi.core.send("\t")
-          return
+        EnchanterAssist.state = "brewing"
+        dmapi.core.send("get", "key", EnchanterAssist.container)
+        dmapi.core.send("alchemy", "key", table.concat(picks, " "))
+        dmapi.core.send("alchemy essence")
+        dmapi.core.send("\t")
+        return
       end
 
       indices = EnchanterAssist._nextCombination(indices, n, r)
       EnchanterAssist._comboIndices = indices
+    end
+  else
+    local picks, key = EnchanterAssist._pickRandomUnattemptedCombination(pool, r)
+
+    if picks and key then
+      EnchanterAssist.pendingKey = key
+      EnchanterAssist.sawFlare = false
+      EnchanterAssist._attemptResolved = false
+      EnchanterAssist.sessionTrials = EnchanterAssist.sessionTrials + 1
+
+      DMLogger.notify(ea_plugin,
+        ea_muted .. "TRY " .. ea_text .. key .. "\n")
+
+      EnchanterAssist.state = "brewing"
+      dmapi.core.send("get", "key", EnchanterAssist.container)
+      dmapi.core.send("alchemy", "key", table.concat(picks, " "))
+      dmapi.core.send("alchemy essence")
+      dmapi.core.send("\t")
+      return
+    end
   end
 
   -- exhausted
@@ -365,8 +565,15 @@ end
 function EnchanterAssist.finishAttempt()
   EnchanterAssist.sawFlare   = false
   EnchanterAssist.pendingKey = nil
+  EnchanterAssist._attemptResolved = false
 
   EnchanterAssist.state = "idle"
+  if EnchanterAssist._hardStopRequested then
+      EnchanterAssist._hardStopRequested = false
+      DMLogger.notify(ea_plugin, ea_warn .. "Hard stop complete.")
+      return
+  end
+
   if EnchanterAssist.autoRun then
       EnchanterAssist.run()
   end
@@ -447,19 +654,21 @@ end
 
 function EnchanterAssist.reset()
   EnchanterAssist._comboIndices = nil
+  EnchanterAssist._wakePending = false
   EnchanterAssist.autoRun = false
+  EnchanterAssist._hardStopRequested = false
   EnchanterAssist.state = "idle"
   EnchanterAssist.pendingKey = nil
   EnchanterAssist.sawFlare = false
+  EnchanterAssist._attemptResolved = false
   EnchanterAssist.sessionTrials     = 0
   EnchanterAssist.sessionFormulas = {}
-  EnchanterAssist.missing = {}
 
   math.randomseed(os.time())   -- seed once per session
   EnchanterAssist._shuffleMaterials()
 
   EnchanterAssist.save()
-  DMLogger.notify(ea_plugin, ea_good .. "Reset complete, Attempts Preserved.")
+  DMLogger.notify(ea_plugin, ea_good .. "Reset complete, Attempts + Missing materials preserved.")
 end
 
 function EnchanterAssist.statsMissing()
@@ -505,27 +714,31 @@ function EnchanterAssist.on_line(ln)
 
   if ln:match("^Total:%s+%d+ essences stored across %d+ materials %(%d+/%d+ total known%)$") then
       if EnchanterAssist.state == "brewing" then
-
-          -- silent-known case
-          if EnchanterAssist.sawFlare
-            and not EnchanterAssist._contains(
-                  EnchanterAssist.attempted,
-                  EnchanterAssist.pendingKey) then
-
-              DMLogger.notify(
-                ea_plugin,
-                ea_good .. "Already Known Formula: " .. ea_text .. EnchanterAssist.pendingKey
-              )
-
-              EnchanterAssist._add(
+        -- silent-known case
+        if EnchanterAssist.sawFlare
+          and not EnchanterAssist._contains(
                 EnchanterAssist.attempted,
-                EnchanterAssist.pendingKey
-              )
+                EnchanterAssist.pendingKey) then
 
-              EnchanterAssist.save()
-          end
+            DMLogger.notify(
+              ea_plugin,
+              ea_good .. "Already Known Formula: " .. ea_text .. EnchanterAssist.pendingKey
+            )
 
-          EnchanterAssist.finishAttempt()
+            EnchanterAssist._add(
+              EnchanterAssist.attempted,
+              EnchanterAssist.pendingKey
+            )
+
+            EnchanterAssist.save()
+            EnchanterAssist._attemptResolved = true
+        end
+
+        if not EnchanterAssist._attemptResolved then
+          return
+        end
+
+        EnchanterAssist.finishAttempt()
       end
       return
   end
@@ -544,36 +757,7 @@ function EnchanterAssist.on_line(ln)
     -- Do NOT mark attempt
     -- Do NOT advance combo index
     -- Keep pendingKey intact so it retries after rest
-
-    EnchanterAssist.state = "resting"
-
-    DMLogger.notify(
-      ea_plugin,
-      ea_good .. "Too tired - Forcing Rest"
-    )
-
-    local v = dmapi.player.vitals
-    local manaPct = v.mnPct or 0
-    local movePct = v.mvPct or 0
-
-    if EnchanterAssist.sleepType == 1 then
-      -- Sleep mode
-      dmapi.core.send("get", EnchanterAssist.sleeper, EnchanterAssist.container)
-      dmapi.core.send("drop", EnchanterAssist.sleeper)
-      dmapi.core.send("sleep", EnchanterAssist.sleeper)
-      tempTimer(3, EnchanterAssist._ensureSleepTimer)
-    else
-      -- Potion mode (match vitals logic exactly)
-      if manaPct < 90 then
-        dmapi.core.send("get", EnchanterAssist.drainItem, EnchanterAssist.container)
-        dmapi.core.send("quaff", EnchanterAssist.drainItem)
-      end
-
-      if movePct < 90 then
-        dmapi.core.send("get", "refreshment", EnchanterAssist.container)
-        dmapi.core.send("recite", "refreshment", "self")
-      end
-    end
+    EnchanterAssist._startRestCycle(ea_good .. "Too tired - Forcing Rest")
 
     return
   end
@@ -581,11 +765,15 @@ function EnchanterAssist.on_line(ln)
   local m = ln:match("^You do not have essence of (%w+)%.")
   if m then
     DMLogger.notify(ea_plugin, ea_warn .. "Missing Essence: " .. ea_text .. m)
-    dmapi.core.send("put", "key", EnchanterAssist.container)
-    EnchanterAssist._add(EnchanterAssist.missing, string.lower(m))
-    EnchanterAssist._comboIndices = nil
-    EnchanterAssist.save()
-    --EnchanterAssist.finishAttempt()
+    local essence = string.lower(m)
+    if not EnchanterAssist._contains(EnchanterAssist.missing, essence) then
+      EnchanterAssist._add(EnchanterAssist.missing, essence)
+      EnchanterAssist._comboIndices = nil
+      EnchanterAssist.save()
+    end
+    if EnchanterAssist.state == "brewing" then
+      EnchanterAssist._attemptResolved = true
+    end
     return
   end
 
@@ -593,12 +781,16 @@ function EnchanterAssist.on_line(ln)
   or ln:match("^You must only use raw materials")
   or ln:match("^Alchemy only needs one of each kind of ingredient") then
     DMLogger.notify(ea_plugin, ea_bad .. "Bad Materials")
-    --EnchanterAssist.finishAttempt()
+    if EnchanterAssist.state == "brewing" then
+      EnchanterAssist._attemptResolved = true
+    end
     return
   end
   
   if  ln:match("^You botch the brew, and your alchemy process") then
-    --EnchanterAssist.finishAttempt()
+    if EnchanterAssist.state == "brewing" then
+      EnchanterAssist._attemptResolved = true
+    end
     DMLogger.notify(ea_plugin, ea_bad .. "Skill check failed.")
     return
   end
@@ -609,7 +801,9 @@ function EnchanterAssist.on_line(ln)
       EnchanterAssist._add(EnchanterAssist.attempted, EnchanterAssist.pendingKey)
       EnchanterAssist.save()
     end
-    --EnchanterAssist.finishAttempt()
+    if EnchanterAssist.state == "brewing" then
+      EnchanterAssist._attemptResolved = true
+    end
     return
   end
 
@@ -630,7 +824,9 @@ function EnchanterAssist.on_line(ln)
       EnchanterAssist.save()
     end
     dmapi.core.send("alc", "extract", "key")
-    --EnchanterAssist.finishAttempt()
+    if EnchanterAssist.state == "brewing" then
+      EnchanterAssist._attemptResolved = true
+    end
     return
   end
 end
@@ -713,37 +909,24 @@ DarkmistsEvents.add("EnchanterAssist.Vitals", "dmapi.player.vitals.updated", fun
   -- IF LOW RESOURCES
   -------------------------------------------------
   if low then
-
-    -- Never interrupt brewing
+    -- Never interrupt brewing. Let current attempt resolve, then rest gate blocks next trial.
     if EnchanterAssist.state == "brewing" then
       return
     end
 
-    -- Already trying to rest? Don't resend commands
-    if EnchanterAssist.state == "resting" then
-      return
-    end
-
-    EnchanterAssist.state = "resting"
-
-    if EnchanterAssist.sleepType == 1 then
-      dmapi.core.send("get", EnchanterAssist.sleeper, EnchanterAssist.container)
-      dmapi.core.send("drop", EnchanterAssist.sleeper)
-      dmapi.core.send("sleep", EnchanterAssist.sleeper)
-    else
-      if manaPct < 20 then
-        dmapi.core.send("get", EnchanterAssist.drainItem, EnchanterAssist.container)
-        dmapi.core.send("quaff", EnchanterAssist.drainItem)
-      end
-      if movePct < 20 then
-        dmapi.core.send("get", "refreshment", EnchanterAssist.container)
-        dmapi.core.send("recite", "refreshment", "self")
-      end
-    end
+    EnchanterAssist._startRestCycle()
 
     return
   end
 
+end)
+
+DarkmistsEvents.add("EnchanterAssist.WorldEnter", "dmapi.world.enter", function()
+  EnchanterAssist._abortAttempt("reconnected")
+end)
+
+DarkmistsEvents.add("EnchanterAssist.Disconnect", "sysDisconnectionEvent", function()
+  EnchanterAssist._abortAttempt("disconnected")
 end)
 
 -- ============================================================================

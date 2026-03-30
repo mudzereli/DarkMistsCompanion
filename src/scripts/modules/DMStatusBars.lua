@@ -53,17 +53,10 @@ end
 local function getStatusSummary()
   local status = (dmapi.player and dmapi.player.status) or {}
 
-  -- Convert a Mudlet cecho color name to a valid CSS color name for HTML spans.
-  -- ansi_* colors strip the prefix; all others remove underscores (CSS is case-insensitive).
-  local function toHtmlColor(name)
-    return name:match("^ansi_") and name:sub(6) or name:gsub("_", "")
-  end
-
-  local goodClr  = toHtmlColor(DarkmistsTheme.good)
-  local warnClr  = toHtmlColor(DarkmistsTheme.warn)
-  local badClr   = toHtmlColor(DarkmistsTheme.bad)
-  local isLightMode = Darkmists and Darkmists.GlobalSettings and Darkmists.GlobalSettings.lightMode
-  local labelClr = isLightMode and "black" or "white"
+  local goodClr  = cecho2hecho(DarkmistsTheme.goodTag)
+  local warnClr  = cecho2hecho(DarkmistsTheme.warnTag)
+  local badClr   = cecho2hecho(DarkmistsTheme.badTag)
+  local labelClr = cecho2hecho(DarkmistsTheme.textTag)
 
   local function span(color, text)
     return ("<span style='color: %s;'>%s</span>"):format(color, text)

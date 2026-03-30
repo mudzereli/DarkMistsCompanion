@@ -521,28 +521,38 @@ local function renderWalkList(filter)
   for _, areaName in ipairs(areaNames) do
     for _, entry in ipairs(grouped[areaName]) do
       local roomName = getRoomName(entry.room) or "UNKNOWN"
+      local destinationName = DMUtil.cap(entry.name, 24)
+      local namePadding = string.rep(" ", math.max(0, 24 - #destinationName))
 
-      cechoLink(string.format(
-        "\n%s[%s%-16s%s] %s%-23s %s→ %s[%s%5d%s] %s%-32s",
+      cecho(string.format(
+        "\n%s[%s%-16s%s] %s",
         dm_warn,
         c,
         DMUtil.cap(areaName, 16),
         dm_warn,
-        c,
-        ("<u>%s</u>"):format(DMUtil.cap(entry.name, 16)),
+        c
+      ))
+
+      cechoLink(
+        ("%s<u>%s</u>"):format(c, destinationName),
+        function()
+          expandAlias(("walk %s"):format(entry.name))
+        end,
+        ("Click: walk %s"):format(entry.name),
+        true
+      )
+
+      cecho(string.format(
+        "%s%s → %s[%s%5d%s]%s%-27s",
+        namePadding,
         dm_muted,
         dm_muted,
         c,
         entry.room,
         dm_muted,
         c,
-        DMUtil.cap(roomName,32)
-      ),
-      function()
-        expandAlias(("walk %s"):format(entry.name))
-      end,
-      ("Click: walk %s"):format(entry.name),
-      true)
+        DMUtil.cap(roomName,27)
+      ))
     end
   end
 end
@@ -562,7 +572,7 @@ DarkmistsAlias.add("^walk(?:\\s+(.*))?$", function()
       .. dm_header_color .. "Walk Commands:\n"
       .. line(c .. "walk <name>", dm_muted .. "Navigate to a saved destination")
       .. line(c .. "walk list <filter: optional>", dm_muted .. "Show saved destinations (optional filter)")
-      .. line(c .. "walk add <name> <roomid: optional>", dm_muted .. "Add persistent destination (room optional)")
+      .. line(c .. "walk add <name> <roomid: optional>", dm_muted .. "Add persistent destination (max 24 chars, room optional)")
       .. line(c .. "walk rem <name>", dm_muted .. "Remove a saved destination")
       .. line(c .. "walk area <name>", dm_muted .. "Navigate to first room in matching area")
       .. line(c .. "walk stop", dm_muted .. "Cancel an active walk")
@@ -595,6 +605,8 @@ DarkmistsAlias.add("^walk(?:\\s+(.*))?$", function()
           DMLogger.notify("WALK", dm_bad.."No Current Room found on Map")
         elseif a == "INVALID_NAME" then
           DMLogger.notify("WALK", dm_bad.."Invalid destination name")
+        elseif a == "NAME_TOO_LONG" then
+          DMLogger.notify("WALK", ("%sDestination names must be %d characters or fewer"):format(dm_bad, b))
         end
         return
       end
@@ -616,6 +628,8 @@ DarkmistsAlias.add("^walk(?:\\s+(.*))?$", function()
       if not ok then
         if a == "INVALID_NAME" then
           DMLogger.notify("WALK", dm_bad.."Invalid destination name")
+        elseif a == "NAME_TOO_LONG" then
+          DMLogger.notify("WALK", ("%sDestination names must be %d characters or fewer"):format(dm_bad, b))
         elseif a == "INVALID_ROOM" then
           DMLogger.notify("WALK", dm_bad.."Invalid room id")
         elseif a == "ROOM_MISSING" then
@@ -746,6 +760,7 @@ DarkmistsAlias.add("^es(?:\\s+(.*))?$", function()
       "  "..c.."es auto    "..dm_muted.."Toggle automatic running mode.\n"..
       "  "..c.."es <1-5>   "..dm_muted.."Set part count (1–5), save configuration, and run.\n"..
       "  "..c.."es run     "..dm_muted.."Execute a single enchantment cycle.\n"..
+      "  "..c.."es stop    "..dm_muted.."Stop after current attempt (or immediately if idle).\n"..
       "  "..c.."es stats   "..dm_muted.."Display session statistics.\n"..
       "  "..c.."es missing "..dm_muted.."Display missing material statistics.\n"..
       "  "..c.."es reset   "..dm_muted.."Reset session statistics.\n\n"..
@@ -754,6 +769,7 @@ DarkmistsAlias.add("^es(?:\\s+(.*))?$", function()
       "  "..c.."es set sleeper <name>           "..dm_muted.."Set sleeper target.\n"..
       "  "..c.."es set sleepmode <sleep|potion> "..dm_muted.."Choose restoration behavior type.\n"..
       "  "..c.."es set potion <item>            "..dm_muted.."Set item used for quaffing.\n"..
+      "  "..c.."es set order <seq|rand>         "..dm_muted.."Set trial selection order mode.\n"..
       "  "..c.."es sound                        "..dm_muted.."Toggle formula discovery sound\n\n"..
       dm_header_color.."Control:\n"..
       "  "..c.."es enable / es disable          "..dm_muted.."Enable or disable EnchanterAssist entirely.\n"
@@ -763,6 +779,8 @@ DarkmistsAlias.add("^es(?:\\s+(.*))?$", function()
 end)
 
 DarkmistsAlias.add("^es run$", function() EnchanterAssist.run() end)
+
+DarkmistsAlias.add("^es stop$", function() EnchanterAssist.hardStop() end)
 
 DarkmistsAlias.add("^es auto$", function()
   EnchanterAssist.autoRun = not EnchanterAssist.autoRun
@@ -815,6 +833,19 @@ DarkmistsAlias.add("^es set potion (.+)$", function()
   EnchanterAssist.drainItem = matches[2]
   EnchanterAssist.save()
   DMLogger.notify(EnchanterAssist.color.."EnchanterAssist","Potion item set to: " .. EnchanterAssist.drainItem)
+end)
+
+-- es set order <seq|rand> (also supports deterministic/random)
+DarkmistsAlias.add("^es set order (seq|det|deterministic|rand|random)$", function()
+  local mode = matches[2]
+  EnchanterAssist.deterministicOrder =
+    (mode == "seq" or mode == "det" or mode == "deterministic")
+  EnchanterAssist._comboIndices = nil
+  EnchanterAssist.save()
+  DMLogger.notify(
+    EnchanterAssist.color.."EnchanterAssist",
+    "Order mode set to: " .. (EnchanterAssist.deterministicOrder and "seq" or "rand")
+  )
 end)
 
 -- es enable / disable

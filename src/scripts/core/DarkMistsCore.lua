@@ -212,7 +212,7 @@ function Darkmists.SetUpdateChannel(channel)
   end
   Darkmists.GlobalSettings.updateChannel = channel
   Darkmists.SaveSettings()
-  Darkmists.Log(DarkmistsTheme.purpleTag .. "Darkmists Core", ("Update channel set to: %s"):format(channel))
+  DMLogger.notify(DarkmistsTheme.purpleTag .. "Darkmists Core", ("Update channel set to: %s"):format(channel))
 end
 
 function Darkmists.UpdateFromGitHub(channel)
@@ -589,7 +589,9 @@ function Darkmists.CleanupUI(opts)
   if ButtonBar and ButtonBar.destroy then pcall(ButtonBar.destroy) end
   if StatusBar and StatusBar.cleanup then pcall(StatusBar.cleanup) end
   if DMAlertWindow and DMAlertWindow.Hide then pcall(DMAlertWindow.Hide) end
-  
+  if StatRoller and StatRoller.destroy then pcall(StatRoller.destroy) end
+  if AffectsWindow and AffectsWindow.destroy then pcall(AffectsWindow.destroy) end
+
   if opts.uninstall then
     Darkmists.Log(DarkmistsTheme.purpleTag .. "Darkmists Core", "Resetting window borders to default...")
     Darkmists.ResetUILayoutCache()
@@ -607,9 +609,9 @@ function Darkmists.LoadUIScripts()
   StatusBar.init()
   dofile(getMudletHomeDir() .. "/DarkMistsCompanion/ui/whowindow.lua")
   dofile(getMudletHomeDir() .. "/DarkMistsCompanion/ui/chathistory.lua")
-  dofile(getMudletHomeDir() .. "/DarkMistsCompanion/ui/affectswindow.lua")
+  AffectsWindow.init()
   dofile(getMudletHomeDir() .. "/DarkMistsCompanion/ui/scorepanel.lua")
-  dofile(getMudletHomeDir() .. "/DarkMistsCompanion/ui/mapwindow.lua")
+  DarkMistsMiniMap.init()
   dofile(getMudletHomeDir() .. "/DarkMistsCompanion/utility/mapcolor.lua")
   
   -- Initialize optional UI modules that need runtime context (e.g., connection state)
@@ -714,12 +716,12 @@ function Darkmists.Init()
 
   -- Utility Scripts that use DMAPI
   ItemTracker.init()
-  dofile(getMudletHomeDir() .. "/DarkMistsCompanion/utility/statroller.lua")
+  StatRoller.init()
   dofile(getMudletHomeDir() .. "/DarkMistsCompanion/utility/mapdestinations.lua")
   dofile(getMudletHomeDir() .. "/DarkMistsCompanion/utility/enchanterassist.lua")
   dofile(getMudletHomeDir() .. "/DarkMistsCompanion/utility/skillups.lua")
   dofile(getMudletHomeDir() .. "/DarkMistsCompanion/utility/clickables.lua")
-  dofile(getMudletHomeDir() .. "/DarkMistsCompanion/ui/buttonbar.lua")
+  ButtonBar.init()
 
   -- UI Scripts
   if not Darkmists.GlobalSettings.minimalMode then

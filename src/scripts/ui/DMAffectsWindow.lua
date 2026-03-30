@@ -8,15 +8,29 @@ AffectsWindow = AffectsWindow or {}
 -- Configuration
 -- ---------------------------------------------------------------------------
 
-AffectsWindow.config = {
-  fontSize       = Darkmists.GlobalSettings.fontSize,
-  fontName       = Darkmists.GlobalSettings.fontName,
-  updateInterval = Darkmists.GlobalSettings.affectsWindowUpdateIntervalSeconds,
-  textLengthAffectName = Darkmists.GlobalSettings.affectsWindowAffectNameLength,
-  textLengthAffectMod  = Darkmists.GlobalSettings.affectsWindowAffectModLength,
-  deleteOriginalLines  = Darkmists.GlobalSettings.affectsWindowDeleteOriginalLines,
+AffectsWindow.config = AffectsWindow.config or {
+  fontSize       = 10,
+  fontName       = "Bitstream Vera Sans Mono",
+  updateInterval = 1,
+  textLengthAffectName = 30,
+  textLengthAffectMod  = 20,
+  deleteOriginalLines  = false,
   timeRatio      = 30, -- 1 real second = 30 game seconds
 }
+
+function AffectsWindow.refreshConfig()
+  local gs = Darkmists and Darkmists.GlobalSettings or {}
+  local cfg = AffectsWindow.config
+
+  cfg.fontSize = gs.fontSize or cfg.fontSize
+  cfg.fontName = gs.fontName or cfg.fontName
+  cfg.updateInterval = gs.affectsWindowUpdateIntervalSeconds or cfg.updateInterval
+  cfg.textLengthAffectName = gs.affectsWindowAffectNameLength or cfg.textLengthAffectName
+  cfg.textLengthAffectMod = gs.affectsWindowAffectModLength or cfg.textLengthAffectMod
+  if gs.affectsWindowDeleteOriginalLines ~= nil then
+    cfg.deleteOriginalLines = gs.affectsWindowDeleteOriginalLines
+  end
+end
 
 -- ---------------------------------------------------------------------------
 -- Runtime State
@@ -27,9 +41,17 @@ AffectsWindow.capturing      = false
 AffectsWindow.lastUpdateTime = nil
 AffectsWindow.ageTimer       = nil
 AffectsWindow.hasFullFormat  = false
+AffectsWindow.initialized    = false
 
 AffectsWindow.affectsList    = {}   -- Canonical affect records (active + expired)
 AffectsWindow.currentKeys    = {}   -- Snapshot keys for current capture
+
+AffectsWindow.keys = {
+  triggerNoAffects = "affectsNoAffects",
+  triggerHeader    = "affectsHeader",
+  triggerLine      = "affectsLine",
+  eventPrompt      = "affectsPromptHandler",
+}
 
 local function shouldDeleteOriginalLines()
   return AffectsWindow.config.deleteOriginalLines
@@ -194,12 +216,7 @@ function AffectsWindow.formatDuration(minutes, expired)
   if minutes == -math.huge then return DarkmistsTheme.goodTag .. "UNKNOWN" end
 
   if expired then
-    local m = math.abs(minutes)
-    if m < 60 then return string.format(DarkmistsTheme.badTag .. "EXPIRED (%dm)", m) end
-    local h, r = math.floor(m / 60), m % 60
-    return r > 0
-      and string.format(DarkmistsTheme.badTag .. "EXPIRED (%dh %dm)", h, r)
-      or  string.format(DarkmistsTheme.badTag .. "EXPIRED (%dh)", h)
+    return DarkmistsTheme.badTag .. "EXPIRED"
   end
 
   if minutes <= 0 then return DarkmistsTheme.warnTag .. "EXPIRING" end
@@ -353,12 +370,8 @@ function AffectsWindow.refreshDisplay()
 
   for _, affect in ipairs(AffectsWindow.affectsList) do
     if affect.expired then
-      local expiredMins =
-        math.floor(((now - affect.expireTime) * cfg.timeRatio) / 60)
-
       table.insert(expiredAffects, {
-        affect = affect,
-        mins = -expiredMins
+        affect = affect
       })
     else
       local remainingMins =
@@ -406,7 +419,7 @@ function AffectsWindow.refreshDisplay()
   -- Render expired affects with clickable X
   for _, item in ipairs(expiredAffects) do
     local affect = item.affect
-    local dur = AffectsWindow.formatDuration(item.mins, true)
+    local dur = AffectsWindow.formatDuration(0, true)
     local mod = string.format("%s %s", affect.modValue, affect.modifier)
     local name = affect.name
 
@@ -463,7 +476,7 @@ end
 -- TRIGGERS
 -- ============================================================================
 
-function AffectsWindow.init()
+local function registerHandlers()
   local function stopCaptureIfActive()
     if AffectsWindow.capturing then
       AffectsWindow.stopCaptureAndDisplay()
@@ -474,7 +487,7 @@ function AffectsWindow.init()
   -- If we have no effects, just capture an empty affect list
   -- If we DONT do this, then EXPIRED effects will just show EXPIRING forever
   DarkmistsTrigger.addKeyed(
-    "affectsNoAffects",
+    AffectsWindow.keys.triggerNoAffects,
     "substring",
     "You are not affected by anything.",
     function()
@@ -485,7 +498,7 @@ function AffectsWindow.init()
 
   -- Start Capturing Normally when we see the header
   DarkmistsTrigger.addKeyed(
-    "affectsHeader",
+    AffectsWindow.keys.triggerHeader,
     "substring",
     "You are affected by the following:",
     function()
@@ -495,7 +508,7 @@ function AffectsWindow.init()
 
   -- If we saw the header, capture/copy all incoming lines
   DarkmistsTrigger.addKeyed(
-    "affectsLine",
+    AffectsWindow.keys.triggerLine,
     "regex",
     ".*",
     function()
@@ -507,18 +520,62 @@ function AffectsWindow.init()
 
   -- Stop capturing once we hit a prompt.
   DarkmistsEvents.add(
-    "affectsPromptHandler",
+    AffectsWindow.keys.eventPrompt,
     "dmapi.world.prompt",
     stopCaptureIfActive
   )
 
+  AffectsWindow.initialized = true
+end
+
+function AffectsWindow.init()
+  AffectsWindow.refreshConfig()
+  AffectsWindow.create()
+  if AffectsWindow.initialized then
+    return
+  end
+
+  registerHandlers()
+
   Darkmists.Log("AffectsWindow", "Triggers registered")
+end
+
+function AffectsWindow.destroy()
+  if AffectsWindow.ageTimer then
+    killTimer(AffectsWindow.ageTimer)
+    AffectsWindow.ageTimer = nil
+  end
+
+  local keys = AffectsWindow.keys
+
+  if DarkmistsTrigger.registry[keys.triggerNoAffects] then
+    killTrigger(DarkmistsTrigger.registry[keys.triggerNoAffects])
+    DarkmistsTrigger.registry[keys.triggerNoAffects] = nil
+  end
+
+  if DarkmistsTrigger.registry[keys.triggerHeader] then
+    killTrigger(DarkmistsTrigger.registry[keys.triggerHeader])
+    DarkmistsTrigger.registry[keys.triggerHeader] = nil
+  end
+
+  if DarkmistsTrigger.registry[keys.triggerLine] then
+    killTrigger(DarkmistsTrigger.registry[keys.triggerLine])
+    DarkmistsTrigger.registry[keys.triggerLine] = nil
+  end
+
+  if DarkmistsEvents.registry[keys.eventPrompt] then
+    killAnonymousEventHandler(DarkmistsEvents.registry[keys.eventPrompt])
+    DarkmistsEvents.registry[keys.eventPrompt] = nil
+  end
+
+  AffectsWindow.capturing = false
+  AffectsWindow.initialized = false
+  Darkmists.Log("AffectsWindow", "Destroyed")
 end
 
 -- ============================================================================
 -- INIT
 -- ============================================================================
 
-AffectsWindow.create()
 AffectsWindow.init()
 Darkmists.Log("AffectsWindow","Initialized. Type 'aff' to capture affects!")

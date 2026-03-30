@@ -1,18 +1,18 @@
 [
        {
-              "name": "DMItemTracker",
+              "name": "DMButtonBar",
               "isActive": "yes",
               "script": "",
               "isFolder": "no"
        },
        {
-              "name": "DMStatusBars",
+              "name": "DMAffectsWindow",
               "isActive": "yes",
               "script": "",
               "isFolder": "no"
        },
        {
-              "name": "DMStatRoller",
+              "name": "DMMinimap",
               "isActive": "yes",
               "script": "",
               "isFolder": "no"

@@ -106,6 +106,18 @@ local function trim(str)
   return str:gsub("^%s+", ""):gsub("%s+$", "")
 end
 
+local function decode_html_entities(text)
+  if type(text) ~= "string" then return text end
+
+  return text
+    :gsub("&quot;", '"')
+    :gsub("&#39;", "'")
+    :gsub("&apos;", "'")
+    :gsub("&lt;", "<")
+    :gsub("&gt;", ">")
+    :gsub("&amp;", "&")
+end
+
 local function is_valid_item_name(name)
   if type(name) ~= "string" then return false end
   name = trim(name)
@@ -320,6 +332,7 @@ function ItemTracker.load(path)
   for _, item in ipairs(data) do
     if is_valid_item_name(item.name) then
       item.name = trim(item.name)
+      item.details = decode_html_entities(item.details)
       local key = item.name:lower()
 
       ItemTracker.items[#ItemTracker.items+1] = item

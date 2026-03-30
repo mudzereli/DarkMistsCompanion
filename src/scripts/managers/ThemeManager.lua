@@ -111,19 +111,19 @@ function DarkmistsTheme.buildTheme()
   local light = Darkmists.GlobalSettings.lightMode
 
   -- Named hues
-  t.red    = light and "firebrick"         or "tomato"
-  t.orange = light and "chocolate"         or "orange"
-  t.yellow = light and "dark_khaki"        or "khaki"
-  t.green  = light and "sea_green"         or "spring_green"
-  t.blue   = light and "steel_blue"        or "dodger_blue"
-  t.cyan   = light and "dark_slate_gray"   or "medium_turquoise"
-  t.sky    = light and "steel_blue"        or "light_steel_blue"
-  t.purple = light and "dark_violet"       or "medium_purple"
-  t.pink   = light and "medium_violet_red" or "deep_pink"
-  t.brown  = light and "sienna"            or "peru"
-  t.olive  = light and "olive_drab"        or "yellow_green"
-  t.silver = light and "dim_gray"          or "slate_gray"
-  t.gold   = light and "dark_khaki"        or "light_goldenrod"
+  t.red    = light and "ansi_001"          or "tomato"
+  t.orange = light and "ansi_130"          or "orange"
+  t.yellow = light and "ansi_003"          or "khaki"
+  t.green  = light and "ansi_002"          or "spring_green"
+  t.blue   = light and "ansi_004"          or "dodger_blue"
+  t.cyan   = light and "ansi_006"          or "medium_turquoise"
+  t.sky    = light and "ansi_033"          or "light_steel_blue"
+  t.purple = light and "ansi_005"          or "medium_purple"
+  t.pink   = light and "ansi_013"          or "deep_pink"
+  t.brown  = light and "ansi_095"          or "peru"
+  t.olive  = light and "ansi_058"          or "yellow_green"
+  t.silver = light and "ansi_237"          or "slate_gray"
+  t.gold   = light and "ansi_011"          or "light_goldenrod"
 
   -- Semantic aliases
   t.good      = t.green
