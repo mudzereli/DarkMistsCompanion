@@ -1,0 +1,983 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DarkMistsCompanion – User Guide</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect x='8' y='8' width='84' height='84' rx='12' fill='%236ea8fe'/><text x='50' y='63' text-anchor='middle' font-size='40' font-family='Arial,sans-serif' fill='white'>DM</text></svg>">
+
+<style>
+  :root {
+    --bg:      #0f1216;
+    --panel:   #151a21;
+    --border:  #262c36;
+    --text:    #d6dbe3;
+    --muted:   #9aa3af;
+    --accent:  #6ea8fe;
+    --code-bg: #0b0e13;
+    --good:    #4ade80;
+    --warn:    #fb923c;
+    --bad:     #f87171;
+    --info:    #a78bfa;
+    --gold:    #fbbf24;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    font-family: system-ui, -apple-system, Segoe UI, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+  }
+
+  /* ── Header ──────────────────────────────────────── */
+  header {
+    padding: 2rem;
+    border-bottom: 1px solid var(--border);
+    background: linear-gradient(180deg, #121722, #0f1216);
+  }
+  header h1 { margin: 0; font-size: 1.8rem; }
+  header p  { margin: .25rem 0 0; color: var(--muted); }
+
+  /* ── Layout ──────────────────────────────────────── */
+  main {
+    max-width: 1100px;
+    margin: auto;
+    padding: 2rem;
+    display: block;
+  }
+
+  /* ── Content ─────────────────────────────────────── */
+  .content section { margin-bottom: 3rem; }
+
+  .content h1 {
+    border-bottom: 1px solid var(--border);
+    padding-bottom: .4rem;
+    font-size: 1.3rem;
+  }
+  .content h2 { color: var(--accent); margin: 2rem 0 .5rem; font-size: 1.05rem; }
+  .content h3 { color: var(--muted); margin: 1.4rem 0 .4rem; font-size: .95rem;
+       text-transform: uppercase; letter-spacing: .05em; font-weight: 600; }
+  p  { margin: .5rem 0 .9rem; }
+  ul, ol { margin: .4rem 0 .9rem; padding-left: 1.5rem; }
+  li { margin: .25rem 0; }
+
+  /* ── Code ────────────────────────────────────────── */
+  code {
+    background: var(--code-bg);
+    padding: .15rem .4rem;
+    border-radius: 5px;
+    font-family: ui-monospace, monospace;
+    font-size: .84rem;
+  }
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: .75rem 1rem;
+    overflow-x: auto;
+    font-family: ui-monospace, monospace;
+    font-size: .84rem;
+    line-height: 1.5;
+  }
+
+  /* ── Tables ──────────────────────────────────────── */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: .75rem 0;
+    font-size: .9rem;
+  }
+  th {
+    background: var(--panel);
+    color: var(--accent);
+    font-size: .78rem;
+    font-weight: 700;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+    padding: .5rem .75rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+  td {
+    padding: .42rem .75rem;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(255,255,255,.015); }
+  td code { font-size: .82rem; white-space: nowrap; }
+
+  /* ── Callout boxes ───────────────────────────────── */
+  .tip {
+    background: rgba(110,168,254,.08);
+    border: 1px solid rgba(110,168,254,.25);
+    border-radius: 6px;
+    padding: .65rem 1rem;
+    margin: .75rem 0;
+    font-size: .9rem;
+  }
+  .tip strong { color: var(--accent); }
+
+  .warn-box {
+    background: rgba(251,146,60,.08);
+    border: 1px solid rgba(251,146,60,.25);
+    border-radius: 6px;
+    padding: .65rem 1rem;
+    margin: .75rem 0;
+    font-size: .9rem;
+  }
+  .warn-box strong { color: var(--warn); }
+
+  /* ── Badges ──────────────────────────────────────── */
+  .badge {
+    display: inline-block;
+    font-size: .68rem;
+    font-family: ui-monospace, monospace;
+    font-weight: 700;
+    padding: .1rem .35rem;
+    border-radius: 3px;
+    vertical-align: middle;
+    margin-left: .4rem;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+  }
+  .badge.ui   { background: rgba(74,222,128,.1);  color: var(--good); border: 1px solid rgba(74,222,128,.25); }
+  .badge.cmd  { background: rgba(110,168,254,.1); color: var(--accent); border: 1px solid rgba(110,168,254,.25); }
+  .badge.auto { background: rgba(167,139,250,.1); color: var(--info); border: 1px solid rgba(167,139,250,.25); }
+
+  /* ── Channel color swatches ──────────────────────── */
+  .swatch { display: inline-block; width: .75rem; height: .75rem;
+            border-radius: 2px; vertical-align: middle; margin-right: .3rem; }
+
+  /* ── Effect color table helpers ──────────────────── */
+  .eff-cyan       { color: #67e8f9; }
+  .eff-lblue      { color: #7dd3fc; }
+  .eff-orange     { color: #fb923c; }
+  .eff-purple     { color: #c084fc; }
+  .eff-blue       { color: #6ea8fe; }
+  .eff-green      { color: #4ade80; }
+  .eff-red        { color: #f87171; }
+  .eff-gold       { color: #fbbf24; }
+  .eff-silver     { color: #d1d5db; }
+  .eff-brown      { color: #a16207; }
+  .eff-olive      { color: #84cc16; }
+  .eff-pink       { color: #f9a8d4; }
+  .eff-muted      { color: #9aa3af; }
+  .eff-warn       { color: #fb923c; }
+
+  /* ── Footer ──────────────────────────────────────── */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 1.5rem;
+    text-align: center;
+    color: var(--muted);
+    font-size: .88rem;
+  }
+
+  /* ── Mobile ──────────────────────────────────────── */
+  @media (max-width: 780px) {
+    main { padding: 1rem; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>DarkMistsCompanion</h1>
+  <p>User Guide &nbsp;·&nbsp; A non-intrusive UI &amp; utility companion for Dark Mists MUD</p>
+</header>
+
+<main>
+  <!-- ═══════════════════════════════════════════════
+       CONTENT
+       ═══════════════════════════════════════════════ -->
+  <div class="content">
+
+
+    <!-- ── Getting Started ─────────────────────────── -->
+    <section id="getting-started">
+      <h1>Getting Started</h1>
+
+      <p>
+        <strong>DarkMistsCompanion (DMC)</strong> is a Mudlet Lua framework that enhances your
+        Dark Mists experience with custom UI panels, real-time tracking, and gameplay utilities.
+        DMC is <strong>mostly non-automating</strong>. Some optional modules (such as Enchanter
+        Assist) can automate repetitive command sequences that you explicitly start and stop.
+        It does not make autonomous gameplay decisions on your behalf. It organizes information,
+        makes navigation easier, and provides tools to help you play more efficiently.
+      </p>
+
+      <div class="tip">
+        <strong>Quick Start:</strong> Type <code>dmc</code> in-game at any time to see the main
+        help index. Use <code>dmc help &lt;topic&gt;</code> for in-depth help on any module.<br>
+        Available topics: <code>es</code> &nbsp;·&nbsp; <code>walk</code> &nbsp;·&nbsp;
+        <code>skillups</code> &nbsp;·&nbsp; <code>sb</code> &nbsp;·&nbsp;
+        <code>ch</code> &nbsp;·&nbsp; <code>who</code> &nbsp;·&nbsp;
+        <code>affects</code> &nbsp;·&nbsp; <code>dmid</code> &nbsp;·&nbsp;
+        <code>map</code> &nbsp;·&nbsp; <code>statroll</code>
+      </div>
+
+      <table>
+        <thead><tr><th>Command</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>dmc</code></td><td>Show the main DMC help index</td></tr>
+          <tr><td><code>dmc help &lt;topic&gt;</code></td><td>Show in-depth help for a module</td></tr>
+          <tr><td><code>dmc ui</code></td><td>Toggle between full and minimal UI mode</td></tr>
+          <tr><td><code>dmc ui on</code></td><td>Force full UI mode on</td></tr>
+          <tr><td><code>dmc ui off</code></td><td>Switch to minimal UI mode</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+
+    <!-- ── Interface Overview ──────────────────────── -->
+    <section id="interface">
+      <h1>Interface Overview</h1>
+
+      <p>
+        DMC adds several persistent panels to your Mudlet layout. Each panel updates automatically
+        in response to game events. Most panels live in a tabbed container — click the tab labels
+        to switch between them.
+      </p>
+
+      <!-- Score Panel -->
+      <h2 id="ui-scorepanel">Score Panel</h2>
+      <p>
+        The <strong>Player Status</strong> tab shows a live snapshot of your character's key
+        statistics and refreshes mostly when you use the <code>score</code> command or when
+        relevant events are received.
+      </p>
+
+      <h3>Sections</h3>
+      <table>
+        <thead><tr><th>Section</th><th>What it shows</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>Character</td>
+            <td>Level and age (years and hours)</td>
+          </tr>
+          <tr>
+            <td>Attributes</td>
+            <td>
+              Base and modified STR / INT / WIS / DEX / CON.
+              Modified values appear <span style="color:var(--good)">green</span> when buffed
+              or <span style="color:var(--bad)">red</span> when debuffed.
+            </td>
+          </tr>
+          <tr>
+            <td>Vitals</td>
+            <td>HP / Mana / Moves with current regen rates</td>
+          </tr>
+          <tr>
+            <td>Condition</td>
+            <td>Hunger and thirst levels with descriptive labels (Full → Dying)</td>
+          </tr>
+          <tr>
+            <td>Wealth</td>
+            <td>Gold and silver — on hand, in bank, and in house account</td>
+          </tr>
+          <tr>
+            <td>Location</td>
+            <td>Current room name, room ID, and available exits</td>
+          </tr>
+          <tr>
+            <td>Status</td>
+            <td>Ready / Resting / Sleeping / In Combat</td>
+          </tr>
+          <tr>
+            <td>Combat</td>
+            <td>(In combat only) Target name and target health %</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- Status Bars -->
+      <h2 id="ui-statusbars">Status Bars</h2>
+      <p>
+        Horizontal gauges at the bottom of your Mudlet window showing your vitals at a glance.
+        An enemy health bar appears automatically when you enter combat.
+      </p>
+
+      <h3>Gauges</h3>
+      <p>
+        <span style="color:#f87171">■</span> HP &nbsp;·&nbsp;
+        <span style="color:#7dd3fc">■</span> Mana &nbsp;·&nbsp;
+        <span style="color:#fde68a">■</span> Moves &nbsp;·&nbsp;
+        <span style="color:#fb923c">■</span> Experience &nbsp;·&nbsp;
+        <span style="color:#f87171">■</span> Enemy HP <em>(combat only)</em>
+      </p>
+
+      <table>
+        <thead><tr><th>Command</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>sb</code></td><td>Show status bar help</td></tr>
+          <tr><td><code>sb show</code></td><td>Make all bars visible</td></tr>
+          <tr><td><code>sb hide</code></td><td>Hide all bars</td></tr>
+          <tr><td><code>sb toggle</code></td><td>Toggle bar visibility on/off</td></tr>
+          <tr><td><code>sb info</code></td><td>Print current vitals to the chat area</td></tr>
+          <tr><td><code>sb recreate</code></td><td>Recreate the bars (useful after layout changes)</td></tr>
+        </tbody>
+      </table>
+
+      <!-- Chat History -->
+      <h2 id="ui-chathistory">Chat History</h2>
+      <p>
+        The <strong>Chat</strong> tab keeps a scrollable log of all communication channels,
+        color-coded by type. Up to 100 messages are retained per session. Both sent and received
+        messages are captured, each with a timestamp.
+      </p>
+
+      <h3>Captured Channels</h3>
+      <table>
+        <thead><tr><th>Channel</th><th>Color</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>say / emote-say</td>
+            <td><span class="swatch" style="background:#fbbf24"></span>Yellow</td>
+            <td>Local room speech, including emoted says</td>
+          </tr>
+          <tr>
+            <td>tell / mptell</td>
+            <td><span class="swatch" style="background:#4ade80"></span>Green</td>
+            <td>Private tells and mental projection tells</td>
+          </tr>
+          <tr>
+            <td>yell / yell panic</td>
+            <td><span class="swatch" style="background:#7dd3fc"></span>Blue</td>
+            <td>Yell messages — normal and panic variants</td>
+          </tr>
+          <tr>
+            <td>gtell</td>
+            <td><span class="swatch" style="background:#c084fc"></span>Purple</td>
+            <td>Group communication</td>
+          </tr>
+          <tr>
+            <td>ooc</td>
+            <td><span class="swatch" style="background:#67e8f9"></span>Blue</td>
+            <td>Out-of-character channel</td>
+          </tr>
+          <tr>
+            <td>newbie (in-game &amp; Discord)</td>
+            <td><span class="swatch" style="background:#4ade80"></span>Green</td>
+            <td>Newbie help channel</td>
+          </tr>
+          <tr>
+            <td>house</td>
+            <td><span class="swatch" style="background:#d6dbe3"></span>White</td>
+            <td>House / guild channel</td>
+          </tr>
+          <tr>
+            <td>mpsay / mental blast</td>
+            <td><span class="swatch" style="background:#7dd3fc"></span>Blue</td>
+            <td>Mental projection broadcasts</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="tip">
+        <strong>Format:</strong> Each line shows a timestamp, sender name (or "You" for outbound),
+        and message. Sender names appear in blue.
+      </div>
+
+      <!-- Who Window -->
+      <h2 id="ui-whowindow">Who Window</h2>
+      <p>
+        The <strong>Who</strong> tab displays the online player list, captured automatically from
+        the server's "who" output. Because the game does not push this data on its own, the window
+        tracks when it was last updated so you always know how current it is.
+      </p>
+
+      <ul>
+        <li>Player count and seconds since last refresh are shown in the header</li>
+        <li>Click <strong>[Refresh]</strong> to issue a fresh <code>who</code> command immediately</li>
+        <li>The age counter ticks up on every prompt — a quick glance tells you how stale the data is</li>
+        <li>Player entries are displayed with the original server formatting and colors preserved</li>
+      </ul>
+
+      <!-- Affects Window -->
+      <h2 id="ui-affectswindow">Affects Window</h2>
+      <p>
+        The <strong>Affects</strong> tab shows all currently active spells and status effects on
+        your character. Like the Who Window, it captures a snapshot from the server and tracks
+        how old it is.
+      </p>
+
+      <ul>
+        <li>Click <strong>[Refresh]</strong> to re-issue the affects command and update the list</li>
+        <li>Click <strong>[Clear Expired]</strong> to remove affects whose duration has elapsed</li>
+        <li>The age counter updates every 2 seconds so you can see at a glance when the data was last fetched</li>
+      </ul>
+
+      <!-- Minimap -->
+      <h2 id="ui-minimap">Minimap</h2>
+      <p>
+        An interactive Geyser map widget showing your current position in the Dark Mists world.
+        Displays room name, room ID, and area name alongside the graphical map.
+      </p>
+
+      <ul>
+        <li>Updates automatically as you navigate between rooms</li>
+        <li>Double-click a room on the map to walk there</li>
+        <li>Map data is loaded from the bundled <code>map.dat</code> file (15,000+ rooms)</li>
+      </ul>
+
+      <!-- Button Bar -->
+      <h2 id="ui-buttonbar">Button Bar</h2>
+      <p>
+        A docked menu bar at the top of your screen providing quick access to all DMC features
+        via dropdown menus — no need to remember commands.
+      </p>
+
+      <h3>Menu Structure</h3>
+      <table>
+        <thead><tr><th>Menu</th><th>Items</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>Modules</td>
+            <td>Walk, Enchant Assist, Skill Ups, Item Tracker</td>
+          </tr>
+          <tr>
+            <td>Settings</td>
+            <td>Toggle UI mode, Light/Dark theme, Status Bars, Advanced &amp; Dev tools</td>
+          </tr>
+          <tr>
+            <td>Help</td>
+            <td>General, World, Character, and Interface help topics</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+
+    <!-- ── Navigation ──────────────────────────────── -->
+    <section id="navigation">
+      <h1>Navigation</h1>
+
+      <p>
+        The <strong>Map Destinations</strong> module lets you save named waypoints and speedwalk
+        to them with a single command. Destinations are persisted to disk and survive restarts
+        and reloads.
+      </p>
+
+      <div class="tip">
+        <strong>Name limit:</strong> Destination names are limited to 24 characters and are
+        case-insensitive. Long names are auto-truncated with a <code>_2</code>, <code>_3</code>…
+        suffix if a collision occurs.
+      </div>
+
+      <table>
+        <thead><tr><th>Command</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>walk &lt;name&gt;</code></td><td>Speedwalk to a saved destination</td></tr>
+          <tr><td><code>walk list</code></td><td>Show all saved destinations, grouped by area</td></tr>
+          <tr><td><code>walk list &lt;filter&gt;</code></td><td>Filter destinations by name, room name, or area</td></tr>
+          <tr><td><code>walk add &lt;name&gt;</code></td><td>Save your current room under a name</td></tr>
+          <tr><td><code>walk add &lt;name&gt; &lt;roomid&gt;</code></td><td>Save a specific room ID under a name</td></tr>
+          <tr><td><code>walk rem &lt;name&gt;</code></td><td>Delete a saved destination</td></tr>
+          <tr><td><code>walk area &lt;search&gt;</code></td><td>Walk toward the first room of any area whose name matches the search string</td></tr>
+          <tr><td><code>walk stop</code></td><td>Cancel the active walk immediately</td></tr>
+          <tr><td><code>walk</code></td><td>Show navigation help</td></tr>
+        </tbody>
+      </table>
+
+      <div class="tip">
+        <strong>Area walk:</strong> <code>walk area arkham</code> searches area names for
+        "arkham" and begins walking toward any match. The walk stops automatically once you
+        arrive inside that area.
+      </div>
+    </section>
+
+
+    <!-- ── Utility Modules ─────────────────────────── -->
+    <section id="utilities">
+      <h1>Utility Modules</h1>
+
+
+      <!-- ·· Enchanter Assist ·························· -->
+      <h2 id="util-ea">Enchanter Assist</h2>
+
+      <p>
+        A formula discovery assistant for the alchemy skill. EnchanterAssist systematically
+        tests combinations of material essences to help you discover new alchemy formulas.
+        It tracks every combination already tried, manages resting automatically, and saves
+        all progress to disk so sessions survive disconnects and reloads.
+      </p>
+
+      <div class="warn-box">
+        <strong>Important:</strong> Enchanter Assist sends commands to the server in sequence.
+        Only activate it when you are in a safe location with your alchemy materials at hand.
+      </div>
+
+      <h3>How It Works</h3>
+      <ol>
+        <li>Set the number of materials per attempt with <code>es 1</code> through <code>es 5</code> (default: 5).</li>
+        <li>Run <code>es run</code> for a single attempt, or <code>es auto</code> to run continuously.</li>
+        <li>When your mana or moves drop below 20 %, the module rests automatically (via bedroll sleep or mana potions) and resumes when you recover.</li>
+        <li>Every attempt — success or failure — is recorded and saved. Progress survives reconnects.</li>
+        <li>When a formula is discovered, an audio alert plays and the formula name becomes a clickable link to view its details with <code>alc info &lt;formula&gt;</code>.</li>
+      </ol>
+
+      <h3 id="util-ea-effects">Effect Colors</h3>
+      <p>
+        During a brew, enchantment result lines are color-coded to indicate what category of
+        affect the material combination produces:
+      </p>
+
+      <table>
+        <thead><tr><th>Color</th><th>Affect Category</th></tr></thead>
+        <tbody>
+          <tr><td><span style="color:#67e8f9">■</span> Cyan</td><td>Saves / Added Affect / Invisibility</td></tr>
+          <tr><td><span style="color:#7dd3fc">■</span> Light Blue</td><td>Attributes (STR, INT, WIS, DEX, CON)</td></tr>
+          <tr><td><span style="color:#fb923c">■</span> Orange</td><td>Resources / Burn Proof</td></tr>
+          <tr><td><span style="color:#c084fc">■</span> Purple</td><td>–AC (better armor) / Flying</td></tr>
+          <tr><td><span style="color:#6ea8fe">■</span> Blue</td><td>Slow or Haste</td></tr>
+          <tr><td><span style="color:#4ade80">■</span> Green</td><td>Resource Regeneration</td></tr>
+          <tr><td><span style="color:#f87171">■</span> Red</td><td>Humming / No-Remove</td></tr>
+          <tr><td><span style="color:#fbbf24">■</span> Gold</td><td>Added Value</td></tr>
+          <tr><td><span style="color:#d1d5db">■</span> Silver</td><td>Immunity / Resistance</td></tr>
+          <tr><td><span style="color:#a16207">■</span> Brown</td><td>Non-metal / Half Weight</td></tr>
+          <tr><td><span style="color:#84cc16">■</span> Olive</td><td>Curse</td></tr>
+          <tr><td><span style="color:#f9a8d4">■</span> Pink</td><td>Glowing</td></tr>
+          <tr><td><span style="color:#9aa3af">■</span> Muted gray</td><td>Double Weight</td></tr>
+          <tr><td><span style="color:#fb923c">■</span> Warn orange</td><td>+AC (worse armor)</td></tr>
+        </tbody>
+      </table>
+
+      <h3 id="util-ea-commands">Commands</h3>
+      <table>
+        <thead><tr><th>Command</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>es</code></td><td>Show Enchanter Assist help</td></tr>
+          <tr><td><code>es run</code></td><td>Run one trial cycle</td></tr>
+          <tr><td><code>es auto</code></td><td>Toggle continuous auto-run mode on/off</td></tr>
+          <tr><td><code>es stop</code></td><td>Stop after the current attempt finishes gracefully</td></tr>
+          <tr><td><code>es 1</code> – <code>es 5</code></td><td>Set the number of materials to use per attempt (1–5)</td></tr>
+          <tr><td><code>es stats</code></td><td>Show discovery progress for all part counts plus session totals</td></tr>
+          <tr><td><code>es missing</code></td><td>List materials for which you are missing the essence (excluded from trials)</td></tr>
+          <tr><td><code>es reset</code></td><td>Reset session statistics — attempted combinations and missing materials are preserved</td></tr>
+          <tr><td><code>es set container &lt;name&gt;</code></td><td>Set the container to pull items from (default: <code>bag</code>)</td></tr>
+          <tr><td><code>es set sleeper &lt;name&gt;</code></td><td>Set the sleep item name for bedroll rest mode (default: <code>bedroll</code>)</td></tr>
+          <tr><td><code>es set sleepmode sleep|potion</code></td><td>Use a bedroll to sleep (<code>sleep</code>), or drink potions to restore (<code>potion</code>) — default: <code>sleep</code></td></tr>
+          <tr><td><code>es set potion &lt;name&gt;</code></td><td>Set the mana potion item name for potion mode (default: <code>potion</code>)</td></tr>
+          <tr><td><code>es set order seq|rand</code></td><td>Test combinations in deterministic sequential order (<code>seq</code>) or randomly (<code>rand</code>) — default: <code>rand</code></td></tr>
+          <tr><td><code>es sound</code></td><td>Toggle the audio alert played when a formula is discovered</td></tr>
+          <tr><td><code>es enable</code> / <code>es disable</code></td><td>Enable or disable the module entirely</td></tr>
+        </tbody>
+      </table>
+
+
+      <!-- ·· Skill Ups ································· -->
+      <h2 id="util-skillups">Skill Ups</h2>
+
+      <p>
+        Tracks skill improvements as they happen and maintains a timestamped history of your recent
+        gains. When a skill improves, a notification appears in your chat area. Skills improved
+        this session are highlighted in a distinct color on the practice screen.
+      </p>
+
+      <table>
+        <thead><tr><th>Command</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>skillups</code></td><td>Show Skill Ups help</td></tr>
+          <tr><td><code>skillups list</code></td><td>Show the last 20 skill improvements with timestamps and elapsed time</td></tr>
+          <tr><td><code>skillups reset</code></td><td>Clear the improvement history</td></tr>
+        </tbody>
+      </table>
+
+      <div class="tip">
+        <strong>Practice screen integration:</strong> Skills improved during the current session
+        are highlighted in <span style="color:#bdb76b">■ yellow</span> when you type
+        <code>practice</code>, <code>skills</code>, or <code>spells</code>, making it easy to
+        spot what you have been gaining.
+      </div>
+
+
+      <!-- ·· Clickables ································ -->
+      <h2 id="util-clickables">Clickables</h2>
+
+      <p>
+        Automatically enhances the output of <code>practice</code>, <code>skills</code>, and
+        <code>spells</code> commands: skill names become clickable links and proficiency values
+        are color-coded by percentage. No command is needed — this runs transparently whenever
+        you use those commands.
+      </p>
+
+      <h3>Quest clickables</h3>
+      <p>Clickable formatting applies to quest lines when your current quest list is shown.</p>
+      <table>
+        <thead><tr><th>Interaction</th><th>Action</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>Click a quest number</td>
+            <td>Sends <code>quest read &lt;number&gt;</code></td>
+          </tr>
+          <tr>
+            <td><kbd>Shift</kbd>+Click a quest number</td>
+            <td>Sends <code>quest drop &lt;number&gt;</code>, then refreshes with <code>quest current</code></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>Auction clickables</h3>
+      <p>Clickable formatting also applies to auction list lines.</p>
+      <table>
+        <thead><tr><th>Interaction</th><th>Action</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>Click item ID/name column</td>
+            <td>Sends <code>auc browse &lt;id&gt;</code></td>
+          </tr>
+          <tr>
+            <td>Click buyout value</td>
+            <td>Sends <code>auc buyout &lt;id&gt;</code>, then refreshes with <code>auc list</code></td>
+          </tr>
+          <tr>
+            <td>Click bid value</td>
+            <td>Sends <code>auc bid &lt;id&gt; &lt;current+1&gt;</code>, then refreshes with <code>auc list</code></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>Practice / Skills / Spells output</h3>
+      <table>
+        <thead><tr><th>Interaction</th><th>Action</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>Click a skill name</td>
+            <td>Sends <code>help &lt;skill&gt;</code></td>
+          </tr>
+          <tr>
+            <td><kbd>Shift</kbd>+Click a skill name</td>
+            <td>Sends <code>prac &lt;skill&gt;</code> and immediately refreshes the list</td>
+          </tr>
+        </tbody>
+      </table>
+      <table style="margin-top:.75rem">
+        <thead><tr><th>Proficiency</th><th>Color</th></tr></thead>
+        <tbody>
+          <tr><td>0 – 49 %</td><td><span style="color:#f87171">■</span> Red</td></tr>
+          <tr><td>50 – 89 %</td><td><span style="color:#f97316">■</span> Orange</td></tr>
+          <tr><td>90 – 99 %</td><td><span style="color:#bdb76b">■</span> Yellow</td></tr>
+          <tr><td>100 %</td><td><span style="color:#16a34a">■</span> Green</td></tr>
+          <tr><td>Recently improved (this session)</td><td><span style="color:#bdb76b">■</span> Yellow <em>(skill name highlighted)</em></td></tr>
+        </tbody>
+      </table>
+
+      <h3>Essence display (alchemy)</h3>
+      <p>When you view your stored essences, quantities are color-coded relative to the material cap:</p>
+      <table style="margin-top:.5rem">
+        <thead><tr><th>Fill level</th><th>Color</th></tr></thead>
+        <tbody>
+          <tr><td>0 – 49 %</td><td><span style="color:#f87171">■</span> Red</td></tr>
+          <tr><td>50 – 74 %</td><td><span style="color:#f97316">■</span> Orange</td></tr>
+          <tr><td>75 – 89 %</td><td><span style="color:#bdb76b">■</span> Yellow</td></tr>
+          <tr><td>90 – 99 %</td><td><span style="color:#86efac">■</span> Green</td></tr>
+          <tr><td>100 % (full)</td><td><span style="color:#16a34a">■</span> Green</td></tr>
+        </tbody>
+      </table>
+
+
+      <!-- ·· Item Tracker ····························· -->
+      <h2 id="util-itemtracker">Item Tracker</h2>
+
+      <p>
+        Look up items from the bundled database of 5,000+ Dark Mists items. Results appear as
+        clickable links; hovering over a link shows a floating tooltip with the item's full
+        stat block and details.
+      </p>
+
+      <table>
+        <thead><tr><th>Command</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>dmid &lt;item name&gt;</code></td><td>Search for an item and display its information</td></tr>
+        </tbody>
+      </table>
+
+      <div class="tip">
+        <strong>Tip:</strong> Partial names work — <code>dmid silver ring</code> will match
+        any item containing those words. Hover over any result to see the full stat block in
+        a tooltip.
+      </div>
+
+
+      <!-- ·· Stat Roller ······························ -->
+      <h2 id="util-statroller">Stat Roller</h2>
+
+      <p>
+        A character creation assistant that activates automatically during the stat-rolling phase
+        of new character creation. It analyzes rolled stats in real time and helps you decide
+        whether to keep or re-roll without needing to do mental arithmetic.
+      </p>
+
+      <ul>
+        <li>
+          <strong>HUD display:</strong> Shows your current stat block (STR / INT / WIS / DEX / CON),
+          total, the best total seen this session, a trend sparkline, rolls per minute, and elapsed
+          time.
+        </li>
+        <li>
+          <strong>Leniency:</strong> Controls how strict the acceptance threshold is — <code>0</code>
+          is most selective, <code>3</code> is most lenient. This is selected during
+          character creation.
+        </li>
+        <li>
+          <strong>Best roll memory:</strong> Tracks the highest total seen this session so you can
+          compare new rolls against your best.
+        </li>
+        <li>
+          <strong>Keepalive:</strong> Sends a blank input at regular intervals to prevent timeout
+          during long rolling sessions.
+        </li>
+      </ul>
+
+      <div class="tip">
+        <strong>Usage:</strong> The Stat Roller activates automatically at character creation.
+      </div>
+
+    </section>
+
+
+    <!-- ── Web Tools ───────────────────────────────── -->
+    <section id="webtools">
+      <h1>Web Tools</h1>
+
+      <p>
+        DMC bundles several standalone HTML tools alongside the package. Open them in any browser —
+        they are fully self-contained and require no internet connection.
+      </p>
+
+      <h3>Item Viewer — <code>item-viewer.html</code></h3>
+      <p>
+        Search and filter the complete Dark Mists item database (5,000+ items). Filter by name,
+        item type, stat ranges, and preset stat profiles (Melee, Tank, Caster, Healer). Results
+        include a full stat breakdown for each item. Supports loading updated database files.
+      </p>
+
+      <h3>Alchemy Formula Parser — <code>alchemy-formula-parser.html</code></h3>
+      <p>
+        Convert and analyze alchemy formula data. Useful for processing formula output dumps
+        and visualizing material relationships discovered via Enchanter Assist.
+      </p>
+
+      <h3>Alchemy Material List — <code>alchemy-mat-list.html</code></h3>
+      <p>
+        Searchable and sortable material source reference for alchemy. Includes material name,
+        item examples, source locations, and notes so you can quickly find where to farm each
+        material.
+      </p>
+
+      <h3>EA Save Converter — <code>ea-save-converter.html</code></h3>
+      <p>
+        Converts CMUD Enchanter Assist XML trial data (<code>AttemptedSet</code>) into a
+        Mudlet-compatible <code>ea_data.lua</code> file for importing your previously attempted
+        combinations.
+      </p>
+    </section>
+
+
+    <!-- ── Commands Reference ──────────────────────── -->
+    <section id="commands">
+      <h1>Commands Quick Reference</h1>
+
+      <table>
+        <thead><tr><th>Syntax</th><th>Description</th><th>Module</th></tr></thead>
+        <tbody>
+          <!-- Core -->
+          <tr><td><code>dmc</code></td><td>Show the main DMC help index</td><td>Core</td></tr>
+          <tr><td><code>dmc help &lt;topic&gt;</code></td><td>In-depth help for a module</td><td>Core</td></tr>
+          <tr><td><code>dmc ui [on|off]</code></td><td>Toggle or set full / minimal UI mode</td><td>Core</td></tr>
+          <!-- Status Bars -->
+          <tr><td><code>sb</code></td><td>Status bar help</td><td>Status Bars</td></tr>
+          <tr><td><code>sb show</code> / <code>sb hide</code></td><td>Show or hide the gauge bars</td><td>Status Bars</td></tr>
+          <tr><td><code>sb toggle</code></td><td>Toggle bar visibility</td><td>Status Bars</td></tr>
+          <tr><td><code>sb info</code></td><td>Print current vitals to chat</td><td>Status Bars</td></tr>
+          <tr><td><code>sb recreate</code></td><td>Recreate bars after layout changes</td><td>Status Bars</td></tr>
+          <!-- Navigation -->
+          <tr><td><code>walk &lt;name&gt;</code></td><td>Speedwalk to a saved destination</td><td>Navigation</td></tr>
+          <tr><td><code>walk list [filter]</code></td><td>List saved destinations (optionally filtered)</td><td>Navigation</td></tr>
+          <tr><td><code>walk add &lt;name&gt; [roomid]</code></td><td>Save current (or specified) room</td><td>Navigation</td></tr>
+          <tr><td><code>walk rem &lt;name&gt;</code></td><td>Delete a destination</td><td>Navigation</td></tr>
+          <tr><td><code>walk area &lt;search&gt;</code></td><td>Walk to any area matching search</td><td>Navigation</td></tr>
+          <tr><td><code>walk stop</code></td><td>Cancel current walk</td><td>Navigation</td></tr>
+          <!-- Enchanter Assist -->
+          <tr><td><code>es</code></td><td>Enchanter Assist help</td><td>Enchanter Assist</td></tr>
+          <tr><td><code>es run</code></td><td>Run one trial cycle</td><td>Enchanter Assist</td></tr>
+          <tr><td><code>es auto</code></td><td>Toggle continuous auto-run</td><td>Enchanter Assist</td></tr>
+          <tr><td><code>es stop</code></td><td>Stop after current attempt</td><td>Enchanter Assist</td></tr>
+          <tr><td><code>es 1</code>–<code>5</code></td><td>Set materials per attempt</td><td>Enchanter Assist</td></tr>
+          <tr><td><code>es stats</code></td><td>Show discovery progress and session stats</td><td>Enchanter Assist</td></tr>
+          <tr><td><code>es missing</code></td><td>List missing material essences</td><td>Enchanter Assist</td></tr>
+          <tr><td><code>es reset</code></td><td>Reset session (preserves attempts &amp; missing)</td><td>Enchanter Assist</td></tr>
+          <tr><td><code>es set container &lt;name&gt;</code></td><td>Set container name</td><td>Enchanter Assist</td></tr>
+          <tr><td><code>es set sleeper &lt;name&gt;</code></td><td>Set sleep item name</td><td>Enchanter Assist</td></tr>
+          <tr><td><code>es set sleepmode sleep|potion</code></td><td>Choose rest method</td><td>Enchanter Assist</td></tr>
+          <tr><td><code>es set potion &lt;name&gt;</code></td><td>Set mana potion name</td><td>Enchanter Assist</td></tr>
+          <tr><td><code>es set order seq|rand</code></td><td>Trial order: sequential or random</td><td>Enchanter Assist</td></tr>
+          <tr><td><code>es sound</code></td><td>Toggle formula discovery sound</td><td>Enchanter Assist</td></tr>
+          <tr><td><code>es enable</code> / <code>es disable</code></td><td>Enable or disable the module</td><td>Enchanter Assist</td></tr>
+          <!-- Skill Ups -->
+          <tr><td><code>skillups</code></td><td>Skill tracker help</td><td>Skill Ups</td></tr>
+          <tr><td><code>skillups list</code></td><td>Show recent improvements</td><td>Skill Ups</td></tr>
+          <tr><td><code>skillups reset</code></td><td>Clear history</td><td>Skill Ups</td></tr>
+          <!-- Item Tracker -->
+          <tr><td><code>dmid &lt;item name&gt;</code></td><td>Search item database</td><td>Item Tracker</td></tr>
+        </tbody>
+      </table>
+    </section>
+    <!-- ── Tips & Troubleshooting ──────────────────── -->
+    <section id="tips">
+      <h1>Tips &amp; Troubleshooting</h1>
+
+      <div class="tip">
+        <strong>Important:</strong> If anything looks wrong, use <strong>Settings &gt; Reload UI</strong> first before trying other troubleshooting steps. This reloads the entire interface, clears most fragmented UI panels and stale post-update state, and is usually the fastest fix. DMC modules are designed for safe reloads, so aliases and event handlers are re-registered cleanly without duplicate bindings.
+      </div>
+
+      <h2>A panel is blank or not updating</h2>
+      <ul>
+        <li>Confirm your UI mode is set to <code>"full"</code>: type <code>dmc ui on</code>.</li>
+        <li>
+          Force an update by issuing the relevant command — for example, <code>who</code> to
+          populate the Who Window, or any movement command to trigger a prompt refresh on the
+          Score Panel.
+        </li>
+        <li>If status bars are missing, type <code>sb recreate</code>.</li>
+      </ul>
+
+      <h2>Enchanter Assist stops or won't start</h2>
+      <ul>
+        <li>
+          <strong>Hard stop completed:</strong> A previous <code>es stop</code> ran to completion.
+          Type <code>es auto</code> to restart.
+        </li>
+        <li>
+          <strong>Missing essence:</strong> You lack the essence for a material in the current
+          combination. Check <code>es missing</code> — those materials are excluded from future
+          trials automatically.
+        </li>
+        <li>
+          <strong>All combinations exhausted:</strong> Every combination for the current part count
+          has been tried. Increase the count with <code>es 4</code> or <code>es 5</code> and run
+          again.
+        </li>
+        <li>
+          <strong>Disconnected mid-attempt:</strong> A disconnect aborts the current attempt
+          cleanly. Reconnect and run <code>es auto</code> to resume.
+        </li>
+      </ul>
+
+      <h2>Walk can't find a path</h2>
+      <ul>
+        <li>Confirm the map is loaded — the Minimap should be showing your current room.</li>
+        <li>
+          Some areas may have map gaps that break pathfinding. Try
+          <code>walk area &lt;name&gt;</code> to navigate toward the general area first.
+        </li>
+        <li>Verify the destination name with <code>walk list</code>.</li>
+      </ul>
+
+      <h2>Clickable skills aren't appearing</h2>
+      <ul>
+        <li>
+          Clickable formatting only triggers when you send one of the relevant commands —
+          type <code>practice</code>, <code>skills</code>, or <code>spells</code> to see the
+          formatted, clickable output.
+        </li>
+      </ul>
+
+      <h2>Chat History is empty</h2>
+      <ul>
+        <li>
+          The log is session-only and starts empty on each Mudlet launch. Messages are added
+          as they arrive — no history is imported from before the session began.
+        </li>
+      </ul>
+    </section>
+
+
+    <!-- ── Configuration ───────────────────────────── -->
+    <section id="config">
+      <h1>Advanced Configuration</h1>
+
+      <p>
+        DMC stores its settings in <code>darkmists_global_settings.lua</code> inside your Mudlet
+        profile directory. Most settings take effect on the next reload. You can also access
+        common settings through the <strong>Button Bar → Settings</strong> menu.
+      </p>
+
+      <div class="tip">
+        <strong>Note:</strong> Restart or reload DMC after editing the settings file manually.
+        The Button Bar settings menu applies changes without a full reload where possible.
+      </div>
+
+      <table>
+        <thead><tr><th>Setting</th><th>Values</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><code>uiMode</code></td>
+            <td><code>"full"</code> / <code>"minimal"</code></td>
+            <td>Full UI shows all panels. Minimal mode hides most panels for a cleaner layout.</td>
+          </tr>
+          <tr>
+            <td><code>theme</code></td>
+            <td><code>"dark"</code> / <code>"light"</code></td>
+            <td>Switches all panels and color tags between dark and light color schemes.</td>
+          </tr>
+          <tr>
+            <td><code>fontSize</code></td>
+            <td>integer (e.g. <code>10</code>)</td>
+            <td>Font size used across all DMC consoles and panels.</td>
+          </tr>
+          <tr>
+            <td><code>fontName</code></td>
+            <td>string (e.g. <code>"Fira Code"</code>)</td>
+            <td>Font family used across all DMC consoles.</td>
+          </tr>
+          <tr>
+            <td><code>statusBarColors</code></td>
+            <td>RGBA strings per gauge</td>
+            <td>Bar and backdrop colors for each gauge: <code>hp</code>, <code>mn</code>, <code>mv</code>, <code>xp</code>, <code>enemy</code>. Format: <code>"r,g,b,a"</code> (0–255).</td>
+          </tr>
+          <tr>
+            <td><code>statusBarTotalHeightPercent</code></td>
+            <td>number (0–100)</td>
+            <td>Total vertical height of the status bar area as a percentage of the Mudlet window height.</td>
+          </tr>
+          <tr>
+            <td><code>statusBarsMoveable</code></td>
+            <td><code>true</code> / <code>false</code></td>
+            <td>Allow dragging the status bars to reposition them on screen.</td>
+          </tr>
+          <tr>
+            <td><code>whoWindowDeleteOriginalLines</code></td>
+            <td><code>true</code> / <code>false</code></td>
+            <td>Remove the raw "who" output from the main console after the Who Window captures it.</td>
+          </tr>
+          <tr>
+            <td><code>statRollerLeniency</code></td>
+            <td><code>0</code> – <code>3</code></td>
+            <td>Controls how strict the Stat Roller's acceptance threshold is. 0 = most selective, 3 = most lenient.</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+  </div><!-- .content -->
+</main>
+
+<footer>
+<br>
+<br>
+  DarkMistsCompanion &nbsp;·&nbsp; mudzereli &nbsp;·&nbsp;
+  Not affiliated with Dark Mists MUD staff, but happy to help with any DMC-related issues.
+</footer>
+
+<script>
+  // Intentionally left blank: wiki host handles section navigation.
+</script>
+
+</body>
+</html>
