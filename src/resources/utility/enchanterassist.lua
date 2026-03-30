@@ -765,6 +765,12 @@ function EnchanterAssist.on_line(ln)
   local m = ln:match("^You do not have essence of (%w+)%.")
   if m then
     DMLogger.notify(ea_plugin, ea_warn .. "Missing Essence: " .. ea_text .. m)
+    local essence = string.lower(m)
+    if not EnchanterAssist._contains(EnchanterAssist.missing, essence) then
+      EnchanterAssist._add(EnchanterAssist.missing, essence)
+      EnchanterAssist._comboIndices = nil
+      EnchanterAssist.save()
+    end
     if EnchanterAssist.state == "brewing" then
       EnchanterAssist._attemptResolved = true
     end
