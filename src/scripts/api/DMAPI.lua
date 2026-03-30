@@ -89,7 +89,10 @@ dmapi.core = {
   
   -- One-line event mappings
   oneLineEvents = {
-    ["You wake and stand up."] = "dmapi.player.sleep.exit",
+    ["You wake and stand up."] = {
+      "dmapi.player.sleep.exit",
+      "dmapi.player.rest.exit"
+    },
     ["In your dreams, or what?"] = "dmapi.player.sleep.blocked",
     ["You do not have that item."] = "dmapi.player.inventory.itemnotfound",
     ["You cannot find it."] = "dmapi.player.inventory.itemnotfound",
@@ -1193,7 +1196,13 @@ function dmapi.core.LineTrigger(line)
   -- Check one-line event mappings
   local oneLineEvent = dmapi.core.oneLineEvents[line]
   if oneLineEvent then
-    dmapi.core.raiseEvent(oneLineEvent, {line = line})
+    if type(oneLineEvent) == "table" then
+      for _, eventName in ipairs(oneLineEvent) do
+        dmapi.core.raiseEvent(eventName, {line = line})
+      end
+    else
+      dmapi.core.raiseEvent(oneLineEvent, {line = line})
+    end
     return
   end
 
