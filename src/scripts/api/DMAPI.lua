@@ -877,15 +877,18 @@ local function handleCommunicationLine(line)
 
   -- EMOTED SAY: Role-played speech with an emote action (e.g., "Warrior smiles says, 'Hello!'")
   -- Used for immersive roleplay and emotional expression in dialogue
-  sender, emote, message = line:match("^(%a+) ([^ ]+) says, '(.*)'$")
+  sender, emote, message = line:match("^(%S+) ([^ ]+) says, '(.*)'$")
   if sender and emote and message then
-    dmapi.core.raiseEvent("dmapi.communication.emotedsayreceived", {
-      sender = sender,
-      emote = emote,
-      message = message,
-      line = line
-    })
-    return true
+    local firstWord = sender:lower()
+    if firstWord ~= "the" and firstWord ~= "a" and firstWord ~= "an" then
+      dmapi.core.raiseEvent("dmapi.communication.emotedsayreceived", {
+        sender = sender,
+        emote = emote,
+        message = message,
+        line = line
+      })
+      return true
+    end
   end
 
   -- Player's own emoted say (sent by player)
