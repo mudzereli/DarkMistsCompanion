@@ -16,12 +16,13 @@ MapDestinations = {
   list = {},
   path = getMudletHomeDir() .. "/mapdestinations_state.lua",
   areaWalkTarget = nil,
+  walkTargetRoom = nil,
   MAX_NAME_LEN = 24,
   _isLoading = false,
   _loadNormalized = false,
   _isWalking = false,
   _navigationBlockCount = 0,
-  _navigationBlockTilStop = 2,
+  _navigationBlockTilStop = 1,
 }
 
 local function normalizeDestinationName(name)
@@ -60,6 +61,14 @@ function MapDestinations.clearAreaWalkTarget()
   MapDestinations.areaWalkTarget = nil
 end
 
+function MapDestinations.clearWalkTargetRoom()
+  MapDestinations.walkTargetRoom = nil
+end
+
+function MapDestinations.setWalkTargetRoom(roomId)
+  MapDestinations.walkTargetRoom = tonumber(roomId)
+end
+
 function MapDestinations.setAreaWalkTarget(areaId, areaName)
   MapDestinations.areaWalkTarget = {
     areaId = areaId,
@@ -90,6 +99,29 @@ function MapDestinations.checkAreaArrival()
   end
 end
 
+-- For direct room walks, clear walking state once destination is reached.
+function MapDestinations.checkWalkCompletion()
+  if not MapDestinations._isWalking then
+    return
+  end
+
+  local targetRoom = MapDestinations.walkTargetRoom
+  if not targetRoom then
+    return
+  end
+
+  local currentRoom = getPlayerRoom()
+  if not currentRoom then
+    return
+  end
+
+  if currentRoom == targetRoom then
+    MapDestinations._isWalking = false
+    MapDestinations._navigationBlockCount = 0
+    MapDestinations.clearWalkTargetRoom()
+  end
+end
+
 -- Handle navigation blocks during walk
 local function handleNavigationBlocked()
   if not MapDestinations._isWalking then
@@ -114,6 +146,7 @@ function MapDestinations.load()
   MapDestinations._isLoading = true
   MapDestinations._loadNormalized = false
   MapDestinations._isWalking = false
+  MapDestinations.walkTargetRoom = nil
 
   local f = io.open(MapDestinations.path, "r")
   if not f then
@@ -139,6 +172,7 @@ function MapDestinations.load()
   end
 
   -- Register event handlers
+  DarkmistsEvents.add("MapDestinations.walkCompletionCheck", "dmapi.world.prompt", MapDestinations.checkWalkCompletion)
   DarkmistsEvents.add("MapDestinations.areaArrivalCheck", "dmapi.world.prompt", MapDestinations.checkAreaArrival)
   DarkmistsEvents.add("MapDestinations.navigationBlocked", "dmapi.player.navigation.blocked", handleNavigationBlocked)
 end
@@ -215,6 +249,7 @@ end
 -- Stop current walk (delegates to Mudlet map alias).
 function MapDestinations.stop()
   MapDestinations.clearAreaWalkTarget()
+  MapDestinations.clearWalkTargetRoom()
   MapDestinations._isWalking = false
   MapDestinations._navigationBlockCount = 0
   expandAlias("map stop")
@@ -263,6 +298,7 @@ function MapDestinations.navigate(name)
   end
 
   MapDestinations.clearAreaWalkTarget()
+  MapDestinations.setWalkTargetRoom(dest)
   MapDestinations._isWalking = true
   gotoRoom(dest)
   return true, dest, roomName
@@ -315,6 +351,7 @@ function MapDestinations.navigateToArea(search)
       end
 
       MapDestinations.setAreaWalkTarget(areaId, areaName)
+      MapDestinations.setWalkTargetRoom(firstRoom)
       MapDestinations._isWalking = true
       gotoRoom(firstRoom)
       return true, firstRoom, areaName
