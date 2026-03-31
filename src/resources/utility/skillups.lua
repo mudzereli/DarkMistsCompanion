@@ -83,23 +83,27 @@ function SkillUps.reset()
 end
 
 
+function SkillUps.RegisterHandlers()
+  if SkillUps._handlersRegistered then
+    return
+  end
+  
 -- ===================================================================
 -- EVENT HANDLER (managed by EventManager)
 -- ===================================================================
+  DarkmistsEvents.add(
+    "SkillUpsImproved",
+    "dmapi.player.skill.improved",
+    function(_, data)
+      SkillUps.addSkillUp(data.skill)
+    end
+  )
 
-DarkmistsEvents.add(
-  "SkillUpsImproved",
-  "dmapi.player.skill.improved",
-  function(_, data)
-    SkillUps.addSkillUp(data.skill)
-  end
-)
-
--- ===================================================================
--- ALIAS
--- ===================================================================
-DarkmistsAlias.add([[^skillups?$]], function()
-  cecho(DarkmistsTheme.cyanTag..[[
+  -- ===================================================================
+  -- ALIAS
+  -- ===================================================================
+  DarkmistsAlias.add([[^skillups?$]], function()
+    cecho(DarkmistsTheme.cyanTag..[[
 SkillUps Module:
     ]]..DarkmistsTheme.mutedTag..[[The SkillUps module tracks recent skill improvements as they occur.
     Each time a skill increases, a notification is displayed and the
@@ -117,16 +121,27 @@ SkillUps Module:
     ]])
   end)
 
-DarkmistsAlias.add([[^skillups? list$]], function()
-  SkillUps.display()
-end)
+  DarkmistsAlias.add([[^skillups? list$]], function()
+    SkillUps.display()
+  end)
 
-DarkmistsAlias.add([[^skillups? reset$]], function()
-  SkillUps.reset()
-end)
+  DarkmistsAlias.add([[^skillups? reset$]], function()
+    SkillUps.reset()
+  end)
+
+  SkillUps._handlersRegistered = true
+end
 
 -- ===================================================================
 -- INIT
 -- ===================================================================
 
-DMLogger.log("SkillUps",string.format("%sTracker initialized. Type '%sskillups%s' to view history.", DarkmistsTheme.goodTag, DarkmistsTheme.textTag, DarkmistsTheme.goodTag))
+function SkillUps.init()
+  if SkillUps._initialized then
+    return
+  end
+
+  SkillUps.RegisterHandlers()
+  DMLogger.log("SkillUps",string.format("%sTracker initialized. Type '%sskillups%s' to view history.", DarkmistsTheme.goodTag, DarkmistsTheme.textTag, DarkmistsTheme.goodTag))
+  SkillUps._initialized = true
+end
