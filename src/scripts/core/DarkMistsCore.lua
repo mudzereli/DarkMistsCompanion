@@ -717,7 +717,7 @@ function Darkmists.Init()
   -- Utility Scripts that use DMAPI
   ItemTracker.init()
   StatRoller.init()
-  dofile(getMudletHomeDir() .. "/DarkMistsCompanion/utility/mapdestinations.lua")
+  MapDestinations.load()
   dofile(getMudletHomeDir() .. "/DarkMistsCompanion/utility/enchanterassist.lua")
   dofile(getMudletHomeDir() .. "/DarkMistsCompanion/utility/skillups.lua")
   dofile(getMudletHomeDir() .. "/DarkMistsCompanion/utility/clickables.lua")

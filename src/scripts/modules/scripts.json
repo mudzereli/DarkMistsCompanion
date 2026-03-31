@@ -16,5 +16,11 @@
               "isActive": "yes",
               "script": "",
               "isFolder": "no"
+       },
+       {
+              "name": "DMWalker",
+              "isActive": "yes",
+              "script": "",
+              "isFolder": "no"
        }
 ]
