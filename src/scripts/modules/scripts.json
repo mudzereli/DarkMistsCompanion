@@ -24,6 +24,12 @@
               "isFolder": "no"
        },
        {
+              "name": "DMSkillups",
+              "isActive": "yes",
+              "script": "",
+              "isFolder": "no"
+       },
+       {
               "name": "DMClickables",
               "isActive": "yes",
               "script": "",
