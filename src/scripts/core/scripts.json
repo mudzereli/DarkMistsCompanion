@@ -12,6 +12,12 @@
               "isFolder": "no"
        },
        {
+              "name": "DarkMistsMeta",
+              "isActive": "yes",
+              "script": "",
+              "isFolder": "no"
+       },
+       {
               "name": "DarkMistsCore",
               "isActive": "yes",
               "script": "",
