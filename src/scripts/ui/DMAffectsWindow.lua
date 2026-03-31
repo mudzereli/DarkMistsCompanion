@@ -538,6 +538,7 @@ function AffectsWindow.init()
   registerHandlers()
 
   Darkmists.Log("AffectsWindow", "Triggers registered")
+  Darkmists.Log("AffectsWindow","Initialized. Type 'aff' to capture affects!")
 end
 
 function AffectsWindow.destroy()
@@ -572,10 +573,3 @@ function AffectsWindow.destroy()
   AffectsWindow.initialized = false
   Darkmists.Log("AffectsWindow", "Destroyed")
 end
-
--- ============================================================================
--- INIT
--- ============================================================================
-
-AffectsWindow.init()
-Darkmists.Log("AffectsWindow","Initialized. Type 'aff' to capture affects!")
