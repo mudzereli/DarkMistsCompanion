@@ -1,5 +1,5 @@
 DMClickables = DMClickables or {}
-DMClickables.settings = {
+DMClickables.settings = DMClickables.settings or {
     lastSkillCommand = ""
 }
 
@@ -125,6 +125,101 @@ function DMClickables.ClickablePractices()
     end
 end
 
+DMClickables.auctions = DMClickables.auctions or {
+  active = false,
+  linesLeft = 0,
+}
+
+function DMClickables.ClickableAuctions()
+  if not DMClickables then return end
+
+  local state = DMClickables.auctions
+  local raw = getCurrentLine()
+  if not raw or raw == "" then return end
+
+  if raw:match("^Item ID%s+Name%s+Buyout%s+Time Left%s+Current Bid") then
+    state.active = true
+    state.linesLeft = 21
+    return
+  end
+
+  if not state.active then return end
+  if state.linesLeft <= 0 then
+    state.active = false
+    return
+  end
+
+  state.linesLeft = state.linesLeft - 1
+
+  if raw:match("^%-%-%-%-%-.*") then
+    return
+  end
+
+  local id, name, buyout, timeLeft, bid, suffix = raw:match(
+    "^%s*([a-z0-9][a-z0-9][a-z0-9][a-z0-9][a-z0-9][a-z0-9][a-z0-9])%s+(.-)%s%s+(%d+)%s+([0-9dhm%s]-)%s%s+(%d*)%s*(.*)$"
+  )
+  if not name then return end
+
+  replaceLine("")
+
+  name = name:gsub("^%s+", "")
+  name = name:gsub("%s+$", "")
+  timeLeft = timeLeft:gsub("%s+$", "")
+  if #name >= 28 then
+    name = name:sub(1, 28)
+  end
+
+  local bidNum = tonumber(bid) or 0
+
+  cechoLink(
+    string.format("<forest_green><u>%7s</u>", id),
+    function()
+      send("auc browse " .. id)
+    end,
+    string.format("Click: auc browse %s", id),
+    true
+  )
+  cecho("<r>  ")
+  cechoLink(
+    string.format("<r>%-28s", name),
+    function()
+      send("auc browse " .. id)
+    end,
+    string.format("Click: auc browse %s", id),
+    true
+  )
+  cecho("<r>  ")
+
+  cechoLink(
+    string.format("<dark_khaki>%7s", buyout),
+    function()
+      send("auc buyout " .. id)
+      send("auc list")
+    end,
+    string.format("Click: auc buyout %s", id),
+    true
+  )
+  cecho("<r>  ")
+
+  cecho("<r>" .. ("%11s"):format(timeLeft))
+  cecho("<r>  ")
+
+  cechoLink(
+    string.format("<dark_khaki>%11s", bid),
+    function()
+      send(("auc bid %s %s"):format(id, bidNum + 1))
+      send("auc list")
+    end,
+    string.format("Click: auc bid %s %d", id, bidNum + 1),
+    true
+  )
+
+  if suffix and suffix ~= "" then
+    cecho(("<forest_green>%s"):format(suffix))
+  end
+  cecho("\n")
+end
+
 DMClickables.essence = DMClickables.essence or {
   active = false,
   cap = 225
@@ -191,4 +286,27 @@ function DMClickables.ClickableEssences()
 
   replaceLine("")
   cecho("   " .. table.concat(output, "      "))
+end
+
+function DMClickables.init()
+  if DMClickables._initialized then return end
+
+  DarkmistsEvents.add("DMClickables.AuctionPromptReset", "dmapi.world.prompt", function()
+    DMClickables.auctions.active = false
+    DMClickables.auctions.linesLeft = 0
+  end)
+
+  DarkmistsEvents.add("DMClickables.Auctions", "dmapi.core.line", function()
+    DMClickables.ClickableAuctions()
+  end)
+
+  DarkmistsEvents.add("DMClickables.Practices", "dmapi.core.line", function()
+    DMClickables.ClickablePractices()
+  end)
+
+  DarkmistsEvents.add("DMClickables.Essences", "dmapi.core.line", function()
+    DMClickables.ClickableEssences()
+  end)
+
+  DMClickables._initialized = true
 end

@@ -1,67 +1,5 @@
 [
        {
-              "name": "ClickableAuctions",
-              "isActive": "yes",
-              "isFolder": "no",
-              "multiline": "no",
-              "multilineDelta": "0",
-              "matchall": "no",
-              "filter": "no",
-              "fireLength": "21",
-              "highlight": "no",
-              "highlightFG": "#ff0000",
-              "highlightBG": "#ffff00",
-              "patterns": [
-                     {
-                            "pattern": "^Item ID\\s+Name\\s+Buyout\\s+Time Left\\s+Current Bid",
-                            "type": "regex"
-                     }
-              ],
-              "script": "",
-              "children": [
-                     {
-                            "name": "ClickableAuctions - Divider",
-                            "isActive": "yes",
-                            "isFolder": "no",
-                            "multiline": "no",
-                            "multilineDelta": "0",
-                            "matchall": "no",
-                            "filter": "no",
-                            "fireLength": "0",
-                            "highlight": "no",
-                            "highlightFG": "#ff0000",
-                            "highlightBG": "#ffff00",
-                            "patterns": [
-                                   {
-                                          "pattern": "^\\-\\-\\-\\-\\-.*",
-                                          "type": "regex"
-                                   }
-                            ],
-                            "script": ""
-                     },
-                     {
-                            "name": "ClickableAuctions - Auction Line",
-                            "isActive": "yes",
-                            "isFolder": "no",
-                            "multiline": "no",
-                            "multilineDelta": "0",
-                            "matchall": "no",
-                            "filter": "no",
-                            "fireLength": "0",
-                            "highlight": "no",
-                            "highlightFG": "#ff0000",
-                            "highlightBG": "#ffff00",
-                            "patterns": [
-                                   {
-                                          "pattern": "^(?\u003cid\u003e[a-z0-9]{7})\\s+(?\u003cname\u003e.+?)\\s{2,}(?\u003cbuyout\u003e\\d+)\\s+(?\u003ctime\u003e(?:\\d+d\\s*)?(?:\\d+h\\s*)?(?:\\d+m)?)\\s+(?\u003cbid\u003e\\d*)(?\u003csuffix\u003e.*)$",
-                                          "type": "regex"
-                                   }
-                            ],
-                            "script": ""
-                     }
-              ]
-       },
-       {
               "name": "ClickableQuests",
               "isActive": "yes",
               "isFolder": "no",
@@ -122,26 +60,6 @@
                             "script": ""
                      }
               ]
-       },
-       {
-              "name": "Clickables",
-              "isActive": "yes",
-              "isFolder": "no",
-              "multiline": "no",
-              "multilineDelta": "0",
-              "matchall": "no",
-              "filter": "no",
-              "fireLength": "0",
-              "highlight": "no",
-              "highlightFG": "#ff0000",
-              "highlightBG": "#ffff00",
-              "patterns": [
-                     {
-                            "pattern": "return true",
-                            "type": "lua"
-                     }
-              ],
-              "script": ""
        },
        {
               "name": "ClickableTrain",
