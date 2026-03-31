@@ -19,6 +19,8 @@ MapDestinations = {
   MAX_NAME_LEN = 24,
   _isLoading = false,
   _loadNormalized = false,
+  _navigationBlockCount = 0,
+  _navigationBlockTilStop = 2,
 }
 
 local function normalizeDestinationName(name)
@@ -87,6 +89,17 @@ function MapDestinations.checkAreaArrival()
   end
 end
 
+-- Handle navigation blocks during walk
+local function handleNavigationBlocked()
+  raiseEvent("onMoveFail")
+  MapDestinations._navigationBlockCount = MapDestinations._navigationBlockCount + 1
+  if MapDestinations._navigationBlockCount >= MapDestinations._navigationBlockTilStop then
+    DMLogger.notify("WALK", "<red>Navigation blocked multiple times, stopping walk.") 
+    expandAlias("map stop")
+    MapDestinations._navigationBlockCount = 0
+  end
+end
+
 -- Load persistent destinations from disk.
 -- Resets in-memory state before replaying saved add() calls.
 -- Creates a stub file if none exists.
@@ -117,6 +130,10 @@ function MapDestinations.load()
   if MapDestinations._loadNormalized then
     MapDestinations.rewrite()
   end
+
+  -- Register event handlers
+  DarkmistsEvents.add("MapDestinations.areaArrivalCheck", "dmapi.world.prompt", MapDestinations.checkAreaArrival)
+  DarkmistsEvents.add("MapDestinations.navigationBlocked", "dmapi.player.navigation.blocked", handleNavigationBlocked)
 end
 
 -- Rewrite full destination file from current in-memory state.
@@ -407,7 +424,3 @@ function MapDestinations.addDestination(name, roomId)
 
   return true, name, roomId, roomName
 end
-
--- Load destinations on startup
-MapDestinations.load()
-DarkmistsEvents.add("MapDestinations.areaArrivalCheck", "dmapi.world.prompt", MapDestinations.checkAreaArrival)
