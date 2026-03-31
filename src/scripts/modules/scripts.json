@@ -22,5 +22,11 @@
               "isActive": "yes",
               "script": "",
               "isFolder": "no"
+       },
+       {
+              "name": "DMClickables",
+              "isActive": "yes",
+              "script": "",
+              "isFolder": "no"
        }
 ]

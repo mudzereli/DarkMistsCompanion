@@ -720,7 +720,7 @@ function Darkmists.Init()
   MapDestinations.load()
   dofile(getMudletHomeDir() .. "/DarkMistsCompanion/utility/enchanterassist.lua")
   dofile(getMudletHomeDir() .. "/DarkMistsCompanion/utility/skillups.lua")
-  dofile(getMudletHomeDir() .. "/DarkMistsCompanion/utility/clickables.lua")
+  DMClickables.init()
   ButtonBar.init()
 
   -- UI Scripts
