@@ -20,22 +20,22 @@
 -- META REGISTRY
 -- =============================================================================
 
-DarkmistsMeta = DarkmistsMeta or {}
+DarkMistsMeta = DarkMistsMeta or {}
 
-DarkmistsMeta.meta = {
-  name    = Darkmists.NAME,
-  version = Darkmists.VERSION,
+DarkMistsMeta.meta = {
+  name    = "DarkMistsCompanion",
+  version = "unknown",
 }
 
-local dm_text = DarkmistsTheme.textTag
-local dm_header_color = DarkmistsTheme.infoTag
-local dm_link_color = DarkmistsTheme.accentTag
-local dm_muted = DarkmistsTheme.mutedTag
-local dm_good = DarkmistsTheme.goodTag
-local dm_warn = DarkmistsTheme.warnTag
-local dm_bad = DarkmistsTheme.badTag
+local dm_text = (DarkmistsTheme and DarkmistsTheme.textTag) or ""
+local dm_header_color = (DarkmistsTheme and DarkmistsTheme.infoTag) or ""
+local dm_link_color = (DarkmistsTheme and DarkmistsTheme.accentTag) or ""
+local dm_muted = (DarkmistsTheme and DarkmistsTheme.mutedTag) or ""
+local dm_good = (DarkmistsTheme and DarkmistsTheme.goodTag) or ""
+local dm_warn = (DarkmistsTheme and DarkmistsTheme.warnTag) or ""
+local dm_bad = (DarkmistsTheme and DarkmistsTheme.badTag) or ""
 
-DarkmistsMeta.helpIndex = {
+DarkMistsMeta.helpIndex = {
   dmc = {
     title = "Dark Mists Companion",
     desc = "Central help hub for the Dark Mists Companion Mudlet package.",
@@ -103,7 +103,7 @@ Fully interactable Mudlet world map with ~15,000 rooms.
 
   dmid = {
     title   = "Item Tracker",
-    command = ItemTracker.settings.alias,
+    command = "dmid",
     desc    = "Clickable item identification and lookup",
   },
 
@@ -188,11 +188,29 @@ local function dm_link(label, command)
   )
 end
 
-function DarkmistsMeta.init()
-  if DarkmistsMeta._initialized then
+function DarkMistsMeta.init()
+  if DarkMistsMeta._initialized then
     return
   end
-  DarkmistsMeta._initialized = true
+  DarkMistsMeta._initialized = true
+
+  -- Resolve package identity at init time so module load order is safe.
+  DarkMistsMeta.meta.name = (Darkmists and Darkmists.NAME) or DarkMistsMeta.meta.name
+  DarkMistsMeta.meta.version = (Darkmists and Darkmists.VERSION) or DarkMistsMeta.meta.version
+
+  -- Resolve theme tags at init time so load order is safe.
+  dm_text = (DarkmistsTheme and DarkmistsTheme.textTag) or dm_text
+  dm_header_color = (DarkmistsTheme and DarkmistsTheme.infoTag) or dm_header_color
+  dm_link_color = (DarkmistsTheme and DarkmistsTheme.accentTag) or dm_link_color
+  dm_muted = (DarkmistsTheme and DarkmistsTheme.mutedTag) or dm_muted
+  dm_good = (DarkmistsTheme and DarkmistsTheme.goodTag) or dm_good
+  dm_warn = (DarkmistsTheme and DarkmistsTheme.warnTag) or dm_warn
+  dm_bad = (DarkmistsTheme and DarkmistsTheme.badTag) or dm_bad
+
+  -- Resolve dynamic alias at init time after ItemTracker exists.
+  if ItemTracker and ItemTracker.settings and ItemTracker.settings.alias then
+    DarkMistsMeta.helpIndex.dmid.command = ItemTracker.settings.alias
+  end
 
   -- ===================================================================
   -- UI MODE COMMANDS
@@ -241,7 +259,7 @@ function DarkmistsMeta.init()
 
   DarkmistsAlias.add("^dmc help (.*)$", function()
     local key   = matches[2]
-    local entry = DarkmistsMeta.helpIndex[key]
+    local entry = DarkMistsMeta.helpIndex[key]
 
     if not entry then
       cecho("\n"..dm_bad.."[DM] Unknown help topic: "..dm_text .. key .. "\n")
@@ -260,18 +278,18 @@ function DarkmistsMeta.init()
   end)
 
   DarkmistsAlias.add("^dmc(?:\\s+help)?$", function()
-    dm_header(DarkmistsMeta.meta.name)
+    dm_header(DarkMistsMeta.meta.name)
 
     cecho(string.format(
       dm_muted.."Version: "..dm_text.."%s\n\n",
-      DarkmistsMeta.meta.version
+      DarkMistsMeta.meta.version
     ))
 
     for _, section in ipairs(helpSections) do
       cecho(dm_header_color .. section.title .. ":\n")
 
       for _, key in ipairs(section.keys) do
-        local info = DarkmistsMeta.helpIndex[key]
+        local info = DarkMistsMeta.helpIndex[key]
         if info then
           local cmd = (key == "dmc") and "dmc help" or ("dmc help " .. key)
           dm_link(("  <u>%s [%s]</u>"):format(info.title,key), cmd)
