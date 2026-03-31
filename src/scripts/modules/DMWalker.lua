@@ -19,6 +19,7 @@ MapDestinations = {
   MAX_NAME_LEN = 24,
   _isLoading = false,
   _loadNormalized = false,
+  _isWalking = false,
   _navigationBlockCount = 0,
   _navigationBlockTilStop = 2,
 }
@@ -91,11 +92,16 @@ end
 
 -- Handle navigation blocks during walk
 local function handleNavigationBlocked()
+  if not MapDestinations._isWalking then
+    MapDestinations._navigationBlockCount = 0
+    return
+  end
+
   raiseEvent("onMoveFail")
   MapDestinations._navigationBlockCount = MapDestinations._navigationBlockCount + 1
   if MapDestinations._navigationBlockCount >= MapDestinations._navigationBlockTilStop then
     DMLogger.notify("WALK", "<red>Navigation blocked multiple times, stopping walk.") 
-    expandAlias("map stop")
+    MapDestinations.stop()
     MapDestinations._navigationBlockCount = 0
   end
 end
@@ -107,6 +113,7 @@ function MapDestinations.load()
   MapDestinations.list = {}
   MapDestinations._isLoading = true
   MapDestinations._loadNormalized = false
+  MapDestinations._isWalking = false
 
   local f = io.open(MapDestinations.path, "r")
   if not f then
@@ -208,6 +215,8 @@ end
 -- Stop current walk (delegates to Mudlet map alias).
 function MapDestinations.stop()
   MapDestinations.clearAreaWalkTarget()
+  MapDestinations._isWalking = false
+  MapDestinations._navigationBlockCount = 0
   expandAlias("map stop")
   return true
 end
@@ -254,6 +263,7 @@ function MapDestinations.navigate(name)
   end
 
   MapDestinations.clearAreaWalkTarget()
+  MapDestinations._isWalking = true
   gotoRoom(dest)
   return true, dest, roomName
 end
@@ -305,6 +315,7 @@ function MapDestinations.navigateToArea(search)
       end
 
       MapDestinations.setAreaWalkTarget(areaId, areaName)
+      MapDestinations._isWalking = true
       gotoRoom(firstRoom)
       return true, firstRoom, areaName
     end
