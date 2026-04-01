@@ -1,38 +1,38 @@
 [
        {
-              "name": "framework",
+              "name": "DMItemTracker",
               "isActive": "yes",
               "script": "",
-              "isFolder": "yes"
+              "isFolder": "no"
        },
        {
-              "name": "managers",
+              "name": "DMStatusBars",
               "isActive": "yes",
               "script": "",
-              "isFolder": "yes"
+              "isFolder": "no"
        },
        {
-              "name": "core",
+              "name": "DMStatRoller",
               "isActive": "yes",
               "script": "",
-              "isFolder": "yes"
+              "isFolder": "no"
        },
        {
-              "name": "api",
+              "name": "DMWalker",
               "isActive": "yes",
               "script": "",
-              "isFolder": "yes"
+              "isFolder": "no"
        },
        {
-              "name": "modules",
+              "name": "DMSkillups",
               "isActive": "yes",
               "script": "",
-              "isFolder": "yes"
+              "isFolder": "no"
        },
        {
-              "name": "ui",
+              "name": "DMClickables",
               "isActive": "yes",
               "script": "",
-              "isFolder": "yes"
+              "isFolder": "no"
        }
 ]

@@ -89,7 +89,10 @@ dmapi.core = {
   
   -- One-line event mappings
   oneLineEvents = {
-    ["You wake and stand up."] = "dmapi.player.sleep.exit",
+    ["You wake and stand up."] = {
+      "dmapi.player.sleep.exit",
+      "dmapi.player.rest.exit"
+    },
     ["In your dreams, or what?"] = "dmapi.player.sleep.blocked",
     ["You do not have that item."] = "dmapi.player.inventory.itemnotfound",
     ["You cannot find it."] = "dmapi.player.inventory.itemnotfound",
@@ -457,7 +460,7 @@ function dmapi.parsers.prompt(line)
     local hpPct, hpRegen = extractPercentWithRegen("hp")
     if hpPct then
       if dmapi.player.vitals.hpMax == 1 then
-        dmapi.core.warn("Max HP = 1. Use 'dmapi setvitals <hp> <mn> <mv>' to set correct values")
+        dmapi.core.log("Max HP = 1. Use 'dmapi setvitals <hp> <mn> <mv>' to set correct values", "warn")
       end
       data.hp = math.ceil(hpPct / 100 * dmapi.player.vitals.hpMax)
       data.hpRegen = hpRegen
@@ -761,26 +764,33 @@ function dmapi.core.log(message, level)
   local formattedMessage = prefix .. tostring(message)
 
   if level == "warn" then
-    formattedMessage = "<yellow>" .. prefix .. "<r>" .. tostring(message)
+    formattedMessage = DarkmistsTheme.warnTag .. prefix .. DarkmistsTheme.textTag .. tostring(message)
   elseif level == "error" then
-    formattedMessage = "<red>" .. prefix .. "<r>" .. tostring(message)
+    formattedMessage = DarkmistsTheme.badTag .. prefix .. DarkmistsTheme.textTag .. tostring(message)
   else
-    formattedMessage = "<dim_gray>" .. prefix .. "<r>" .. tostring(message)
+    formattedMessage = DarkmistsTheme.mutedTag .. prefix .. DarkmistsTheme.textTag .. tostring(message)
   end
 
   DMLogger.log(dmapi.meta.name, formattedMessage)
 end
 
---- Log a warning message
--- @param message string The warning message
-function dmapi.core.warn(message)
-  dmapi.core.log(message, "warn")
-end
+--- Log a message to main window
+-- @param message string The message to log
+-- @param level string Optional log level (info, warn, error)
+function dmapi.core.debug(message, level)
+  level = level or "info"
+  local prefix = string.format("[%s] ", string.upper(level))
+  local formattedMessage = prefix .. tostring(message)
 
---- Log an error message
--- @param message string The error message
-function dmapi.core.error(message)
-  dmapi.core.log(message, "error")
+  if level == "warn" then
+    formattedMessage = DarkmistsTheme.warnTag .. prefix .. DarkmistsTheme.textTag .. tostring(message)
+  elseif level == "error" then
+    formattedMessage = DarkmistsTheme.badTag .. prefix .. DarkmistsTheme.textTag .. tostring(message)
+  else
+    formattedMessage = DarkmistsTheme.mutedTag .. prefix .. DarkmistsTheme.textTag .. tostring(message)
+  end
+
+  DMLogger.notify(dmapi.meta.name, formattedMessage)
 end
 
 --- Send a command to the MUD
@@ -808,12 +818,12 @@ function dmapi.core.raiseEvent(eventName, ...)
   if dmapi.settings.debugLevel > 1 then
     local data = {...}
     if #data > 0 then
-      dmapi.core.log(string.format("%s : %s", eventName, yajl.to_string(data[1])))
+      dmapi.core.debug(string.format("%s : %s", eventName, yajl.to_string(data[1])))
     else
-      dmapi.core.log(eventName)
+      dmapi.core.debug(eventName)
     end
   elseif dmapi.settings.debugLevel > 0 then
-    dmapi.core.log(eventName)
+    dmapi.core.debug(eventName)
   end
   
   raiseEvent(eventName, ...)
@@ -846,6 +856,334 @@ local function maybeFireCombatRound(mobState)
 end
 
 -- ============================================================================
+-- COMMUNICATION HANDLERS
+-- ============================================================================
+
+local HOUSE_CHANNELS = {
+  CONCLAVE = true,
+  CRUSADER = true,
+  LIGHT = true,
+  BRETHREN = true,
+  OUTLAW = true,
+  JUSTICAR = true,
+  DEPRAVED = true,
+  ANCIENT = true,
+  GAR = true,
+  GML = true,
+  SG = true,
+  DRE = true,
+  HIVEMIND = true
+}
+
+local function handleCommunicationLine(line)
+  local sender, emote, message, receiver, channel
+
+  -- EMOTED SAY: Role-played speech with an emote action (e.g., "Warrior smiles says, 'Hello!'")
+  -- Used for immersive roleplay and emotional expression in dialogue
+  sender, emote, message = line:match("^(%S+) ([^ ]+) says, '(.*)'$")
+  if sender and emote and message then
+    local firstWord = sender:lower()
+    if firstWord ~= "the" and firstWord ~= "a" and firstWord ~= "an" then
+      dmapi.core.raiseEvent("dmapi.communication.emotedsayreceived", {
+        sender = sender,
+        emote = emote,
+        message = message,
+        line = line
+      })
+      return true
+    end
+  end
+
+  -- Player's own emoted say (sent by player)
+  emote, message = line:match("^You ([^ ]+) say, '(.*)'$")
+  if emote and message then
+    dmapi.core.raiseEvent("dmapi.communication.emotedsaysent", {
+      sender = "You",
+      emote = emote,
+      message = message,
+      line = line
+    })
+    return true
+  end
+
+  -- PANIC YELL: Emergency/distress signal used in combat or danger situations
+  -- Higher priority message that alerts nearby players to danger
+  message = line:match("^You yell in panic, '(.*)'$")
+  if message then
+    dmapi.core.raiseEvent("dmapi.communication.yellpanicsent", {
+      sender = "You",
+      message = message,
+      line = line
+    })
+    return true
+  end
+
+  -- Receiving another player's panic yell
+  sender, message = line:match("^(.-) yells in panic, '(.*)'$")
+  if sender then
+    dmapi.core.raiseEvent("dmapi.communication.yellpanicreceived", {
+      sender = sender,
+      message = message,
+      line = line
+    })
+    return true
+  end
+
+  -- MENTAL BLAST: Psychic yell; telepathic communication heard far and wide
+  -- Like yell but transmitted telepathically instead of vocally
+  sender, message = line:match("^(.-) mentally blasts '(.*)'$")
+  if sender and message then
+    dmapi.core.raiseEvent("dmapi.communication.mentalblastreceived", {
+      sender = sender,
+      message = message,
+      line = line
+    })
+    return true
+  end
+
+  -- Player's own mental blast (sent by player); psychic yell version
+  message = line:match("^You mentally blast, '(.*)'$")
+  if message then
+    dmapi.core.raiseEvent("dmapi.communication.mentalblastsent", {
+      sender = "You",
+      message = message,
+      line = line
+    })
+    return true
+  end
+
+  -- MENTAL BLAST PANIC: Emergency telepathic distress signal
+  -- Combines mental projection with urgency/alarm
+  message = line:match("^You mentally blast in panic, '(.*)'$")
+  if message then
+    dmapi.core.raiseEvent("dmapi.communication.mentalblastpanicsent", {
+      sender = "You",
+      message = message,
+      line = line
+    })
+    return true
+  end
+
+  -- Receiving another player's panic mental blast
+  sender, message = line:match("^(.-) mentally blasts in panic, '(.*)'$")
+  if sender and message then
+    dmapi.core.raiseEvent("dmapi.communication.mentalblastpanicreceived", {
+      sender = sender,
+      message = message,
+      line = line
+    })
+    return true
+  end
+
+  -- TELL: Private direct message from another player
+  -- Only visible to sender and recipient; used for private conversations
+  sender, message = line:match("^(.*) tells you, '(.*)'$")
+  if sender then
+    dmapi.core.raiseEvent("dmapi.communication.tellreceived", {
+      sender = sender,
+      receiver = "Me",
+      message = message,
+      line = line
+    })
+    return true
+  end
+
+  -- Player's own tell (sent by player)
+  receiver, message = line:match("^You tell (.*), '(.*)'$")
+  if receiver then
+    dmapi.core.raiseEvent("dmapi.communication.tellsent", {
+      sender = "Me",
+      receiver = receiver,
+      message = message,
+      line = line
+    })
+    return true
+  end
+
+  -- SAY: Public local communication heard by everyone in the same room
+  -- Standard roleplay dialogue; immersive and socially visible
+  sender, message = line:match("^(.*) says, '(.*)'$")
+  if sender then
+    dmapi.core.raiseEvent("dmapi.communication.sayreceived", {
+      sender = sender,
+      message = message,
+      line = line
+    })
+    return true
+  end
+
+  -- Player's own say (sent by player)
+  message = line:match("^You say, '(.*)'$")
+  if message then
+    dmapi.core.raiseEvent("dmapi.communication.saysent", {
+      sender = "Player",
+      message = message,
+      line = line
+    })
+    return true
+  end
+
+  -- MENTAL PROJECTION: Non-hostile telepathic communication
+  -- Used for friendly psychic messages, mystical communication, or supernatural abilities
+  sender, message = line:match("^(.*) mentally projects, '(.*)'$")
+  if sender then
+    dmapi.core.raiseEvent("dmapi.communication.mpsayreceived", {
+      sender = sender,
+      message = message,
+      line = line
+    })
+    return true
+  end
+
+  -- Player's own mental projection (sent by player)
+  message = line:match("^You mentally project, '(.*)'$")
+  if message then
+    dmapi.core.raiseEvent("dmapi.communication.mpsaysent", {
+      sender = "Player",
+      message = message,
+      line = line
+    })
+    return true
+  end
+
+  -- MENTAL PROJECTION TELL: Private telepathic direct message
+  -- Combines mental projection with targeted delivery like a tell
+  sender, message = line:match("^(.*) mentally projects to you, '(.*)'$")
+  if sender then
+    dmapi.core.raiseEvent("dmapi.communication.mptellreceived", {
+      sender = sender,
+      receiver = "Me",
+      message = message,
+      line = line
+    })
+    return true
+  end
+
+  -- Player's own mental projection tell (sent by player)
+  receiver, message = line:match("^You mentally project to (.*), '(.*)'$")
+  if receiver then
+    dmapi.core.raiseEvent("dmapi.communication.mptellsent", {
+      sender = "Me",
+      receiver = receiver,
+      message = message,
+      line = line
+    })
+    return true
+  end
+
+  -- GROUP TELL: Message to your adventuring group/party
+  -- Visible only to grouped members; used for team coordination
+  sender, message = line:match("^(.*) tells the group '(.*)'$")
+  if sender then
+    dmapi.core.raiseEvent("dmapi.communication.gtellreceived", {
+      sender = sender,
+      message = message,
+      line = line
+    })
+    return true
+  end
+
+  -- Player's own group tell (sent by player)
+  message = line:match("^You tell the group '(.*)'$")
+  if message then
+    dmapi.core.raiseEvent("dmapi.communication.gtellsent", {
+      sender = "Player",
+      message = message,
+      line = line
+    })
+    return true
+  end
+
+  -- YELL: Loud public communication heard across a wide area
+  -- Used for announcements or urgent public messages; more far-reaching than say
+  sender, message = line:match("^(.*) yells, '(.*)'$")
+  if sender then
+    dmapi.core.raiseEvent("dmapi.communication.yellreceived", {
+      sender = sender,
+      message = message,
+      line = line
+    })
+    return true
+  end
+
+  -- Player's own yell (sent by player)
+  message = line:match("^You yell, '(.*)'$")
+  if message then
+    dmapi.core.raiseEvent("dmapi.communication.yellsent", {
+      sender = "Player",
+      message = message,
+      line = line
+    })
+    return true
+  end
+
+  -- NEWBIE CHANNEL: Public channel for new player questions and assistance
+  -- Used for onboarding, mentoring, and new player support
+  sender, message = line:match("^%[NEWBIE%] (.*)%: (.*)$")
+  if sender then
+    dmapi.core.raiseEvent("dmapi.communication.newbiechannel", {
+      sender = sender,
+      message = message,
+      line = line
+    })
+    return true
+  end
+
+  -- NEWBIE CHANNEL DISCORD RELAY: Messages relayed from Discord server to in-game newbie channel
+  -- Allows Discord users to assist new players in-game
+  sender, message = line:match("^%[NEWBIE via Discord%] (.*)%: (.*)$")
+  if sender then
+    dmapi.core.raiseEvent("dmapi.communication.newbiechanneldiscord", {
+      sender = sender,
+      message = message,
+      line = line
+    })
+    return true
+  end
+
+  -- OOC (OUT OF CHARACTER): Non-roleplay meta-communication
+  -- Used for discussing game mechanics, rules, strategy outside of roleplay
+  sender, message = line:match("^%[OOC%] (.*)%: (.*)$")
+  if sender then
+    dmapi.core.raiseEvent("dmapi.communication.oocreceived", {
+      sender = sender,
+      receiver = "Me",
+      message = message,
+      line = line
+    })
+    return true
+  end
+
+  -- Player's own OOC message (sent by player)
+  receiver, message = line:match("^%[OOC%] to (.*)%: (.*)$")
+  if receiver then
+    dmapi.core.raiseEvent("dmapi.communication.oocsent", {
+      sender = "Me",
+      receiver = receiver,
+      message = message,
+      line = line
+    })
+    return true
+  end
+
+  -- HOUSE CHANNELS: Guild/organization-specific communication channels
+  -- Each house (faction, guild) has its own private channel for member coordination
+  -- Examples: CONCLAVE, CRUSADER, LIGHT, BRETHREN, OUTLAW, JUSTICAR, etc.
+  channel, sender, message = line:match("^%[(.*)%] (.*)%: (.*)$")
+  if sender and HOUSE_CHANNELS[channel] then
+    dmapi.core.raiseEvent("dmapi.communication.housechannel", {
+      sender = sender,
+      receiver = channel,
+      message = message,
+      line = line
+    })
+    return true
+  end
+
+  return false
+end
+
+-- ============================================================================
 -- LINE TRIGGER - MAIN PARSING LOGIC
 -- ============================================================================
 
@@ -858,292 +1196,18 @@ function dmapi.core.LineTrigger(line)
   -- Check one-line event mappings
   local oneLineEvent = dmapi.core.oneLineEvents[line]
   if oneLineEvent then
-    dmapi.core.raiseEvent(oneLineEvent, {line = line})
-    return
-  end
-  
-  local sender, emote, message, receiver, channel
-  -- Emoted say (other player): Saelyth wildly says, 'interesting'
-  sender, emote, message = line:match("^(%a+) ([^ ]+) says, '(.*)'$")
-  if sender and emote and message then
-    dmapi.core.raiseEvent("dmapi.communication.emotedsayreceived", {
-      sender = sender,
-      emote = emote,
-      message = message,
-      line = line
-    })
-    return
-  end
-  -- Emoted say (you): You wildly say, 'interesting'
-  emote, message = line:match("^You ([^ ]+) say, '(.*)'$")
-  if emote and message then
-    dmapi.core.raiseEvent("dmapi.communication.emotedsaysent", {
-      sender = "You",
-      emote = emote,
-      message = message,
-      line = line
-    })
-    return
-  end
-  -- Yell in panic (self/other): You yell in panic, '...'
-  message = line:match("^You yell in panic, '(.*)'$")
-  if message then
-    dmapi.core.raiseEvent("dmapi.communication.yellpanicsent", {
-      sender = "You",
-      message = message,
-      line = line
-    })
-    return
-  end
-  sender, message = line:match("^(.-) yells in panic, '(.*)'$")
-  if sender then
-    dmapi.core.raiseEvent("dmapi.communication.yellpanicreceived", {
-      sender = sender,
-      message = message,
-      line = line
-    })
-    return
-  end
-
-  -- Mental blast (self/other): Saelyth mentally blasts '...'
-  sender, message = line:match("^(.-) mentally blasts '(.*)'$")
-  if sender and message then
-    dmapi.core.raiseEvent("dmapi.communication.mentalblastreceived", {
-      sender = sender,
-      message = message,
-      line = line
-    })
-    return
-  end
-  message = line:match("^You mentally blast, '(.*)'$")
-  if message then
-    dmapi.core.raiseEvent("dmapi.communication.mentalblastsent", {
-      sender = "You",
-      message = message,
-      line = line
-    })
-    return
-  end
-
-  -- Mental blast in panic (you): You mentally blast in panic, '...'
-  message = line:match("^You mentally blast in panic, '(.*)'$")
-  if message then
-    dmapi.core.raiseEvent("dmapi.communication.mentalblastpanicsent", {
-      sender = "You",
-      message = message,
-      line = line
-    })
-    return
-  end
-  -- Mental blast in panic (other): (.+) mentally blasts in panic, '...'
-  sender, message = line:match("^(.-) mentally blasts in panic, '(.*)'$")
-  if sender and message then
-    dmapi.core.raiseEvent("dmapi.communication.mentalblastpanicreceived", {
-      sender = sender,
-      message = message,
-      line = line
-    })
-    return
-  end
-  
-  -- Parse tells: Someone tells you, 'message'
-  sender, message = line:match("^(.*) tells you, '(.*)'$")
-  if sender then
-    dmapi.core.raiseEvent("dmapi.communication.tellreceived", {
-      sender = sender,
-      receiver = "Me",
-      message = message,
-      line = line
-    })
-    return
-  end
-  -- Parse tells: You tell someone, 'message'
-  receiver, message = line:match("^You tell (.*), '(.*)'$")
-  if receiver then
-    dmapi.core.raiseEvent("dmapi.communication.tellsent", {
-      sender = "Me",
-      receiver = receiver,
-      message = message,
-      line = line
-    })
-    return
-  end
-
-  -- Say From Someone Else
-  sender, message = line:match("^(.*) says, '(.*)'$")
-  if sender then
-    dmapi.core.raiseEvent("dmapi.communication.sayreceived", {
-      sender = sender,
-      message = message,
-      line = line
-    })
-    return
-  end
-  -- Say From Player
-  message = line:match("^You say, '(.*)'$")
-  if message then
-    dmapi.core.raiseEvent("dmapi.communication.saysent", {
-      sender = "Player",
-      message = message,
-      line = line
-    })
-    return
-  end
-
-  -- Mental Projection From Someone Else
-  sender, message = line:match("^(.*) mentally projects, '(.*)'$")
-  if sender then
-    dmapi.core.raiseEvent("dmapi.communication.mpsayreceived", {
-      sender = sender,
-      message = message,
-      line = line
-    })
-    return
-  end
-  
-  -- Mental Projection From Player
-  message = line:match("^You mentally project, '(.*)'$")
-  if message then
-    dmapi.core.raiseEvent("dmapi.communication.mpsaysent", {
-      sender = "Player",
-      message = message,
-      line = line
-    })
-    return
-  end
-
-  -- Parse tells: Someone tells you, 'message'
-  sender, message = line:match("^(.*) mentally projects to you, '(.*)'$")
-  if sender then
-    dmapi.core.raiseEvent("dmapi.communication.mptellreceived", {
-      sender = sender,
-      receiver = "Me",
-      message = message,
-      line = line
-    })
-    return
-  end
-  -- Parse tells: You tell someone, 'message'
-  receiver, message = line:match("^You mentally project to (.*), '(.*)'$")
-  if receiver then
-    dmapi.core.raiseEvent("dmapi.communication.mptellsent", {
-      sender = "Me",
-      receiver = receiver,
-      message = message,
-      line = line
-    })
-    return
-  end
-
-  -- GTell From Someone Else
-  sender, message = line:match("^(.*) tells the group '(.*)'$")
-  if sender then
-    dmapi.core.raiseEvent("dmapi.communication.gtellreceived", {
-      sender = sender,
-      message = message,
-      line = line
-    })
-    return
-  end
-  -- GTell From Player
-  message = line:match("^You tell the group '(.*)'$")
-  if message then
-    dmapi.core.raiseEvent("dmapi.communication.gtellsent", {
-      sender = "Player",
-      message = message,
-      line = line
-    })
-    return
-  end
-
-  -- Yell From Someone Else
-  sender, message = line:match("^(.*) yells, '(.*)'$")
-  if sender then
-    dmapi.core.raiseEvent("dmapi.communication.yellreceived", {
-      sender = sender,
-      message = message,
-      line = line
-    })
-    return
-  end
-  -- Yell From Player
-  message = line:match("^You yell, '(.*)'$")
-  if message then
-    dmapi.core.raiseEvent("dmapi.communication.yellsent", {
-      sender = "Player",
-      message = message,
-      line = line
-    })
-    return
-  end
-
-  -- Newbie Channel Messages
-  sender, message = line:match("^%[NEWBIE%] (.*)%: (.*)$")
-  if sender then
-    dmapi.core.raiseEvent("dmapi.communication.newbiechannel", {
-      sender = sender,
-      message = message,
-      line = line
-    })
-    return
-  end
-  sender, message = line:match("^%[NEWBIE via Discord%] (.*)%: (.*)$")
-  if sender then
-    dmapi.core.raiseEvent("dmapi.communication.newbiechanneldiscord", {
-      sender = sender,
-      message = message,
-      line = line
-    })
-    return
-  end
-
-
-  -- OOC Messages From Someone Else
-  sender, message = line:match("^%[OOC%] (.*)%: (.*)$")
-  if sender then
-    dmapi.core.raiseEvent("dmapi.communication.oocreceived", {
-      sender = sender,
-      receiver = "Me",
-      message = message,
-      line = line
-    })
-    return
-  end
-  -- OOC Messages Sent by Player
-  receiver, message = line:match("^%[OOC%] to (.*)%: (.*)$")
-  if receiver then
-    dmapi.core.raiseEvent("dmapi.communication.oocsent", {
-      sender = "Me",
-      receiver = receiver,
-      message = message,
-      line = line
-    })
-    return
-  end
-  
-  -- House Channel Messages
-  channel, sender, message = line:match("^%[(.*)%] (.*)%: (.*)$")
-  if sender then
-    if channel == "CONCLAVE"
-    or channel == "CRUSADER"
-    or channel == "LIGHT"
-    or channel == "BRETHREN"
-    or channel == "OUTLAW"
-    or channel == "JUSTICAR"
-    or channel == "DEPRAVED"
-    or channel == "ANCIENT"
-    or channel == "GAR"
-    or channel == "GML"
-    or channel == "SG"
-    or channel == "DRE"
-    or channel == "HIVEMIND" then
-      dmapi.core.raiseEvent("dmapi.communication.housechannel", {
-        sender = sender,
-        receiver = channel,
-        message = message,
-        line = line
-      })
+    if type(oneLineEvent) == "table" then
+      for _, eventName in ipairs(oneLineEvent) do
+        dmapi.core.raiseEvent(eventName, {line = line})
+      end
+    else
+      dmapi.core.raiseEvent(oneLineEvent, {line = line})
     end
+    return
+  end
+
+  if handleCommunicationLine(line) then
+    return
   end
 
   -- Parse closed door: The door is closed.
@@ -1592,7 +1656,7 @@ end
 function dmapi.player.setSleeping(sleeping)
   dmapi.player.status.sleeping = sleeping
   if dmapi.settings.debugLevel > 0 then
-    dmapi.core.log(string.format("Sleep status: %s", tostring(sleeping)))
+    dmapi.core.debug(string.format("Sleep status: %s", tostring(sleeping)))
   end
 end
 
@@ -1647,7 +1711,7 @@ function dmapi.player.reset()
     deaths = 0
   }
   if dmapi.settings.debugLevel > 0 then
-    dmapi.core.log("Player state reset")
+    dmapi.core.debug("Player state reset")
   end
 end
 
@@ -1690,225 +1754,230 @@ end
 -- ============================================================================
 
 --- Main dmapi command handler
-DarkmistsAlias.add([[^dmapi(?:\s+(\w+))?(?:\s+(.*))?$]], function()
-  local cmd = matches[2]
-  local args = matches[3]
-  
-  if not cmd then
-    dmapi.core.log("Commands: debug, status, reset, setvitals, guessvitals")
-    return
-  end
-  
-  if cmd == "debug" then
-    dmapi.settings.debugLevel = (dmapi.settings.debugLevel + 1) % 3
-    dmapi.core.log(string.format("Debug level: %d", dmapi.settings.debugLevel))
-    return
-  end
-  
-  if cmd == "status" then
-    local status = dmapi.player.getStatus()
-    dmapi.core.log(string.format("Level %d | %s | %s | %s | %s | %s",
-      status.level,
-      status.hp,
-      status.mn,
-      status.mv,
-      status.xp,
-      status.currency
-    ))
-    dmapi.core.log(string.format("Combat: %s | Kills: %d | Deaths: %d",
-      tostring(status.combat),
-      status.kills,
-      status.deaths
-    ))
-    return
-  end
-  
-  if cmd == "reset" then
-    dmapi.player.reset()
-    return
-  end
-  
-  dmapi.core.log("Unknown command. Use 'dmapi' for help.")
-end)
+function dmapi.RegisterAliases()
+  -- Main dmapi command handler
+  DarkmistsAlias.add([[^dmapi(?:\s+(\w+))?(?:\s+(.*))?$]], function()
+    local cmd = matches[2]
+    local args = matches[3]
 
---- Set vitals command
-DarkmistsAlias.add([[^dmapi setvitals\s+(\d+)\s+(\d+)\s+(\d+)$]], function()
-  local hpMax = tonumber(matches[2])
-  local mnMax = tonumber(matches[3])
-  local mvMax = tonumber(matches[4])
-  
-  dmapi.player.vitals.hpMax = hpMax
-  dmapi.player.vitals.mnMax = mnMax
-  dmapi.player.vitals.mvMax = mvMax
-  
-  if dmapi.settings.debugLevel > 0 then
+    if not cmd then
+      dmapi.core.log("Commands: debug, status, reset, setvitals, guessvitals")
+      return
+    end
+
+    if cmd == "debug" then
+      dmapi.settings.debugLevel = (dmapi.settings.debugLevel + 1) % 3
+      dmapi.core.debug(string.format("Debug level: %d", dmapi.settings.debugLevel))
+      return
+    end
+
+    if cmd == "status" then
+      local status = dmapi.player.getStatus()
+      dmapi.core.log(string.format("Level %d | %s | %s | %s | %s | %s",
+        status.level,
+        status.hp,
+        status.mn,
+        status.mv,
+        status.xp,
+        status.currency
+      ))
+      dmapi.core.log(string.format("Combat: %s | Kills: %d | Deaths: %d",
+        tostring(status.combat),
+        status.kills,
+        status.deaths
+      ))
+      return
+    end
+
+    if cmd == "reset" then
+      dmapi.player.reset()
+      return
+    end
+
+    dmapi.core.log("Unknown command. Use 'dmapi' for help.")
+  end)
+
+  --- Set vitals command
+  DarkmistsAlias.add([[^dmapi setvitals\s+(\d+)\s+(\d+)\s+(\d+)$]], function()
+    local hpMax = tonumber(matches[2])
+    local mnMax = tonumber(matches[3])
+    local mvMax = tonumber(matches[4])
+
+    dmapi.player.vitals.hpMax = hpMax
+    dmapi.player.vitals.mnMax = mnMax
+    dmapi.player.vitals.mvMax = mvMax
+
+    if dmapi.settings.debugLevel > 0 then
+      dmapi.core.debug(string.format(
+        "Vitals set - HP: %d | MN: %d | MV: %d",
+        hpMax, mnMax, mvMax
+      ))
+    end
+  end)
+
+  --- Guess vitals from level
+  DarkmistsAlias.add([[^dmapi guessvitals\s+(\d+)$]], function()
+    local level = tonumber(matches[2])
+
+    -- Estimate: ~15 HP/MN/MV per level (adjust based on class/race)
+    dmapi.player.vitals.hpMax = 15 * level
+    dmapi.player.vitals.mnMax = 15 * level
+    dmapi.player.vitals.mvMax = 15 * level
+    dmapi.player.vitals.estimated = true 
+
     dmapi.core.log(string.format(
-      "Vitals set - HP: %d | MN: %d | MV: %d",
-      hpMax, mnMax, mvMax
+      "Vitals estimated for level %d - HP: %d | MN: %d | MV: %d",
+      level,
+      dmapi.player.vitals.hpMax,
+      dmapi.player.vitals.mnMax,
+      dmapi.player.vitals.mvMax
     ))
-  end
-end)
-
---- Guess vitals from level
-DarkmistsAlias.add([[^dmapi guessvitals\s+(\d+)$]], function()
-  local level = tonumber(matches[2])
-  
-  -- Estimate: ~15 HP/MN/MV per level (adjust based on class/race)
-  dmapi.player.vitals.hpMax = 15 * level
-  dmapi.player.vitals.mnMax = 15 * level
-  dmapi.player.vitals.mvMax = 15 * level
-  dmapi.player.vitals.estimated = true 
-
-  dmapi.core.log(string.format(
-    "Vitals estimated for level %d - HP: %d | MN: %d | MV: %d",
-    level,
-    dmapi.player.vitals.hpMax,
-    dmapi.player.vitals.mnMax,
-    dmapi.player.vitals.mvMax
-  ))
-end)
+  end)
+end
 
 -- ============================================================================
 -- EVENT HANDLERS
 -- ============================================================================
 
--- Helper to add event handlers using DarkmistsEvents when available,
--- falling back to registerNamedEventHandler for init-order safety.
--- Helper to add event handlers using DarkmistsEvents (no fallback).
--- NOTE: Handlers are added directly via DarkmistsEvents.add
+function dmapi.RegisterEvents()
 
---- Handle sleep state changes
-DarkmistsEvents.add(
-  "dmapi.player.sleep.blocked.handler",
-  "dmapi.player.sleep.blocked",
-  function()
-    dmapi.player.setSleeping(true)
-  end,
-  false
-)
+  --- Handle sleep state changes
+  DarkmistsEvents.add(
+    "dmapi.player.sleep.blocked.handler",
+    "dmapi.player.sleep.blocked",
+    function()
+      dmapi.player.setSleeping(true)
+    end,
+    false
+  )
 
-DarkmistsEvents.add(
-  "dmapi.player.sleep.enter.handler",
-  "dmapi.player.sleep.enter",
-  function()
-    dmapi.player.setSleeping(true)
-  end,
-  false
-)
+  DarkmistsEvents.add(
+    "dmapi.player.sleep.enter.handler",
+    "dmapi.player.sleep.enter",
+    function()
+      dmapi.player.setSleeping(true)
+    end,
+    false
+  )
 
-DarkmistsEvents.add(
-  "dmapi.player.sleep.exit.handler",
-  "dmapi.player.sleep.exit",
-  function()
-    dmapi.player.setSleeping(false)
-  end,
-  false
-)
+  DarkmistsEvents.add(
+    "dmapi.player.sleep.exit.handler",
+    "dmapi.player.sleep.exit",
+    function()
+      dmapi.player.setSleeping(false)
+    end,
+    false
+  )
 
---- Track last command sent
-DarkmistsEvents.add(
-  "dmapi.command.tracker",
-  "sysDataSendRequest",
-  function(_, command)
-    if not command or command == "" then return end
-    dmapi.core.state.lastCommand = command
-    dmapi.core.raiseEvent("dmapi.core.command.sent", {command = command})
-  end,
-  false
-)
+  --- Track last command sent
+  DarkmistsEvents.add(
+    "dmapi.command.tracker",
+    "sysDataSendRequest",
+    function(_, command)
+      if not command or command == "" then return end
+      dmapi.core.state.lastCommand = command
+      dmapi.core.raiseEvent("dmapi.core.command.sent", {command = command})
+    end,
+    false
+  )
 
---- Reset vitals on world enter
-DarkmistsEvents.add(
-  "dmapi.world.enter.reset",
-  "dmapi.world.enter",
-  function()
-    dmapi.player.reset()
-    dmapi.player.vitals.hpMax = 1
-    dmapi.player.vitals.mnMax = 1
-    dmapi.player.vitals.mvMax = 1
-    dmapi.player.online = true
-    if dmapi.settings.debugLevel > 0 then
-      dmapi.core.log("Connected - vitals reset. Use 'score' or 'dmapi setvitals'")
-    end
-    send("")
-    send("")
-    send("score")
-  end,
-  false
-)
-
---- End combat after 2 consecutive prompts without combat activity
-DarkmistsEvents.add(
-  "dmapi.combat.end.tracker",
-  "dmapi.player.vitals.updated",
-  function()
-    if dmapi.player.combat.active then
-      dmapi.core.state.combatMissedPrompts = dmapi.core.state.combatMissedPrompts + 1
-      
-      if dmapi.core.state.combatMissedPrompts >= 2 then
-        dmapi.player.combat.active = false
-        local target = dmapi.player.combat.target
-        dmapi.player.combat.round = 0
-        dmapi.player.combat.target = nil
-        dmapi.player.combat.targetHpPct = 0
-        dmapi.core.state.combatMissedPrompts = 0
-        
-        dmapi.core.raiseEvent("dmapi.player.combat.end", {
-          target = target,
-          round = dmapi.player.combat.round
-        })
+  --- Reset vitals on world enter
+  DarkmistsEvents.add(
+    "dmapi.world.enter.reset",
+    "dmapi.world.enter",
+    function()
+      dmapi.player.reset()
+      dmapi.player.vitals.hpMax = 1
+      dmapi.player.vitals.mnMax = 1
+      dmapi.player.vitals.mvMax = 1
+      dmapi.player.online = true
+      if dmapi.settings.debugLevel > 0 then
+        dmapi.core.debug("Connected - vitals reset. Use 'score' or 'dmapi setvitals'")
       end
-    end
-  end,
-  false
-)
-
---- Auto-guess vitals on first level update
-DarkmistsEvents.add(
-  "dmapi.vitals.autoguess",
-  "dmapi.player.level.updated",
-  function(_, data)
-    if dmapi.player.vitals.hpMax == 1 then
-      expandAlias(string.format("dmapi guessvitals %d", data.level))
-    end
-  end,
-  false
-)
-
-DarkmistsEvents.add(
-  "dmapi.vitals.checkscore",
-  "dmapi.player.vitals.updated",
-  function(_, data)
-    if dmapi.player.vitals.hpMax == 1 then
+      send("")
+      send("")
       send("score")
-    end
-  end,
-  false
-)
+    end,
+    false
+  )
 
-DarkmistsEvents.add(
-  "dmapi.player.online false",
-  "sysDisconnectionEvent",
-  function()
-    if not dmapi then return end
-    if not dmapi.player then return end
-    dmapi.player.online = false
-  end,
-  false
-)
+  --- End combat after 2 consecutive prompts without combat activity
+  DarkmistsEvents.add(
+    "dmapi.combat.end.tracker",
+    "dmapi.player.vitals.updated",
+    function()
+      if dmapi.player.combat.active then
+        dmapi.core.state.combatMissedPrompts = dmapi.core.state.combatMissedPrompts + 1
+        
+        if dmapi.core.state.combatMissedPrompts >= 2 then
+          dmapi.player.combat.active = false
+          local target = dmapi.player.combat.target
+          dmapi.player.combat.round = 0
+          dmapi.player.combat.target = nil
+          dmapi.player.combat.targetHpPct = 0
+          dmapi.core.state.combatMissedPrompts = 0
+          
+          dmapi.core.raiseEvent("dmapi.player.combat.end", {
+            target = target,
+            round = dmapi.player.combat.round
+          })
+        end
+      end
+    end,
+    false
+  )
+
+  --- Auto-guess vitals on first level update
+  DarkmistsEvents.add(
+    "dmapi.vitals.autoguess",
+    "dmapi.player.level.updated",
+    function(_, data)
+      if dmapi.player.vitals.hpMax == 1 then
+        expandAlias(string.format("dmapi guessvitals %d", data.level))
+      end
+    end,
+    false
+  )
+
+  DarkmistsEvents.add(
+    "dmapi.vitals.checkscore",
+    "dmapi.player.vitals.updated",
+    function(_, data)
+      if dmapi.player.vitals.hpMax == 1 then
+        send("score")
+      end
+    end,
+    false
+  )
+
+  DarkmistsEvents.add(
+    "dmapi.player.online false",
+    "sysDisconnectionEvent",
+    function()
+      if not dmapi then return end
+      if not dmapi.player then return end
+      dmapi.player.online = false
+    end,
+    false
+  )
+end
 
 -- ============================================================================
 -- INITIALIZATION
 -- ============================================================================
 
-dmapi.core.log(string.format(
-  "Loading %s v%s by %s",
-  dmapi.meta.name,
-  dmapi.meta.version,
-  dmapi.meta.author
-))
+function dmapi.init()
+  dmapi.core.log(string.format(
+    "Loading %s v%s by %s",
+    dmapi.meta.name,
+    dmapi.meta.version,
+    dmapi.meta.author
+  ))
 
-dmapi.core.state.initialized = true
-dmapi.core.raiseEvent("dmapi.core.loaded")
+  dmapi.RegisterAliases()
+  dmapi.RegisterEvents()
+  dmapi.core.state.initialized = true
+  dmapi.core.raiseEvent("dmapi.core.loaded")
 
-dmapi.core.log("Loaded successfully. Type 'dmapi' for commands.")
+  dmapi.core.log("Loaded successfully. Type 'dmapi' for commands.")
+end

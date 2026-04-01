@@ -5,20 +5,33 @@
 DarkmistsEvents = DarkmistsEvents or {}
 DarkmistsEvents.registry = DarkmistsEvents.registry or {}
 
-local debug = false
-
+local debug = false -- set to false to disable event handler debug messages
 
 function DarkmistsEvents.add(key, eventName, func, oneshot)
   -- Kill old handler if exists
   if DarkmistsEvents.registry[key] then
     if debug then
-      cecho("\n<ansi_red>Killing event handler: <white>" .. key .. " <ansi_red>for <white>" .. eventName .. (oneshot and " <dim_gray>(oneshot)" or ""))
+      cecho(string.format("\n%sKilling event handler: %s%s %sfor %s%s",
+        DarkmistsTheme.badTag,
+        DarkmistsTheme.textTag,
+        key,
+        DarkmistsTheme.badTag,
+        DarkmistsTheme.textTag,
+        eventName
+      ) .. (oneshot and string.format(" %s(oneshot)", DarkmistsTheme.mutedTag) or ""))
     end
     killAnonymousEventHandler(DarkmistsEvents.registry[key])
   end
 
   if debug then
-    cecho("\n<dim_gray>Adding event handler: <white>" .. key .. " <dim_gray>for <white>" .. eventName .. (oneshot and " <dim_gray>(oneshot)" or ""))
+    cecho(string.format("\n%sAdding event handler: %s%s %sfor %s%s",
+      DarkmistsTheme.goodTag,
+      DarkmistsTheme.textTag,
+      key,
+      DarkmistsTheme.mutedTag,
+      DarkmistsTheme.textTag,
+      eventName
+    ) .. (oneshot and string.format(" %s(oneshot)", DarkmistsTheme.mutedTag) or ""))
   end
   -- Create and store new handler (oneshot support)
   DarkmistsEvents.registry[key] = registerAnonymousEventHandler(eventName, func, oneshot)
@@ -27,7 +40,11 @@ end
 function DarkmistsEvents.clearAll()
   for _, id in pairs(DarkmistsEvents.registry) do
     if debug then
-      cecho("\n<ansi_red>Killing event handler: <white>" .. id)
+      cecho(string.format("\n%sKilling event handler: %s%s",
+        DarkmistsTheme.badTag,
+        DarkmistsTheme.textTag,
+        id
+      ))
     end
     killAnonymousEventHandler(id)
   end

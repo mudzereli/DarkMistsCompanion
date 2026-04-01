@@ -752,7 +752,19 @@ function inferWearSlot(item) {
 
 let itemId = 0;
 
+function decodeHtmlEntities(text) {
+  if (typeof text !== 'string') return text;
+
+  return text
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;|&apos;/g, "'")
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&amp;/g, '&');
+}
+
 function parseItem(rawText) {
+  rawText = decodeHtmlEntities(rawText);
   const id = `item-${itemId++}`;
   const dmg = rawText.match(/Damage is ([^ ]+)/)?.[1];
   

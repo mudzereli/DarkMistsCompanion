@@ -4,8 +4,8 @@
 ---@type DarkmistsTheme
 DarkmistsTheme = DarkmistsTheme or {}
 
--- Session guard to avoid repeating background warnings
-local _dm_theme_bg_warn_shown = false
+-- Session guard to avoid repeating background contrast warnings
+local _bgWarnShown = false
 
 -- ---------------------------------------------------------------------------
 -- Neutral theme: mid-value colors readable on both black and white backgrounds.
@@ -28,6 +28,7 @@ end
 
 function DarkmistsTheme.buildNeutralTheme()
   local t = DarkmistsTheme
+  -- Named hues
   t.red       = "indian_red"
   t.orange    = "peru"
   t.yellow    = "dark_goldenrod"
@@ -35,14 +36,13 @@ function DarkmistsTheme.buildNeutralTheme()
   t.blue      = "steel_blue"
   t.cyan      = "cadet_blue"
   t.sky       = "light_steel_blue"
-  t.lightBlue = "cornflower_blue"
-  t.darkBlue  = "dark_slate_blue"
   t.purple    = "medium_purple"
   t.pink      = "pale_violet_red"
   t.brown     = "sienna"
   t.olive     = "olive_drab"
   t.silver    = "slate_gray"
   t.gold      = "goldenrod"
+  -- Semantic aliases
   t.good      = "medium_sea_green"
   t.warn      = "peru"
   t.bad       = "indian_red"
@@ -50,23 +50,44 @@ function DarkmistsTheme.buildNeutralTheme()
   t.muted     = "slate_gray"
   t.text      = "ansi_white"
   t.accent    = "cornflower_blue"
+  t.highlight = "dark_goldenrod"
   buildTags(t)
 end
 
--- Auto-run at load: safe colors available immediately, no dependencies
-DarkmistsTheme.buildNeutralTheme()
+-- Internal helper: show a DMAlertWindow prompting the user to switch theme modes.
+-- switchToLight=true → recommend switching from dark to light; false → the reverse.
+local function showContrastAlert(switchToLight)
+  _bgWarnShown = true
+  local bgDesc    = switchToLight and "light/white" or "dark/black"
+  local modeDesc  = switchToLight and "Dark Mode"   or "Light Mode"
+  local switchLbl = switchToLight and "Light Mode"  or "Dark Mode"
+  local modeVal   = switchToLight and "true"        or "false"
 
--- Detect main background color and warn/offer to switch theme for contrast
+  DMAlertWindow.Show("Theme Contrast Notice", function(win)
+    cecho(win, string.format("\nDetected a %s terminal background while %s is enabled.\n\n", bgDesc, modeDesc))
+    cecho(win, string.format("For readability, switch to %s or keep %s if you prefer.\n\n", switchLbl, modeDesc))
+    cechoLink(win,
+      string.format("<dim_gray><u>[<green>Switch to %s<dim_gray>]", switchLbl),
+      string.format("DMAlertWindow.Hide(); Darkmists.GlobalSettings.lightMode = %s; Darkmists.GlobalSettings.hasSeenUIIntroMessage = false; Darkmists.SaveSettings(); DarkmistsTheme.buildTheme(); Darkmists.SafeReload();", modeVal),
+      string.format("Switch to %s for better contrast", switchLbl),
+      true)
+    cechoLink(win, "  <dim_gray><u>[<red>Ignore<dim_gray>]",
+      [[DMAlertWindow.Hide()]],
+      "Keep current theme", true)
+  end, { width = 520, height = 200 })
+end
+
+-- Detect main background color and warn/offer to switch theme for contrast.
 -- Exposed as DarkmistsTheme.checkBackgroundContrast() so Init() can call it
 -- explicitly after ShowUIIntroMessage, keeping buildTheme() side-effect free.
 function DarkmistsTheme.checkBackgroundContrast()
-  if _dm_theme_bg_warn_shown then return end
+  if _bgWarnShown then return end
   if not Darkmists or not Darkmists.GlobalSettings then return end
 
-  local ok, r, g, b, a = pcall(getBackgroundColor, "main")
+  local ok, r, g, b = pcall(getBackgroundColor, "main")
   if not ok or type(r) ~= "number" then
     -- try without param as some Mudlet builds map to default
-    ok, r, g, b, a = pcall(getBackgroundColor)
+    ok, r, g, b = pcall(getBackgroundColor)
   end
   if not ok or type(r) ~= "number" then return end
 
@@ -74,36 +95,11 @@ function DarkmistsTheme.checkBackgroundContrast()
   local L = 0.2126 * r + 0.7152 * g + 0.0722 * b
   local isLightBg = (L >= 200)
 
-  -- If background is light but theme is dark, suggest switching to light
+  -- Suggest switching if background brightness and current theme mode are mismatched
   if isLightBg and not Darkmists.GlobalSettings.lightMode then
-    _dm_theme_bg_warn_shown = true
-    DMAlertWindow.Show("Theme Contrast Notice", function(win)
-      cecho(win, "\nDetected a light/white terminal background while Dark Mode is enabled.\n\n")
-      cecho(win, "For readability, switch to Light Mode or keep Dark Mode if you prefer.\n\n")
-      cechoLink(win, "<dim_gray><u>[<green>Switch to Light Mode<dim_gray>]",
-        [[DMAlertWindow.Hide(); Darkmists.GlobalSettings.lightMode = true; Darkmists.GlobalSettings.hasSeenUIIntroMessage = false; Darkmists.SaveSettings(); DarkmistsTheme.buildTheme(); Darkmists.SafeReload();]],
-        "Switch to Light Mode for better contrast", true)
-      cechoLink(win, "  <dim_gray><u>[<red>Ignore<dim_gray>]",
-        [[DMAlertWindow.Hide()]],
-        "Keep current theme", true)
-    end, { width = 520, height = 200 })
-    return
-  end
-
-  -- If background is dark but theme is light, suggest switching to dark
-  if (not isLightBg) and Darkmists.GlobalSettings.lightMode then
-    _dm_theme_bg_warn_shown = true
-    DMAlertWindow.Show("Theme Contrast Notice", function(win)
-      cecho(win, "\nDetected a dark/black terminal background while Light Mode is enabled.\n\n")
-      cecho(win, "For readability, switch to Dark Mode or keep Light Mode if you prefer.\n\n")
-      cechoLink(win, "<dim_gray><u>[<green>Switch to Dark Mode<dim_gray>]",
-        [[DMAlertWindow.Hide(); Darkmists.GlobalSettings.lightMode = false; Darkmists.GlobalSettings.hasSeenUIIntroMessage = false; Darkmists.SaveSettings(); DarkmistsTheme.buildTheme(); Darkmists.SafeReload();]],
-        "Switch to Dark Mode for better contrast", true)
-      cechoLink(win, "  <dim_gray><u>[<red>Ignore<dim_gray>]",
-        [[DMAlertWindow.Hide()]],
-        "Keep current theme", true)
-    end, { width = 520, height = 200 })
-    return
+    showContrastAlert(true)   -- light bg + dark theme → suggest light mode
+  elseif not isLightBg and Darkmists.GlobalSettings.lightMode then
+    showContrastAlert(false)  -- dark bg + light theme → suggest dark mode
   end
 end
 
@@ -113,37 +109,35 @@ end
 function DarkmistsTheme.buildTheme()
   local t     = DarkmistsTheme
   local light = Darkmists.GlobalSettings.lightMode
-  local tagKeys = {}
 
   -- Named hues
-  t.red    = light and "firebrick"         or "tomato"
-  t.orange = light and "chocolate"         or "orange"
-  t.yellow = light and "goldenrod"         or "yellow"
-  t.green  = light and "sea_green"         or "spring_green"
-  t.blue   = light and "royal_blue"        or "deep_sky_blue"
-  t.cyan   = light and "cadet_blue"        or "ansi_cyan"
-  t.sky    = light and "steel_blue"        or "light_steel_blue"
-  t.lightBlue = "cornflower_blue"
-  t.darkBlue  = "dark_slate_blue"
-  t.purple = light and "dark_violet"       or "medium_purple"
-  t.pink   = light and "medium_violet_red" or "deep_pink"
-  t.brown  = light and "sienna"            or "peru"
-  t.olive  = light and "olive_drab"        or "yellow_green"
-  t.silver = light and "slate_gray"        or "light_gray"
-  t.gold   = light and "goldenrod"         or "gold"
+  t.red    = light and "ansi_001"          or "tomato"
+  t.orange = light and "ansi_130"          or "orange"
+  t.yellow = light and "ansi_003"          or "khaki"
+  t.green  = light and "ansi_002"          or "spring_green"
+  t.blue   = light and "ansi_004"          or "dodger_blue"
+  t.cyan   = light and "ansi_006"          or "medium_turquoise"
+  t.sky    = light and "ansi_033"          or "light_steel_blue"
+  t.purple = light and "ansi_005"          or "medium_purple"
+  t.pink   = light and "ansi_013"          or "deep_pink"
+  t.brown  = light and "ansi_095"          or "peru"
+  t.olive  = light and "ansi_058"          or "yellow_green"
+  t.silver = light and "ansi_237"          or "slate_gray"
+  t.gold   = light and "ansi_011"          or "light_goldenrod"
 
   -- Semantic aliases
-  t.good   = t.green
-  t.warn   = t.orange
-  t.bad    = t.red
-  t.info   = t.blue
-  t.muted  = light and "dim_gray"   or "slate_gray"
-  t.text   = light and "black"      or "white"
-  t.accent = light and "slate_blue" or "cornflower_blue"
+  t.good      = t.green
+  t.warn      = t.orange
+  t.bad       = t.red
+  t.info      = t.blue
+  t.muted     = t.silver
+  t.text      = t.text
+  t.accent    = t.cyan
+  t.highlight = t.yellow
 
   buildTags(t)
   Darkmists.Log(DarkmistsTheme.purpleTag .. "Darkmists Core",
-    (DarkmistsTheme.silverTag .. "Theme Built! Light Mode: " .. DarkmistsTheme.infoTag .. "%s<r>"):format(tostring(light)))
+    (DarkmistsTheme.silverTag .. "Theme Built! Light Mode: %s%s%s"):format(DarkmistsTheme.infoTag, tostring(light), DarkmistsTheme.textTag))
 end
 
 -- ---------------------------------------------------------------------------
@@ -155,13 +149,12 @@ local function printPalette(bg)
   for key, value in pairs(DarkmistsTheme) do
     if type(value) == "string" and not key:find("Tag$") then
       cecho(string.format(
-        "<%s:%s> %-8s <%s:%s> Sample Text <reset>\n",
+        "<%s:%s> %-10s <%s:%s> Sample Text <reset>\n",
         fg, bg, key, value, bg
       ))
     end
   end
 end
-
 
 -- =============================================================================
 -- Theme test
@@ -186,3 +179,5 @@ function DarkmistsTheme.test()
 
   cecho("\n")
 end
+
+DarkmistsTheme.buildNeutralTheme() -- initialize with a safe default before settings are loaded

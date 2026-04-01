@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <title>Dark Mists API – dmapi</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📚</text></svg>">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <style>
@@ -14,6 +15,9 @@
     --muted: #9aa3af;
     --accent: #6ea8fe;
     --code: #0b0e13;
+    --dir-in:  #4ade80;
+    --dir-out: #fb923c;
+    --dir-sys: #a78bfa;
   }
 
   body {
@@ -111,6 +115,35 @@
     margin-top: 0.25rem;
   }
 
+  .event-payload {
+    margin-top: 0.6rem;
+    background: var(--code);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 0.6rem 0.75rem;
+    color: var(--text);
+    font-family: ui-monospace, monospace;
+    font-size: 0.8rem;
+    white-space: pre-wrap;
+    line-height: 1.4;
+  }
+
+  .event-dir {
+    display: inline-block;
+    font-size: 0.6rem;
+    font-family: ui-monospace, monospace;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    padding: 0.1rem 0.35rem;
+    border-radius: 3px;
+    vertical-align: middle;
+    margin-left: 0.5rem;
+    text-transform: uppercase;
+  }
+  .event-dir.in  { background: rgba(74,222,128,0.1);  color: var(--dir-in);  border: 1px solid rgba(74,222,128,0.25); }
+  .event-dir.out { background: rgba(251,146,60,0.1);  color: var(--dir-out); border: 1px solid rgba(251,146,60,0.25); }
+  .event-dir.sys { background: rgba(167,139,250,0.1); color: var(--dir-sys); border: 1px solid rgba(167,139,250,0.25); }
+
   code {
     background: var(--code);
     padding: 0.15rem 0.4rem;
@@ -165,98 +198,202 @@ const dmapi = {
     core: {
       title: "Core Events",
       events: [
-        ["dmapi.core.loaded", "API finished initialization"],
-        ["dmapi.core.command.sent", "A command was sent to the MUD"],
-        ["dmapi.core.line", "Raw MUD output line parsed"],
+        { name: "dmapi.core.loaded",         desc: "API finished initialization",       dir: "sys" },
+        { name: "dmapi.core.command.sent",   desc: "A command was sent to the MUD",     dir: "out" },
+        { name: "dmapi.core.line",           desc: "Raw MUD output line parsed",        dir: "sys" },
       ]
     },
     
     world: {
       title: "World Events",
       events: [
-        ["dmapi.world.enter", "Entered or reconnected to the world"],
-        ["dmapi.world.exit", "Disconnected from the world"],
-        ["dmapi.world.connect", "Initial server greeting received"],
-        ["dmapi.world.pendingreturn", "Game is awaiting return key"],
-        ["dmapi.world.prompt", "Prompt parsed"],
-        ["dmapi.world.room.exits.updated", "Room exits updated"],
-        ["dmapi.world.weather.update", "Weather or day/night changed"],
+        { name: "dmapi.world.enter",              desc: "Entered or reconnected to the world", dir: "sys" },
+        { name: "dmapi.world.exit",               desc: "Disconnected from the world",         dir: "sys" },
+        { name: "dmapi.world.connect",            desc: "Initial server greeting received",    dir: "in"  },
+        { name: "dmapi.world.pendingreturn",      desc: "Game is awaiting return key",         dir: "in"  },
+        { name: "dmapi.world.prompt",             desc: "Prompt parsed",                       dir: "in"  },
+        { name: "dmapi.world.room.name.updated",  desc: "Room name updated",                   dir: "in"  },
+        { name: "dmapi.world.room.exits.updated", desc: "Room exits updated",                  dir: "in"  },
+        { name: "dmapi.world.weather.update",     desc: "Weather or day/night changed",        dir: "in"  },
       ]
     },
 
     player: {
       title: "Player State Events",
       events: [
-        ["dmapi.player.vitals.updated", "Player vitals changed"],
-        ["dmapi.player.level.updated", "Player level or age updated"],
-        ["dmapi.player.levelup", "Player gained a level"],
-        ["dmapi.player.death", "Player died"],
-        ["dmapi.player.sleep.enter", "Player entered sleep"],
-        ["dmapi.player.sleep.exit", "Player woke up"],
-        ["dmapi.player.sleep.blocked", "Sleep attempt blocked"],
-        ["dmapi.player.rest.enter", "Player started resting"],
-        ["dmapi.player.rest.exit", "Player stopped resting"],
-        ["dmapi.player.hunger.update", "Hunger state changed"],
-        ["dmapi.player.thirst.update", "Thirst state changed"],
-        ["dmapi.player.inventory.itemnotfound", "Item lookup failed"],
+        { name: "dmapi.player.vitals.updated",           desc: "Player vitals changed",         dir: "in"  },
+        { name: "dmapi.player.level.updated",            desc: "Player level or age updated",   dir: "in"  },
+        { name: "dmapi.player.levelup",                  desc: "Player gained a level",         dir: "in"  },
+        { name: "dmapi.player.death",                    desc: "Player died",                   dir: "in"  },
+        { name: "dmapi.player.sleep.enter",              desc: "Player entered sleep",          dir: "in"  },
+        { name: "dmapi.player.sleep.exit",               desc: "Player woke up",                dir: "in"  },
+        { name: "dmapi.player.sleep.blocked",            desc: "Sleep attempt blocked",         dir: "in"  },
+        { name: "dmapi.player.rest.enter",               desc: "Player started resting",        dir: "in"  },
+        { name: "dmapi.player.rest.exit",                desc: "Player stopped resting",        dir: "in"  },
+        { name: "dmapi.player.affect.stunoff",           desc: "Stun effect ended",             dir: "in"  },
+        { name: "dmapi.player.drink.empty",              desc: "Drink container is empty",      dir: "in"  },
+        { name: "dmapi.player.hunger.update",            desc: "Hunger state changed",          dir: "in"  },
+        { name: "dmapi.player.thirst.update",            desc: "Thirst state changed",          dir: "in"  },
+        { name: "dmapi.player.inventory.itemnotfound",   desc: "Item lookup failed",            dir: "in"  },
+        { name: "dmapi.player.stats.attributes.updated", desc: "Player attributes updated",     dir: "in"  },
       ]
     },
 
     navigation: {
       title: "Navigation Events",
       events: [
-        ["dmapi.player.navigation.blocked", "Movement blocked"],
-        ["dmapi.player.navigation.exhausted", "Too exhausted to move"],
-        ["dmapi.player.navigation.darkness", "Movement blocked by darkness"],
-        ["dmapi.player.navigation.blinded", "Movement blocked by blindness"],
-        ["dmapi.player.navigation.closed", "Closed door encountered"],
-        ["dmapi.player.navigation.locked", "Locked door encountered"],
+        { name: "dmapi.player.navigation.blocked",   desc: "Movement blocked",                    dir: "in" },
+        { name: "dmapi.player.navigation.exhausted", desc: "Too exhausted to move",               dir: "in" },
+        { name: "dmapi.player.navigation.darkness",  desc: "Movement blocked by darkness",        dir: "in" },
+        { name: "dmapi.player.navigation.blinded",   desc: "Movement blocked by blindness",       dir: "in" },
+        { name: "dmapi.player.navigation.closed",    desc: "Closed door encountered",             dir: "in" },
+        { name: "dmapi.player.navigation.locked",    desc: "Locked door encountered",             dir: "in" },
       ]
     },
 
     combat: {
       title: "Combat Events",
       events: [
-        ["dmapi.player.combat.start", "Combat started"],
-        ["dmapi.player.combat.mobstate", "Mob condition updated"],
-        ["dmapi.player.combat.round", "Timed combat round"],
-        ["dmapi.player.combat.end", "Combat ended"],
-        ["dmapi.player.combat.kill", "Mob killed"],
-        ["dmapi.player.combat.disarmed", "Player disarmed"],
-        ["dmapi.player.combat.flee", "Player fled combat"],
+        { name: "dmapi.player.combat.start",    desc: "Combat started",         dir: "in"  },
+        { name: "dmapi.player.combat.mobstate", desc: "Mob condition updated",  dir: "in"  },
+        { name: "dmapi.player.combat.round",    desc: "Timed combat round",     dir: "in"  },
+        { name: "dmapi.player.combat.end",      desc: "Combat ended",           dir: "in"  },
+        { name: "dmapi.player.combat.kill",     desc: "Mob killed",             dir: "in"  },
+        { name: "dmapi.player.combat.disarmed", desc: "Player disarmed",        dir: "in"  },
+        { name: "dmapi.player.combat.flee",     desc: "Player fled combat",     dir: "in"  },
       ]
     },
 
     communication: {
       title: "Communication Events",
       events: [
-        ["dmapi.communication.tellreceived", "Tell received"],
-        ["dmapi.communication.tellsent", "Tell sent"],
-        ["dmapi.communication.sayreceived", "Say received"],
-        ["dmapi.communication.saysent", "Say sent"],
-        ["dmapi.communication.gtellreceived", "Group tell received"],
-        ["dmapi.communication.gtellsent", "Group tell sent"],
-        ["dmapi.communication.yellreceived", "Yell received"],
-        ["dmapi.communication.yellsent", "Yell sent"],
-        ["dmapi.communication.oocreceived", "OOC received"],
-        ["dmapi.communication.oocsent", "OOC sent"],
-        ["dmapi.communication.newbiechannel", "Newbie channel message"],
-        ["dmapi.communication.newbiechanneldiscord", "Newbie Discord relay"],
-        ["dmapi.communication.housechannel", "House channel message"],
+        { name: "dmapi.communication.emotedsayreceived",        desc: "Emoted say received",             dir: "in"  },
+        { name: "dmapi.communication.emotedsaysent",            desc: "Emoted say sent",                 dir: "out" },
+        { name: "dmapi.communication.tellreceived",             desc: "Tell received",                   dir: "in"  },
+        { name: "dmapi.communication.tellsent",                 desc: "Tell sent",                       dir: "out" },
+        { name: "dmapi.communication.sayreceived",              desc: "Say received",                    dir: "in"  },
+        { name: "dmapi.communication.saysent",                  desc: "Say sent",                        dir: "out" },
+        { name: "dmapi.communication.mpsayreceived",            desc: "Mental projection say received",  dir: "in"  },
+        { name: "dmapi.communication.mpsaysent",                desc: "Mental projection say sent",      dir: "out" },
+        { name: "dmapi.communication.mptellreceived",           desc: "Mental projection tell received", dir: "in"  },
+        { name: "dmapi.communication.mptellsent",               desc: "Mental projection tell sent",     dir: "out" },
+        { name: "dmapi.communication.gtellreceived",            desc: "Group tell received",             dir: "in"  },
+        { name: "dmapi.communication.gtellsent",                desc: "Group tell sent",                 dir: "out" },
+        { name: "dmapi.communication.yellreceived",             desc: "Yell received",                   dir: "in"  },
+        { name: "dmapi.communication.yellsent",                 desc: "Yell sent",                       dir: "out" },
+        { name: "dmapi.communication.yellpanicreceived",        desc: "Panic yell received",             dir: "in"  },
+        { name: "dmapi.communication.yellpanicsent",            desc: "Panic yell sent",                 dir: "out" },
+        { name: "dmapi.communication.mentalblastreceived",      desc: "Mental blast received",           dir: "in"  },
+        { name: "dmapi.communication.mentalblastsent",          desc: "Mental blast sent",               dir: "out" },
+        { name: "dmapi.communication.mentalblastpanicreceived", desc: "Panic mental blast received",     dir: "in"  },
+        { name: "dmapi.communication.mentalblastpanicsent",     desc: "Panic mental blast sent",         dir: "out" },
+        { name: "dmapi.communication.oocreceived",              desc: "OOC received",                    dir: "in"  },
+        { name: "dmapi.communication.oocsent",                  desc: "OOC sent",                        dir: "out" },
+        { name: "dmapi.communication.newbiechannel",            desc: "Newbie channel message",          dir: "in"  },
+        { name: "dmapi.communication.newbiechanneldiscord",     desc: "Newbie Discord relay",            dir: "in"  },
+        { name: "dmapi.communication.housechannel",             desc: "House channel message",           dir: "in"  },
       ]
     },
 
     economy: {
       title: "Economy & Skills",
       events: [
-        ["dmapi.player.currency.update", "Currency snapshot updated"],
-        ["dmapi.player.currency.gain", "Currency gained"],
-        ["dmapi.player.experience.gain", "Experience gained"],
-        ["dmapi.player.skill.improved", "Skill improved"],
-        ["dmapi.player.equipment.zapped", "Equipment zapped"],
+        { name: "dmapi.player.currency.update",    desc: "Currency snapshot updated",  dir: "in" },
+        { name: "dmapi.player.currency.gain",      desc: "Currency gained",            dir: "in" },
+        { name: "dmapi.player.bank.balance",       desc: "Bank balance updated",       dir: "in" },
+        { name: "dmapi.player.bank.deposit",       desc: "Bank deposit recorded",      dir: "in" },
+        { name: "dmapi.player.bank.withdraw",      desc: "Bank withdrawal recorded",   dir: "in" },
+        { name: "dmapi.player.bank.withdraw.fail", desc: "Bank withdrawal failed",     dir: "in" },
+        { name: "dmapi.player.house.balance",      desc: "House balance updated",      dir: "in" },
+        { name: "dmapi.player.experience.gain",    desc: "Experience gained",          dir: "in" },
+        { name: "dmapi.player.skill.improved",     desc: "Skill improved",             dir: "in" },
+        { name: "dmapi.player.equipment.zapped",   desc: "Equipment zapped",           dir: "in" },
       ]
     }
   }
+};
+
+const eventPayloads = {
+  "dmapi.core.loaded": "No payload",
+  "dmapi.core.command.sent": "{\n  command: string\n}",
+  "dmapi.core.line": "{\n  line: string\n}",
+
+  "dmapi.world.enter": "Optional payload from one-line mapping:\n{\n  line: string\n}",
+  "dmapi.world.exit": "No payload",
+  "dmapi.world.connect": "{\n  line: string\n}",
+  "dmapi.world.pendingreturn": "{\n  line: string\n}",
+  "dmapi.world.prompt": "{\n  hp: number,\n  mn: number,\n  mv: number,\n  rg?: number,\n  tnl: number,\n  hpRegen?: number,\n  mnRegen?: number,\n  mvRegen?: number,\n  estimated?: boolean,\n  line: string\n}",
+  "dmapi.world.room.name.updated": "string (room name)",
+  "dmapi.world.room.exits.updated": "{\n  exits: string[],\n  line: string\n}",
+  "dmapi.world.weather.update": "{\n  weather: string,\n  isDay: boolean,\n  line: string\n}",
+
+  "dmapi.player.vitals.updated": "{\n  hp: number,\n  mn: number,\n  mv: number,\n  hpMax?: number,\n  mnMax?: number,\n  mvMax?: number,\n  rg?: number,\n  tnl?: number,\n  hpRegen?: number,\n  mnRegen?: number,\n  mvRegen?: number,\n  estimated?: boolean,\n  line: string\n}",
+  "dmapi.player.level.updated": "{\n  level: number,\n  years: number,\n  hours: number,\n  line: string\n}",
+  "dmapi.player.levelup": "{\n  hpGain: number,\n  hpMax: number,\n  mnGain: number,\n  mnMax: number,\n  mvGain: number,\n  mvMax: number,\n  prac: number,\n  pracTotal: number,\n  line: string\n}",
+  "dmapi.player.death": "{\n  deaths: number,\n  line: string\n}",
+  "dmapi.player.sleep.enter": "{\n  sleepOn?: string,\n  line: string\n}",
+  "dmapi.player.sleep.exit": "{\n  line: string\n}",
+  "dmapi.player.sleep.blocked": "{\n  line: string\n}",
+  "dmapi.player.rest.enter": "{\n  line: string\n}",
+  "dmapi.player.rest.exit": "{\n  line: string\n}",
+  "dmapi.player.affect.stunoff": "{\n  line: string\n}",
+  "dmapi.player.drink.empty": "{\n  line: string\n}",
+  "dmapi.player.hunger.update": "{\n  intensity: number,\n  line: string\n}",
+  "dmapi.player.thirst.update": "{\n  intensity: number,\n  line: string\n}",
+  "dmapi.player.inventory.itemnotfound": "{\n  line: string\n}",
+  "dmapi.player.stats.attributes.updated": "{\n  str: { base: number, mod: number },\n  int: { base: number, mod: number },\n  wis: { base: number, mod: number },\n  dex: { base: number, mod: number },\n  con: { base: number, mod: number },\n  line: string\n}",
+
+  "dmapi.player.navigation.blocked": "{\n  line: string\n}",
+  "dmapi.player.navigation.exhausted": "{\n  line: string\n}",
+  "dmapi.player.navigation.darkness": "{\n  line: string\n}",
+  "dmapi.player.navigation.blinded": "{\n  line: string\n}",
+  "dmapi.player.navigation.closed": "{\n  name: string,\n  line: string\n}",
+  "dmapi.player.navigation.locked": "{\n  line: string\n}",
+
+  "dmapi.player.combat.start": "{\n  target: string,\n  line: string\n}",
+  "dmapi.player.combat.mobstate": "{\n  target: string,\n  condition: string,\n  hpPct: number,\n  line: string\n}",
+  "dmapi.player.combat.round": "{\n  target: string,\n  condition: string,\n  hpPct: number,\n  round: number,\n  line: string,\n  timestamp: number\n}",
+  "dmapi.player.combat.end": "{\n  target: string,\n  round: number\n}",
+  "dmapi.player.combat.kill": "{\n  mob: string,\n  kills: number,\n  line: string\n}",
+  "dmapi.player.combat.disarmed": "{\n  disarmer: string,\n  line: string\n}",
+  "dmapi.player.combat.flee": "{\n  line: string\n}",
+
+  "dmapi.communication.emotedsayreceived": "{\n  sender: string,\n  emote: string,\n  message: string,\n  line: string\n}",
+  "dmapi.communication.emotedsaysent": "{\n  sender: string,\n  emote: string,\n  message: string,\n  line: string\n}",
+  "dmapi.communication.tellreceived": "{\n  sender: string,\n  receiver: string,\n  message: string,\n  line: string\n}",
+  "dmapi.communication.tellsent": "{\n  sender: string,\n  receiver: string,\n  message: string,\n  line: string\n}",
+  "dmapi.communication.sayreceived": "{\n  sender: string,\n  message: string,\n  line: string\n}",
+  "dmapi.communication.saysent": "{\n  sender: string,\n  message: string,\n  line: string\n}",
+  "dmapi.communication.mpsayreceived": "{\n  sender: string,\n  message: string,\n  line: string\n}",
+  "dmapi.communication.mpsaysent": "{\n  sender: string,\n  message: string,\n  line: string\n}",
+  "dmapi.communication.mptellreceived": "{\n  sender: string,\n  receiver: string,\n  message: string,\n  line: string\n}",
+  "dmapi.communication.mptellsent": "{\n  sender: string,\n  receiver: string,\n  message: string,\n  line: string\n}",
+  "dmapi.communication.gtellreceived": "{\n  sender: string,\n  message: string,\n  line: string\n}",
+  "dmapi.communication.gtellsent": "{\n  sender: string,\n  message: string,\n  line: string\n}",
+  "dmapi.communication.yellreceived": "{\n  sender: string,\n  message: string,\n  line: string\n}",
+  "dmapi.communication.yellsent": "{\n  sender: string,\n  message: string,\n  line: string\n}",
+  "dmapi.communication.yellpanicreceived": "{\n  sender: string,\n  message: string,\n  line: string\n}",
+  "dmapi.communication.yellpanicsent": "{\n  sender: string,\n  message: string,\n  line: string\n}",
+  "dmapi.communication.mentalblastreceived": "{\n  sender: string,\n  message: string,\n  line: string\n}",
+  "dmapi.communication.mentalblastsent": "{\n  sender: string,\n  message: string,\n  line: string\n}",
+  "dmapi.communication.mentalblastpanicreceived": "{\n  sender: string,\n  message: string,\n  line: string\n}",
+  "dmapi.communication.mentalblastpanicsent": "{\n  sender: string,\n  message: string,\n  line: string\n}",
+  "dmapi.communication.oocreceived": "{\n  sender: string,\n  receiver: string,\n  message: string,\n  line: string\n}",
+  "dmapi.communication.oocsent": "{\n  sender: string,\n  receiver: string,\n  message: string,\n  line: string\n}",
+  "dmapi.communication.newbiechannel": "{\n  sender: string,\n  message: string,\n  line: string\n}",
+  "dmapi.communication.newbiechanneldiscord": "{\n  sender: string,\n  message: string,\n  line: string\n}",
+  "dmapi.communication.housechannel": "{\n  sender: string,\n  receiver: string,\n  message: string,\n  line: string\n}",
+
+  "dmapi.player.currency.update": "{\n  gold: number,\n  silver: number,\n  experience: number,\n  experienceToLevel: number,\n  line: string\n}",
+  "dmapi.player.currency.gain": "{\n  silver: number,\n  gold: number,\n  source: string,\n  line: string\n}",
+  "dmapi.player.bank.balance": "{\n  gold: number,\n  silver: number,\n  line: string\n}",
+  "dmapi.player.bank.deposit": "{\n  amount: number,\n  currency: string,\n  line: string\n}",
+  "dmapi.player.bank.withdraw": "{\n  amount: number,\n  currency: string,\n  fee: number,\n  feeCurrency: string,\n  total: number,\n  line: string\n}",
+  "dmapi.player.bank.withdraw.fail": "{\n  line: string\n}",
+  "dmapi.player.house.balance": "{\n  gold: number,\n  line: string\n}",
+  "dmapi.player.experience.gain": "{\n  amount: number,\n  total: number,\n  tnl: number,\n  line: string\n}",
+  "dmapi.player.skill.improved": "{\n  skill: string,\n  line: string\n}",
+  "dmapi.player.equipment.zapped": "{\n  item: string,\n  line: string\n}"
 };
 
 /* ============================================================================
@@ -279,13 +416,37 @@ for (const [key, domain] of Object.entries(dmapi.domains)) {
   section.id = id;
   section.innerHTML = `<h2>${domain.title}</h2>`;
 
-  domain.events.forEach(([name, desc]) => {
+  domain.events.forEach((event) => {
+    const { name, desc, dir } = event;
     const div = document.createElement("div");
     div.className = "event";
-    div.innerHTML = `
-      <div class="event-name">${name}</div>
-      <div class="event-desc">${desc}</div>
-    `;
+
+    const eventName = document.createElement("div");
+    eventName.className = "event-name";
+    eventName.textContent = name;
+
+    if (dir) {
+      const badge = document.createElement("span");
+      badge.className = `event-dir ${dir}`;
+      badge.textContent = dir === "in" ? "received" : dir === "out" ? "sent" : "system";
+      eventName.appendChild(badge);
+    }
+
+    const eventDesc = document.createElement("div");
+    eventDesc.className = "event-desc";
+    eventDesc.textContent = desc;
+
+    div.appendChild(eventName);
+    div.appendChild(eventDesc);
+
+    const payload = eventPayloads[name];
+    if (payload) {
+      const payloadBlock = document.createElement("pre");
+      payloadBlock.className = "event-payload";
+      payloadBlock.textContent = payload;
+      div.appendChild(payloadBlock);
+    }
+
     section.appendChild(div);
   });
 

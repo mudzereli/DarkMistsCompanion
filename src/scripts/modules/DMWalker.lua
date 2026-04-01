@@ -16,10 +16,57 @@ MapDestinations = {
   list = {},
   path = getMudletHomeDir() .. "/mapdestinations_state.lua",
   areaWalkTarget = nil,
+  walkTargetRoom = nil,
+  MAX_NAME_LEN = 24,
+  _isLoading = false,
+  _loadNormalized = false,
+  _isWalking = false,
+  _navigationBlockCount = 0,
+  _navigationBlockTilStop = 1,
 }
+
+local function normalizeDestinationName(name)
+  if not name then
+    return nil
+  end
+
+  return tostring(name):lower()
+end
+
+local function truncateDestinationName(name)
+  if #name <= MapDestinations.MAX_NAME_LEN then
+    return name, false
+  end
+
+  return name:sub(1, MapDestinations.MAX_NAME_LEN), true
+end
+
+local function nextTruncatedDuplicateName(baseName)
+  local n = 2
+
+  while true do
+    local suffix = ("_%d"):format(n)
+    local stemLen = math.max(1, MapDestinations.MAX_NAME_LEN - #suffix)
+    local candidate = baseName:sub(1, stemLen) .. suffix
+
+    if not MapDestinations.list[candidate] then
+      return candidate
+    end
+
+    n = n + 1
+  end
+end
 
 function MapDestinations.clearAreaWalkTarget()
   MapDestinations.areaWalkTarget = nil
+end
+
+function MapDestinations.clearWalkTargetRoom()
+  MapDestinations.walkTargetRoom = nil
+end
+
+function MapDestinations.setWalkTargetRoom(roomId)
+  MapDestinations.walkTargetRoom = tonumber(roomId)
 end
 
 function MapDestinations.setAreaWalkTarget(areaId, areaName)
@@ -52,11 +99,55 @@ function MapDestinations.checkAreaArrival()
   end
 end
 
+-- For direct room walks, clear walking state once destination is reached.
+function MapDestinations.checkWalkCompletion()
+  if not MapDestinations._isWalking then
+    return
+  end
+
+  local targetRoom = MapDestinations.walkTargetRoom
+  if not targetRoom then
+    return
+  end
+
+  local currentRoom = getPlayerRoom()
+  if not currentRoom then
+    return
+  end
+
+  if currentRoom == targetRoom then
+    MapDestinations._isWalking = false
+    MapDestinations._navigationBlockCount = 0
+    MapDestinations.clearWalkTargetRoom()
+  end
+end
+
+-- Handle navigation blocks during walk
+local function handleNavigationBlocked()
+  if not MapDestinations._isWalking then
+    MapDestinations._navigationBlockCount = 0
+    return
+  end
+
+  raiseEvent("onMoveFail")
+  MapDestinations._navigationBlockCount = MapDestinations._navigationBlockCount + 1
+  if MapDestinations._navigationBlockCount >= MapDestinations._navigationBlockTilStop then
+    DMLogger.notify("WALK", "<red>Navigation blocked multiple times, stopping walk.") 
+    MapDestinations.stop()
+    MapDestinations._navigationBlockCount = 0
+  end
+end
+
 -- Load persistent destinations from disk.
 -- Resets in-memory state before replaying saved add() calls.
 -- Creates a stub file if none exists.
 function MapDestinations.load()
   MapDestinations.list = {}
+  MapDestinations._isLoading = true
+  MapDestinations._loadNormalized = false
+  MapDestinations._isWalking = false
+  MapDestinations.walkTargetRoom = nil
+
   local f = io.open(MapDestinations.path, "r")
   if not f then
     local nf = io.open(MapDestinations.path, "w")
@@ -68,10 +159,22 @@ function MapDestinations.load()
 ]])
       nf:close()
     end
+    MapDestinations._isLoading = false
     return
   end
   f:close()
+
   pcall(dofile, MapDestinations.path)
+  MapDestinations._isLoading = false
+
+  if MapDestinations._loadNormalized then
+    MapDestinations.rewrite()
+  end
+
+  -- Register event handlers
+  DarkmistsEvents.add("MapDestinations.walkCompletionCheck", "dmapi.world.prompt", MapDestinations.checkWalkCompletion)
+  DarkmistsEvents.add("MapDestinations.areaArrivalCheck", "dmapi.world.prompt", MapDestinations.checkAreaArrival)
+  DarkmistsEvents.add("MapDestinations.navigationBlocked", "dmapi.player.navigation.blocked", handleNavigationBlocked)
 end
 
 -- Rewrite full destination file from current in-memory state.
@@ -101,8 +204,31 @@ end
 -- Add or overwrite a destination (no persistence side effects).
 -- Used by load replay and internal mutation.
 function MapDestinations.add(name, room)
-  name = name:lower()
-  MapDestinations.list[name] = tonumber(room)
+  name = normalizeDestinationName(name)
+  room = tonumber(room)
+
+  if not name or not room then
+    return false
+  end
+
+  if MapDestinations._isLoading then
+    local truncatedName, wasTruncated = truncateDestinationName(name)
+    local finalName = truncatedName
+
+    if wasTruncated and MapDestinations.list[truncatedName] then
+      finalName = nextTruncatedDuplicateName(truncatedName)
+    end
+
+    if finalName ~= name then
+      MapDestinations._loadNormalized = true
+    end
+
+    MapDestinations.list[finalName] = room
+    return true
+  end
+
+  MapDestinations.list[name] = room
+  return true
 end
 
 -- Returns:
@@ -123,6 +249,9 @@ end
 -- Stop current walk (delegates to Mudlet map alias).
 function MapDestinations.stop()
   MapDestinations.clearAreaWalkTarget()
+  MapDestinations.clearWalkTargetRoom()
+  MapDestinations._isWalking = false
+  MapDestinations._navigationBlockCount = 0
   expandAlias("map stop")
   return true
 end
@@ -169,6 +298,8 @@ function MapDestinations.navigate(name)
   end
 
   MapDestinations.clearAreaWalkTarget()
+  MapDestinations.setWalkTargetRoom(dest)
+  MapDestinations._isWalking = true
   gotoRoom(dest)
   return true, dest, roomName
 end
@@ -220,6 +351,8 @@ function MapDestinations.navigateToArea(search)
       end
 
       MapDestinations.setAreaWalkTarget(areaId, areaName)
+      MapDestinations.setWalkTargetRoom(firstRoom)
+      MapDestinations._isWalking = true
       gotoRoom(firstRoom)
       return true, firstRoom, areaName
     end
@@ -230,7 +363,11 @@ end
 
 -- Public mutation API: add destination and persist immediately.
 function MapDestinations.addAndSave(name, room)
-  MapDestinations.add(name, room)
+  local ok = MapDestinations.add(name, room)
+  if not ok then
+    return false, "INVALID_INPUT"
+  end
+
   MapDestinations.rewrite()
   return true
 end
@@ -301,9 +438,13 @@ end
 -- If roomId is nil, current mapped room is used.
 -- Validates name and room existence before persisting.
 function MapDestinations.addDestination(name, roomId)
-  name = name and name:lower()
+  name = normalizeDestinationName(name)
   if not name then
     return false, "INVALID_NAME"
+  end
+
+  if #name > MapDestinations.MAX_NAME_LEN then
+    return false, "NAME_TOO_LONG", MapDestinations.MAX_NAME_LEN
   end
 
   -- If no roomId provided, use current room
@@ -324,11 +465,10 @@ function MapDestinations.addDestination(name, roomId)
     return false, "ROOM_MISSING", roomId
   end
 
-  MapDestinations.addAndSave(name, roomId)
+  local ok = MapDestinations.addAndSave(name, roomId)
+  if not ok then
+    return false, "INVALID_INPUT"
+  end
 
   return true, name, roomId, roomName
 end
-
--- Load destinations on startup
-MapDestinations.load()
-DarkmistsEvents.add("MapDestinations.areaArrivalCheck", "dmapi.world.prompt", MapDestinations.checkAreaArrival)

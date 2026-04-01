@@ -1,0 +1,112 @@
+-- =============================================================================
+-- DMLogger - small miniconsole for developer/runtime logs
+-- =============================================================================
+
+DMLogger = DMLogger or {}
+
+-- Standalone defaults (avoid referencing Darkmists globals here)
+DMLogger.config = {
+  fontSize = 11,
+  fontName = "Lucida Console",
+  height = 120,
+  visible = false
+}
+
+local ok, r, g, b, a = pcall(getBackgroundColor, "main") -- try named window
+if not ok or type(r) ~= "number" then ok, r, g, b, a = pcall(getBackgroundColor) end
+r = r or 0; g = g or 0; b = b or 0
+local bgHex = string.format("#%02x%02x%02x", r, g, b)
+
+local function has_ui()
+  return DMLogger.container and DMLogger.console
+end
+
+function DMLogger.create()
+  if has_ui() then return end
+
+  -- Create an adjustable container and a mini-console inside it
+  DMLogger.container = Adjustable.Container:new({
+    name = "DM Log Console",
+    x = "20%", y = "20%",
+    width = "60%", height = "60%",
+    color = bgHex
+  })
+
+  DMLogger.console = Geyser.MiniConsole:new({
+    name = "DMLoggerConsole",
+    x = "1%", y = "1%",
+    width = "98%", height = "98%",
+    color = bgHex
+  }, DMLogger.container)
+
+  DMLogger.console:setFont(DMLogger.config.fontName)
+  DMLogger.console:setFontSize(DMLogger.config.fontSize)
+  DMLogger.console:enableAutoWrap()
+  DMLogger.console:enableScrollBar()
+
+  DMLogger.container:show()
+  DMLogger.container:raiseAll()
+  DMLogger.visible = true
+end
+
+local function ensure_created()
+  if has_ui() then return end
+  DMLogger.container = nil
+  DMLogger.console = nil
+  DMLogger.create()
+end
+
+-- Helper: common prefix for log/notify outputs (local/private)
+-- Helper: build a single prefix used by both log and notify.
+-- when `with_time` is truthy the prefix includes a leading [HH:MM:SS]
+local function make_prefix(plugin, with_time)
+  local p = "\n"
+  if with_time then
+    p = p .. DarkmistsTheme.mutedTag .. "[" .. DarkmistsTheme.textTag .. os.date("%H:%M:%S") .. DarkmistsTheme.mutedTag .. "] " .. DarkmistsTheme.textTag
+  end
+  p = p .. DarkmistsTheme.mutedTag .. "[" .. DarkmistsTheme.textTag .. tostring(plugin) .. DarkmistsTheme.mutedTag .. "] " .. DarkmistsTheme.textTag
+  return p
+end
+
+function DMLogger.log(plugin, msg)
+  ensure_created()
+  local prefix = make_prefix(plugin or "System", true)
+  DMLogger.console:cecho(prefix .. tostring(msg) .. DarkmistsTheme.textTag)
+end
+
+-- Notify to main window (visible to player) — no timestamp per request
+function DMLogger.notify(plugin, msg)
+  plugin = plugin or "System"
+  local prefix = make_prefix(plugin, false)
+  cecho(prefix .. tostring(msg) .. DarkmistsTheme.textTag)
+end
+
+function DMLogger.show()
+  ensure_created()
+  DMLogger.container:show()
+  DMLogger.container:raiseAll()
+  DMLogger.visible = true
+end
+
+function DMLogger.hide()
+  if not has_ui() then
+    DMLogger.visible = false
+    return
+  end
+  DMLogger.container:hide()
+  DMLogger.visible = false
+end
+
+function DMLogger.toggle()
+  if DMLogger.visible then
+    DMLogger.hide()
+  else
+    DMLogger.show()
+  end
+end
+
+function DMLogger.clear()
+  if DMLogger.console then DMLogger.console:clear() end
+end
+
+return DMLogger

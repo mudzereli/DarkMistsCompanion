@@ -55,7 +55,7 @@ Darkmists.DefaultSettings = {
   -- Maximum Percentage of Screen Height to use for Status Bars
   statusBarTotalHeightPercent = 10,
   -- Place status bars inside an adjustable container
-  statusBarsMoveable = false,
+  statusBarsMoveable = true,
   -- How often Affects Window is Updated
   affectsWindowUpdateIntervalSeconds = 2,
   -- How many characters to cut off Affect Name At
@@ -212,7 +212,7 @@ function Darkmists.SetUpdateChannel(channel)
   end
   Darkmists.GlobalSettings.updateChannel = channel
   Darkmists.SaveSettings()
-  Darkmists.Log(DarkmistsTheme.purpleTag .. "Darkmists Core", ("Update channel set to: %s"):format(channel))
+  DMLogger.notify(DarkmistsTheme.purpleTag .. "Darkmists Core", ("Update channel set to: %s"):format(channel))
 end
 
 function Darkmists.UpdateFromGitHub(channel)
@@ -244,10 +244,6 @@ end
 
 function Darkmists.getDefaultBackgroundColor()
   return ifLight("white", "black")
-end
-
-function Darkmists.getDefaultTextColorTag()
-  return ("<%s>"):format(Darkmists.getDefaultTextColor())
 end
 
 function Darkmists.GetBorderPercentages()
@@ -447,6 +443,11 @@ function Darkmists.SetWindowBorderPercent(region, percent)
   local isVertical = (region == "top" or region == "bottom")
   local baseSize = isVertical and mainHeight or mainWidth
   local scaledSize = (percent / 100) * baseSize
+  -- Only apply and log if the stored percent actually changed
+  local prev = (Darkmists.GlobalSettings.borders and Darkmists.GlobalSettings.borders[region]) or 0
+  if prev == percent then
+    return
+  end
 
   -- Persist the percent value
   Darkmists.GlobalSettings.borders[region] = percent
@@ -667,7 +668,9 @@ function Darkmists.CleanupUI(opts)
   if ButtonBar and ButtonBar.destroy then pcall(ButtonBar.destroy) end
   if StatusBar and StatusBar.cleanup then pcall(StatusBar.cleanup) end
   if DMAlertWindow and DMAlertWindow.Hide then pcall(DMAlertWindow.Hide) end
-  
+  if StatRoller and StatRoller.destroy then pcall(StatRoller.destroy) end
+  if AffectsWindow and AffectsWindow.destroy then pcall(AffectsWindow.destroy) end
+
   if opts.uninstall then
     Darkmists.Log(DarkmistsTheme.purpleTag .. "Darkmists Core", "Resetting window borders to default...")
     Darkmists.ResetUILayoutCache()
@@ -677,9 +680,79 @@ function Darkmists.CleanupUI(opts)
   end
 end
 
+function Darkmists.LoadUIScripts()
+  if Darkmists.UI_LOADED then return end
+  DMLogger.show()
+
+  DMTabFrame.init()
+  StatusBar.init()
+  dofile(getMudletHomeDir() .. "/DarkMistsCompanion/ui/whowindow.lua")
+  dofile(getMudletHomeDir() .. "/DarkMistsCompanion/ui/chathistory.lua")
+  AffectsWindow.init()
+  dofile(getMudletHomeDir() .. "/DarkMistsCompanion/ui/scorepanel.lua")
+  DarkMistsMiniMap.init()
+  dofile(getMudletHomeDir() .. "/DarkMistsCompanion/utility/mapcolor.lua")
+  
+  -- Initialize optional UI modules that need runtime context (e.g., connection state)
+  if DarkMistsMiniMap and DarkMistsMiniMap.Init then
+    pcall(DarkMistsMiniMap.Init)
+  end
+
+  Darkmists.UI_LOADED = true
+  Darkmists.Log(DarkmistsTheme.purpleTag .. "Darkmists Core", "UI Scripts Loaded")
+end
+
+function Darkmists.EnableUI()
+  if not Darkmists.GlobalSettings.minimalMode then return end
+  -- closing any alert panels (same behavior as X)
+  DMAlertWindow.Hide()
+
+  Darkmists.GlobalSettings.minimalMode = false
+  Darkmists.SaveSettings()
+
+  -- Load UI if not already loaded
+  Darkmists.ApplyFirstRunUILayout()
+  Darkmists.LoadUIScripts()
+
+  -- Apply borders
+  Darkmists.RefreshUILayout({ syncStatusBar = true })
+
+  -- Defer the packaged-map prompt: if DMAPI is available, set pending and
+  -- let the DMAPI vitals handler show it after score; otherwise fall back
+  -- to a simple delayed prompt so manual enables still get prompted.
+  if dmapi then
+    Darkmists._pendingMapPrompt = true
+  else
+    tempTimer(0.8, function()
+      if not Darkmists.GlobalSettings.hasSeenMapPrompt then
+        Darkmists.PromptLoadMap()
+      end
+    end)
+  end
+
+  tempTimer(1, function() DMLogger.hide() end)
+  Darkmists.Log(DarkmistsTheme.purpleTag .. "Darkmists Core", "UI Enabled")
+end
+
+function Darkmists.DisableUI()
+  Darkmists.GlobalSettings.minimalMode = true
+  Darkmists.SaveSettings()
+
+  if DarkMistsMiniMap and DarkMistsMiniMap.container then
+    DarkMistsMiniMap.container:hide()
+    DarkMistsMiniMap.container:delete()
+    DarkMistsMiniMap.container = nil
+  end
+
+  Darkmists.Log(DarkmistsTheme.purpleTag .. "Darkmists Core", "Switching to Minimal UI...")
+  Darkmists.SafeReload()
+end
+
 function Darkmists.Init()
-  DMLogger.container:show()
-  DMLogger.notify("Darkmists Core", (DarkmistsTheme.mutedTag .. "Loaded Darkmists Core " .. DarkmistsTheme.infoTag .. "v%s<r>"):format(Darkmists.VERSION))
+  DMLogger.create()
+  DMLogger.show()
+  DMLogger.log(DarkmistsTheme.purpleTag .. "Darkmists Core", (DarkmistsTheme.mutedTag .. "Initializing Darkmists Core " .. DarkmistsTheme.infoTag .. "v%s<r>"):format(Darkmists.VERSION))
+  dmapi.init()
   local hadSettings = Darkmists.LoadSettings()
   -- If we previously persisted the one-shot install-reset guard, clear it now
   -- so future installs will be able to trigger the guarded reset again.
@@ -721,13 +794,13 @@ function Darkmists.Init()
   DarkmistsTheme.checkBackgroundContrast()
 
   -- Utility Scripts that use DMAPI
-  dofile(getMudletHomeDir() .. "/DarkMistsCompanion/utility/itemtracker.lua")
-  dofile(getMudletHomeDir() .. "/DarkMistsCompanion/utility/statroller.lua")
-  dofile(getMudletHomeDir() .. "/DarkMistsCompanion/utility/mapdestinations.lua")
+  ItemTracker.init()
+  StatRoller.init()
+  MapDestinations.load()
   dofile(getMudletHomeDir() .. "/DarkMistsCompanion/utility/enchanterassist.lua")
-  dofile(getMudletHomeDir() .. "/DarkMistsCompanion/utility/skillups.lua")
-  dofile(getMudletHomeDir() .. "/DarkMistsCompanion/utility/clickables.lua")
-  dofile(getMudletHomeDir() .. "/DarkMistsCompanion/ui/buttonbar.lua")
+  SkillUps.init()
+  DMClickables.init()
+  ButtonBar.init()
 
   -- UI Scripts
   if not Darkmists.GlobalSettings.minimalMode then
@@ -738,82 +811,13 @@ function Darkmists.Init()
   end
 
   -- Meta Help / Command
-  dofile(getMudletHomeDir() .. "/DarkMistsCompanion/core/DarkMistsMeta.lua")
+  DarkMistsMeta.init()
 
-  tempTimer(1, function() DMLogger.container:hide() end)
-  DMLogger.notify("Darkmists Core", "All Scripts Loaded!")
-end
-
-function Darkmists.LoadUIScripts()
-  if Darkmists.UI_LOADED then return end
-  DMLogger.container:show()
-
-  dofile(getMudletHomeDir() .. "/DarkMistsCompanion/ui/framework/GeyserAdjustableTabWindow.lua")
-  dofile(getMudletHomeDir() .. "/DarkMistsCompanion/ui/framework/DMTabFrame.lua")
-  dofile(getMudletHomeDir() .. "/DarkMistsCompanion/ui/statusbars.lua")
-  dofile(getMudletHomeDir() .. "/DarkMistsCompanion/ui/whowindow.lua")
-  dofile(getMudletHomeDir() .. "/DarkMistsCompanion/ui/chathistory.lua")
-  dofile(getMudletHomeDir() .. "/DarkMistsCompanion/ui/affectswindow.lua")
-  dofile(getMudletHomeDir() .. "/DarkMistsCompanion/ui/scorepanel.lua")
-  dofile(getMudletHomeDir() .. "/DarkMistsCompanion/ui/mapwindow.lua")
-  dofile(getMudletHomeDir() .. "/DarkMistsCompanion/utility/mapcolor.lua")
-  
-  -- Initialize optional UI modules that need runtime context (e.g., connection state)
-  if DarkMistsMiniMap and DarkMistsMiniMap.Init then
-    pcall(DarkMistsMiniMap.Init)
-  end
-
-  Darkmists.UI_LOADED = true
-  Darkmists.Log(DarkmistsTheme.purpleTag .. "Darkmists Core", "UI Scripts Loaded")
-end
-
-function Darkmists.EnableUI()
-  if not Darkmists.GlobalSettings.minimalMode then return end
-  -- closing any alert panels (same behavior as X)
-  DMAlertWindow.Hide()
-
-  Darkmists.GlobalSettings.minimalMode = false
-  Darkmists.SaveSettings()
-
-  -- Load UI if not already loaded
-  Darkmists.ApplyFirstRunUILayout()
-  Darkmists.LoadUIScripts()
-
-  -- Apply borders
-  Darkmists.RefreshUILayout({ syncStatusBar = true })
-
-  -- Defer the packaged-map prompt: if DMAPI is available, set pending and
-  -- let the DMAPI vitals handler show it after score; otherwise fall back
-  -- to a simple delayed prompt so manual enables still get prompted.
-  if dmapi then
-    Darkmists._pendingMapPrompt = true
-  else
-    tempTimer(0.8, function()
-      if not Darkmists.GlobalSettings.hasSeenMapPrompt then
-        Darkmists.PromptLoadMap()
-      end
-    end)
-  end
-
-  tempTimer(1, function() DMLogger.container:hide() end)
-  Darkmists.Log(DarkmistsTheme.purpleTag .. "Darkmists Core", "UI Enabled")
-end
-
-function Darkmists.DisableUI()
-  Darkmists.GlobalSettings.minimalMode = true
-  Darkmists.SaveSettings()
-
-  if DarkMistsMiniMap and DarkMistsMiniMap.container then
-    DarkMistsMiniMap.container:hide()
-    DarkMistsMiniMap.container:delete()
-    DarkMistsMiniMap.container = nil
-  end
-
-  Darkmists.Log(DarkmistsTheme.purpleTag .. "Darkmists Core", "Switching to Minimal UI...")
-  Darkmists.SafeReload()
+  tempTimer(1, function() DMLogger.hide() end)
+  DMLogger.notify(DarkmistsTheme.purpleTag .. "Darkmists Core", (DarkmistsTheme.mutedTag .. "Loaded Darkmists Core " .. DarkmistsTheme.infoTag .. "v%s<r>"):format(Darkmists.VERSION))
 end
 
 -- =============================================================================
 -- MODULE LOAD ORDER
 -- =============================================================================
-Darkmists.Init()
+tempTimer(1, function() Darkmists.Init() end)

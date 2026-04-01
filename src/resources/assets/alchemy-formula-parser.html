@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <title>Alchemy Formula Parser</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='0.9em' font-size='90'%3E⚗️%3C/text%3E%3C/svg%3E">
 
 <style>
 
@@ -193,7 +194,7 @@ td:last-child {
 }
 
 #heatmap {
-    display: grid;
+    display: none;
     grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
     gap: 6px;
     margin-top: 12px;
@@ -229,23 +230,31 @@ td:last-child {
 </div>
 
 <button id="toggleBtn" onclick="toggleInput()">Hide Input</button>
+<button id="toggleHeatmapBtn" onclick="toggleHeatmap()">Show Heatmap</button>
 
 <div id="inputContainer">
     <textarea id="input"></textarea><br>
     <button onclick="parseData()">Parse</button>
     <button onclick="clearAll()">Clear</button>
+    <button onclick="openSQLiteImport()">Import SQLite</button>
     <button onclick="exportSQLite()">Export SQLite</button>
+    <input id="sqliteImportInput"
+           type="file"
+           accept=".sqlite,.sqlite3,.db,application/octet-stream"
+           style="display:none"
+           onchange="handleSQLiteImport(event)">
 </div>
 
+<div id="heatmap">
 <h3 style="margin-top:30px;color:#7fd4ff">Material Frequency Heatmap</h3>
-<div id="heatmap"></div>
+</div>
 
-<input type="text" id="filterInput" placeholder="Filter formulas..."
-       onkeyup="filterTable()"
+<input type="text" id="filterInput" placeholder="Simple Filter: search by name or materials..."
+       oninput="scheduleFilter()"
        style="width:100%; padding:8px; margin-top:10px;">
 <input type="text" id="statFilter"
-    placeholder="Filter: hp>10 spellpower flag:slow"
-    onkeyup="filterTable()"
+    placeholder="Advanced Filter: hp>10 spellpower flag:slow"
+    oninput="filterTable()"
     style="width:100%; padding:8px; margin-top:6px;">
 <div style="font-size:12px;color:#aaa;margin-top:4px">
     Use stat names, comparisons, or flags. Multiple filters are ANDed.<br>
@@ -281,6 +290,7 @@ const STAT_COLUMNS = [
 
 let materialCounts = {}
 let allStats = new Set()
+let filterTimer = null
 
 async function exportSQLite() {
     const SQL = await initSqlJs({
@@ -289,49 +299,41 @@ async function exportSQLite() {
 
     const db = new SQL.Database();
 
-    // Create table
+    const rows = document.querySelectorAll("#table tbody tr");
+
+    // Collect every unique stat key across all parsed rows
+    const allStatNames = new Set();
+    rows.forEach(row => {
+        Object.keys(row._stats || {}).forEach(k => allStatNames.add(k));
+    });
+    const statCols = Array.from(allStatNames).sort();
+
+    // Build formulas table: fixed columns + one INTEGER column per discovered stat + flags
+    const statColDefs = statCols.length
+        ? ",\n            " + statCols.map(s => `"${s}" INTEGER`).join(",\n            ")
+        : "";
+
     db.run(`
         CREATE TABLE formulas (
             name TEXT,
             materials TEXT,
-            stats TEXT,
-            stat_count INTEGER,
-            hp INTEGER,
-            mana INTEGER,
-            hitroll INTEGER,
-            damroll INTEGER,
-            spellpower INTEGER,
-            holypower INTEGER,
-            ac INTEGER,
-            saves INTEGER,
+            stat_count INTEGER${statColDefs},
             flags TEXT
         );
     `);
 
-    const rows = document.querySelectorAll("#table tbody tr");
-
-    const stmt = db.prepare(`
-        INSERT INTO formulas VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)
-    `);
+    const placeholders = Array(3 + statCols.length + 1).fill("?").join(", ");
+    const stmt = db.prepare(`INSERT INTO formulas VALUES (${placeholders})`);
 
     rows.forEach(row => {
         const stats = row._stats || {};
-        const flags = (row._flags || []).join(", ");
-
+        const flags = row._flags || [];
         stmt.run([
             row.cells[0].innerText,
             row.cells[1].innerText,
-            row.cells[2].innerText,
             Number(row.cells[3].innerText) || 0,
-            stats.hp || 0,
-            stats.mana || 0,
-            stats.hitroll || 0,
-            stats.damroll || 0,
-            stats.spellpower || 0,
-            stats.holypower || 0,
-            stats.ac || 0,
-            stats.saves || 0,
-            flags
+            ...statCols.map(s => stats[s] || 0),
+            flags.join(", ")
         ]);
     });
 
@@ -362,6 +364,19 @@ function toggleInput() {
     }
 }
 
+function toggleHeatmap() {
+    const heatmap = document.getElementById("heatmap")
+    const button = document.getElementById("toggleHeatmapBtn")
+
+    if (heatmap.style.display !== "grid") {
+        heatmap.style.display = "grid"
+        button.innerText = "Hide Heatmap"
+    } else {
+        heatmap.style.display = "none"
+        button.innerText = "Show Heatmap"
+    }
+}
+
 function buildStatColumns() {
     const header = document.getElementById("headerRow")
 
@@ -388,6 +403,257 @@ function buildStatColumns() {
     })
 
     header.appendChild(flagHeader)
+}
+
+function normalizeStatName(name) {
+    return String(name || "")
+        .toLowerCase()
+        .replace(/\s+/g, "_")
+}
+
+function scheduleFilter() {
+    if (filterTimer) clearTimeout(filterTimer)
+    filterTimer = setTimeout(() => {
+        filterTimer = null
+        filterTable()
+    }, 50)
+}
+
+function formatStatsText(stats, flags) {
+    const statParts = Object.keys(stats || {})
+        .sort()
+        .map(key => {
+            const value = Number(stats[key])
+            if (isNaN(value) || value === 0) return null
+            const sign = value > 0 ? "+" : ""
+            return `${key} ${sign}${value}`
+        })
+        .filter(Boolean)
+
+    const flagParts = (flags || []).map(f => String(f))
+
+    return [...statParts, ...flagParts].join(", ")
+}
+
+function buildFormulaRowElement(formula) {
+    const stats = formula.parsedStats || {}
+    const flags = formula.parsedFlags || []
+    const materials = String(formula.materials || "")
+    const materialArray = materials
+        .split(",")
+        .map(m => m.trim())
+        .filter(Boolean)
+
+    materialArray.forEach(mat => {
+        const key = mat.toLowerCase()
+        materialCounts[key] = (materialCounts[key] || 0) + 1
+    })
+
+    const row = document.createElement("tr")
+    row._stats = stats
+    row._flags = flags
+
+    const cell0 = document.createElement("td")
+    cell0.innerText = formula.name
+    row.appendChild(cell0)
+
+    const cell1 = document.createElement("td")
+    cell1.innerText = materials
+    row.appendChild(cell1)
+
+    const cell2 = document.createElement("td")
+    cell2.innerText = formula.stats || formatStatsText(stats, flags)
+    row.appendChild(cell2)
+
+    const cell3 = document.createElement("td")
+    cell3.innerText = Number(formula.statCount) || Object.keys(stats).length
+    row.appendChild(cell3)
+
+    STAT_COLUMNS.forEach(stat => {
+        const cell = document.createElement("td")
+        let val = ""
+
+        if (stat === "saves") {
+            let total = 0
+            for (let key in stats) {
+                if (key === "saves" || key.startsWith("saves_vs_")) {
+                    total += Number(stats[key]) || 0
+                }
+            }
+            if (total !== 0) val = total
+        } else {
+            val = stats?.[stat] ?? ""
+        }
+
+        cell.innerText = val
+        row.appendChild(cell)
+    })
+
+    const cellFlags = document.createElement("td")
+    cellFlags.innerText = flags.join(", ")
+    row.appendChild(cellFlags)
+
+    row._searchText = [
+        row.cells[0].innerText,
+        row.cells[1].innerText,
+        row.cells[2].innerText,
+        flags.join(",")
+    ].join(" ").toLowerCase()
+
+    return { row, materialArray }
+}
+
+function insertFormulaRow(formula, existingNames) {
+    if (!formula || !formula.name) return 0
+
+    const nameLower = String(formula.name).toLowerCase()
+    if (existingNames && existingNames.has(nameLower)) return 0
+
+    const { row, materialArray } = buildFormulaRowElement(formula)
+    const tbody = document.querySelector("#table tbody")
+    tbody.appendChild(row)
+
+    if (existingNames) existingNames.add(nameLower)
+
+    return materialArray.length
+}
+
+function updateSummaryFromTable() {
+    const rows = document.querySelectorAll("#table tbody tr")
+    const partCounts = {1:0,2:0,3:0,4:0,5:0}
+
+    rows.forEach(row => {
+        const materials = row.cells[1].innerText || ""
+        const n = materials.split(",").map(m => m.trim()).filter(Boolean).length
+        if (n >= 1 && n <= 5) partCounts[n]++
+    })
+
+    document.getElementById("summary").innerText =
+        `1-Part: ${partCounts[1]} | ` +
+        `2-Part: ${partCounts[2]} | ` +
+        `3-Part: ${partCounts[3]} | ` +
+        `4-Part: ${partCounts[4]} | ` +
+        `5-Part: ${partCounts[5]}`
+}
+
+function openSQLiteImport() {
+    const input = document.getElementById("sqliteImportInput")
+    input.value = ""
+    input.click()
+}
+
+async function handleSQLiteImport(event) {
+    const file = event?.target?.files?.[0]
+    if (!file) return
+
+    try {
+        const SQL = await initSqlJs({
+            locateFile: file => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/${file}`
+        })
+
+        const dbBytes = new Uint8Array(await file.arrayBuffer())
+        const db = new SQL.Database(dbBytes)
+
+        const hasFormulas = db.exec(`
+            SELECT name FROM sqlite_master
+            WHERE type='table' AND name='formulas'
+        `)
+
+        if (!hasFormulas.length) {
+            throw new Error("No formulas table found in selected SQLite file")
+        }
+
+        const info = db.exec("PRAGMA table_info(formulas)")
+        const columns = info.length ? info[0].values.map(v => String(v[1])) : []
+        const reserved = {
+            name: true,
+            materials: true,
+            stat_count: true,
+            flags: true
+        }
+        const dynamicStatColumns = columns.filter(c => !reserved[c])
+
+        const rs = db.exec("SELECT * FROM formulas")
+        if (!rs.length) {
+            db.close()
+            return
+        }
+
+        const rsCols = rs[0].columns
+        const tbody = document.querySelector("#table tbody")
+        const existingNames = new Set()
+        for (let row of tbody.rows) {
+            existingNames.add(row.cells[0].innerText.toLowerCase())
+        }
+
+        let imported = 0
+        const fragment = document.createDocumentFragment()
+
+        rs[0].values.forEach(values => {
+            const rec = {}
+            rsCols.forEach((col, idx) => {
+                rec[col] = values[idx]
+            })
+
+            const name = String(rec.name || "").trim()
+            if (!name) return
+
+            const nameLower = name.toLowerCase()
+            if (existingNames.has(nameLower)) return
+
+            const stats = {}
+
+            dynamicStatColumns.forEach(col => {
+                const raw = rec[col]
+                if (raw == null || raw === "") return
+                const n = Number(raw)
+                if (!isNaN(n) && n !== 0) {
+                    stats[normalizeStatName(col)] = n
+                }
+            })
+
+            let flags = []
+            const rawFlags = rec.flags || ""
+            flags = String(rawFlags)
+                .split(",")
+                .map(f => normalizeStatName(f.trim()))
+                .filter(Boolean)
+
+            const statCount = Number(rec.stat_count)
+            const formula = {
+                name: name,
+                materials: String(rec.materials || ""),
+                stats: formatStatsText(stats, flags),
+                parsedStats: stats,
+                parsedFlags: flags,
+                statCount: isNaN(statCount) ? Object.keys(stats).length : statCount
+            }
+
+            const { row, materialArray } = buildFormulaRowElement(formula)
+            fragment.appendChild(row)
+            existingNames.add(nameLower)
+            imported += materialArray.length > 0 ? 1 : 0
+        })
+
+        tbody.appendChild(fragment)
+        db.close()
+        
+        if (imported > 0) {
+            updateSummaryFromTable()
+            renderHeatmap()
+        }
+
+        if (imported == 0) {
+            alert("No new formulas imported (all were duplicates or invalid).")
+        } else {
+            alert(`Imported ${imported} formula(s) from SQLite.`)
+        }
+    } catch (err) {
+        console.error(err)
+        alert(`SQLite import failed: ${err.message || err}`)
+    } finally {
+        if (event && event.target) event.target.value = ""
+    }
 }
 
 function filterTable() {
@@ -420,20 +686,15 @@ function filterTable() {
 
         if (textFilter) {
 
-            const name =
-                row.cells[0].innerText.toLowerCase()
+            const searchable = row._searchText || [
+                row.cells[0].innerText,
+                row.cells[1].innerText,
+                row.cells[2].innerText,
+                flags.join(",")
+            ].join(" ").toLowerCase()
 
-            const mats =
-                row.cells[1].innerText.toLowerCase()
-
-            const statsText =
-                row.cells[2].innerText.toLowerCase()
-
-            show =
-                name.includes(textFilter) ||
-                mats.includes(textFilter) ||
-                statsText.includes(textFilter) ||
-                flags.join(",").includes(textFilter)
+            row._searchText = searchable
+            show = searchable.includes(textFilter)
 
         }
 
@@ -582,8 +843,6 @@ function parseData() {
         existingNames.add(row.cells[0].innerText.toLowerCase());
     }
 
-    let partCounts = {1:0,2:0,3:0,4:0,5:0};
-
     let inSection = false;
     let currentFormula = null;
 
@@ -618,57 +877,14 @@ function parseData() {
             }
 
             let materials = trimmed;
-            let materialArray = materials.split(",").map(m=>m.trim()).filter(Boolean);
-            materialArray.forEach(mat => {
-                mat = mat.toLowerCase()
-                materialCounts[mat] = (materialCounts[mat] || 0) + 1
-            })
-            let materialCount = materialArray.length;
-
-            if (materialCount >=1 && materialCount <=5) {
-                partCounts[materialCount]++;
-            }
-
-            let row = tbody.insertRow()
-
-            row._stats = currentFormula.parsedStats || {}
-            row._flags = currentFormula.parsedFlags || []
-
-            row.insertCell(0).innerText = currentFormula.name
-            row.insertCell(1).innerText = materials
-            row.insertCell(2).innerText = currentFormula.stats
-            row.insertCell(3).innerText = currentFormula.statCount
-
-            STAT_COLUMNS.forEach(stat => {
-
-                let val = ""
-
-                if (stat === "saves") {
-
-                    let total = 0
-
-                    for (let key in currentFormula.parsedStats) {
-
-                        if (key === "saves" || key.startsWith("saves_vs_")) {
-                            total += currentFormula.parsedStats[key]
-                        }
-
-                    }
-
-                    if (total !== 0) val = total
-
-                } else {
-
-                    val = currentFormula.parsedStats?.[stat] ?? ""
-
-                }
-
-                row.insertCell(-1).innerText = val
-
-            })
-
-            row.insertCell(-1).innerText =
-            (currentFormula.parsedFlags || []).join(", ")
+            insertFormulaRow({
+                name: currentFormula.name,
+                materials: materials,
+                stats: currentFormula.stats,
+                parsedStats: currentFormula.parsedStats || {},
+                parsedFlags: currentFormula.parsedFlags || [],
+                statCount: currentFormula.statCount
+            }, existingNames)
 
             existingNames.add(currentFormula.name.toLowerCase());
             currentFormula = null;
@@ -715,12 +931,7 @@ function parseData() {
         }
     }
 
-    document.getElementById("summary").innerText =
-        `1-Part: ${partCounts[1]} | ` +
-        `2-Part: ${partCounts[2]} | ` +
-        `3-Part: ${partCounts[3]} | ` +
-        `4-Part: ${partCounts[4]} | ` +
-        `5-Part: ${partCounts[5]}`;
+    updateSummaryFromTable()
 
     document.getElementById("input").value = "";
     renderHeatmap()
