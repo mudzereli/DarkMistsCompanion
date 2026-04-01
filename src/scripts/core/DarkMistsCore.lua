@@ -548,8 +548,8 @@ function Darkmists.RegisterEvents()
         echo(win,"\n⠀⠀⠀⠀⠀⠀⣠⣿⣿⣿⠀⢸⠛⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡆⠀⠀⠀⠀⠀⠀⠀⠀")
         echo(win,"\nNever gonna give you up...             ")
         echo(win,"\n            Never gonna let you down...")
-        cechoLink(win, "\n\n" .. DarkmistsTheme.mutedTag .. "<u>[" .. DarkmistsTheme.redTag .. "Exit and Get your DM Achievement" .. DarkmistsTheme.mutedTag .. "]",
-          [[DMAlertWindow.Hide(); stopSounds(); openUrl("https://r.mtdv.me/giveaways/DMAchievement"); ASCENDING = false;]],
+        cechoLink(win, "\n\n" .. DarkmistsTheme.mutedTag .. "<u>[" .. DarkmistsTheme.redTag .. "Go back to DM" .. DarkmistsTheme.mutedTag .. "]",
+          [[DMAlertWindow.Hide(); stopSounds(); ASCENDING = false;]],
           "Go back to DM", true)
     end, { width = 450, height = 600 })
 
@@ -564,6 +564,11 @@ function Darkmists.RegisterEvents()
       priority = 75,
       tag = "ascension_sound"
     })
+
+    tempTimer(8,function ()
+      stopSounds()
+      ASCENDING = false
+    end)
   end
 
   ASCENDING = false
@@ -571,7 +576,7 @@ function Darkmists.RegisterEvents()
     ButtonBar:addButton("🔱 Make Me Immortal", function()
       if ASCENDING then return end
       ASCENDING = true
-      local t = 2
+      local t = 2.5
       local events = {
         {0,  DarkmistsTheme.goodTag,   "You step into the Circle of Ascension."},
         {t*1,  DarkmistsTheme.accentTag, "Ancient sigils flare to life beneath your feet."},
@@ -592,6 +597,7 @@ function Darkmists.RegisterEvents()
       end
 
       tempTimer(t*8, function()
+        send("yell I am a T-t-troll!")
         RickRollASCII()
       end)
 
