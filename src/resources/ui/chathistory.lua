@@ -171,15 +171,15 @@ local MESSAGE_FORMATTERS = {
 
   ooc = {
     sent = function(m)
-      return mutedTag .. "[" .. textTag .. m.timestamp .. mutedTag .. "] " .. cyanTag .. "[OOC] to " .. blueTag .. (m.receiver or "?") .. ": " .. m.message .. "\n"
+      return mutedTag .. "[" .. textTag .. m.timestamp .. mutedTag .. "] " .. cyanTag .. "[OOC] " .. mutedTag .. "to " .. blueTag .. (m.receiver or "?") .. mutedTag .. ": " .. textTag .. m.message .. "\n"
     end,
     received = function(m)
-      return mutedTag .. "[" .. textTag .. m.timestamp .. mutedTag .. "] " .. cyanTag .. "[OOC] " .. blueTag .. m.sender .. ": " .. m.message .. "\n"
+      return mutedTag .. "[" .. textTag .. m.timestamp .. mutedTag .. "] " .. cyanTag .. "[OOC] " .. blueTag .. m.sender .. mutedTag .. ": " .. textTag .. m.message .. "\n"
     end,
   },
 
   house = function(m)
-    return mutedTag .. "[" .. textTag .. m.timestamp .. mutedTag .. "] " .. mutedTag .. "[" .. silverTag .. (m.receiver or "") .. mutedTag .. "] " .. blueTag .. m.sender .. textTag .. ": " .. m.message .. "\n"
+    return mutedTag .. "[" .. textTag .. m.timestamp .. mutedTag .. "] " .. mutedTag .. "[" .. silverTag .. (m.receiver or "") .. mutedTag .. "] " .. blueTag .. m.sender .. mutedTag .. ": " .. textTag .. m.message .. "\n"
   end,
 }
 
