@@ -1167,6 +1167,18 @@ local function handleCommunicationLine(line)
     return true
   end
 
+  -- Player's own OOC message (sent by player)
+  receiver, message = line:match("^%[OOC%] to (.*)%: (.*)$")
+  if receiver then
+    dmapi.core.raiseEvent("dmapi.communication.oocsent", {
+      sender = "Me",
+      receiver = receiver,
+      message = message,
+      line = line
+    })
+    return true
+  end
+
   -- OOC (OUT OF CHARACTER): Non-roleplay meta-communication
   -- Used for discussing game mechanics, rules, strategy outside of roleplay
   sender, message = line:match("^%[OOC%] (.*)%: (.*)$")
@@ -1174,18 +1186,6 @@ local function handleCommunicationLine(line)
     dmapi.core.raiseEvent("dmapi.communication.oocreceived", {
       sender = sender,
       receiver = "Me",
-      message = message,
-      line = line
-    })
-    return true
-  end
-
-  -- Player's own OOC message (sent by player)
-  receiver, message = line:match("^%[OOC%] to (.*)%: (.*)$")
-  if receiver then
-    dmapi.core.raiseEvent("dmapi.communication.oocsent", {
-      sender = "Me",
-      receiver = receiver,
       message = message,
       line = line
     })
