@@ -217,7 +217,7 @@
         Available topics: <code>es</code> &nbsp;·&nbsp; <code>walk</code> &nbsp;·&nbsp;
         <code>skillups</code> &nbsp;·&nbsp; <code>sb</code> &nbsp;·&nbsp;
         <code>ch</code> &nbsp;·&nbsp; <code>who</code> &nbsp;·&nbsp;
-        <code>affects</code> &nbsp;·&nbsp; <code>dmid</code> &nbsp;·&nbsp;
+        <code>affects</code> &nbsp;·&nbsp; <code>infobox</code> &nbsp;·&nbsp; <code>dmid</code> &nbsp;·&nbsp;
         <code>map</code> &nbsp;·&nbsp; <code>statroll</code>
       </div>
 
@@ -227,6 +227,7 @@
           <tr><td><code>dmc</code></td><td>Show the main DMC help index</td></tr>
           <tr><td><code>dmc help &lt;topic&gt;</code></td><td>Show in-depth help for a module</td></tr>
           <tr><td><code>dmc ui</code></td><td>Toggle between full and minimal UI mode</td></tr>
+          <tr><td><code>dmc infobox</code></td><td>Show, set, or clear the profile info box</td></tr>
           <tr><td><code>dmc ui on</code></td><td>Force full UI mode on</td></tr>
           <tr><td><code>dmc ui off</code></td><td>Switch to minimal UI mode</td></tr>
         </tbody>
@@ -322,6 +323,19 @@
           <tr><td><code>sb recreate</code></td><td>Recreate the bars (useful after layout changes)</td></tr>
         </tbody>
       </table>
+
+      <h2 id="ui-infobox">Profile Info Box</h2>
+      <p>
+        The Mudlet profile info box is a small text area on the profile screen that you can use
+        for custom notes. DMC exposes it through <code>dmc infobox</code>, so you can set or clear
+        the text without leaving the game.
+      </p>
+
+      <ul>
+        <li><code>dmc infobox &lt;text&gt;</code> sets the profile info text</li>
+        <li><code>dmc infobox clear</code> clears the profile info box</li>
+        <li>If you only run <code>dmc infobox</code>, DMC shows the usage summary</li>
+      </ul>
 
       <!-- Chat History -->
       <h2 id="ui-chathistory">Chat History</h2>
@@ -807,6 +821,7 @@
           <tr><td><code>dmc</code></td><td>Show the main DMC help index</td><td>Core</td></tr>
           <tr><td><code>dmc help &lt;topic&gt;</code></td><td>In-depth help for a module</td><td>Core</td></tr>
           <tr><td><code>dmc ui [on|off]</code></td><td>Toggle or set full / minimal UI mode</td><td>Core</td></tr>
+          <tr><td><code>dmc infobox [text|clear]</code></td><td>Set or clear the Mudlet profile info box</td><td>Core</td></tr>
           <!-- Status Bars -->
           <tr><td><code>sb</code></td><td>Status bar help</td><td>Status Bars</td></tr>
           <tr><td><code>sb show</code> / <code>sb hide</code></td><td>Show or hide the gauge bars</td><td>Status Bars</td></tr>
