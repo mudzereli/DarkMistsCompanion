@@ -6,6 +6,12 @@
               "isFolder": "no"
        },
        {
+              "name": "DMWhoWindow",
+              "isActive": "yes",
+              "script": "",
+              "isFolder": "no"
+       },
+       {
               "name": "DMAffectsWindow",
               "isActive": "yes",
               "script": "",

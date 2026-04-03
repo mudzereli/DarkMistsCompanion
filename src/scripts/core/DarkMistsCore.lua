@@ -692,7 +692,7 @@ function Darkmists.LoadUIScripts()
 
   DMTabFrame.init()
   StatusBar.init()
-  dofile(getMudletHomeDir() .. "/DarkMistsCompanion/ui/whowindow.lua")
+  WhoWindow.init()
   dofile(getMudletHomeDir() .. "/DarkMistsCompanion/ui/chathistory.lua")
   AffectsWindow.init()
   dofile(getMudletHomeDir() .. "/DarkMistsCompanion/ui/scorepanel.lua")
