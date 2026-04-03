@@ -1200,5 +1200,7 @@ end
 -- INITIALIZATION ON LOAD
 -- ============================================================================
 
-registerCustomEnvs()
-initConnectorSets()
+function MapColors.init()
+  registerCustomEnvs()
+  initConnectorSets()
+end
