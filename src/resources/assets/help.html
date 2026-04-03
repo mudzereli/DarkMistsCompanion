@@ -868,6 +868,11 @@
         <strong>Important:</strong> If anything looks wrong, use <strong>Settings &gt; Reload UI</strong> first before trying other troubleshooting steps. This reloads the entire interface, clears most fragmented UI panels and stale post-update state, and is usually the fastest fix. DMC modules are designed for safe reloads, so aliases and event handlers are re-registered cleanly without duplicate bindings.
       </div>
 
+      <h2>Plugin update issues</h2>
+      <ul>
+        <li>Spamming Enter while logging in can cancel an update download. Fix: quit the game and reconnect (disconnect/reconnect will not re-trigger GMCP). After reconnect, check that the load message appeared and the UI looks normal.</li>
+      </ul>
+
       <h2>A panel is blank or not updating</h2>
       <ul>
         <li>Confirm your UI mode is set to <code>"full"</code>: type <code>dmc ui on</code>.</li>
