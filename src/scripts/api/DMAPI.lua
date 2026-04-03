@@ -868,10 +868,14 @@ local HOUSE_CHANNELS = {
   JUSTICAR = true,
   DEPRAVED = true,
   ANCIENT = true,
+  SCHOLAR = true,
+  VALOR = true,
+  LEGION = true,
   GAR = true,
   GML = true,
   SG = true,
   DRE = true,
+  KEY = true,
   HIVEMIND = true
 }
 
@@ -1059,6 +1063,28 @@ local function handleCommunicationLine(line)
     return true
   end
 
+  -- MENTAL PROJECTION GROUP: Telepathic message sent to party/group
+  sender, message = line:match("^(.*) mentally projects to the group '(.*)'$")
+  if sender then
+    dmapi.core.raiseEvent("dmapi.communication.mpgtellreceived", {
+      sender = sender,
+      message = message,
+      line = line
+    })
+    return true
+  end
+
+  -- Player's own mental projection group message (sent by player)
+  message = line:match("^You mentally project to the group '(.*)'$")
+  if message then
+    dmapi.core.raiseEvent("dmapi.communication.mpgtellsent", {
+      sender = "Player",
+      message = message,
+      line = line
+    })
+    return true
+  end
+
   -- Player's own mental projection tell (sent by player)
   receiver, message = line:match("^You mentally project to (.*), '(.*)'$")
   if receiver then
@@ -1141,6 +1167,18 @@ local function handleCommunicationLine(line)
     return true
   end
 
+  -- Player's own OOC message (sent by player)
+  receiver, message = line:match("^%[OOC%] to (.*)%: (.*)$")
+  if receiver then
+    dmapi.core.raiseEvent("dmapi.communication.oocsent", {
+      sender = "Me",
+      receiver = receiver,
+      message = message,
+      line = line
+    })
+    return true
+  end
+
   -- OOC (OUT OF CHARACTER): Non-roleplay meta-communication
   -- Used for discussing game mechanics, rules, strategy outside of roleplay
   sender, message = line:match("^%[OOC%] (.*)%: (.*)$")
@@ -1148,18 +1186,6 @@ local function handleCommunicationLine(line)
     dmapi.core.raiseEvent("dmapi.communication.oocreceived", {
       sender = sender,
       receiver = "Me",
-      message = message,
-      line = line
-    })
-    return true
-  end
-
-  -- Player's own OOC message (sent by player)
-  receiver, message = line:match("^%[OOC%] to (.*)%: (.*)$")
-  if receiver then
-    dmapi.core.raiseEvent("dmapi.communication.oocsent", {
-      sender = "Me",
-      receiver = receiver,
       message = message,
       line = line
     })

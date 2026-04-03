@@ -37,6 +37,15 @@ function DarkmistsEvents.add(key, eventName, func, oneshot)
   DarkmistsEvents.registry[key] = registerAnonymousEventHandler(eventName, func, oneshot)
 end
 
+function DarkmistsEvents.remove(key)
+  if DarkmistsEvents.registry[key] then
+    killAnonymousEventHandler(DarkmistsEvents.registry[key])
+    DarkmistsEvents.registry[key] = nil
+    return true
+  end
+  return false
+end
+
 function DarkmistsEvents.clearAll()
   for _, id in pairs(DarkmistsEvents.registry) do
     if debug then

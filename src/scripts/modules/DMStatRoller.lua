@@ -82,7 +82,10 @@ local function reset_stat_block(block)
   block.str, block.int, block.wis, block.dex, block.con, block.total = 0, 0, 0, 0, 0, 0
 end
 
+local KEEPALIVE_STOP_KEY = "StatRoller.KeepaliveStop"
+
 local function clear_keepalive_timer()
+  DarkmistsEvents.remove(KEEPALIVE_STOP_KEY)
   if StatRoller._keepalive_timer then
     killTimer(StatRoller._keepalive_timer)
     StatRoller._keepalive_timer = nil
@@ -363,6 +366,11 @@ function StatRoller._start_keepalive()
     end,
     true
   )
+
+  -- Stop automatically on the first prompt after leaving the stat roller screen
+  DarkmistsEvents.add(KEEPALIVE_STOP_KEY, "dmapi.world.prompt", function()
+    StatRoller._stop_keepalive()
+  end, true)  -- one-shot
 
   notify(infoTag .. "Keepalive enabled")
 end

@@ -152,6 +152,15 @@ local MESSAGE_FORMATTERS = {
     end,
   },
 
+  mpgtell = {
+    sent = function(m)
+      return mutedTag .. "[" .. textTag .. m.timestamp .. mutedTag .. "] " .. textTag .. "You mentally project to the group '" .. purpleTag .. m.message .. textTag .. "'\n"
+    end,
+    received = function(m)
+      return mutedTag .. "[" .. textTag .. m.timestamp .. mutedTag .. "] " .. blueTag .. m.sender .. " " .. textTag .. "mentally projects to the group '" .. purpleTag .. m.message .. textTag .. "'\n"
+    end,
+  },
+
   newbie = function(m)
     return mutedTag .. "[" .. textTag .. m.timestamp .. mutedTag .. "] " .. mutedTag .. "[" .. greenTag .. "NEWBIE" .. mutedTag .. "] " .. blueTag .. m.sender .. mutedTag .. ": " .. textTag .. m.message .. "\n"
   end,
@@ -162,15 +171,15 @@ local MESSAGE_FORMATTERS = {
 
   ooc = {
     sent = function(m)
-      return mutedTag .. "[" .. textTag .. m.timestamp .. mutedTag .. "] " .. cyanTag .. "[OOC] to " .. textTag .. (m.receiver or "?") .. ": " .. m.message .. "\n"
+      return mutedTag .. "[" .. textTag .. m.timestamp .. mutedTag .. "] " .. cyanTag .. "[OOC] " .. mutedTag .. "to " .. blueTag .. (m.receiver or "?") .. mutedTag .. ": " .. textTag .. m.message .. "\n"
     end,
     received = function(m)
-      return mutedTag .. "[" .. textTag .. m.timestamp .. mutedTag .. "] " .. cyanTag .. "[OOC] " .. textTag .. m.sender .. ": " .. m.message .. "\n"
+      return mutedTag .. "[" .. textTag .. m.timestamp .. mutedTag .. "] " .. cyanTag .. "[OOC] " .. blueTag .. m.sender .. mutedTag .. ": " .. textTag .. m.message .. "\n"
     end,
   },
 
   house = function(m)
-    return mutedTag .. "[" .. textTag .. m.timestamp .. mutedTag .. "] " .. mutedTag .. "[" .. silverTag .. (m.receiver or "") .. mutedTag .. "] " .. blueTag .. m.sender .. textTag .. ": " .. m.message .. "\n"
+    return mutedTag .. "[" .. textTag .. m.timestamp .. mutedTag .. "] " .. mutedTag .. "[" .. silverTag .. (m.receiver or "") .. mutedTag .. "] " .. blueTag .. m.sender .. mutedTag .. ": " .. textTag .. m.message .. "\n"
   end,
 }
 
@@ -245,13 +254,15 @@ function ChatHistory.registerEvents()
   bind("ChatHistorySaySent",      "dmapi.communication.saysent",      "say",  "You")
   bind("ChatHistoryMPSayReceived",  "dmapi.communication.mpsayreceived",  "mpsay")
   bind("ChatHistoryMPSaySent",      "dmapi.communication.mpsaysent",      "mpsay",  "You")
-  bind("ChatHistoryMPTellReceived", "dmapi.communication.mptellreceived", "mptell")
-  bind("ChatHistoryMPTellSent",     "dmapi.communication.mptellsent",     "mptell",  "You")
-  bind("ChatHistoryYellReceived", "dmapi.communication.yellreceived", "yell")
-  bind("ChatHistoryYellSent",     "dmapi.communication.yellsent",     "yell", "You")
-  bind("ChatHistoryGTellReceived","dmapi.communication.gtellreceived","gtell")
-  bind("ChatHistoryGTellSent",    "dmapi.communication.gtellsent",    "gtell","You")
-  bind("ChatHistoryOOCReceived",  "dmapi.communication.oocreceived",  "ooc")
+  bind("ChatHistoryMPTellReceived",  "dmapi.communication.mptellreceived",  "mptell")
+  bind("ChatHistoryMPTellSent",      "dmapi.communication.mptellsent",      "mptell",  "You")
+  bind("ChatHistoryMPGTellReceived", "dmapi.communication.mpgtellreceived", "mpgtell")
+  bind("ChatHistoryMPGTellSent",     "dmapi.communication.mpgtellsent",     "mpgtell", "You")
+  bind("ChatHistoryYellReceived",    "dmapi.communication.yellreceived",    "yell")
+  bind("ChatHistoryYellSent",        "dmapi.communication.yellsent",        "yell",    "You")
+  bind("ChatHistoryGTellReceived",   "dmapi.communication.gtellreceived",   "gtell")
+  bind("ChatHistoryGTellSent",       "dmapi.communication.gtellsent",       "gtell",   "You")
+  bind("ChatHistoryOOCReceived",     "dmapi.communication.oocreceived",     "ooc")
   bind("ChatHistoryOOCSent",      "dmapi.communication.oocsent",      "ooc",  "You")
   bind("ChatHistoryNewbieChannel",  "dmapi.communication.newbiechannel",  "newbie")
   bind("ChatHistoryNewbieDiscord",  "dmapi.communication.newbiechanneldiscord",  "newbiediscord")

@@ -564,10 +564,7 @@ function AffectsWindow.destroy()
     DarkmistsTrigger.registry[keys.triggerLine] = nil
   end
 
-  if DarkmistsEvents.registry[keys.eventPrompt] then
-    killAnonymousEventHandler(DarkmistsEvents.registry[keys.eventPrompt])
-    DarkmistsEvents.registry[keys.eventPrompt] = nil
-  end
+  DarkmistsEvents.remove(keys.eventPrompt)
 
   AffectsWindow.capturing = false
   AffectsWindow.initialized = false
