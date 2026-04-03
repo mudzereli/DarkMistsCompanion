@@ -32,6 +32,7 @@ function DarkMistsMiniMap.create()
     padding = 10,
     adjLabelstyle = Darkmists.getDefaultAdjLabelstyle(),
     lockStyle = "border",
+    attached = dock.side,
     locked = false,
     autoSave = true,
     autoLoad = true,
