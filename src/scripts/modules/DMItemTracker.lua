@@ -49,6 +49,7 @@ ItemTracker = {
   items = {},
   by_name = {},
   by_area = {},
+  by_vnum = {},
   sorted_names = {},
 
   -- User configuration (safe to modify)
@@ -323,9 +324,9 @@ function ItemTracker.load(path)
     return false
   end
 
-  ItemTracker.items, ItemTracker.by_name, ItemTracker.by_area, ItemTracker.sorted_names,
+  ItemTracker.items, ItemTracker.by_name, ItemTracker.by_area, ItemTracker.by_vnum, ItemTracker.sorted_names,
     ItemTracker._handlerCache =
-    {}, {}, {}, {}, {}
+    {}, {}, {}, {}, {}, {}
 
   local dropped = 0
 
@@ -336,6 +337,10 @@ function ItemTracker.load(path)
       local key = item.name:lower()
 
       ItemTracker.items[#ItemTracker.items+1] = item
+
+      if item.vnum then
+        ItemTracker.by_vnum[item.vnum] = item
+      end
 
       local nameList = ItemTracker.by_name[key]
       if not nameList then
@@ -370,6 +375,91 @@ function ItemTracker.load(path)
   )
 
   return true
+end
+
+-- Append items from a decoded JSON table (skips exact duplicates)
+function ItemTracker.appendItems(data)
+  if type(data) ~= "table" then return 0 end
+  local added = 0
+  for _, item in ipairs(data) do
+    if is_valid_item_name(item.name) then
+      item.name = trim(item.name)
+      item.details = decode_html_entities(item.details)
+      local key = item.name:lower()
+
+      -- Prefer vnum-based deduplication if available
+      local duplicate = false
+      if item.vnum then
+        if ItemTracker.by_vnum[item.vnum] then
+          duplicate = true
+        end
+      else
+        local existing = ItemTracker.by_name[key]
+        if existing then
+          for _, e in ipairs(existing) do
+            if e.details == item.details then
+              duplicate = true
+              break
+            end
+          end
+        end
+      end
+
+      if not duplicate then
+        ItemTracker.items[#ItemTracker.items+1] = item
+
+        if item.vnum then
+          ItemTracker.by_vnum[item.vnum] = item
+        end
+
+        local nameList = ItemTracker.by_name[key]
+        if not nameList then
+          nameList = {}
+          ItemTracker.by_name[key] = nameList
+          ItemTracker.sorted_names[#ItemTracker.sorted_names+1] = key
+        end
+        nameList[#nameList+1] = item
+
+        local area = extract_area(item.details)
+        if area then
+          item.area = area
+          local akey = area:lower()
+          ItemTracker.by_area[akey] = ItemTracker.by_area[akey] or {}
+          ItemTracker.by_area[akey][#ItemTracker.by_area[akey]+1] = item
+        end
+
+        added = added + 1
+      end
+    end
+  end
+
+  table.sort(ItemTracker.sorted_names, function(a,b) return #a > #b end)
+  return added
+end
+
+-- Load one or more JSON files. If given a table, loads first file then appends the rest.
+function ItemTracker.loadFiles(paths)
+  if type(paths) == "string" then
+    return ItemTracker.load(paths)
+  elseif type(paths) == "table" and #paths > 0 then
+    if not ItemTracker.load(paths[1]) then return false end
+    local totalAdded = 0
+    for i = 2, #paths do
+      local f, err = io.open(paths[i], "r")
+      if not f then
+        Darkmists.Log(DarkmistsTheme.yellowTag .. "ItemTracker", DarkmistsTheme.warnTag .. "Could not open: " .. tostring(paths[i]) .. defaultTextColor)
+      else
+        local data = yajl.to_value(f:read("*a"))
+        f:close()
+        if type(data) == "table" then
+          totalAdded = totalAdded + ItemTracker.appendItems(data)
+        end
+      end
+    end
+    Darkmists.Log(DarkmistsTheme.yellowTag .. "ItemTracker", string.format("%sAppended %s%d%s custom items", defaultTextColor, DarkmistsTheme.goodTag, totalAdded, defaultTextColor))
+    return true
+  end
+  return false
 end
 
 -- ============================================================================
@@ -576,6 +666,9 @@ end
 
 function ItemTracker.init()
   apply_theme_colors(ItemTracker.settings)
-  ItemTracker.load(getMudletHomeDir() .. "/DarkMistsCompanion/assets/darkmists_items.json")
+  ItemTracker.loadFiles {
+    getMudletHomeDir() .. "/DarkMistsCompanion/assets/darkmists_items.json",
+    getMudletHomeDir() .. "/DarkMistsCompanion/assets/custom_items.json"
+  }
   ItemTracker.initTooltip()
 end
