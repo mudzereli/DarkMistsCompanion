@@ -8,14 +8,16 @@ ChatHistory = ChatHistory or {}
 -- Configuration
 -- -------------------------------------------------------------------
 
-ChatHistory.config = {
+ChatHistory.config = ChatHistory.config or {
   maxMessages = 100,
-  fontSize   = Darkmists.GlobalSettings.fontSize,
-  fontName   = Darkmists.GlobalSettings.fontName,
+  fontSize   = 10,
+  fontName   = "Consolas",
 }
 
-ChatHistory.messages = {}
-ChatHistory.window   = nil
+ChatHistory.messages = ChatHistory.messages or {}
+ChatHistory.window   = ChatHistory.window or nil
+ChatHistory.console  = ChatHistory.console or nil
+ChatHistory._initialized = ChatHistory._initialized or false
 
 -- ===================================================================
 -- WINDOW CREATION
@@ -52,15 +54,34 @@ end
 -- MESSAGE FORMATTING
 -- ===================================================================
 
-local textTag   = DarkmistsTheme.textTag
-local mutedTag  = DarkmistsTheme.mutedTag
-local yellowTag = DarkmistsTheme.yellowTag
-local blueTag   = DarkmistsTheme.blueTag
-local greenTag  = DarkmistsTheme.greenTag
-local skyTag    = DarkmistsTheme.skyTag
-local purpleTag = DarkmistsTheme.purpleTag
-local cyanTag   = DarkmistsTheme.cyanTag
-local silverTag = DarkmistsTheme.silverTag
+local textTag   = "<ansi_white>"
+local mutedTag  = "<dim_gray>"
+local yellowTag = "<yellow>"
+local blueTag   = "<dodger_blue>"
+local greenTag  = "<green>"
+local skyTag    = "<sky_blue>"
+local purpleTag = "<medium_purple>"
+local cyanTag   = "<cyan>"
+local silverTag = "<silver>"
+
+function ChatHistory.applyTheme()
+  local settings = (Darkmists and Darkmists.GlobalSettings) or {}
+  local theme = rawget(_G, "DarkmistsTheme") or {}
+
+  ChatHistory.config.fontSize = settings.fontSize or ChatHistory.config.fontSize or 10
+  ChatHistory.config.fontName = settings.fontName or ChatHistory.config.fontName or "Consolas"
+
+  textTag   = theme.textTag or textTag
+  mutedTag  = theme.mutedTag or mutedTag
+  yellowTag = theme.yellowTag or yellowTag
+  blueTag   = theme.blueTag or blueTag
+  greenTag  = theme.greenTag or greenTag
+  skyTag    = theme.skyTag or skyTag
+  purpleTag = theme.purpleTag or purpleTag
+  cyanTag   = theme.cyanTag or cyanTag
+  silverTag = theme.silverTag or silverTag
+end
+
 -- All message formatting lives here.
 -- Adding a new channel only requires adding one entry.
 local MESSAGE_FORMATTERS = {
@@ -289,6 +310,17 @@ end
 -- INIT
 -- ===================================================================
 
-ChatHistory.create()
-ChatHistory.registerEvents()
-ChatHistory.refresh()
+function ChatHistory.init()
+  ChatHistory.applyTheme()
+
+  if ChatHistory._initialized then
+    ChatHistory.refresh()
+    return
+  end
+
+  ChatHistory.create()
+  ChatHistory.registerEvents()
+  ChatHistory.refresh()
+
+  ChatHistory._initialized = true
+end
