@@ -24,6 +24,12 @@
               "isFolder": "no"
        },
        {
+              "name": "DMPlayerWindow",
+              "isActive": "yes",
+              "script": "",
+              "isFolder": "no"
+       },
+       {
               "name": "DMMinimap",
               "isActive": "yes",
               "script": "",

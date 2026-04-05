@@ -695,7 +695,7 @@ function Darkmists.LoadUIScripts()
   WhoWindow.init()
   ChatHistory.init()
   AffectsWindow.init()
-  dofile(getMudletHomeDir() .. "/DarkMistsCompanion/ui/scorepanel.lua")
+  ScorePanel.init()
   DarkMistsMiniMap.init()
   MapColors.init()
   
