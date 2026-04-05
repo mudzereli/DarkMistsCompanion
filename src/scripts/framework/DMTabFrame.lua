@@ -1,4 +1,4 @@
-DMTabFrame = DMTabFrame or {
+DMTabFrame = {
   container = nil,
   tabs = nil,
 }

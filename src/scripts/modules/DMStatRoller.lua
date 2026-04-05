@@ -1,16 +1,16 @@
 -- file: scripts/statroller_update.lua
 -- Engaging HUD with Trend scaled to recent min..max
 
-StatRoller = StatRoller or {}
-StatRoller.settings = StatRoller.settings or {}
-StatRoller.state = StatRoller.state or {}
-StatRoller.current_stats = StatRoller.current_stats or {}
-StatRoller.maximum_stats = StatRoller.maximum_stats or {}
-StatRoller.recent_totals = StatRoller.recent_totals or {}
-StatRoller.enabled = StatRoller.enabled ~= false
-StatRoller.best_total = tonumber(StatRoller.best_total) or 0
-StatRoller.best_stats = StatRoller.best_stats or nil
-StatRoller._spin = tonumber(StatRoller._spin) or 0
+StatRoller = {}
+StatRoller.settings = {}
+StatRoller.state = {}
+StatRoller.current_stats = {}
+StatRoller.maximum_stats = {}
+StatRoller.recent_totals = {}
+StatRoller.enabled = true
+StatRoller.best_total = 0
+StatRoller.best_stats = nil
+StatRoller._spin = 0
 
 -- ---------- utils ----------
 local function pad(n, w) return string.format("%" .. tostring(w) .. "d", n or 0) end

@@ -2,13 +2,13 @@
 -- Affects Window (Geyser.UserWindow)
 -- Snapshot-based affects tracker with expiration
 -- ============================================================================
-AffectsWindow = AffectsWindow or {}
+AffectsWindow = {}
 
 -- ---------------------------------------------------------------------------
 -- Configuration
 -- ---------------------------------------------------------------------------
 
-AffectsWindow.config = AffectsWindow.config or {
+AffectsWindow.config = {
   fontSize       = 10,
   fontName       = "Bitstream Vera Sans Mono",
   updateInterval = 1,
@@ -41,7 +41,6 @@ AffectsWindow.capturing      = false
 AffectsWindow.lastUpdateTime = nil
 AffectsWindow.ageTimer       = nil
 AffectsWindow.hasFullFormat  = false
-AffectsWindow.initialized    = false
 
 AffectsWindow.affectsList    = {}   -- Canonical affect records (active + expired)
 AffectsWindow.currentKeys    = {}   -- Snapshot keys for current capture
@@ -525,16 +524,11 @@ local function registerHandlers()
     stopCaptureIfActive
   )
 
-  AffectsWindow.initialized = true
 end
 
 function AffectsWindow.init()
   AffectsWindow.refreshConfig()
   AffectsWindow.create()
-  if AffectsWindow.initialized then
-    return
-  end
-
   registerHandlers()
 
   Darkmists.Log("AffectsWindow", "Triggers registered")
@@ -567,6 +561,5 @@ function AffectsWindow.destroy()
   DarkmistsEvents.remove(keys.eventPrompt)
 
   AffectsWindow.capturing = false
-  AffectsWindow.initialized = false
   Darkmists.Log("AffectsWindow", "Destroyed")
 end

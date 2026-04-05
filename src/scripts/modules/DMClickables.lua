@@ -1,5 +1,5 @@
-DMClickables = DMClickables or {}
-DMClickables.settings = DMClickables.settings or {
+DMClickables = {}
+DMClickables.settings = {
     lastSkillCommand = ""
 }
 
@@ -125,7 +125,7 @@ function DMClickables.ClickablePractices()
     end
 end
 
-DMClickables.auctions = DMClickables.auctions or {
+DMClickables.auctions = {
   active = false,
   linesLeft = 0,
 }
@@ -272,7 +272,7 @@ function DMClickables.ClickableAuctions()
   cecho("\n")
 end
 
-DMClickables.essence = DMClickables.essence or {
+DMClickables.essence = {
   active = false,
   cap = 225
 }
@@ -341,8 +341,6 @@ function DMClickables.ClickableEssences()
 end
 
 function DMClickables.init()
-  if DMClickables._initialized then return end
-
   DarkmistsEvents.add("DMClickables.AuctionPromptReset", "dmapi.world.prompt", function()
     DMClickables.auctions.active = false
     DMClickables.auctions.linesLeft = 0
@@ -359,6 +357,4 @@ function DMClickables.init()
   DarkmistsEvents.add("DMClickables.Essences", "dmapi.core.line", function()
     DMClickables.ClickableEssences()
   end)
-
-  DMClickables._initialized = true
 end

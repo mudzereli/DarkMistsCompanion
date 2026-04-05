@@ -2,22 +2,22 @@
 -- Chat History Window (Geyser.UserWindow)
 -- ===================================================================
 
-ChatHistory = ChatHistory or {}
+ChatHistory = {}
 
 -- -------------------------------------------------------------------
 -- Configuration
 -- -------------------------------------------------------------------
 
-ChatHistory.config = ChatHistory.config or {
+ChatHistory.config = {
   maxMessages = 100,
   fontSize   = 10,
   fontName   = "Consolas",
 }
 
-ChatHistory.messages = ChatHistory.messages or {}
-ChatHistory.window   = ChatHistory.window or nil
-ChatHistory.console  = ChatHistory.console or nil
-ChatHistory._initialized = ChatHistory._initialized or false
+-- Runtime state is rebuilt on every load so we never reuse stale Geyser refs.
+ChatHistory.messages = {}
+ChatHistory.window   = nil
+ChatHistory.console  = nil
 
 -- ===================================================================
 -- WINDOW CREATION
@@ -312,15 +312,7 @@ end
 
 function ChatHistory.init()
   ChatHistory.applyTheme()
-
-  if ChatHistory._initialized then
-    ChatHistory.refresh()
-    return
-  end
-
   ChatHistory.create()
   ChatHistory.registerEvents()
   ChatHistory.refresh()
-
-  ChatHistory._initialized = true
 end

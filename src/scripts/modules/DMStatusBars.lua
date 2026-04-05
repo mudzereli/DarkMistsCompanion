@@ -7,14 +7,14 @@
 -- - Auto-shows on login, hides on disconnect
 -- - Persistent border height across reconnects
 -- ===================================================================
-StatusBar = StatusBar or {}
+StatusBar = {}
 
 -- ===================================================================
 -- CONFIGURATION
 -- ===================================================================
 -- Config is populated in StatusBar.init() so GlobalSettings is guaranteed
 -- to be loaded. A stub is kept here so pre-init guards (isEnabled) are safe.
-StatusBar.config = StatusBar.config or {}
+StatusBar.config = {}
 StatusBar._layoutLock = false
 
 -- ===================================================================

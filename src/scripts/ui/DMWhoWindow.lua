@@ -6,7 +6,7 @@
 -- collected, and renders a small scrollable UI showing the
 -- player list along with an "age" (seconds since last update).
 -- ===================================================================
-WhoWindow = WhoWindow or {}
+WhoWindow = {}
 
 --[[
   WhoWindow responsibilities:
@@ -17,10 +17,10 @@ WhoWindow = WhoWindow or {}
 ]]
 
 -- Configuration
-WhoWindow.config = WhoWindow.config or {}
+WhoWindow.config = {}
 
 -- State
-WhoWindow.lines = WhoWindow.lines or {}   -- array of formatted player lines
+WhoWindow.lines = {}                      -- array of formatted player lines
 WhoWindow.window = nil                    -- container tab panel
 WhoWindow.console = nil                   -- Geyser.MiniConsole instance
 WhoWindow.playerCount = 0                 -- last captured player count

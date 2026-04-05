@@ -22,7 +22,7 @@ local mapDatPath       = getMudletHomeDir() .. "/DarkMistsCompanion/assets/map.d
 local eaConverterPath  = getMudletHomeDir() .. "/DarkMistsCompanion/assets/ea-save-converter.html"
 local eaFormulaParser  = getMudletHomeDir() .. "/DarkMistsCompanion/assets/alchemy-formula-parser.html"
 
-Darkmists = Darkmists or {}
+Darkmists = {}
 Darkmists.NAME = "DarkMistsCompanion"
 Darkmists.VERSION = "@VERSION@"
 Darkmists.GITHUB_URL_STABLE = "https://github.com/mudzereli/DarkMistsCompanion/releases/latest/download/DarkMistsCompanion.mpackage"
@@ -84,7 +84,7 @@ Darkmists.DefaultSettings = {
   layoutCacheVersion = Darkmists.LAYOUT_CACHE_VERSION,
 }
 
-Darkmists.GlobalSettings = Darkmists.GlobalSettings or {}
+Darkmists.GlobalSettings = {}
 
 -- =============================================================================
 -- LOCAL HELPER FUNCTIONS

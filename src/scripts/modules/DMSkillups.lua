@@ -84,10 +84,6 @@ end
 
 
 function SkillUps.RegisterHandlers()
-  if SkillUps._handlersRegistered then
-    return
-  end
-  
 -- ===================================================================
 -- EVENT HANDLER (managed by EventManager)
 -- ===================================================================
@@ -128,8 +124,6 @@ SkillUps Module:
   DarkmistsAlias.add([[^skillups? reset$]], function()
     SkillUps.reset()
   end)
-
-  SkillUps._handlersRegistered = true
 end
 
 -- ===================================================================
@@ -137,11 +131,6 @@ end
 -- ===================================================================
 
 function SkillUps.init()
-  if SkillUps._initialized then
-    return
-  end
-
   SkillUps.RegisterHandlers()
   DMLogger.log("SkillUps",string.format("%sTracker initialized. Type '%sskillups%s' to view history.", DarkmistsTheme.goodTag, DarkmistsTheme.textTag, DarkmistsTheme.goodTag))
-  SkillUps._initialized = true
 end

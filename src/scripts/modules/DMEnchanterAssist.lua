@@ -1,7 +1,7 @@
 -- ============================================================================
 -- Dark Mists Enchanter Assistant (DMAPI Integrated + Persistent)
 -- ============================================================================
-EnchanterAssist = EnchanterAssist or {}
+EnchanterAssist = {}
 
 -- ============================================================================
 -- CONFIG / STATE
@@ -34,9 +34,8 @@ EnchanterAssist._lastVitalsCheck = 0
 EnchanterAssist._comboIndices = nil
 EnchanterAssist._wakePending = false
 EnchanterAssist._wrapped     = false
-EnchanterAssist._initialized = EnchanterAssist._initialized or false
 EnchanterAssist._savePath    = getMudletHomeDir() .. "/ea_data.lua"
-EnchanterAssist.color = EnchanterAssist.color or "<cyan>"
+EnchanterAssist.color = "<cyan>"
 
 local ea_plugin = "EnchanterAssist"
 local ea_text = "<white>"
@@ -874,10 +873,6 @@ end
 function EnchanterAssist.init()
   EnchanterAssist.applyTheme()
 
-  if EnchanterAssist._initialized then
-    return
-  end
-
   -- Use DarkmistsEvents so handlers are deduped/managed across reloads
   DarkmistsEvents.add("EnchanterAssist.NewLine", "dmapi.core.line", function(_, data)
     EnchanterAssist.on_line(data.line)
@@ -980,6 +975,4 @@ function EnchanterAssist.init()
   if Darkmists and Darkmists.Log then
     Darkmists.Log(ea_plugin, "Ready for Usage!")
   end
-
-  EnchanterAssist._initialized = true
 end

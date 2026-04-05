@@ -20,7 +20,7 @@
 -- META REGISTRY
 -- =============================================================================
 
-DarkMistsMeta = DarkMistsMeta or {}
+DarkMistsMeta = {}
 
 DarkMistsMeta.meta = {
   name    = "DarkMistsCompanion",
@@ -202,11 +202,6 @@ local function dm_link(label, command)
 end
 
 function DarkMistsMeta.init()
-  if DarkMistsMeta._initialized then
-    return
-  end
-  DarkMistsMeta._initialized = true
-
   -- Resolve package identity at init time so module load order is safe.
   DarkMistsMeta.meta.name = (Darkmists and Darkmists.NAME) or DarkMistsMeta.meta.name
   DarkMistsMeta.meta.version = (Darkmists and Darkmists.VERSION) or DarkMistsMeta.meta.version

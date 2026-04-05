@@ -9,8 +9,8 @@ local StatusIcons = {
   }
 }
 
-ScorePanel = ScorePanel or {}
-ScorePanel.config = ScorePanel.config or {
+ScorePanel = {}
+ScorePanel.config = {
   fontSize = 10,
   fontName = "Consolas",
 }
@@ -81,7 +81,6 @@ end
 -- DMTabs containers. ScorePanel holds no persistent data, so this is safe.
 ScorePanel.window  = nil
 ScorePanel.console = nil
-ScorePanel._initialized = false
 
 ScorePanel.create = function()
   if ScorePanel.window then return end
@@ -215,15 +214,7 @@ end
 
 function ScorePanel.init()
   ScorePanel.applyTheme()
-
-  if ScorePanel._initialized then
-    ScorePanel.refresh()
-    return
-  end
-
   ScorePanel.create()
   ScorePanel.registerEvents()
   ScorePanel.refresh()
-
-  ScorePanel._initialized = true
 end

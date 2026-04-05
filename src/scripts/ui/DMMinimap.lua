@@ -1,5 +1,5 @@
-DarkMistsMiniMap = DarkMistsMiniMap or {}
-DarkMistsMiniMap.dock = DarkMistsMiniMap.dock or nil
+DarkMistsMiniMap = {}
+DarkMistsMiniMap.dock = nil
 
 function DarkMistsMiniMap.configure()
   if Darkmists and Darkmists.getSmartDockGeometry then

@@ -2,7 +2,8 @@
 -- ThemeManager.lua
 -- =============================================================================
 ---@type DarkmistsTheme
-DarkmistsTheme = DarkmistsTheme or {}
+---@diagnostic disable-next-line: missing-fields
+DarkmistsTheme = {}
 
 -- Session guard to avoid repeating background contrast warnings
 local _bgWarnShown = false
