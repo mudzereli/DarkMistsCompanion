@@ -34,34 +34,95 @@ EnchanterAssist._lastVitalsCheck = 0
 EnchanterAssist._comboIndices = nil
 EnchanterAssist._wakePending = false
 EnchanterAssist._wrapped     = false
+EnchanterAssist._initialized = EnchanterAssist._initialized or false
 EnchanterAssist._savePath    = getMudletHomeDir() .. "/ea_data.lua"
-EnchanterAssist.color = DarkmistsTheme.accentTag
+EnchanterAssist.color = EnchanterAssist.color or "<cyan>"
 
-local ea_plugin = EnchanterAssist.color .. "EnchanterAssist"
-local ea_text = DarkmistsTheme.textTag
-local ea_muted = DarkmistsTheme.mutedTag
-local ea_good = DarkmistsTheme.goodTag
-local ea_warn = DarkmistsTheme.warnTag
-local ea_bad = DarkmistsTheme.badTag
-local ea_info = DarkmistsTheme.infoTag
-local ea_accent = DarkmistsTheme.accentTag
-local ea_gold = DarkmistsTheme.goldTag
+local ea_plugin = "EnchanterAssist"
+local ea_text = "<white>"
+local ea_muted = "<dim_gray>"
+local ea_good = "<green>"
+local ea_warn = "<yellow>"
+local ea_bad = "<red>"
+local ea_info = "<cyan>"
+local ea_accent = "<cyan>"
+local ea_gold = "<gold>"
 
-local ea_red = DarkmistsTheme.red
-local ea_orange = DarkmistsTheme.orange
-local ea_green = DarkmistsTheme.green
-local ea_blue = DarkmistsTheme.blue
-local ea_cyan = DarkmistsTheme.cyan
-local ea_light_blue = DarkmistsTheme.blue
-local ea_dark_blue = DarkmistsTheme.blue
-local ea_purple = DarkmistsTheme.purple
-local ea_pink = DarkmistsTheme.pink
-local ea_brown = DarkmistsTheme.brown
-local ea_olive = DarkmistsTheme.olive
-local ea_silver = DarkmistsTheme.silver
-local ea_warn_color = DarkmistsTheme.warn
-local ea_gold_color = DarkmistsTheme.gold
-local ea_muted_color = DarkmistsTheme.muted
+local ea_red = "red"
+local ea_orange = "orange"
+local ea_green = "green"
+local ea_blue = "blue"
+local ea_cyan = "cyan"
+local ea_light_blue = "blue"
+local ea_dark_blue = "blue"
+local ea_purple = "purple"
+local ea_pink = "pink"
+local ea_brown = "sienna"
+local ea_olive = "olive"
+local ea_silver = "silver"
+local ea_warn_color = "yellow"
+local ea_gold_color = "gold"
+local ea_muted_color = "gray"
+
+local highlightMap = {}
+
+function EnchanterAssist.applyTheme()
+  local theme = rawget(_G, "DarkmistsTheme") or {}
+
+  EnchanterAssist.color = theme.accentTag or EnchanterAssist.color or "<cyan>"
+
+  ea_plugin = EnchanterAssist.color .. "EnchanterAssist"
+  ea_text = theme.textTag or "<white>"
+  ea_muted = theme.mutedTag or "<dim_gray>"
+  ea_good = theme.goodTag or "<green>"
+  ea_warn = theme.warnTag or "<yellow>"
+  ea_bad = theme.badTag or "<red>"
+  ea_info = theme.infoTag or "<cyan>"
+  ea_accent = theme.accentTag or "<cyan>"
+  ea_gold = theme.goldTag or "<gold>"
+
+  ea_red = theme.red or "red"
+  ea_orange = theme.orange or "orange"
+  ea_green = theme.green or "green"
+  ea_blue = theme.blue or "blue"
+  ea_cyan = theme.cyan or "cyan"
+  ea_light_blue = theme.blue or "blue"
+  ea_dark_blue = theme.blue or "blue"
+  ea_purple = theme.purple or "purple"
+  ea_pink = theme.pink or "pink"
+  ea_brown = theme.brown or "sienna"
+  ea_olive = theme.olive or "olive"
+  ea_silver = theme.silver or "silver"
+  ea_warn_color = theme.warn or "yellow"
+  ea_gold_color = theme.gold or "gold"
+  ea_muted_color = theme.muted or "gray"
+
+  highlightMap = {
+    ["^(.*) is momentarily encased in an aura of semitranslucent power%."] = {ea_cyan, "(SAVES)"},
+    ["^(.*) glows a brief light blue%."] = {ea_light_blue, "(ATTRIBUTES)"},
+    ["^(.*) flares orange%."] = {ea_orange, "(RESOURCES)"},
+    ["^(.*) is more sturdy%."] = {ea_purple, "(-AC)"},
+    ["^(.*) glows a brief dark blue%."] = {ea_dark_blue, "(OFFENSIVE)"},
+    ["^(.*) vibrates for a moment%."] = {ea_blue, "(SLOW or HASTE)"},
+    ["^(.*) flares bright green, and you feel a sense of calm%."] = {ea_green, "(RESOURCE REGENERATION)"},
+    ["^(.*) seems a lot less metallic%."] = {ea_brown, "(NONMETAL)"},
+    ["^(.*) begins to glow brightly%."] = {ea_pink, "(GLOWING)"},
+    ["^(.*) begins to hum%."] = {ea_red, "(HUMMING)"},
+    ["^(.*) emits a shimmering wave through the air%."] = {ea_cyan, "(ADDED AFFECT)"},
+    ["^(.*) glows a sickly green%."] = {ea_olive, "(CURSE)"},
+    ["^(.*) seems heavier%."] = {ea_muted_color, "(DOUBLE WEIGHT)"},
+    ["^(.*) is less sturdy%."] = {ea_warn_color, "(+AC)"},
+    ["^(.*) is more resistant to fire%."] = {ea_orange, "(BURN PROOF)"},
+    ["^(.*) almost escapes your grasp%."] = {ea_purple, "(FLYING)"},
+    ["^(.*) looks a bit more expensive in quality%."] = {ea_gold_color, "(ADDED VALUE)"},
+    ["^(.*) fades out and back into existence%."] = {ea_cyan, "(INVIS)"},
+    ["^(.*) fades out of existence%."] = {ea_cyan, "(INVIS)"},
+    ["^(.*) seems lighter%."] = {ea_brown, "(HALF WEIGHT)"},
+    ["^(.*) sticks to your hands%."] = {ea_red, "(NOREMOVE)"},
+    ["^(.*) flares with a blinding silver aura, a pulse of energy emanating from it%."] = {ea_silver, "(IMMUNITY)"},
+    ["^(.*) begins to radiate a soft silver aura, shimmering vibrantly%."] = {ea_silver, "(RESIST)"}
+  }
+end
 
 EnchanterAssist.allmats = {
   "softwood","fire","skin","ivory","sandstone","bread","ice","coral","canvas",
@@ -348,32 +409,6 @@ function EnchanterAssist.hardStop()
   DMLogger.notify(ea_plugin, ea_warn .. "Hard stop complete.")
 end
 
-local highlightMap = {
-  ["^(.*) is momentarily encased in an aura of semitranslucent power%."] = {ea_cyan, "(SAVES)"},
-  ["^(.*) glows a brief light blue%."] = {ea_light_blue, "(ATTRIBUTES)"},
-  ["^(.*) flares orange%."] = {ea_orange, "(RESOURCES)"},
-  ["^(.*) is more sturdy%."] = {ea_purple, "(-AC)"},
-  ["^(.*) glows a brief dark blue%."] = {ea_dark_blue, "(OFFENSIVE)"},
-  ["^(.*) vibrates for a moment%."] = {ea_blue, "(SLOW or HASTE)"},
-  ["^(.*) flares bright green, and you feel a sense of calm%."] = {ea_green, "(RESOURCE REGENERATION)"},
-  ["^(.*) seems a lot less metallic%."] = {ea_brown, "(NONMETAL)"},
-  ["^(.*) begins to glow brightly%."] = {ea_pink, "(GLOWING)"},
-  ["^(.*) begins to hum%."] = {ea_red, "(HUMMING)"},
-  ["^(.*) emits a shimmering wave through the air%."] = {ea_cyan, "(ADDED AFFECT)"},
-  ["^(.*) glows a sickly green%."] = {ea_olive, "(CURSE)"},
-  ["^(.*) seems heavier%."] = {ea_muted_color, "(DOUBLE WEIGHT)"},
-  ["^(.*) is less sturdy%."] = {ea_warn_color, "(+AC)"},
-  ["^(.*) is more resistant to fire%."] = {ea_orange, "(BURN PROOF)"},
-  ["^(.*) almost escapes your grasp%."] = {ea_purple, "(FLYING)"},
-  ["^(.*) looks a bit more expensive in quality%."] = {ea_gold_color, "(ADDED VALUE)"},
-  ["^(.*) fades out and back into existence%."] = {ea_cyan, "(INVIS)"},
-  ["^(.*) fades out of existence%."] = {ea_cyan, "(INVIS)"},
-  ["^(.*) seems lighter%."] = {ea_brown, "(HALF WEIGHT)"},
-  ["^(.*) sticks to your hands%."] = {ea_red, "(NOREMOVE)"},
-  ["^(.*) flares with a blinding silver aura, a pulse of energy emanating from it%."] = {ea_silver, "(IMMUNITY)"},
-  ["^(.*) begins to radiate a soft silver aura, shimmering vibrantly%."] = {ea_silver, "(RESIST)"}
-}
-
 -- ============================================================================
 -- PERSISTENCE
 -- ============================================================================
@@ -414,6 +449,7 @@ function EnchanterAssist.load()
     EnchanterAssist.drainItem = data.config.drainItem or "potion"
     EnchanterAssist.deterministicOrder = data.config.deterministicOrder ~= false
   end
+
   Darkmists.Log(ea_plugin, "Data loaded from: " .. ea_text .. EnchanterAssist._savePath)
 end
 
@@ -835,106 +871,117 @@ end
 -- REST LOGIC (DMAPI VITALS)
 -- ============================================================================
 
--- Use DarkmistsEvents so handlers are deduped/managed across reloads
-DarkmistsEvents.add("EnchanterAssist.NewLine", "dmapi.core.line", function(_, data)
-  EnchanterAssist.on_line(data.line)
-end)
+function EnchanterAssist.init()
+  EnchanterAssist.applyTheme()
 
-DarkmistsEvents.add("EnchanterAssist.Vitals", "dmapi.player.vitals.updated", function()
-
-  -- Only process vitals when either:
-  --  • autorun is enabled (normal operation), or
-  --  • we're currently in `resting` and need to detect recovery even if autorun
-  --    was temporarily disabled. In all other cases, skip processing.
-  if not EnchanterAssist.autoRun then
-    if EnchanterAssist.state ~= "resting" then
-      return
-    end
+  if EnchanterAssist._initialized then
+    return
   end
 
-  local v = dmapi.player.vitals
-  local manaPct = v.mnPct or 0
-  local movePct = v.mvPct or 0
+  -- Use DarkmistsEvents so handlers are deduped/managed across reloads
+  DarkmistsEvents.add("EnchanterAssist.NewLine", "dmapi.core.line", function(_, data)
+    EnchanterAssist.on_line(data.line)
+  end)
 
-  local low  = (manaPct < 20) or (movePct < 20)
-  local high = (manaPct > 90) and (movePct > 90)
+  DarkmistsEvents.add("EnchanterAssist.Vitals", "dmapi.player.vitals.updated", function()
 
-  -------------------------------------------------
-  -- IF SLEEPING
-  -------------------------------------------------
-  if dmapi.player.status.sleeping then
+    -- Only process vitals when either:
+    --  • autorun is enabled (normal operation), or
+    --  • we're currently in `resting` and need to detect recovery even if autorun
+    --    was temporarily disabled. In all other cases, skip processing.
+    if not EnchanterAssist.autoRun then
+      if EnchanterAssist.state ~= "resting" then
+        return
+      end
+    end
 
-    -- Start refresh timer if not running
-    EnchanterAssist._ensureSleepTimer()
+    local v = dmapi.player.vitals
+    local manaPct = v.mnPct or 0
+    local movePct = v.mvPct or 0
 
-    -- Wake when fully recovered
-    if high then
-      if EnchanterAssist.sleepRefreshTimer then
-        killTimer(EnchanterAssist.sleepRefreshTimer)
-        EnchanterAssist.sleepRefreshTimer = nil
+    local low  = (manaPct < 20) or (movePct < 20)
+    local high = (manaPct > 90) and (movePct > 90)
+
+    -------------------------------------------------
+    -- IF SLEEPING
+    -------------------------------------------------
+    if dmapi.player.status.sleeping then
+
+      -- Start refresh timer if not running
+      EnchanterAssist._ensureSleepTimer()
+
+      -- Wake when fully recovered
+      if high then
+        if EnchanterAssist.sleepRefreshTimer then
+          killTimer(EnchanterAssist.sleepRefreshTimer)
+          EnchanterAssist.sleepRefreshTimer = nil
+        end
+
+        EnchanterAssist.state = "idle"
+        dmapi.core.send("wake")
+
+        tempTimer(0.3, function()
+          if EnchanterAssist.autoRun and EnchanterAssist.state == "idle" then
+            EnchanterAssist.run()
+          end
+        end)
       end
 
-      EnchanterAssist.state = "idle"
-      dmapi.core.send("wake")
+      return
+    end
 
-      tempTimer(0.3, function()
-        if EnchanterAssist.autoRun and EnchanterAssist.state == "idle" then
+    local now = getEpoch()
+
+    -- throttle to once every 3 seconds
+    if EnchanterAssist.state ~= "resting"
+      and now - EnchanterAssist._lastVitalsCheck < 3 then
+      return
+    end
+
+    EnchanterAssist._lastVitalsCheck = now
+    -- Exit resting (potion mode support)
+    if high and EnchanterAssist.state == "resting" and not dmapi.player.status.sleeping then
+      EnchanterAssist.state = "idle"
+      tempTimer(0.2, function()
+        if EnchanterAssist.autoRun then
           EnchanterAssist.run()
         end
       end)
     end
-
-    return
-  end
-
-  local now = getEpoch()
-
-  -- throttle to once every 3 seconds
-  if EnchanterAssist.state ~= "resting"
-    and now - EnchanterAssist._lastVitalsCheck < 3 then
-    return
-  end
-
-  EnchanterAssist._lastVitalsCheck = now
-  -- Exit resting (potion mode support)
-  if high and EnchanterAssist.state == "resting" and not dmapi.player.status.sleeping then
-    EnchanterAssist.state = "idle"
-    tempTimer(0.2, function()
-      if EnchanterAssist.autoRun then
-        EnchanterAssist.run()
+    -------------------------------------------------
+    -- IF LOW RESOURCES
+    -------------------------------------------------
+    if low then
+      -- Never interrupt brewing. Let current attempt resolve, then rest gate blocks next trial.
+      if EnchanterAssist.state == "brewing" then
+        return
       end
-    end)
-  end
-  -------------------------------------------------
-  -- IF LOW RESOURCES
-  -------------------------------------------------
-  if low then
-    -- Never interrupt brewing. Let current attempt resolve, then rest gate blocks next trial.
-    if EnchanterAssist.state == "brewing" then
+
+      EnchanterAssist._startRestCycle()
+
       return
     end
 
-    EnchanterAssist._startRestCycle()
+  end)
 
-    return
+  DarkmistsEvents.add("EnchanterAssist.WorldEnter", "dmapi.world.enter", function()
+    EnchanterAssist._abortAttempt("reconnected")
+  end)
+
+  DarkmistsEvents.add("EnchanterAssist.Disconnect", "sysDisconnectionEvent", function()
+    EnchanterAssist._abortAttempt("disconnected")
+  end)
+
+  EnchanterAssist.load()
+  math.randomseed(os.time())   -- seed once per session
+  EnchanterAssist._shuffleMaterials()
+  --EnchanterAssist.stats()
+
+  if Darkmists and Darkmists.Log then
+    Darkmists.Log(ea_plugin, "Ready for Usage!")
   end
 
-end)
+  EnchanterAssist._initialized = true
+end
 
-DarkmistsEvents.add("EnchanterAssist.WorldEnter", "dmapi.world.enter", function()
-  EnchanterAssist._abortAttempt("reconnected")
-end)
-
-DarkmistsEvents.add("EnchanterAssist.Disconnect", "sysDisconnectionEvent", function()
-  EnchanterAssist._abortAttempt("disconnected")
-end)
-
--- ============================================================================
--- LOAD STATE
--- ============================================================================
-
-EnchanterAssist.load()
-math.randomseed(os.time())   -- seed once per session
-EnchanterAssist._shuffleMaterials()
---EnchanterAssist.stats()
-Darkmists.Log(ea_plugin, "Ready for Usage!")
+EnchanterAssist.init()
