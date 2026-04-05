@@ -983,5 +983,3 @@ function EnchanterAssist.init()
 
   EnchanterAssist._initialized = true
 end
-
-EnchanterAssist.init()
