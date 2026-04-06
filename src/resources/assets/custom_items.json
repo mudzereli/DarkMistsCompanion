@@ -2,711 +2,711 @@
   {
     "name": "a portable fountain",
     "vnum": "custom_0001",
-    "details": "Area: The City of Sudharma\nObject 'a portable fountain' is type drink, extra flags inventory.\nWeight is 1.0 pounds, value is 33, level is 2.\nMaterial is skin and metal.\nrestrict flags none.\nIt holds clear-colored water.\nThe shopkeeper tells you 'This item costs 41 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'a portable fountain' is type drink, extra flags inventory.\nWeight is 1.0 pounds, value is 33, level is 2.\nMaterial is skin and metal.\nrestrict flags none.\nIt holds clear-colored water."
   },
   {
     "name": "small bronze lantern",
     "vnum": "custom_0002",
-    "details": "Area: The City of Sudharma\nObject 'small bronze lantern' is type light, extra flags inventory.\nWeight is 4.0 pounds, value is 75, level is 1.\nMaterial is bronze and cloth and fire.\nrestrict flags none.\nThe shopkeeper tells you 'This item costs 93 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'small bronze lantern' is type light, extra flags inventory.\nWeight is 4.0 pounds, value is 75, level is 1.\nMaterial is bronze and cloth and fire.\nrestrict flags none."
    },
   {
     "name": "a small book for a short story",
     "vnum": "custom_0134",
-    "details": "Area: The City of Sudharma\nObject 'a small book for a short story' is type book, extra flags inventory.\nWeight is 1.5 pounds, value is 60, level is 1.\nMaterial is parchment and paper.\nrestrict flags none.\nThe shopkeeper tells you 'This item costs 69 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'a small book for a short story' is type book, extra flags inventory.\nWeight is 1.5 pounds, value is 60, level is 1.\nMaterial is parchment and paper.\nrestrict flags none."
   },
   {
     "name": "a traveler's journal",
     "vnum": "custom_0135",
-    "details": "Area: The City of Sudharma\nObject 'a traveler's journal' is type book, extra flags inventory.\nWeight is 1.0 pounds, value is 75, level is 1.\nMaterial is leather and paper.\nrestrict flags none.\nThe shopkeeper tells you 'This item costs 86 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'a traveler's journal' is type book, extra flags inventory.\nWeight is 1.0 pounds, value is 75, level is 1.\nMaterial is leather and paper.\nrestrict flags none."
   },
   {
     "name": "a legal's book",
     "vnum": "custom_0136",
-    "details": "Area: The City of Sudharma\nObject 'a legal's book' is type book, extra flags inventory.\nWeight is 2.5 pounds, value is 100, level is 1.\nMaterial is leather and paper.\nrestrict flags none.\nThe shopkeeper tells you 'This item costs 115 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'a legal's book' is type book, extra flags inventory.\nWeight is 2.5 pounds, value is 100, level is 1.\nMaterial is leather and paper.\nrestrict flags none."
   },
   {
     "name": "a merchant's ledger",
     "vnum": "custom_0137",
-    "details": "Area: The City of Sudharma\nObject 'a merchant's ledger' is type book, extra flags inventory.\nWeight is 7.0 pounds, value is 125, level is 1.\nMaterial is leather and iron and paper.\nrestrict flags none.\nThe shopkeeper tells you 'This item costs 143 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'a merchant's ledger' is type book, extra flags inventory.\nWeight is 7.0 pounds, value is 125, level is 1.\nMaterial is leather and iron and paper.\nrestrict flags none."
   },
   {
     "name": "a writer's journal",
     "vnum": "custom_0138",
-    "details": "Area: The City of Sudharma\nObject 'a writer's journal' is type book, extra flags inventory.\nWeight is 4.5 pounds, value is 200, level is 1.\nMaterial is leather and paper.\nrestrict flags none.\nThe shopkeeper tells you 'This item costs 230 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'a writer's journal' is type book, extra flags inventory.\nWeight is 4.5 pounds, value is 200, level is 1.\nMaterial is leather and paper.\nrestrict flags none."
   },
   {
     "name": "an ivory fountain pen",
     "vnum": "custom_0139",
-    "details": "Area: The City of Sudharma\nObject 'an ivory fountain pen' is type pen, extra flags inventory.\nWeight is 0.4 pounds, value is 130, level is 1.\nMaterial is ivory.\nrestrict flags none.\nThe shopkeeper tells you 'This item costs 149 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'an ivory fountain pen' is type pen, extra flags inventory.\nWeight is 0.4 pounds, value is 130, level is 1.\nMaterial is ivory.\nrestrict flags none."
   },
   {
     "name": "a thick crystal inkwell",
     "vnum": "custom_0140",
-    "details": "Area: The City of Sudharma\nObject 'a thick crystal inkwell' is type inkwell, extra flags inventory.\nWeight is 2.0 pounds, value is 400, level is 1.\nMaterial is crystal.\nrestrict flags none.\nThe shopkeeper tells you 'This item costs 460 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'a thick crystal inkwell' is type inkwell, extra flags inventory.\nWeight is 2.0 pounds, value is 400, level is 1.\nMaterial is crystal.\nrestrict flags none."
   },
   {
     "name": "Glod's Gingerbread of Grasping",
     "vnum": "custom_0117",
-    "details": "Area: The City of Sudharma\nObject 'Glod's Gingerbread of Grasping' is type food, extra flags inventory.\nWeight is 0.2 pounds, value is 54, level is 1.\nMaterial is bread and food.\nrestrict flags none.\nThe shopkeeper tells you 'This item costs 59 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'Glod's Gingerbread of Grasping' is type food, extra flags inventory.\nWeight is 0.2 pounds, value is 54, level is 1.\nMaterial is bread and food.\nrestrict flags none."
   },
   {
     "name": "Prisoner's Cake",
     "vnum": "custom_0118",
-    "details": "Area: The City of Sudharma\nObject 'Prisoner's Cake' is type food, extra flags inventory.\nWeight is 2.0 pounds, value is 54, level is 1.\nMaterial is food and steel.\nrestrict flags none.\nThe shopkeeper tells you 'This item costs 59 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'Prisoner's Cake' is type food, extra flags inventory.\nWeight is 2.0 pounds, value is 54, level is 1.\nMaterial is food and steel.\nrestrict flags none."
   },
   {
     "name": "Stonecrust Forge Loaf",
     "vnum": "custom_0119",
-    "details": "Area: The City of Sudharma\nObject 'Stonecrust Forge Loaf' is type food, extra flags inventory.\nWeight is 1.5 pounds, value is 54, level is 1.\nMaterial is food and stone.\nrestrict flags none.\nThe shopkeeper tells you 'This item costs 59 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'Stonecrust Forge Loaf' is type food, extra flags inventory.\nWeight is 1.5 pounds, value is 54, level is 1.\nMaterial is food and stone.\nrestrict flags none."
   },
   {
     "name": "Ironbeard Ale Bread",
     "vnum": "custom_0120",
-    "details": "Area: The City of Sudharma\nObject 'Ironbeard Ale Bread' is type food, extra flags inventory.\nWeight is 1.5 pounds, value is 54, level is 1.\nMaterial is food and iron and ale.\nrestrict flags none.\nThe shopkeeper tells you 'This item costs 59 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'Ironbeard Ale Bread' is type food, extra flags inventory.\nWeight is 1.5 pounds, value is 54, level is 1.\nMaterial is food and iron and ale.\nrestrict flags none."
   },
   {
     "name": "Brethren Beetroot Hearthbread",
     "vnum": "custom_0121",
-    "details": "Area: The City of Sudharma\nObject 'Brethren Beetroot Hearthbread' is type food, extra flags inventory.\nWeight is 0.2 pounds, value is 54, level is 1.\nMaterial is food and fire.\nrestrict flags none.\nThe shopkeeper tells you 'This item costs 59 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'Brethren Beetroot Hearthbread' is type food, extra flags inventory.\nWeight is 0.2 pounds, value is 54, level is 1.\nMaterial is food and fire.\nrestrict flags none."
   },
   {
     "name": "(Extra Noisy) Crystal Cavern Onion Pull-Apart Bread",
     "vnum": "custom_0122",
-    "details": "Area: The City of Sudharma\nObject '(Extra Noisy) Crystal Cavern Onion Pull-Apart Bread' is type food, extra flags inventory.\nWeight is 3.0 pounds, value is 54, level is 1.\nMaterial is food and fire and hot onions and diamond.\nrestrict flags none.\nThe shopkeeper tells you 'This item costs 59 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject '(Extra Noisy) Crystal Cavern Onion Pull-Apart Bread' is type food, extra flags inventory.\nWeight is 3.0 pounds, value is 54, level is 1.\nMaterial is food and fire and hot onions and diamond.\nrestrict flags none."
   },
   {
     "name": "Golden Nugget Honey Cake",
     "vnum": "custom_0123",
-    "details": "Area: The City of Sudharma\nObject 'Golden Nugget Honey Cake' is type food, extra flags inventory.\nWeight is 2.5 pounds, value is 54, level is 1.\nMaterial is food and honey and gold.\nrestrict flags none.\nThe shopkeeper tells you 'This item costs 59 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'Golden Nugget Honey Cake' is type food, extra flags inventory.\nWeight is 2.5 pounds, value is 54, level is 1.\nMaterial is food and honey and gold.\nrestrict flags none."
   },
   {
     "name": "Obsidian Molten Chocolate Torte",
     "vnum": "custom_0124",
-    "details": "Area: The City of Sudharma\nObject 'Obsidian Molten Chocolate Torte' is type food, extra flags inventory.\nWeight is 3.0 pounds, value is 54, level is 1.\nMaterial is food and obsidian and chocolate and fire.\nrestrict flags none.\nThe shopkeeper tells you 'This item costs 59 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'Obsidian Molten Chocolate Torte' is type food, extra flags inventory.\nWeight is 3.0 pounds, value is 54, level is 1.\nMaterial is food and obsidian and chocolate and fire.\nrestrict flags none."
   },
   {
     "name": "Gemstone Fruitcake",
     "vnum": "custom_0125",
-    "details": "Area: The City of Sudharma\nObject 'Gemstone Fruitcake' is type food, extra flags inventory.\nWeight is 6.0 pounds, value is 54, level is 1.\nMaterial is food and coral and ivory and glass and diamond and dragonscale.\nrestrict flags none.\nThe shopkeeper tells you 'This item costs 59 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'Gemstone Fruitcake' is type food, extra flags inventory.\nWeight is 6.0 pounds, value is 54, level is 1.\nMaterial is food and coral and ivory and glass and diamond and dragonscale.\nrestrict flags none."
   },
   {
     "name": "Frostpeak Custard Cubes",
     "vnum": "custom_0126",
-    "details": "Area: The City of Sudharma\nObject 'Frostpeak Custard Cubes' is type food, extra flags inventory.\nWeight is 11.1 pounds, value is 54, level is 1.\nMaterial is platinum and ice and bread and bone.\nrestrict flags none.\nThe shopkeeper tells you 'This item costs 59 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'Frostpeak Custard Cubes' is type food, extra flags inventory.\nWeight is 11.1 pounds, value is 54, level is 1.\nMaterial is platinum and ice and bread and bone.\nrestrict flags none."
   },
   {
     "name": "Mithril-Glazed Donut Rings",
     "vnum": "custom_0127",
-    "details": "Area: The City of Sudharma\nObject 'Mithril-Glazed Donut Rings' is type food, extra flags inventory.\nWeight is 2.0 pounds, value is 54, level is 1.\nMaterial is metal and mithril and donut.\nrestrict flags none.\nThe shopkeeper tells you 'This item costs 59 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'Mithril-Glazed Donut Rings' is type food, extra flags inventory.\nWeight is 2.0 pounds, value is 54, level is 1.\nMaterial is metal and mithril and donut.\nrestrict flags none."
   },
   {
     "name": "Chocolate Chip Cookies",
     "vnum": "custom_0128",
-    "details": "Area: The City of Sudharma\nObject 'Chocolate Chip Cookies' is type food, extra flags inventory.\nWeight is 10.0 pounds, value is 54, level is 1.\nMaterial is sandstone and chocolate and cookie dough.\nrestrict flags none.\nThe shopkeeper tells you 'This item costs 59 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'Chocolate Chip Cookies' is type food, extra flags inventory.\nWeight is 10.0 pounds, value is 54, level is 1.\nMaterial is sandstone and chocolate and cookie dough.\nrestrict flags none."
   },
   {
     "name": "Glod's No Steak Pie (Special Recipe)",
     "vnum": "custom_0129",
-    "details": "Area: The City of Sudharma\nObject 'Glod's No Steak Pie (Special Recipe)' is type food, extra flags inventory.\nWeight is 5.0 pounds, value is 54, level is 1.\nMaterial is steak-free-veggies and steak-free bread and steak-free hemp and steak-free tin.\nrestrict flags none.\nThe shopkeeper tells you 'This item costs 59 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'Glod's No Steak Pie (Special Recipe)' is type food, extra flags inventory.\nWeight is 5.0 pounds, value is 54, level is 1.\nMaterial is steak-free-veggies and steak-free bread and steak-free hemp and steak-free tin.\nrestrict flags none."
   }
   ,
   {
     "name": "a scroll of gender bender",
     "vnum": "custom_0130",
-    "details": "Area: The City of Sudharma\nObject 'a scroll of gender bender' is type scroll, extra flags inventory.\nWeight is 0.5 pounds, value is 39, level is 11.\nMaterial is parchment.\nrestrict flags none.\nLevel 11 spells of: 'change sex'.\nThe shopkeeper tells you 'This item costs 48 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'a scroll of gender bender' is type scroll, extra flags inventory.\nWeight is 0.5 pounds, value is 39, level is 11.\nMaterial is parchment.\nrestrict flags none.\nLevel 11 spells of: 'change sex'."
   },
   {
     "name": "a scroll of home memories",
     "vnum": "custom_0131",
-    "details": "Area: The City of Sudharma\nObject 'a scroll of home memories' is type scroll, extra flags inventory.\nWeight is 0.5 pounds, value is 78, level is 11.\nMaterial is parchment.\nrestrict flags none.\nLevel 11 spells of: 'power word recall'.\nThe shopkeeper tells you 'This item costs 97 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'a scroll of home memories' is type scroll, extra flags inventory.\nWeight is 0.5 pounds, value is 78, level is 11.\nMaterial is parchment.\nrestrict flags none.\nLevel 11 spells of: 'power word recall'."
   },
   {
     "name": "a scroll of bug repellant",
     "vnum": "custom_0132",
-    "details": "Area: The City of Sudharma\nObject 'a scroll of bug repellant' is type scroll, extra flags inventory.\nWeight is 0.5 pounds, value is 91, level is 11.\nMaterial is parchment.\nrestrict flags none.\nLevel 11 spells of: 'cure disease' 'cure disease' 'cure disease' 'cure disease'.\nThe shopkeeper tells you 'This item costs 113 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'a scroll of bug repellant' is type scroll, extra flags inventory.\nWeight is 0.5 pounds, value is 91, level is 11.\nMaterial is parchment.\nrestrict flags none.\nLevel 11 spells of: 'cure disease' 'cure disease' 'cure disease' 'cure disease'."
   },
   {
     "name": "a scroll containing a home remedy",
     "vnum": "custom_0133",
-    "details": "Area: The City of Sudharma\nObject 'a scroll containing a home remedy' is type scroll, extra flags inventory.\nWeight is 0.5 pounds, value is 143, level is 11.\nMaterial is parchment.\nrestrict flags none.\nLevel 11 spells of: 'cure critical' 'cure critical' 'cure light' 'cure light'.\nThe shopkeeper tells you 'This item costs 178 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'a scroll containing a home remedy' is type scroll, extra flags inventory.\nWeight is 0.5 pounds, value is 143, level is 11.\nMaterial is parchment.\nrestrict flags none.\nLevel 11 spells of: 'cure critical' 'cure critical' 'cure light' 'cure light'."
   },
   {
     "name": "a griffon's first serious claw",
     "vnum": "custom_0085",
-    "details": "Area: The City of Sudharma\nObject 'a griffon's first serious claw' is type weapon, extra flags inventory.\nWeight is 9.1 pounds, value is 84, level is 14.\nMaterial is steel.\nrestrict flags none.\nWeapon type is claw (exotic).\nDamage is 6d3 (average 12).\nWeapons flags: sharp armor-piercing\nThe shopkeeper tells you 'This item costs 96 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'a griffon's first serious claw' is type weapon, extra flags inventory.\nWeight is 9.1 pounds, value is 84, level is 14.\nMaterial is steel.\nrestrict flags none.\nWeapon type is claw (exotic).\nDamage is 6d3 (average 12).\nWeapons flags: sharp armor-piercing"
   },
   {
     "name": "a zebrawood claw",
     "vnum": "custom_0086",
-    "details": "Area: The City of Sudharma\nObject 'a zebrawood claw' is type weapon, extra flags inventory.\nWeight is 6.8 pounds, value is 3940, level is 26.\nMaterial is zebrawood.\nrestrict flags none.\nWeapon type is claw (exotic).\nDamage is 7d3 (average 14).\nWeapons flags: sharp\nAffects damage roll by 3.\nThe shopkeeper tells you 'This item costs 4531 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'a zebrawood claw' is type weapon, extra flags inventory.\nWeight is 6.8 pounds, value is 3940, level is 26.\nMaterial is zebrawood.\nrestrict flags none.\nWeapon type is claw (exotic).\nDamage is 7d3 (average 14).\nWeapons flags: sharp\nAffects damage roll by 3."
   },
   {
     "name": "a copper claw",
     "vnum": "custom_0087",
-    "details": "Area: The City of Sudharma\nObject 'a copper claw' is type weapon, extra flags inventory.\nWeight is 7.5 pounds, value is 6969, level is 28.\nMaterial is copper.\nrestrict flags none.\nWeapon type is claw (exotic).\nDamage is 6d4 (average 15).\nWeapons flags: sharp\nAffects damage roll by 3.\nThe shopkeeper tells you 'This item costs 8014 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'a copper claw' is type weapon, extra flags inventory.\nWeight is 7.5 pounds, value is 6969, level is 28.\nMaterial is copper.\nrestrict flags none.\nWeapon type is claw (exotic).\nDamage is 6d4 (average 15).\nWeapons flags: sharp\nAffects damage roll by 3."
   },
   {
     "name": "an ebony claw",
     "vnum": "custom_0088",
-    "details": "Area: The City of Sudharma\nObject 'an ebony claw' is type weapon, extra flags inventory.\nWeight is 4.6 pounds, value is 7763, level is 30.\nMaterial is ebony.\nrestrict flags none.\nWeapon type is claw (exotic).\nDamage is 6d4 (average 15).\nWeapons flags: sharp\nAffects damage roll by 3.\nAffects hit roll by 1.\nThe shopkeeper tells you 'This item costs 8927 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'an ebony claw' is type weapon, extra flags inventory.\nWeight is 4.6 pounds, value is 7763, level is 30.\nMaterial is ebony.\nrestrict flags none.\nWeapon type is claw (exotic).\nDamage is 6d4 (average 15).\nWeapons flags: sharp\nAffects damage roll by 3.\nAffects hit roll by 1."
   },
   {
     "name": "a dragonscale claw",
     "vnum": "custom_0089",
-    "details": "Area: The City of Sudharma\nObject 'a dragonscale claw' is type weapon, extra flags inventory.\nWeight is 5.0 pounds, value is 23232, level is 32.\nMaterial is dragonscale.\nrestrict flags none.\nWeapon type is claw (exotic).\nDamage is 6d4 (average 15).\nWeapons flags: sharp\nAffects damage roll by 3.\nAffects hit roll by 2.\nThe shopkeeper tells you 'This item costs 26716 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'a dragonscale claw' is type weapon, extra flags inventory.\nWeight is 5.0 pounds, value is 23232, level is 32.\nMaterial is dragonscale.\nrestrict flags none.\nWeapon type is claw (exotic).\nDamage is 6d4 (average 15).\nWeapons flags: sharp\nAffects damage roll by 3.\nAffects hit roll by 2."
   },
   {
     "name": "a ringmail helmet",
     "vnum": "custom_0015",
-    "details": "Area: The City of Sudharma\nObject 'a ringmail helmet' is type armor, extra flags inventory.\nWeight is 10.0 pounds, value is 69, level is 14.\nMaterial is metal.\nrestrict flags none.\nArmor class is 4 pierce, 8 bash, 8 slash, and 1 vs. magic.\nAffects hp by 8.\nAffects dexterity by 1.\nAffects strength by 1.\nThe shopkeeper tells you 'This item costs 89 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'a ringmail helmet' is type armor, extra flags inventory.\nWeight is 10.0 pounds, value is 69, level is 14.\nMaterial is metal.\nrestrict flags none.\nArmor class is 4 pierce, 8 bash, 8 slash, and 1 vs. magic.\nAffects hp by 8.\nAffects dexterity by 1.\nAffects strength by 1."
   },
   {
     "name": "a tightly rolled-up sleeping bag",
     "vnum": "custom_0003",
-    "details": "Area: The City of Sudharma\nObject 'a tightly rolled-up sleeping bag' is type furniture, extra flags inventory.\nWeight is 4.5 pounds, value is 700, level is 1.\nMaterial is canvas and quilted cloth.\nrestrict flags none.\nThe shopkeeper tells you 'This item costs 875 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'a tightly rolled-up sleeping bag' is type furniture, extra flags inventory.\nWeight is 4.5 pounds, value is 700, level is 1.\nMaterial is canvas and quilted cloth.\nrestrict flags none."
   },
   {
     "name": "a large ivory candle",
     "vnum": "custom_0004",
-    "details": "Area: The City of Sudharma\nObject 'a large ivory candle' is type light, extra flags inventory.\nWeight is 5.0 pounds, value is 80, level is 0.\nMaterial is ivory and wax and shell.\nrestrict flags none.\nThe shopkeeper tells you 'This item costs 100 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'a large ivory candle' is type light, extra flags inventory.\nWeight is 5.0 pounds, value is 80, level is 0.\nMaterial is ivory and wax and shell.\nrestrict flags none."
   },
   {
     "name": "a Carryall(tm) pack",
     "vnum": "custom_0005",
-    "details": "Area: The City of Sudharma\nObject 'a Carryall(tm) pack' is type container, extra flags magic inventory nonmetal burnproof.\nWeight is 13.0 pounds, value is 1000, level is 14.\nMaterial is silk and mithril and platinum and skin and bone.\nrestrict flags none.\nCapacity: 500#  Maximum weight: 150#  flags: closable closed\nThe shopkeeper tells you 'This item costs 1250 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'a Carryall(tm) pack' is type container, extra flags magic inventory nonmetal burnproof.\nWeight is 13.0 pounds, value is 1000, level is 14.\nMaterial is silk and mithril and platinum and skin and bone.\nrestrict flags none.\nCapacity: 500#  Maximum weight: 150#  flags: closable closed"
   },
   {
     "name": "a Junior Carryall(tm) pack",
     "vnum": "custom_0006",
-    "details": "Area: The City of Sudharma\nObject 'a Junior Carryall(tm) pack' is type container, extra flags magic inventory nonmetal burnproof.\nWeight is 1.0 pounds, value is 55, level is 1.\nMaterial is silk and skin and bone.\nrestrict flags none.\nCapacity: 100#  Maximum weight: 25#  flags: closable closed\nThe shopkeeper tells you 'This item costs 68 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'a Junior Carryall(tm) pack' is type container, extra flags magic inventory nonmetal burnproof.\nWeight is 1.0 pounds, value is 55, level is 1.\nMaterial is silk and skin and bone.\nrestrict flags none.\nCapacity: 100#  Maximum weight: 25#  flags: closable closed"
   }
   ,
   {
     "name": "a short quillon dagger",
     "vnum": "custom_0007",
-    "details": "Area: The City of Sudharma\nObject 'a short quillon dagger' is type weapon, extra flags inventory.\nWeight is 2.9 pounds, value is 55, level is 14.\nMaterial is bronze.\nrestrict flags none.\nWeapon type is dagger.\nDamage is 6d4 (average 15).\nAffects damage roll by 2.\nThe shopkeeper tells you 'This item costs 71 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'a short quillon dagger' is type weapon, extra flags inventory.\nWeight is 2.9 pounds, value is 55, level is 14.\nMaterial is bronze.\nrestrict flags none.\nWeapon type is dagger.\nDamage is 6d4 (average 15).\nAffects damage roll by 2."
   },
   {
     "name": "a quillon longsword",
     "vnum": "custom_0008",
-    "details": "Area: The City of Sudharma\nObject 'a quillon longsword' is type weapon, extra flags inventory.\nWeight is 9.7 pounds, value is 78, level is 14.\nMaterial is iron and steel.\nrestrict flags none.\nWeapon type is sword.\nDamage is 7d5 (average 21).\nWeapons flags: sharp\nAffects damage roll by 1.\nAffects hit roll by 1.\nThe shopkeeper tells you 'This item costs 101 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'a quillon longsword' is type weapon, extra flags inventory.\nWeight is 9.7 pounds, value is 78, level is 14.\nMaterial is iron and steel.\nrestrict flags none.\nWeapon type is sword.\nDamage is 7d5 (average 21).\nWeapons flags: sharp\nAffects damage roll by 1.\nAffects hit roll by 1."
   },
   {
     "name": "a dragonscale-tipped hardwood spear",
     "vnum": "custom_0009",
-    "details": "Area: The City of Sudharma\nObject 'a dragonscale-tipped hardwood spear' is type weapon, extra flags inventory.\nWeight is 7.4 pounds, value is 130, level is 14.\nMaterial is hardwood and dragonscale.\nrestrict flags none.\nWeapon type is spear.\nDamage is 9d4 (average 22).\nWeapons flags: sharp\nAffects damage roll by 1.\nAffects hit roll by 1.\nThe shopkeeper tells you 'This item costs 169 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'a dragonscale-tipped hardwood spear' is type weapon, extra flags inventory.\nWeight is 7.4 pounds, value is 130, level is 14.\nMaterial is hardwood and dragonscale.\nrestrict flags none.\nWeapon type is spear.\nDamage is 9d4 (average 22).\nWeapons flags: sharp\nAffects damage roll by 1.\nAffects hit roll by 1."
   },
   {
     "name": "a flanged bludgeon",
     "vnum": "custom_0010",
-    "details": "Area: The City of Sudharma\nObject 'a flanged bludgeon' is type weapon, extra flags inventory.\nWeight is 12.9 pounds, value is 78, level is 14.\nMaterial is iron and steel.\nrestrict flags none.\nWeapon type is mace/club.\nDamage is 8d3 (average 16).\nAffects damage roll by 3.\nAffects hit roll by 3.\nThe shopkeeper tells you 'This item costs 101 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'a flanged bludgeon' is type weapon, extra flags inventory.\nWeight is 12.9 pounds, value is 78, level is 14.\nMaterial is iron and steel.\nrestrict flags none.\nWeapon type is mace/club.\nDamage is 8d3 (average 16).\nAffects damage roll by 3.\nAffects hit roll by 3."
   },
   {
     "name": "a mithril axe",
     "vnum": "custom_0011",
-    "details": "Area: The City of Sudharma\nObject 'a mithril axe' is type weapon, extra flags inventory.\nWeight is 11.1 pounds, value is 168, level is 14.\nMaterial is mithril.\nrestrict flags none.\nWeapon type is axe.\nDamage is 10d2 (average 15).\nAffects damage roll by 6.\nAffects hit roll by 2.\nThe shopkeeper tells you 'This item costs 218 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'a mithril axe' is type weapon, extra flags inventory.\nWeight is 11.1 pounds, value is 168, level is 14.\nMaterial is mithril.\nrestrict flags none.\nWeapon type is axe.\nDamage is 10d2 (average 15).\nAffects damage roll by 6.\nAffects hit roll by 2."
   },
   {
     "name": "an ebony and quartz flail",
     "vnum": "custom_0012",
-    "details": "Area: The City of Sudharma\nObject 'an ebony and quartz flail' is type weapon, extra flags inventory.\nWeight is 5.1 pounds, value is 144, level is 14.\nMaterial is ebony and quartz and steel.\nrestrict flags none.\nWeapon type is flail.\nDamage is 8d4 (average 20).\nAffects damage roll by 4.\nAffects hit roll by 1.\nThe shopkeeper tells you 'This item costs 187 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'an ebony and quartz flail' is type weapon, extra flags inventory.\nWeight is 5.1 pounds, value is 144, level is 14.\nMaterial is ebony and quartz and steel.\nrestrict flags none.\nWeapon type is flail.\nDamage is 8d4 (average 20).\nAffects damage roll by 4.\nAffects hit roll by 1."
   }
   ,
   {
     "name": "a ringmail vest",
     "vnum": "custom_0013",
-    "details": "Area: The City of Sudharma\nObject 'a ringmail vest' is type armor, extra flags inventory.\nWeight is 24.5 pounds, value is 70, level is 14.\nMaterial is metal.\nrestrict flags none.\nArmor class is 5 pierce, 8 bash, 8 slash, and 1 vs. magic.\nAffects hp by 5.\nAffects armor class by -3.\nThe shopkeeper tells you 'This item costs 91 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'a ringmail vest' is type armor, extra flags inventory.\nWeight is 24.5 pounds, value is 70, level is 14.\nMaterial is metal.\nrestrict flags none.\nArmor class is 5 pierce, 8 bash, 8 slash, and 1 vs. magic.\nAffects hp by 5.\nAffects armor class by -3."
   },
   {
     "name": "a cowl formed of tiny rings of bronze and copper",
     "vnum": "custom_0014",
-    "details": "Area: The City of Sudharma\nObject 'a cowl formed of tiny rings of bronze and copper' is type armor, extra flags inventory.\nWeight is 19.0 pounds, value is 68, level is 14.\nMaterial is bronze and copper.\nrestrict flags none.\nArmor class is 7 pierce, 7 bash, 7 slash, and 3 vs. magic.\nAffects armor class by -7.\nThe shopkeeper tells you 'This item costs 88 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'a cowl formed of tiny rings of bronze and copper' is type armor, extra flags inventory.\nWeight is 19.0 pounds, value is 68, level is 14.\nMaterial is bronze and copper.\nrestrict flags none.\nArmor class is 7 pierce, 7 bash, 7 slash, and 3 vs. magic.\nAffects armor class by -7."
   }
   ,
   {
     "name": "a pair of silken gloves",
     "vnum": "custom_0016",
-    "details": "Area: The City of Sudharma\nObject 'a pair of silken gloves' is type armor, extra flags inventory.\nWeight is 1.0 pounds, value is 39, level is 14.\nMaterial is silk.\nrestrict flags none.\nArmor class is 5 pierce, 5 bash, 5 slash, and 5 vs. magic.\nAffects moves by 3.\nAffects hp by 5.\nThe shopkeeper tells you 'This item costs 50 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'a pair of silken gloves' is type armor, extra flags inventory.\nWeight is 1.0 pounds, value is 39, level is 14.\nMaterial is silk.\nrestrict flags none.\nArmor class is 5 pierce, 5 bash, 5 slash, and 5 vs. magic.\nAffects moves by 3.\nAffects hp by 5."
   },
   {
     "name": "a silken cap",
     "vnum": "custom_0017",
-    "details": "Area: The City of Sudharma\nObject 'a silken cap' is type armor, extra flags inventory.\nWeight is 1.6 pounds, value is 44, level is 14.\nMaterial is silk and pasteboard.\nrestrict flags none.\nArmor class is 3 pierce, 3 bash, 3 slash, and 3 vs. magic.\nAffects mana by 10.\nAffects hp by 7.\nThe shopkeeper tells you 'This item costs 57 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'a silken cap' is type armor, extra flags inventory.\nWeight is 1.6 pounds, value is 44, level is 14.\nMaterial is silk and pasteboard.\nrestrict flags none.\nArmor class is 3 pierce, 3 bash, 3 slash, and 3 vs. magic.\nAffects mana by 10.\nAffects hp by 7."
   },
   {
     "name": "a pair of silken leggings",
     "vnum": "custom_0018",
-    "details": "Area: The City of Sudharma\nObject 'a pair of silken leggings' is type armor, extra flags inventory.\nWeight is 2.0 pounds, value is 41, level is 14.\nMaterial is silk.\nrestrict flags none.\nArmor class is 5 pierce, 5 bash, 5 slash, and 5 vs. magic.\nAffects mana by 2.\nAffects moves by 15.\nThe shopkeeper tells you 'This item costs 53 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'a pair of silken leggings' is type armor, extra flags inventory.\nWeight is 2.0 pounds, value is 41, level is 14.\nMaterial is silk.\nrestrict flags none.\nArmor class is 5 pierce, 5 bash, 5 slash, and 5 vs. magic.\nAffects mana by 2.\nAffects moves by 15."
   },
   {
     "name": "a pair of silken sleeves",
     "vnum": "custom_0019",
-    "details": "Area: The City of Sudharma\nObject 'a pair of silken sleeves' is type armor, extra flags inventory.\nWeight is 1.4 pounds, value is 39, level is 14.\nMaterial is silk.\nrestrict flags none.\nArmor class is 5 pierce, 5 bash, 5 slash, and 5 vs. magic.\nAffects mana by 3.\nAffects moves by 3.\nAffects hp by 5.\nThe shopkeeper tells you 'This item costs 50 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'a pair of silken sleeves' is type armor, extra flags inventory.\nWeight is 1.4 pounds, value is 39, level is 14.\nMaterial is silk.\nrestrict flags none.\nArmor class is 5 pierce, 5 bash, 5 slash, and 5 vs. magic.\nAffects mana by 3.\nAffects moves by 3.\nAffects hp by 5."
   },
   {
     "name": "a silken jacket",
     "vnum": "custom_0020",
-    "details": "Area: The City of Sudharma\nObject 'a silken jacket' is type armor, extra flags inventory.\nWeight is 3.8 pounds, value is 45, level is 14.\nMaterial is silk and bone.\nrestrict flags none.\nArmor class is 5 pierce, 5 bash, 5 slash, and 2 vs. magic.\nAffects mana by 7.\nAffects intelligence by 2.\nThe shopkeeper tells you 'This item costs 58 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'a silken jacket' is type armor, extra flags inventory.\nWeight is 3.8 pounds, value is 45, level is 14.\nMaterial is silk and bone.\nrestrict flags none.\nArmor class is 5 pierce, 5 bash, 5 slash, and 2 vs. magic.\nAffects mana by 7.\nAffects intelligence by 2."
   },
   {
     "name": "a silken robe",
     "vnum": "custom_0021",
-    "details": "Area: The City of Sudharma\nObject 'a silken robe' is type armor, extra flags inventory.\nWeight is 2.3 pounds, value is 71, level is 14.\nMaterial is silk and bone.\nrestrict flags none.\nArmor class is 4 pierce, 4 bash, 4 slash, and 8 vs. magic.\nAffects mana by 5.\nAffects wisdom by 1.\nThe shopkeeper tells you 'This item costs 92 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'a silken robe' is type armor, extra flags inventory.\nWeight is 2.3 pounds, value is 71, level is 14.\nMaterial is silk and bone.\nrestrict flags none.\nArmor class is 4 pierce, 4 bash, 4 slash, and 8 vs. magic.\nAffects mana by 5.\nAffects wisdom by 1."
   },
   {
     "name": "a pair of leather gloves",
     "vnum": "custom_0022",
-    "details": "Area: The City of Sudharma\nObject 'a pair of leather gloves' is type armor, extra flags inventory.\nWeight is 2.0 pounds, value is 32, level is 14.\nMaterial is leather.\nrestrict flags none.\nArmor class is 5 pierce, 5 bash, 5 slash, and 2 vs. magic.\nAffects hp by 10.\nAffects dexterity by 1.\nThe shopkeeper tells you 'This item costs 41 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'a pair of leather gloves' is type armor, extra flags inventory.\nWeight is 2.0 pounds, value is 32, level is 14.\nMaterial is leather.\nrestrict flags none.\nArmor class is 5 pierce, 5 bash, 5 slash, and 2 vs. magic.\nAffects hp by 10.\nAffects dexterity by 1."
   },
   {
     "name": "a pair of leather sleeves",
     "vnum": "custom_0023",
-    "details": "Area: The City of Sudharma\nObject 'a pair of leather sleeves' is type armor, extra flags inventory.\nWeight is 2.8 pounds, value is 32, level is 14.\nMaterial is leather.\nrestrict flags none.\nArmor class is 9 pierce, 9 bash, 9 slash, and 0 vs. magic.\nAffects hp by 6.\nAffects dexterity by 1.\nThe shopkeeper tells you 'This item costs 41 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'a pair of leather sleeves' is type armor, extra flags inventory.\nWeight is 2.8 pounds, value is 32, level is 14.\nMaterial is leather.\nrestrict flags none.\nArmor class is 9 pierce, 9 bash, 9 slash, and 0 vs. magic.\nAffects hp by 6.\nAffects dexterity by 1."
   },
   {
     "name": "a pair of leather leggings",
     "vnum": "custom_0024",
-    "details": "Area: The City of Sudharma\nObject 'a pair of leather leggings' is type armor, extra flags inventory.\nWeight is 3.9 pounds, value is 43, level is 14.\nMaterial is leather.\nrestrict flags none.\nArmor class is 7 pierce, 7 bash, 7 slash, and 0 vs. magic.\nAffects moves by 9.\nAffects dexterity by 1.\nAffects hp by 4.\nThe shopkeeper tells you 'This item costs 55 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'a pair of leather leggings' is type armor, extra flags inventory.\nWeight is 3.9 pounds, value is 43, level is 14.\nMaterial is leather.\nrestrict flags none.\nArmor class is 7 pierce, 7 bash, 7 slash, and 0 vs. magic.\nAffects moves by 9.\nAffects dexterity by 1.\nAffects hp by 4."
   },
   {
     "name": "a leather helmet with earflaps",
     "vnum": "custom_0025",
-    "details": "Area: The City of Sudharma\nObject 'a leather helmet with earflaps' is type armor, extra flags inventory.\nWeight is 5.3 pounds, value is 43, level is 14.\nMaterial is leather.\nrestrict flags none.\nArmor class is 4 pierce, 4 bash, 4 slash, and 0 vs. magic.\nAffects moves by 15.\nAffects wisdom by 2.\nAffects intelligence by 2.\nThe shopkeeper tells you 'This item costs 55 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'a leather helmet with earflaps' is type armor, extra flags inventory.\nWeight is 5.3 pounds, value is 43, level is 14.\nMaterial is leather.\nrestrict flags none.\nArmor class is 4 pierce, 4 bash, 4 slash, and 0 vs. magic.\nAffects moves by 15.\nAffects wisdom by 2.\nAffects intelligence by 2."
   },
   {
     "name": "a dark leather jacket",
     "vnum": "custom_0026",
-    "details": "Area: The City of Sudharma\nObject 'a dark leather jacket' is type armor, extra flags inventory.\nWeight is 7.6 pounds, value is 55, level is 14.\nMaterial is leather.\nrestrict flags none.\nArmor class is 9 pierce, 9 bash, 9 slash, and 0 vs. magic.\nAffects moves by 15.\nAffects dexterity by 1.\nThe shopkeeper tells you 'This item costs 71 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'a dark leather jacket' is type armor, extra flags inventory.\nWeight is 7.6 pounds, value is 55, level is 14.\nMaterial is leather.\nrestrict flags none.\nArmor class is 9 pierce, 9 bash, 9 slash, and 0 vs. magic.\nAffects moves by 15.\nAffects dexterity by 1."
   },
   {
     "name": "a dark leather cowl",
     "vnum": "custom_0027",
-    "details": "Area: The City of Sudharma\nObject 'a dark leather cowl' is type armor, extra flags inventory.\nWeight is 7.5 pounds, value is 43, level is 14.\nMaterial is leather and ebony.\nrestrict flags none.\nArmor class is 3 pierce, 3 bash, 3 slash, and 3 vs. magic.\nAffects hp by 7.\nAffects armor class by -4.\nThe shopkeeper tells you 'This item costs 55 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'a dark leather cowl' is type armor, extra flags inventory.\nWeight is 7.5 pounds, value is 43, level is 14.\nMaterial is leather and ebony.\nrestrict flags none.\nArmor class is 3 pierce, 3 bash, 3 slash, and 3 vs. magic.\nAffects hp by 7.\nAffects armor class by -4."
   },
   {
     "name": "a pair of ringmail gauntlets",
     "vnum": "custom_0028",
-    "details": "Area: The City of Sudharma\nObject 'a pair of ringmail gauntlets' is type armor, extra flags inventory.\nWeight is 8.8 pounds, value is 51, level is 14.\nMaterial is metal.\nrestrict flags none.\nArmor class is 5 pierce, 8 bash, 8 slash, and 1 vs. magic.\nAffects hp by 5.\nAffects wisdom by 1.\nAffects intelligence by 1.\nAffects strength by 1.\nThe shopkeeper tells you 'This item costs 66 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'a pair of ringmail gauntlets' is type armor, extra flags inventory.\nWeight is 8.8 pounds, value is 51, level is 14.\nMaterial is metal.\nrestrict flags none.\nArmor class is 5 pierce, 8 bash, 8 slash, and 1 vs. magic.\nAffects hp by 5.\nAffects wisdom by 1.\nAffects intelligence by 1.\nAffects strength by 1."
   },
   {
     "name": "a pair of ringmail sleeves",
     "vnum": "custom_0029",
-    "details": "Area: The City of Sudharma\nObject 'a pair of ringmail sleeves' is type armor, extra flags inventory.\nWeight is 9.1 pounds, value is 70, level is 14.\nMaterial is metal.\nrestrict flags none.\nArmor class is 4 pierce, 9 bash, 9 slash, and 1 vs. magic.\nAffects hp by 8.\nAffects dexterity by 2.\nThe shopkeeper tells you 'This item costs 91 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'a pair of ringmail sleeves' is type armor, extra flags inventory.\nWeight is 9.1 pounds, value is 70, level is 14.\nMaterial is metal.\nrestrict flags none.\nArmor class is 4 pierce, 9 bash, 9 slash, and 1 vs. magic.\nAffects hp by 8.\nAffects dexterity by 2."
   },
   {
     "name": "a pair of ringmail leggings",
     "vnum": "custom_0030",
-    "details": "Area: The City of Sudharma\nObject 'a pair of ringmail leggings' is type armor, extra flags inventory.\nWeight is 12.4 pounds, value is 78, level is 14.\nMaterial is metal.\nrestrict flags none.\nArmor class is 4 pierce, 9 bash, 9 slash, and 1 vs. magic.\nAffects moves by 10.\nAffects hp by 5.\nAffects strength by 1.\nThe shopkeeper tells you 'This item costs 101 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'a pair of ringmail leggings' is type armor, extra flags inventory.\nWeight is 12.4 pounds, value is 78, level is 14.\nMaterial is metal.\nrestrict flags none.\nArmor class is 4 pierce, 9 bash, 9 slash, and 1 vs. magic.\nAffects moves by 10.\nAffects hp by 5.\nAffects strength by 1."
   }
   ,
   {
     "name": "a small polished sandstone",
     "vnum": "custom_0031",
-    "details": "Area: The City of Sudharma\nObject 'a small polished sandstone' is type treasure, extra flags inventory.\nWeight is 1.2 pounds, value is 30, level is 5.\nMaterial is sandstone.\nrestrict flags none.\nAffects mana by 14.\nThe shopkeeper tells you 'This item costs 34 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'a small polished sandstone' is type treasure, extra flags inventory.\nWeight is 1.2 pounds, value is 30, level is 5.\nMaterial is sandstone.\nrestrict flags none.\nAffects mana by 14."
   },
   {
     "name": "a colorful polished stone",
     "vnum": "custom_0032",
-    "details": "Area: The City of Sudharma\nObject 'a colorful polished stone' is type treasure, extra flags inventory.\nWeight is 1.2 pounds, value is 35, level is 10.\nMaterial is stone.\nrestrict flags none.\nAffects hp by 15.\nThe shopkeeper tells you 'This item costs 40 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'a colorful polished stone' is type treasure, extra flags inventory.\nWeight is 1.2 pounds, value is 35, level is 10.\nMaterial is stone.\nrestrict flags none.\nAffects hp by 15."
   },
   {
     "name": "a colorful dragonscale ring of protection",
     "vnum": "custom_0033",
-    "details": "Area: The City of Sudharma\nObject 'a colorful dragonscale ring of protection' is type jewelry, extra flags inventory.\nWeight is 0.3 pounds, value is 117, level is 10.\nMaterial is dragonscale.\nrestrict flags none.\nAffects strength by 1.\nAffects armor class by -7.\nThe shopkeeper tells you 'This item costs 134 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'a colorful dragonscale ring of protection' is type jewelry, extra flags inventory.\nWeight is 0.3 pounds, value is 117, level is 10.\nMaterial is dragonscale.\nrestrict flags none.\nAffects strength by 1.\nAffects armor class by -7."
   },
   {
     "name": "a metallic dragonscale ring of protection",
     "vnum": "custom_0034",
-    "details": "Area: The City of Sudharma\nObject 'a metallic dragonscale ring of protection' is type jewelry, extra flags inventory.\nWeight is 0.7 pounds, value is 117, level is 10.\nMaterial is dragonscale and gold and silver and bronze and brass and copper.\nrestrict flags none.\nAffects constitution by 1.\nAffects armor class by -7.\nThe shopkeeper tells you 'This item costs 134 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'a metallic dragonscale ring of protection' is type jewelry, extra flags inventory.\nWeight is 0.7 pounds, value is 117, level is 10.\nMaterial is dragonscale and gold and silver and bronze and brass and copper.\nrestrict flags none.\nAffects constitution by 1.\nAffects armor class by -7."
   },
   {
     "name": "a mystical timestone",
     "vnum": "custom_0035",
-    "details": "Area: The City of Sudharma\nObject 'a mystical timestone' is type treasure, extra flags inventory.\nWeight is 1.2 pounds, value is 46, level is 12.\nMaterial is stone.\nrestrict flags none.\nAffects save vs spell by -5.\nThe shopkeeper tells you 'This item costs 52 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'a mystical timestone' is type treasure, extra flags inventory.\nWeight is 1.2 pounds, value is 46, level is 12.\nMaterial is stone.\nrestrict flags none.\nAffects save vs spell by -5."
   },
   {
     "name": "an ivory insect with tiny black diamond eyes",
     "vnum": "custom_0036",
-    "details": "Area: The City of Sudharma\nObject 'an ivory insect with tiny black diamond eyes' is type treasure, extra flags inventory.\nWeight is 2.4 pounds, value is 166, level is 12.\nMaterial is ivory and diamond.\nrestrict flags none.\nAffects moves by 45.\nThe shopkeeper tells you 'This item costs 190 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'an ivory insect with tiny black diamond eyes' is type treasure, extra flags inventory.\nWeight is 2.4 pounds, value is 166, level is 12.\nMaterial is ivory and diamond.\nrestrict flags none.\nAffects moves by 45."
   },
   {
     "name": "an adamantite, bronze, and copper braided necklace",
     "vnum": "custom_0037",
-    "details": "Area: The City of Sudharma\nObject 'an adamantite, bronze, and copper braided necklace' is type jewelry, extra flags inventory.\nWeight is 2.4 pounds, value is 780, level is 15.\nMaterial is bronze and copper and adamantite.\nrestrict flags none.\nAffects save vs maledictions by -6.\nThe shopkeeper tells you 'This item costs 897 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'an adamantite, bronze, and copper braided necklace' is type jewelry, extra flags inventory.\nWeight is 2.4 pounds, value is 780, level is 15.\nMaterial is bronze and copper and adamantite.\nrestrict flags none.\nAffects save vs maledictions by -6."
   },
   {
     "name": "a brass, mithril, and pewter braided necklace",
     "vnum": "custom_0038",
-    "details": "Area: The City of Sudharma\nObject 'a brass, mithril, and pewter braided necklace' is type jewelry, extra flags inventory.\nWeight is 2.1 pounds, value is 952, level is 15.\nMaterial is pewter and brass and mithril.\nrestrict flags none.\nAffects save vs spell by -7.\nThe shopkeeper tells you 'This item costs 1094 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'a brass, mithril, and pewter braided necklace' is type jewelry, extra flags inventory.\nWeight is 2.1 pounds, value is 952, level is 15.\nMaterial is pewter and brass and mithril.\nrestrict flags none.\nAffects save vs spell by -7."
   },
   {
     "name": "a gold, silver, and platinum braided necklace",
     "vnum": "custom_0039",
-    "details": "Area: The City of Sudharma\nObject 'a gold, silver, and platinum braided necklace' is type jewelry, extra flags inventory.\nWeight is 2.3 pounds, value is 2938, level is 15.\nMaterial is gold and silver and platinum.\nrestrict flags none.\nAffects save vs spell by -3.\nAffects saves by -2.\nThe shopkeeper tells you 'This item costs 3378 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'a gold, silver, and platinum braided necklace' is type jewelry, extra flags inventory.\nWeight is 2.3 pounds, value is 2938, level is 15.\nMaterial is gold and silver and platinum.\nrestrict flags none.\nAffects save vs spell by -3.\nAffects saves by -2."
   },
   {
     "name": "an onyx and obsidian bracelet",
     "vnum": "custom_0040",
-    "details": "Area: The City of Sudharma\nObject 'an onyx and obsidian bracelet' is type jewelry, extra flags inventory.\nWeight is 3.3 pounds, value is 2608, level is 22.\nMaterial is platinum and obsidian and onyx.\nrestrict flags none.\nAffects sight by 2.\nAdds invisible affect.\nThe shopkeeper tells you 'This item costs 2999 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'an onyx and obsidian bracelet' is type jewelry, extra flags inventory.\nWeight is 3.3 pounds, value is 2608, level is 22.\nMaterial is platinum and obsidian and onyx.\nrestrict flags none.\nAffects sight by 2.\nAdds invisible affect."
   },
   {
     "name": "a coral bracelet",
     "vnum": "custom_0041",
-    "details": "Area: The City of Sudharma\nObject 'a coral bracelet' is type jewelry, extra flags inventory.\nWeight is 3.3 pounds, value is 2608, level is 22.\nMaterial is coral and pewter.\nrestrict flags none.\nAffects damage roll by 3.\nAffects hit roll by 3.\nAffects armor class by -3.\nThe shopkeeper tells you 'This item costs 2999 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'a coral bracelet' is type jewelry, extra flags inventory.\nWeight is 3.3 pounds, value is 2608, level is 22.\nMaterial is coral and pewter.\nrestrict flags none.\nAffects damage roll by 3.\nAffects hit roll by 3.\nAffects armor class by -3."
   }
   ,
   {
     "name": "a polished marble ring",
     "vnum": "custom_0042",
-    "details": "Area: The City of Sudharma\nObject 'a polished marble ring' is type jewelry, extra flags inventory.\nWeight is 0.3 pounds, value is 9711, level is 25.\nMaterial is marble.\nrestrict flags none.\nThe shopkeeper tells you 'This item costs 9711 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'a polished marble ring' is type jewelry, extra flags inventory.\nWeight is 0.3 pounds, value is 9711, level is 25.\nMaterial is marble.\nrestrict flags none."
   },
   {
     "name": "a polished ebony ring",
     "vnum": "custom_0043",
-    "details": "Area: The City of Sudharma\nObject 'a polished ebony ring' is type jewelry, extra flags inventory.\nWeight is 0.3 pounds, value is 14964, level is 25.\nMaterial is ebony.\nrestrict flags none.\nThe shopkeeper tells you 'This item costs 14964 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'a polished ebony ring' is type jewelry, extra flags inventory.\nWeight is 0.3 pounds, value is 14964, level is 25.\nMaterial is ebony.\nrestrict flags none."
   },
   {
     "name": "a polished ebony ring",
     "vnum": "custom_0044",
-    "details": "Area: The City of Sudharma\nObject 'a polished ebony ring' is type jewelry, extra flags inventory.\nWeight is 0.3 pounds, value is 14964, level is 25.\nMaterial is ebony.\nrestrict flags none.\nThe shopkeeper tells you 'This item costs 14964 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'a polished ebony ring' is type jewelry, extra flags inventory.\nWeight is 0.3 pounds, value is 14964, level is 25.\nMaterial is ebony.\nrestrict flags none."
   },
   {
     "name": "a polished elysium ring",
     "vnum": "custom_0045",
-    "details": "Area: The City of Sudharma\nObject 'a polished elysium ring' is type jewelry, extra flags inventory.\nWeight is 0.3 pounds, value is 16014, level is 25.\nMaterial is elysium.\nrestrict flags none.\nThe shopkeeper tells you 'This item costs 16014 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'a polished elysium ring' is type jewelry, extra flags inventory.\nWeight is 0.3 pounds, value is 16014, level is 25.\nMaterial is elysium.\nrestrict flags none."
   },
   {
     "name": "a crystal suncatcher earring",
     "vnum": "custom_0046",
-    "details": "Area: The City of Sudharma\nObject 'a crystal suncatcher earring' is type jewelry, extra flags inventory.\nWeight is 1.3 pounds, value is 9243, level is 30.\nMaterial is crystal and mithril.\nrestrict flags none.\nThe shopkeeper tells you 'This item costs 9243 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'a crystal suncatcher earring' is type jewelry, extra flags inventory.\nWeight is 1.3 pounds, value is 9243, level is 30.\nMaterial is crystal and mithril.\nrestrict flags none."
   },
   {
     "name": "a green crystal suncatcher earring",
     "vnum": "custom_0047",
-    "details": "Area: The City of Sudharma\nObject 'a green crystal suncatcher earring' is type jewelry, extra flags bless inventory.\nWeight is 1.3 pounds, value is 7834, level is 30.\nMaterial is mithril and crystal.\nrestrict flags none.\nAffects moves by 88.\nThe shopkeeper tells you 'This item costs 9009 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'a green crystal suncatcher earring' is type jewelry, extra flags bless inventory.\nWeight is 1.3 pounds, value is 7834, level is 30.\nMaterial is mithril and crystal.\nrestrict flags none.\nAffects moves by 88."
   },
   {
     "name": "a red crystal suncatcher earring",
     "vnum": "custom_0048",
-    "details": "Area: The City of Sudharma\nObject 'a red crystal suncatcher earring' is type jewelry, extra flags bless inventory.\nWeight is 1.3 pounds, value is 7834, level is 30.\nMaterial is mithril and crystal.\nrestrict flags none.\nAffects hp by 33.\nThe shopkeeper tells you 'This item costs 9009 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'a red crystal suncatcher earring' is type jewelry, extra flags bless inventory.\nWeight is 1.3 pounds, value is 7834, level is 30.\nMaterial is mithril and crystal.\nrestrict flags none.\nAffects hp by 33."
   },
   {
     "name": "a blue crystal suncatcher earring",
     "vnum": "custom_0049",
-    "details": "Area: The City of Sudharma\nObject 'a blue crystal suncatcher earring' is type jewelry, extra flags bless inventory.\nWeight is 1.3 pounds, value is 7834, level is 30.\nMaterial is mithril and crystal.\nrestrict flags none.\nAffects mana by 47.\nThe shopkeeper tells you 'This item costs 9009 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'a blue crystal suncatcher earring' is type jewelry, extra flags bless inventory.\nWeight is 1.3 pounds, value is 7834, level is 30.\nMaterial is mithril and crystal.\nrestrict flags none.\nAffects mana by 47."
   },
   {
     "name": "a diamond suncatcher earring",
     "vnum": "custom_0050",
-    "details": "Area: The City of Sudharma\nObject 'a diamond suncatcher earring' is type jewelry, extra flags bless inventory.\nWeight is 1.3 pounds, value is 39065, level is 30.\nMaterial is silver and diamond.\nrestrict flags none.\nAffects save vs transport by -2.\nAffects damage roll by 3.\nAffects hit roll by 5.\nThe shopkeeper tells you 'This item costs 44924 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'a diamond suncatcher earring' is type jewelry, extra flags bless inventory.\nWeight is 1.3 pounds, value is 39065, level is 30.\nMaterial is silver and diamond.\nrestrict flags none.\nAffects save vs transport by -2.\nAffects damage roll by 3.\nAffects hit roll by 5."
   },
   {
     "name": "an earring of brass and dark blue goldstone",
     "vnum": "custom_0051",
-    "details": "Area: The City of Sudharma\nObject 'an earring of brass and dark blue goldstone' is type jewelry, extra flags bless inventory.\nWeight is 1.1 pounds, value is 6315, level is 34.\nMaterial is goldstone and brass.\nrestrict flags none.\nAffects saves by -2.\nAffects save vs maledictions by -7.\nThe shopkeeper tells you 'This item costs 7262 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'an earring of brass and dark blue goldstone' is type jewelry, extra flags bless inventory.\nWeight is 1.1 pounds, value is 6315, level is 34.\nMaterial is goldstone and brass.\nrestrict flags none.\nAffects saves by -2.\nAffects save vs maledictions by -7."
   },
   {
     "name": "a crystalline ball",
     "vnum": "custom_0052",
-    "details": "Area: The City of Sudharma\nObject 'a crystalline ball' is type treasure, extra flags inventory.\nWeight is 2.0 pounds, value is 8416, level is 36.\nMaterial is crystal.\nrestrict flags none.\nThe shopkeeper tells you 'This item costs 8416 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'a crystalline ball' is type treasure, extra flags inventory.\nWeight is 2.0 pounds, value is 8416, level is 36.\nMaterial is crystal.\nrestrict flags none."
   }
   ,
   {
     "name": "a bracelet engraved with runes",
     "vnum": "custom_0053",
-    "details": "Area: The City of Sudharma\nObject 'a bracelet engraved with runes' is type jewelry, extra flags burnproof.\nWeight is 3.6 pounds, value is 88600, level is 50.\nMaterial is silver.\nrestrict flags none.\nAffects spell power by 6.\nThe shopkeeper tells you 'This item costs 101890 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'a bracelet engraved with runes' is type jewelry, extra flags burnproof.\nWeight is 3.6 pounds, value is 88600, level is 50.\nMaterial is silver.\nrestrict flags none.\nAffects spell power by 6."
   },
   {
     "name": "a silver dragon earring",
     "vnum": "custom_0054",
-    "details": "Area: The City of Sudharma\nObject 'a silver dragon earring' is type jewelry, extra flags glowing.\nWeight is 1.3 pounds, value is 31000, level is 40.\nMaterial is silverdragonscale and dragonscale and silver.\nrestrict flags none.\nAffects spell power by 4.\nAffects armor class by -3.\nThe shopkeeper tells you 'This item costs 35650 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'a silver dragon earring' is type jewelry, extra flags glowing.\nWeight is 1.3 pounds, value is 31000, level is 40.\nMaterial is silverdragonscale and dragonscale and silver.\nrestrict flags none.\nAffects spell power by 4.\nAffects armor class by -3."
   },
   {
     "name": "a chain of bone",
     "vnum": "custom_0055",
-    "details": "Area: The City of Sudharma\nObject 'a chain of bone' is type jewelry, extra flags none.\nWeight is 1.1 pounds, value is 32603, level is 50.\nMaterial is bone.\nrestrict flags none.\nAffects spell power by 5.\nAffects mana by 30.\nThe shopkeeper tells you 'This item costs 37493 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'a chain of bone' is type jewelry, extra flags none.\nWeight is 1.1 pounds, value is 32603, level is 50.\nMaterial is bone.\nrestrict flags none.\nAffects spell power by 5.\nAffects mana by 30."
   },
   {
     "name": "a silver ring containing a golden chain around the center",
     "vnum": "custom_0056",
-    "details": "Area: The City of Sudharma\nObject 'a silver ring containing a golden chain around the center' is type jewelry, extra flags none.\nWeight is 0.9 pounds, value is 10404, level is 40.\nMaterial is gold and silver.\nrestrict flags none.\nAffects holy power by 1.\nAffects mana by 37.\nThe shopkeeper tells you 'This item costs 11964 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'a silver ring containing a golden chain around the center' is type jewelry, extra flags none.\nWeight is 0.9 pounds, value is 10404, level is 40.\nMaterial is gold and silver.\nrestrict flags none.\nAffects holy power by 1.\nAffects mana by 37."
   },
   {
     "name": "an abalone rune tree ring",
     "vnum": "custom_0057",
-    "details": "Area: The City of Sudharma\nObject 'an abalone rune tree ring' is type jewelry, extra flags none.\nWeight is 1.2 pounds, value is 9800, level is 40.\nMaterial is granite and abalone shell.\nrestrict flags none.\nAffects spell power by 2.\nAffects mana by 37.\nThe shopkeeper tells you 'This item costs 11270 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'an abalone rune tree ring' is type jewelry, extra flags none.\nWeight is 1.2 pounds, value is 9800, level is 40.\nMaterial is granite and abalone shell.\nrestrict flags none.\nAffects spell power by 2.\nAffects mana by 37."
   },
   {
     "name": "an engraved Eye of the Beholder ring",
     "vnum": "custom_0058",
-    "details": "Area: The City of Sudharma\nObject 'an engraved Eye of the Beholder ring' is type jewelry, extra flags none.\nWeight is 0.4 pounds, value is 9600, level is 40.\nMaterial is steel and enamel.\nrestrict flags none.\nAffects sight by 2.\nAdds detect_invis affect.\nAffects hit roll by 1.\nAffects dexterity by 2.\nThe shopkeeper tells you 'This item costs 11040 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'an engraved Eye of the Beholder ring' is type jewelry, extra flags none.\nWeight is 0.4 pounds, value is 9600, level is 40.\nMaterial is steel and enamel.\nrestrict flags none.\nAffects sight by 2.\nAdds detect_invis affect.\nAffects hit roll by 1.\nAffects dexterity by 2."
   },
   {
     "name": "a black dragon earring",
     "vnum": "custom_0059",
-    "details": "Area: The City of Sudharma\nObject 'a black dragon earring' is type jewelry, extra flags glowing.\nWeight is 1.3 pounds, value is 29000, level is 40.\nMaterial is blackdragonscale and dragonscale and steel.\nrestrict flags none.\nAffects damage roll by 8.\nThe shopkeeper tells you 'This item costs 33350 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'a black dragon earring' is type jewelry, extra flags glowing.\nWeight is 1.3 pounds, value is 29000, level is 40.\nMaterial is blackdragonscale and dragonscale and steel.\nrestrict flags none.\nAffects damage roll by 8."
   },
   {
     "name": "a gold dragon earring",
     "vnum": "custom_0060",
-    "details": "Area: The City of Sudharma\nObject 'a gold dragon earring' is type jewelry, extra flags glowing.\nWeight is 1.3 pounds, value is 33000, level is 40.\nMaterial is golddragonscale and dragonscale and gold.\nrestrict flags none.\nAffects holy power by 2.\nAffects armor class by -3.\nThe shopkeeper tells you 'This item costs 37950 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'a gold dragon earring' is type jewelry, extra flags glowing.\nWeight is 1.3 pounds, value is 33000, level is 40.\nMaterial is golddragonscale and dragonscale and gold.\nrestrict flags none.\nAffects holy power by 2.\nAffects armor class by -3."
   },
   {
     "name": "a braided hemp bracelet",
     "vnum": "custom_0061",
-    "details": "Area: The City of Sudharma\nObject 'a braided hemp bracelet' is type jewelry, extra flags none.\nWeight is 1.1 pounds, value is 4866, level is 40.\nMaterial is hemp.\nrestrict flags none.\nAffects mana by 30.\nAffects dexterity by 5.\nThe shopkeeper tells you 'This item costs 5595 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'a braided hemp bracelet' is type jewelry, extra flags none.\nWeight is 1.1 pounds, value is 4866, level is 40.\nMaterial is hemp.\nrestrict flags none.\nAffects mana by 30.\nAffects dexterity by 5."
   },
   {
     "name": "a woven canvas bracelet",
     "vnum": "custom_0062",
-    "details": "Area: The City of Sudharma\nObject 'a woven canvas bracelet' is type jewelry, extra flags none.\nWeight is 0.9 pounds, value is 5315, level is 40.\nMaterial is canvas.\nrestrict flags none.\nAffects armor class by -19.\nThe shopkeeper tells you 'This item costs 6112 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'a woven canvas bracelet' is type jewelry, extra flags none.\nWeight is 0.9 pounds, value is 5315, level is 40.\nMaterial is canvas.\nrestrict flags none.\nAffects armor class by -19."
   },
   {
     "name": "a curious looking bracelet",
     "vnum": "custom_0063",
-    "details": "Area: The City of Sudharma\nObject 'a curious looking bracelet' is type jewelry, extra flags none.\nWeight is 2.3 pounds, value is 11154, level is 40.\nMaterial is glass and parchment.\nrestrict flags none.\nAffects regeneration by 1.\nAffects dexterity by 4.\nThe shopkeeper tells you 'This item costs 12827 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'a curious looking bracelet' is type jewelry, extra flags none.\nWeight is 2.3 pounds, value is 11154, level is 40.\nMaterial is glass and parchment.\nrestrict flags none.\nAffects regeneration by 1.\nAffects dexterity by 4."
   },
   {
     "name": "a multistone necklace",
     "vnum": "custom_0064",
-    "details": "Area: The City of Sudharma\nObject 'a multistone necklace' is type jewelry, extra flags nouncurse pulsing.\nWeight is 1.8 pounds, value is 14380, level is 40.\nMaterial is copper and quartz and goldstone and pearl and jade.\nrestrict flags none.\nAffects regeneration by 1.\nAffects armor class by -4.\nAffects hp by 15.\nThe shopkeeper tells you 'This item costs 16537 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'a multistone necklace' is type jewelry, extra flags nouncurse pulsing.\nWeight is 1.8 pounds, value is 14380, level is 40.\nMaterial is copper and quartz and goldstone and pearl and jade.\nrestrict flags none.\nAffects regeneration by 1.\nAffects armor class by -4.\nAffects hp by 15."
   },
   {
     "name": "a copper interlocking box chain ring",
     "vnum": "custom_0065",
-    "details": "Area: The City of Sudharma\nObject 'a copper interlocking box chain ring' is type jewelry, extra flags burnproof.\nWeight is 0.7 pounds, value is 39000, level is 50.\nMaterial is copper and iron.\nrestrict flags none.\nAffects damage roll by 10.\nAffects hit roll by 3.\nThe shopkeeper tells you 'This item costs 44850 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'a copper interlocking box chain ring' is type jewelry, extra flags burnproof.\nWeight is 0.7 pounds, value is 39000, level is 50.\nMaterial is copper and iron.\nrestrict flags none.\nAffects damage roll by 10.\nAffects hit roll by 3."
   },
   {
     "name": "a ring engraved with runes",
     "vnum": "custom_0066",
-    "details": "Area: The City of Sudharma\nObject 'a ring engraved with runes' is type jewelry, extra flags burnproof.\nWeight is 0.7 pounds, value is 88600, level is 50.\nMaterial is silver.\nrestrict flags none.\nAffects spell power by 6.\nThe shopkeeper tells you 'This item costs 101890 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'a ring engraved with runes' is type jewelry, extra flags burnproof.\nWeight is 0.7 pounds, value is 88600, level is 50.\nMaterial is silver.\nrestrict flags none.\nAffects spell power by 6."
   },
   {
     "name": "a gold box chain ring",
     "vnum": "custom_0067",
-    "details": "Area: The City of Sudharma\nObject 'a gold box chain ring' is type jewelry, extra flags burnproof.\nWeight is 0.7 pounds, value is 103500, level is 50.\nMaterial is gold.\nrestrict flags none.\nThe shopkeeper tells you 'This item costs 103500 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'a gold box chain ring' is type jewelry, extra flags burnproof.\nWeight is 0.7 pounds, value is 103500, level is 50.\nMaterial is gold.\nrestrict flags none."
   },
   {
     "name": "a copper interlocking box chain bracelet",
     "vnum": "custom_0068",
-    "details": "Area: The City of Sudharma\nObject 'a copper interlocking box chain bracelet' is type jewelry, extra flags burnproof.\nWeight is 3.9 pounds, value is 39000, level is 50.\nMaterial is copper and iron.\nrestrict flags none.\nAffects damage roll by 10.\nAffects hit roll by 3.\nThe shopkeeper tells you 'This item costs 44850 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'a copper interlocking box chain bracelet' is type jewelry, extra flags burnproof.\nWeight is 3.9 pounds, value is 39000, level is 50.\nMaterial is copper and iron.\nrestrict flags none.\nAffects damage roll by 10.\nAffects hit roll by 3."
   },
   {
     "name": "a dangling bone earring",
     "vnum": "custom_0069",
-    "details": "Area: The City of Sudharma\nObject 'a dangling bone earring' is type jewelry, extra flags none.\nWeight is 0.9 pounds, value is 31000, level is 50.\nMaterial is bone.\nrestrict flags none.\nAffects hp by 40.\nAffects mana by 40.\nThe shopkeeper tells you 'This item costs 35650 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'a dangling bone earring' is type jewelry, extra flags none.\nWeight is 0.9 pounds, value is 31000, level is 50.\nMaterial is bone.\nrestrict flags none.\nAffects hp by 40.\nAffects mana by 40."
   },
   {
     "name": "a dangling skull earring",
     "vnum": "custom_0070",
-    "details": "Area: The City of Sudharma\nObject 'a dangling skull earring' is type jewelry, extra flags none.\nWeight is 1.2 pounds, value is 55400, level is 50.\nMaterial is bone and gold.\nrestrict flags none.\nAffects save vs spell by -3.\nAffects save vs transport by -3.\nAffects save vs maledictions by -3.\nAffects saves by -3.\nAffects armor class by -15.\nThe shopkeeper tells you 'This item costs 63710 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'a dangling skull earring' is type jewelry, extra flags none.\nWeight is 1.2 pounds, value is 55400, level is 50.\nMaterial is bone and gold.\nrestrict flags none.\nAffects save vs spell by -3.\nAffects save vs transport by -3.\nAffects save vs maledictions by -3.\nAffects saves by -3.\nAffects armor class by -15."
   },
   {
     "name": "a gold box chain bracelet",
     "vnum": "custom_0071",
-    "details": "Area: The City of Sudharma\nObject 'a gold box chain bracelet' is type jewelry, extra flags burnproof.\nWeight is 3.9 pounds, value is 103500, level is 50.\nMaterial is gold.\nrestrict flags none.\nThe shopkeeper tells you 'This item costs 103500 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'a gold box chain bracelet' is type jewelry, extra flags burnproof.\nWeight is 3.9 pounds, value is 103500, level is 50.\nMaterial is gold.\nrestrict flags none."
   },
   {
     "name": "a string of pearls",
     "vnum": "custom_0072",
-    "details": "Area: The City of Sudharma\nObject 'a string of pearls' is type jewelry, extra flags none.\nWeight is 1.1 pounds, value is 65000, level is 50.\nMaterial is pearl.\nrestrict flags none.\nAffects holy power by 2.\nAffects mana by 51.\nThe shopkeeper tells you 'This item costs 74750 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'a string of pearls' is type jewelry, extra flags none.\nWeight is 1.1 pounds, value is 65000, level is 50.\nMaterial is pearl.\nrestrict flags none.\nAffects holy power by 2.\nAffects mana by 51."
   },
   {
     "name": "a rare harp shell pendant necklace",
     "vnum": "custom_0073",
-    "details": "Area: The City of Sudharma\nObject 'a rare harp shell pendant necklace' is type jewelry, extra flags nouncurse pulsing.\nWeight is 2.0 pounds, value is 176256, level is 50.\nMaterial is shell and gold.\nrestrict flags none.\nAffects holy power by 4.\nAdds vulnerability to sound.\nThe shopkeeper tells you 'This item costs 202694 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'a rare harp shell pendant necklace' is type jewelry, extra flags nouncurse pulsing.\nWeight is 2.0 pounds, value is 176256, level is 50.\nMaterial is shell and gold.\nrestrict flags none.\nAffects holy power by 4.\nAdds vulnerability to sound."
   }
   ,
   {
     "name": "a lace 'training' bandeau",
     "vnum": "custom_0074",
-    "details": "Area: The City of Sudharma\nObject 'a lace 'training' bandeau' is type clothing, extra flags inventory female_only.\nWeight is 2.6 pounds, value is 19, level is 10.\nMaterial is lace cotton.\nrestrict flags none.\nAffects hp by 15.\nAffects mana by 2.\nThe shopkeeper tells you 'This item costs 20 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'a lace 'training' bandeau' is type clothing, extra flags inventory female_only.\nWeight is 2.6 pounds, value is 19, level is 10.\nMaterial is lace cotton.\nrestrict flags none.\nAffects hp by 15.\nAffects mana by 2."
   },
   {
     "name": "a sandy-hued lace bandeau",
     "vnum": "custom_0075",
-    "details": "Area: The City of Sudharma\nObject 'a sandy-hued lace bandeau' is type clothing, extra flags inventory female_only.\nWeight is 2.8 pounds, value is 23, level is 12.\nMaterial is lace cloth.\nrestrict flags none.\nAffects damage roll by 1.\nAffects hit roll by 1.\nAffects hp by 8.\nAffects mana by 6.\nThe shopkeeper tells you 'This item costs 25 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'a sandy-hued lace bandeau' is type clothing, extra flags inventory female_only.\nWeight is 2.8 pounds, value is 23, level is 12.\nMaterial is lace cloth.\nrestrict flags none.\nAffects damage roll by 1.\nAffects hit roll by 1.\nAffects hp by 8.\nAffects mana by 6."
   },
   {
     "name": "a light brown colored lace bandeau",
     "vnum": "custom_0076",
-    "details": "Area: The City of Sudharma\nObject 'a light brown colored lace bandeau' is type clothing, extra flags inventory female_only.\nWeight is 3.0 pounds, value is 115, level is 20.\nMaterial is lace cloth.\nrestrict flags none.\nAffects moves by 50.\nAffects hp by 6.\nThe shopkeeper tells you 'This item costs 126 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'a light brown colored lace bandeau' is type clothing, extra flags inventory female_only.\nWeight is 3.0 pounds, value is 115, level is 20.\nMaterial is lace cloth.\nrestrict flags none.\nAffects moves by 50.\nAffects hp by 6."
   },
   {
     "name": "a dark brown colored lace bandeau",
     "vnum": "custom_0077",
-    "details": "Area: The City of Sudharma\nObject 'a dark brown colored lace bandeau' is type clothing, extra flags inventory female_only.\nWeight is 3.2 pounds, value is 221, level is 25.\nMaterial is lace cloth.\nrestrict flags none.\nAffects damage roll by 1.\nAffects hit roll by 1.\nAffects armor class by -7.\nAffects hp by 2.\nThe shopkeeper tells you 'This item costs 243 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'a dark brown colored lace bandeau' is type clothing, extra flags inventory female_only.\nWeight is 3.2 pounds, value is 221, level is 25.\nMaterial is lace cloth.\nrestrict flags none.\nAffects damage roll by 1.\nAffects hit roll by 1.\nAffects armor class by -7.\nAffects hp by 2."
   },
   {
     "name": "a black silk lace bandeau",
     "vnum": "custom_0078",
-    "details": "Area: The City of Sudharma\nObject 'a black silk lace bandeau' is type clothing, extra flags inventory female_only.\nWeight is 3.5 pounds, value is 310, level is 30.\nMaterial is lace silk.\nrestrict flags none.\nAffects armor class by -3.\nAffects moves by 25.\nAffects hp by 5.\nAffects mana by 25.\nThe shopkeeper tells you 'This item costs 341 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'a black silk lace bandeau' is type clothing, extra flags inventory female_only.\nWeight is 3.5 pounds, value is 310, level is 30.\nMaterial is lace silk.\nrestrict flags none.\nAffects armor class by -3.\nAffects moves by 25.\nAffects hp by 5.\nAffects mana by 25."
   },
   {
     "name": "a white silk lace bandeau",
     "vnum": "custom_0079",
-    "details": "Area: The City of Sudharma\nObject 'a white silk lace bandeau' is type clothing, extra flags inventory female_only.\nWeight is 3.5 pounds, value is 310, level is 30.\nMaterial is lace silk.\nrestrict flags none.\nAffects armor class by -3.\nAffects hp by 25.\nAffects mana by 25.\nThe shopkeeper tells you 'This item costs 341 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'a white silk lace bandeau' is type clothing, extra flags inventory female_only.\nWeight is 3.5 pounds, value is 310, level is 30.\nMaterial is lace silk.\nrestrict flags none.\nAffects armor class by -3.\nAffects hp by 25.\nAffects mana by 25."
   },
   {
     "name": "a mystical grey silk lace bandeau",
     "vnum": "custom_0080",
-    "details": "Area: The City of Sudharma\nObject 'a mystical grey silk lace bandeau' is type clothing, extra flags magic female_only.\nWeight is 4.0 pounds, value is 4500, level is 40.\nMaterial is lace silk.\nrestrict flags none.\nAffects spell power by 2.\nAffects mana by 40.\nThe shopkeeper tells you 'This item costs 4950 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'a mystical grey silk lace bandeau' is type clothing, extra flags magic female_only.\nWeight is 4.0 pounds, value is 4500, level is 40.\nMaterial is lace silk.\nrestrict flags none.\nAffects spell power by 2.\nAffects mana by 40."
   },
   {
     "name": "a blessed dark grey silk lace bandeau",
     "vnum": "custom_0081",
-    "details": "Area: The City of Sudharma\nObject 'a blessed dark grey silk lace bandeau' is type clothing, extra flags bless female_only.\nWeight is 4.0 pounds, value is 4500, level is 40.\nMaterial is lace silk.\nrestrict flags none.\nAffects holy power by 2.\nAffects mana by 14.\nThe shopkeeper tells you 'This item costs 4950 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'a blessed dark grey silk lace bandeau' is type clothing, extra flags bless female_only.\nWeight is 4.0 pounds, value is 4500, level is 40.\nMaterial is lace silk.\nrestrict flags none.\nAffects holy power by 2.\nAffects mana by 14."
   },
   {
     "name": "a mystical teal silk lace bandeau",
     "vnum": "custom_0082",
-    "details": "Area: The City of Sudharma\nObject 'a mystical teal silk lace bandeau' is type clothing, extra flags magic female_only.\nWeight is 4.4 pounds, value is 11700, level is 51.\nMaterial is lace silk.\nrestrict flags none.\nAffects spell power by 6.\nAffects mana by 22.\nThe shopkeeper tells you 'This item costs 12870 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'a mystical teal silk lace bandeau' is type clothing, extra flags magic female_only.\nWeight is 4.4 pounds, value is 11700, level is 51.\nMaterial is lace silk.\nrestrict flags none.\nAffects spell power by 6.\nAffects mana by 22."
   },
   {
     "name": "a blessed purple silk lace bandeau",
     "vnum": "custom_0083",
-    "details": "Area: The City of Sudharma\nObject 'a blessed purple silk lace bandeau' is type clothing, extra flags bless female_only.\nWeight is 4.4 pounds, value is 4500, level is 51.\nMaterial is lace silk.\nrestrict flags none.\nAffects sight by -2.\nAffects holy power by 3.\nAffects mana by 33.\nThe shopkeeper tells you 'This item costs 4950 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'a blessed purple silk lace bandeau' is type clothing, extra flags bless female_only.\nWeight is 4.4 pounds, value is 4500, level is 51.\nMaterial is lace silk.\nrestrict flags none.\nAffects sight by -2.\nAffects holy power by 3.\nAffects mana by 33."
   },
   {
     "name": "a purple and white silk lace bandeau",
     "vnum": "custom_0084",
-    "details": "Area: The City of Sudharma\nObject 'a purple and white silk lace bandeau' is type clothing, extra flags burnproof female_only.\nWeight is 4.4 pounds, value is 4500, level is 51.\nMaterial is lace silk.\nrestrict flags none.\nAffects damage roll by 11.\nAffects hit roll by 3.\nAffects moves by 4.\nThe shopkeeper tells you 'This item costs 4950 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'a purple and white silk lace bandeau' is type clothing, extra flags burnproof female_only.\nWeight is 4.4 pounds, value is 4500, level is 51.\nMaterial is lace silk.\nrestrict flags none.\nAffects damage roll by 11.\nAffects hit roll by 3.\nAffects moves by 4."
   },
   {
     "name": "an iron nail",
     "vnum": "custom_0090",
-    "details": "Area: The City of Sudharma\nObject 'an iron nail' is type treasure, extra flags inventory.\nWeight is 0.3 pounds, value is 37, level is 5.\nMaterial is iron.\nrestrict flags none.\nAffects moves by 25.\nThe shopkeeper tells you 'This item costs 53 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'an iron nail' is type treasure, extra flags inventory.\nWeight is 0.3 pounds, value is 37, level is 5.\nMaterial is iron.\nrestrict flags none.\nAffects moves by 25."
   },
   {
     "name": "a copper screw",
     "vnum": "custom_0091",
-    "details": "Area: The City of Sudharma\nObject 'a copper screw' is type treasure, extra flags inventory.\nWeight is 0.3 pounds, value is 57, level is 5.\nMaterial is copper.\nrestrict flags none.\nAffects mana by 14.\nThe shopkeeper tells you 'This item costs 82 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'a copper screw' is type treasure, extra flags inventory.\nWeight is 0.3 pounds, value is 57, level is 5.\nMaterial is copper.\nrestrict flags none.\nAffects mana by 14."
   },
   {
     "name": "a nut and bolt",
     "vnum": "custom_0092",
-    "details": "Area: The City of Sudharma\nObject 'a nut and bolt' is type treasure, extra flags inventory.\nWeight is 0.8 pounds, value is 167, level is 5.\nMaterial is platinum.\nrestrict flags none.\nAffects hp by 1.\nAffects armor class by -6.\nThe shopkeeper tells you 'This item costs 242 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'a nut and bolt' is type treasure, extra flags inventory.\nWeight is 0.8 pounds, value is 167, level is 5.\nMaterial is platinum.\nrestrict flags none.\nAffects hp by 1.\nAffects armor class by -6."
   },
   {
     "name": "a brass wagon bolt",
     "vnum": "custom_0093",
-    "details": "Area: The City of Sudharma\nObject 'a brass wagon bolt' is type treasure, extra flags inventory.\nWeight is 0.5 pounds, value is 126, level is 5.\nMaterial is brass.\nrestrict flags none.\nAffects saves by -3.\nThe shopkeeper tells you 'This item costs 182 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'a brass wagon bolt' is type treasure, extra flags inventory.\nWeight is 0.5 pounds, value is 126, level is 5.\nMaterial is brass.\nrestrict flags none.\nAffects saves by -3."
   },
   {
     "name": "a titanium star bolt",
     "vnum": "custom_0094",
-    "details": "Area: The City of Sudharma\nObject 'a titanium star bolt' is type treasure, extra flags inventory.\nWeight is 1.0 pounds, value is 191, level is 5.\nMaterial is titanium.\nrestrict flags none.\nAffects intelligence by 3.\nThe shopkeeper tells you 'This item costs 276 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'a titanium star bolt' is type treasure, extra flags inventory.\nWeight is 1.0 pounds, value is 191, level is 5.\nMaterial is titanium.\nrestrict flags none.\nAffects intelligence by 3."
   },
   {
     "name": "a leather strap",
     "vnum": "custom_0095",
-    "details": "Area: The City of Sudharma\nObject 'a leather strap' is type weapon, extra flags inventory.\nWeight is 2.3 pounds, value is 97, level is 14.\nMaterial is leather.\nrestrict flags none.\nWeapon type is whip.\nDamage is 5d4 (average 12).\nAffects damage roll by 1.\nAffects hp by 11.\nThe shopkeeper tells you 'This item costs 140 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'a leather strap' is type weapon, extra flags inventory.\nWeight is 2.3 pounds, value is 97, level is 14.\nMaterial is leather.\nrestrict flags none.\nWeapon type is whip.\nDamage is 5d4 (average 12).\nAffects damage roll by 1.\nAffects hp by 11."
   },
   {
     "name": "a pair of metal tongue and groove pliers",
     "vnum": "custom_0096",
-    "details": "Area: The City of Sudharma\nObject 'a pair of metal tongue and groove pliers' is type weapon, extra flags inventory.\nWeight is 6.4 pounds, value is 145, level is 14.\nMaterial is metal.\nrestrict flags none.\nWeapon type is flail.\nDamage is 4d4 (average 10).\nAffects hit roll by 2.\nAffects damage roll by 3.\nAffects hp by 5.\nThe shopkeeper tells you 'This item costs 210 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'a pair of metal tongue and groove pliers' is type weapon, extra flags inventory.\nWeight is 6.4 pounds, value is 145, level is 14.\nMaterial is metal.\nrestrict flags none.\nWeapon type is flail.\nDamage is 4d4 (average 10).\nAffects hit roll by 2.\nAffects damage roll by 3.\nAffects hp by 5."
   },
   {
     "name": "a strong hemp rope",
     "vnum": "custom_0097",
-    "details": "Area: The City of Sudharma\nObject 'a strong hemp rope' is type weapon, extra flags inventory.\nWeight is 2.4 pounds, value is 77, level is 14.\nMaterial is hemp.\nrestrict flags none.\nWeapon type is whip.\nDamage is 2d13 (average 14).\nAffects damage roll by 1.\nAffects hp by 9.\nThe shopkeeper tells you 'This item costs 111 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'a strong hemp rope' is type weapon, extra flags inventory.\nWeight is 2.4 pounds, value is 77, level is 14.\nMaterial is hemp.\nrestrict flags none.\nWeapon type is whip.\nDamage is 2d13 (average 14).\nAffects damage roll by 1.\nAffects hp by 9."
   },
   {
     "name": "a half-perch measuring rod",
     "vnum": "custom_0098",
-    "details": "Area: The City of Sudharma\nObject 'a half-perch measuring rod' is type weapon, extra flags inventory.\nWeight is 10.6 pounds, value is 225, level is 14.\nMaterial is hardwood.\nrestrict flags none.\nWeapon type is staff.\nDamage is 8d4 (average 20).\nWeapons flags: resonating\nThe shopkeeper tells you 'This item costs 326 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'a half-perch measuring rod' is type weapon, extra flags inventory.\nWeight is 10.6 pounds, value is 225, level is 14.\nMaterial is hardwood.\nrestrict flags none.\nWeapon type is staff.\nDamage is 8d4 (average 20).\nWeapons flags: resonating"
   },
   {
     "name": "a flathead screwdriver",
     "vnum": "custom_0099",
-    "details": "Area: The City of Sudharma\nObject 'a flathead screwdriver' is type weapon, extra flags inventory.\nWeight is 4.2 pounds, value is 12500, level is 39.\nMaterial is wood and steel.\nrestrict flags none.\nWeapon type is exotic.\nDamage is 7d4 (average 17).\nWeapons flags: sharp\nAffects damage roll by 3.\nAffects hit roll by 2.\nThe shopkeeper tells you 'This item costs 18125 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'a flathead screwdriver' is type weapon, extra flags inventory.\nWeight is 4.2 pounds, value is 12500, level is 39.\nMaterial is wood and steel.\nrestrict flags none.\nWeapon type is exotic.\nDamage is 7d4 (average 17).\nWeapons flags: sharp\nAffects damage roll by 3.\nAffects hit roll by 2."
   },
   {
     "name": "a Phillip's head screwdriver",
     "vnum": "custom_0100",
-    "details": "Area: The City of Sudharma\nObject 'a Phillip's head screwdriver' is type weapon, extra flags inventory.\nWeight is 4.4 pounds, value is 12500, level is 39.\nMaterial is wood and steel.\nrestrict flags none.\nWeapon type is exotic.\nDamage is 7d4 (average 17).\nWeapons flags: fatiguing\nAffects damage roll by 4.\nThe shopkeeper tells you 'This item costs 18125 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'a Phillip's head screwdriver' is type weapon, extra flags inventory.\nWeight is 4.4 pounds, value is 12500, level is 39.\nMaterial is wood and steel.\nrestrict flags none.\nWeapon type is exotic.\nDamage is 7d4 (average 17).\nWeapons flags: fatiguing\nAffects damage roll by 4."
   }
 
   ,
   {
     "name": "a swiftly swirling grey potion",
     "vnum": "custom_0101",
-    "details": "Area: The City of Sudharma\nObject 'a swiftly swirling grey potion' is type potion, extra flags inventory.\nWeight is 0.8 pounds, value is 10, level is 2.\nMaterial is crystal.\nrestrict flags none.\nLevel 2 spells of: 'haste'.\nThe shopkeeper tells you 'This item costs 16 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'a swiftly swirling grey potion' is type potion, extra flags inventory.\nWeight is 0.8 pounds, value is 10, level is 2.\nMaterial is crystal.\nrestrict flags none.\nLevel 2 spells of: 'haste'."
   },
   {
     "name": "a rainbow-hued potion",
     "vnum": "custom_0102",
-    "details": "Area: The City of Sudharma\nObject 'a rainbow-hued potion' is type potion, extra flags inventory.\nWeight is 0.5 pounds, value is 15, level is 2.\nMaterial is glass.\nrestrict flags none.\nLevel 2 spells of: 'chromatic shield'.\nThe shopkeeper tells you 'This item costs 24 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'a rainbow-hued potion' is type potion, extra flags inventory.\nWeight is 0.5 pounds, value is 15, level is 2.\nMaterial is glass.\nrestrict flags none.\nLevel 2 spells of: 'chromatic shield'."
   },
   {
     "name": "a large grassy green potion",
     "vnum": "custom_0103",
-    "details": "Area: The City of Sudharma\nObject 'a large grassy green potion' is type potion, extra flags inventory.\nWeight is 1.8 pounds, value is 55, level is 11.\nMaterial is glass.\nrestrict flags none.\nLevel 11 spells of: 'power word recall'.\nThe shopkeeper tells you 'This item costs 88 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'a large grassy green potion' is type potion, extra flags inventory.\nWeight is 1.8 pounds, value is 55, level is 11.\nMaterial is glass.\nrestrict flags none.\nLevel 11 spells of: 'power word recall'."
   },
   {
     "name": "a crystal vial filled with a blue healing potion",
     "vnum": "custom_0104",
-    "details": "Area: The City of Sudharma\nObject 'a crystal vial filled with a blue healing potion' is type potion, extra flags inventory.\nWeight is 2.5 pounds, value is 117, level is 11.\nMaterial is crystal.\nrestrict flags none.\nLevel 11 spells of: 'cure serious' 'cure serious' 'cure serious' 'cure light'.\nThe shopkeeper tells you 'This item costs 187 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'a crystal vial filled with a blue healing potion' is type potion, extra flags inventory.\nWeight is 2.5 pounds, value is 117, level is 11.\nMaterial is crystal.\nrestrict flags none.\nLevel 11 spells of: 'cure serious' 'cure serious' 'cure serious' 'cure light'."
   },
   {
     "name": "a crystal vial filled with a purple cure potion",
     "vnum": "custom_0105",
-    "details": "Area: The City of Sudharma\nObject 'a crystal vial filled with a purple cure potion' is type potion, extra flags inventory.\nWeight is 2.5 pounds, value is 143, level is 11.\nMaterial is crystal.\nrestrict flags none.\nLevel 11 spells of: 'cure poison' 'cure disease'.\nThe shopkeeper tells you 'This item costs 228 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'a crystal vial filled with a purple cure potion' is type potion, extra flags inventory.\nWeight is 2.5 pounds, value is 143, level is 11.\nMaterial is crystal.\nrestrict flags none.\nLevel 11 spells of: 'cure poison' 'cure disease'."
   },
   {
     "name": "a glass vial filled with a blood red potion",
     "vnum": "custom_0106",
-    "details": "Area: The City of Sudharma\nObject 'a glass vial filled with a blood red potion' is type potion, extra flags inventory.\nWeight is 3.0 pounds, value is 156, level is 11.\nMaterial is glass.\nrestrict flags none.\nLevel 11 spells of: 'imbue regeneration'.\nThe shopkeeper tells you 'This item costs 249 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'a glass vial filled with a blood red potion' is type potion, extra flags inventory.\nWeight is 3.0 pounds, value is 156, level is 11.\nMaterial is glass.\nrestrict flags none.\nLevel 11 spells of: 'imbue regeneration'."
   },
   {
     "name": "a glass vial of \"Now You See Me, Now You Don't\" potion",
     "vnum": "custom_0107",
-    "details": "Area: The City of Sudharma\nObject 'a glass vial of \"Now You See Me, Now You Don't\" potion' is type potion, extra flags inventory.\nWeight is 3.0 pounds, value is 156, level is 11.\nMaterial is glass.\nrestrict flags none.\nLevel 11 spells of: 'invisibility'.\nThe shopkeeper tells you 'This item costs 249 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'a glass vial of \"Now You See Me, Now You Don't\" potion' is type potion, extra flags inventory.\nWeight is 3.0 pounds, value is 156, level is 11.\nMaterial is glass.\nrestrict flags none.\nLevel 11 spells of: 'invisibility'."
   },
   {
     "name": "a glass vial of \"Adventure Awaits!\" potion",
     "vnum": "custom_0108",
-    "details": "Area: The City of Sudharma\nObject 'a glass vial of \"Adventure Awaits!\" potion' is type potion, extra flags inventory.\nWeight is 1.0 pounds, value is 130, level is 11.\nMaterial is glass.\nrestrict flags none.\nLevel 11 spells of: 'teleport' 'armor'.\nThe shopkeeper tells you 'This item costs 208 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'a glass vial of \"Adventure Awaits!\" potion' is type potion, extra flags inventory.\nWeight is 1.0 pounds, value is 130, level is 11.\nMaterial is glass.\nrestrict flags none.\nLevel 11 spells of: 'teleport' 'armor'."
   },
   {
     "name": "a glass vial of \"Time Distortion\" potion",
     "vnum": "custom_0109",
-    "details": "Area: The City of Sudharma\nObject 'a glass vial of \"Time Distortion\" potion' is type potion, extra flags inventory.\nWeight is 1.0 pounds, value is 117, level is 11.\nMaterial is glass.\nrestrict flags none.\nLevel 11 spells of: 'slow'.\nThe shopkeeper tells you 'This item costs 187 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'a glass vial of \"Time Distortion\" potion' is type potion, extra flags inventory.\nWeight is 1.0 pounds, value is 117, level is 11.\nMaterial is glass.\nrestrict flags none.\nLevel 11 spells of: 'slow'."
   },
   {
     "name": "roast with savory brown gravy",
     "vnum": "custom_0110",
-    "details": "Area: The City of Sudharma\nObject 'roast with savory brown gravy' is type food, extra flags inventory.\nWeight is 0.9 pounds, value is 58, level is 1.\nMaterial is flesh and dragonscale.\nrestrict flags none.\nThe shopkeeper tells you 'This item costs 63 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'roast with savory brown gravy' is type food, extra flags inventory.\nWeight is 0.9 pounds, value is 58, level is 1.\nMaterial is flesh and dragonscale.\nrestrict flags none."
   },
   {
     "name": "Meat and Potatoes with Gravy",
     "vnum": "custom_0111",
-    "details": "Area: The City of Sudharma\nObject 'Meat and Potatoes with Gravy' is type food, extra flags inventory.\nWeight is 0.8 pounds, value is 58, level is 1.\nMaterial is meat and potato and food and clay.\nrestrict flags none.\nThe shopkeeper tells you 'This item costs 63 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'Meat and Potatoes with Gravy' is type food, extra flags inventory.\nWeight is 0.8 pounds, value is 58, level is 1.\nMaterial is meat and potato and food and clay.\nrestrict flags none."
   },
   {
     "name": "Sudharma Spiced Veal",
     "vnum": "custom_0112",
-    "details": "Area: The City of Sudharma\nObject 'Sudharma Spiced Veal' is type food, extra flags inventory.\nWeight is 0.9 pounds, value is 58, level is 1.\nMaterial is flesh and bread and egg and marble.\nrestrict flags none.\nThe shopkeeper tells you 'This item costs 63 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'Sudharma Spiced Veal' is type food, extra flags inventory.\nWeight is 0.9 pounds, value is 58, level is 1.\nMaterial is flesh and bread and egg and marble.\nrestrict flags none."
   },
   {
     "name": "Sudharma Barbecued Klahgaht",
     "vnum": "custom_0113",
-    "details": "Area: The City of Sudharma\nObject 'Sudharma Barbecued Klahgaht' is type food, extra flags inventory.\nWeight is 0.8 pounds, value is 58, level is 1.\nMaterial is tin and flesh and bread and pickle.\nrestrict flags none.\nThe shopkeeper tells you 'This item costs 63 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'Sudharma Barbecued Klahgaht' is type food, extra flags inventory.\nWeight is 0.8 pounds, value is 58, level is 1.\nMaterial is tin and flesh and bread and pickle.\nrestrict flags none."
   },
   {
     "name": "Balrog Flambeau",
     "vnum": "custom_0114",
-    "details": "Area: The City of Sudharma\nObject 'Balrog Flambeau' is type food, extra flags inventory.\nWeight is 1.1 pounds, value is 58, level is 1.\nMaterial is fire and flesh and granite.\nrestrict flags none.\nThe shopkeeper tells you 'This item costs 63 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'Balrog Flambeau' is type food, extra flags inventory.\nWeight is 1.1 pounds, value is 58, level is 1.\nMaterial is fire and flesh and granite.\nrestrict flags none."
   },
   {
     "name": "Holy Water Based Creme de la Dragkagh",
     "vnum": "custom_0115",
-    "details": "Area: The City of Sudharma\nObject 'Holy Water Based Creme de la Dragkagh' is type food, extra flags inventory.\nWeight is 2.9 pounds, value is 58, level is 1.\nMaterial is sandstone and flesh and water.\nrestrict flags none.\nThe shopkeeper tells you 'This item costs 63 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'Holy Water Based Creme de la Dragkagh' is type food, extra flags inventory.\nWeight is 2.9 pounds, value is 58, level is 1.\nMaterial is sandstone and flesh and water.\nrestrict flags none."
   },
   {
     "name": "Griekul in Fruit Sauce on a Bed of Rice",
     "vnum": "custom_0116",
-    "details": "Area: The City of Sudharma\nObject 'Griekul in Fruit Sauce on a Bed of Rice' is type food, extra flags inventory.\nWeight is 3.5 pounds, value is 58, level is 1.\nMaterial is clay and meat and water and food.\nrestrict flags none.\nThe shopkeeper tells you 'This item costs 63 silver coins.'"
+    "details": "Area: The City of Sudharma\nObject 'Griekul in Fruit Sauce on a Bed of Rice' is type food, extra flags inventory.\nWeight is 3.5 pounds, value is 58, level is 1.\nMaterial is clay and meat and water and food.\nrestrict flags none."
   }
 ]
