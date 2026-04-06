@@ -1,5 +1,5 @@
-DMClickables = DMClickables or {}
-DMClickables.settings = DMClickables.settings or {
+DMClickables = {}
+DMClickables.settings = {
     lastSkillCommand = ""
 }
 
@@ -125,10 +125,58 @@ function DMClickables.ClickablePractices()
     end
 end
 
-DMClickables.auctions = DMClickables.auctions or {
+DMClickables.auctions = {
   active = false,
   linesLeft = 0,
 }
+
+function DMClickables.RenderAuctionPager(raw)
+  if not raw then return false end
+  if not raw:find("auction list", 1, true) then return false end
+
+  local prefix, content = raw:match("^(.-)%[(.-)%]%s*$")
+  if not content or not content:match("^%s*Page%s+%d+/%d+") then return false end
+
+  prefix = (prefix or ""):gsub("%s+$", "")
+
+  replaceLine("")
+  if prefix ~= "" then
+    cecho("<r>" .. prefix .. " ")
+  end
+  cecho("<r>[ ")
+
+  local first = true
+  for segment in content:gmatch("([^|]+)") do
+    local part = segment:gsub("^%s+", ""):gsub("%s+$", "")
+
+    if not first then
+      cecho("<r> | ")
+    end
+    first = false
+
+    local label, cmd = part:match("^(prev):%s*(auction list %d+)$")
+    if not cmd then
+      label, cmd = part:match("^(next):%s*(auction list %d+)$")
+    end
+
+    if cmd then
+      cecho("<r>" .. label .. ": ")
+      cechoLink(
+        string.format("<forest_green><u>%s</u>", cmd),
+        function()
+          send(cmd)
+        end,
+        string.format("Click: %s", cmd),
+        true
+      )
+    else
+      cecho("<r>" .. part)
+    end
+  end
+
+  cecho("<r> ]\n")
+  return true
+end
 
 function DMClickables.ClickableAuctions()
   if not DMClickables then return end
@@ -136,6 +184,10 @@ function DMClickables.ClickableAuctions()
   local state = DMClickables.auctions
   local raw = getCurrentLine()
   if not raw or raw == "" then return end
+
+  if DMClickables.RenderAuctionPager(raw) then
+    return
+  end
 
   if raw:match("^Item ID%s+Name%s+Buyout%s+Time Left%s+Current Bid") then
     state.active = true
@@ -220,7 +272,7 @@ function DMClickables.ClickableAuctions()
   cecho("\n")
 end
 
-DMClickables.essence = DMClickables.essence or {
+DMClickables.essence = {
   active = false,
   cap = 225
 }
@@ -289,8 +341,6 @@ function DMClickables.ClickableEssences()
 end
 
 function DMClickables.init()
-  if DMClickables._initialized then return end
-
   DarkmistsEvents.add("DMClickables.AuctionPromptReset", "dmapi.world.prompt", function()
     DMClickables.auctions.active = false
     DMClickables.auctions.linesLeft = 0
@@ -307,6 +357,4 @@ function DMClickables.init()
   DarkmistsEvents.add("DMClickables.Essences", "dmapi.core.line", function()
     DMClickables.ClickableEssences()
   end)
-
-  DMClickables._initialized = true
 end

@@ -9,19 +9,50 @@ local StatusIcons = {
   }
 }
 
--- Theme-aware tags (use DarkmistsTheme semantic tags)
-local sectionTag  = DarkmistsTheme.skyTag
-local label    = DarkmistsTheme.mutedTag
-local value    = DarkmistsTheme.textTag
-local accent   = DarkmistsTheme.accentTag
-local good     = DarkmistsTheme.goodTag
-local warn     = DarkmistsTheme.warnTag
-local bad      = DarkmistsTheme.badTag
-local divider  = DarkmistsTheme.silverTag
+ScorePanel = {}
+ScorePanel.config = {
+  fontSize = 10,
+  fontName = "Consolas",
+}
+
+-- Theme-aware tags
+local sectionTag  = "<sky_blue>"
+local label    = "<dim_gray>"
+local value    = "<white>"
+local accent   = "<cyan>"
+local good     = "<green>"
+local warn     = "<yellow>"
+local bad      = "<red>"
+local divider  = "<silver>"
+local goldTag  = "<gold>"
+local silverTag = "<silver>"
+local textTag  = "<ansi_white>"
+
+function ScorePanel.applyTheme()
+  local theme = rawget(_G, "DarkmistsTheme") or {}
+  local settings = (Darkmists and Darkmists.GlobalSettings) or {}
+
+  ScorePanel.config.fontSize = settings.fontSize or ScorePanel.config.fontSize or 10
+  ScorePanel.config.fontName = settings.fontName or ScorePanel.config.fontName or "Consolas"
+
+  sectionTag = theme.skyTag or sectionTag
+  label = theme.mutedTag or label
+  value = theme.textTag or value
+  accent = theme.accentTag or accent
+  good = theme.goodTag or good
+  warn = theme.warnTag or warn
+  bad = theme.badTag or bad
+  divider = theme.silverTag or divider
+  goldTag = theme.goldTag or goldTag
+  silverTag = theme.silverTag or silverTag
+  textTag = theme.textTag or textTag
+end
 
 local function getDividerWidth()
-  local w,_ = getUserWindowSize("ScorePanelConsole")
-  local charW,_ = calcFontSize(Darkmists.GlobalSettings.fontSize)
+  local w = select(1, getUserWindowSize("ScorePanelConsole")) or 80
+  local fontSize = ScorePanel.config.fontSize or 10
+  local charW = select(1, calcFontSize(fontSize)) or 1
+  if charW < 1 then charW = 1 end
   return math.floor(w / charW) - 4
 end
 
@@ -37,7 +68,7 @@ local function section(title)
   local right = string.rep("━", remaining)
 
   cecho("ScorePanelConsole",
-    ("\n%s━━%s%s%s\n"):format(divider, sectionTag..cleanTitle, divider..right, DarkmistsTheme.textTag))
+    ("\n%s━━%s%s%s\n"):format(divider, sectionTag..cleanTitle, divider..right, textTag))
 end
 
 local function diffColor(base, mod)
@@ -46,7 +77,6 @@ local function diffColor(base, mod)
   else return value end
 end
 
-ScorePanel = ScorePanel or {}
 -- Always reset UI references on load so create() runs fresh against the new
 -- DMTabs containers. ScorePanel holds no persistent data, so this is safe.
 ScorePanel.window  = nil
@@ -65,13 +95,25 @@ ScorePanel.create = function()
     height = "98%",
     color = Darkmists.getDefaultBackgroundColor()
   }, ScorePanel.window)
-  ScorePanel.console:setFontSize(Darkmists.GlobalSettings.fontSize)
-  ScorePanel.console:setFont(Darkmists.GlobalSettings.fontName)
+  ScorePanel.console:setFontSize(ScorePanel.config.fontSize)
+  ScorePanel.console:setFont(ScorePanel.config.fontName)
   --ScorePanel.console:enableAutoWrap()
   ScorePanel.console:enableScrollBar()
   ScorePanel.window:show()
   ScorePanel.window:raiseAll()
   Darkmists.Log("ScorePanel","Score Panel Created")
+end
+
+ScorePanel.destroy = function()
+  if ScorePanel.console and ScorePanel.console.delete then
+    pcall(ScorePanel.console.delete, ScorePanel.console)
+  end
+  ScorePanel.console = nil
+
+  if ScorePanel.window and ScorePanel.window.delete then
+    pcall(ScorePanel.window.delete, ScorePanel.window)
+  end
+  ScorePanel.window = nil
 end
 
 ScorePanel.registerEvents = function()
@@ -80,6 +122,8 @@ ScorePanel.registerEvents = function()
 end
 
 ScorePanel.refresh = function()
+  if not ScorePanel.console then return end
+
   local con = "ScorePanelConsole"
   ScorePanel.console:clear()
 
@@ -137,8 +181,8 @@ ScorePanel.refresh = function()
     label, value, thirstIcon, thirstText)
     
   section("Wealth")
-  local goldColor   = DarkmistsTheme.goldTag or "<gold>"
-  local silverColor = DarkmistsTheme.silverTag or "<silver>"
+  local goldColor   = goldTag
+  local silverColor = silverTag
   line("%sOn Hand  %s%6dg  %s%6ds\n",
     label,
     goldColor,   P.currency.gold,
@@ -180,5 +224,9 @@ ScorePanel.refresh = function()
   end
 end
 
-ScorePanel.create()
-ScorePanel.registerEvents()
+function ScorePanel.init()
+  ScorePanel.applyTheme()
+  ScorePanel.create()
+  ScorePanel.registerEvents()
+  ScorePanel.refresh()
+end

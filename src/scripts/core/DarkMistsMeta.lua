@@ -20,7 +20,7 @@
 -- META REGISTRY
 -- =============================================================================
 
-DarkMistsMeta = DarkMistsMeta or {}
+DarkMistsMeta = {}
 
 DarkMistsMeta.meta = {
   name    = "DarkMistsCompanion",
@@ -67,6 +67,19 @@ Includes:
 
   Minimal UI removes borders and extra windows.
   Full UI restores all interface panels.
+    ]],
+  },
+
+  infobox = {
+    title = "Profile Info Box",
+    desc  = "Set the extra profile information shown on the Mudlet profile screen.",
+    info  = [[
+Update the Mudlet profile information box.
+
+• dmc infobox <text>  — set the info box text
+• dmc infobox clear   — clear the info box
+
+This is informational only and safe to change any time.
     ]],
   },
 
@@ -158,7 +171,7 @@ local helpSections = {
   },
   {
     title = "Interface",
-    keys  = {"ui", "ch", "sb", "dmid", "who", "affects" },
+    keys  = {"ui", "infobox", "ch", "sb", "dmid", "who", "affects" },
   },
   {
     title = "Travel & Map",
@@ -189,11 +202,6 @@ local function dm_link(label, command)
 end
 
 function DarkMistsMeta.init()
-  if DarkMistsMeta._initialized then
-    return
-  end
-  DarkMistsMeta._initialized = true
-
   -- Resolve package identity at init time so module load order is safe.
   DarkMistsMeta.meta.name = (Darkmists and Darkmists.NAME) or DarkMistsMeta.meta.name
   DarkMistsMeta.meta.version = (Darkmists and Darkmists.VERSION) or DarkMistsMeta.meta.version
@@ -251,6 +259,49 @@ function DarkMistsMeta.init()
       cecho("\n"..dm_muted.."[UI] "..dm_text.."Switching to "..dm_warn.."MINIMAL UI"..dm_muted.." mode...\n")
       Darkmists.DisableUI()
     end
+  end)
+
+  -- ===================================================================
+  -- PROFILE INFO BOX COMMANDS
+  -- ===================================================================
+
+  DarkmistsAlias.add([[^dmc\s+infobox(?:\s+(.*))?$]], function()
+    local args = matches[2]
+    local setInfo = rawget(_G, "setProfileInformation")
+    local clearInfo = rawget(_G, "clearProfileInformation")
+    local getInfo = rawget(_G, "getProfileInformation")
+
+    if type(setInfo) ~= "function" or type(clearInfo) ~= "function" or type(getInfo) ~= "function" then
+      cecho("\n"..dm_muted.."[InfoBox] "..dm_bad.."This Mudlet client does not support profile information commands.\n")
+      return
+    end
+
+    args = args and args:gsub("^%s*(.-)%s*$", "%1") or ""
+
+    if args == "" then
+      cecho("\n"..dm_header_color.."Profile Info Box:\n")
+      local currentInfo = getInfo() or ""
+
+      if currentInfo == "" then
+        cecho(dm_muted.."Current text: "..dm_text.."(empty)\n\n")
+      else
+        cecho(dm_muted.."Current text:\n")
+        cecho(dm_good..currentInfo.."\n\n")
+      end
+
+      cecho(dm_text.."dmc infobox <text>"..dm_muted.."  – set the profile info text\n")
+      cecho(dm_text.."dmc infobox clear"..dm_muted.."   – clear the profile info text\n")
+      return
+    end
+
+    if args == "clear" or args == "reset" or args == "off" then
+      clearInfo()
+      cecho("\n"..dm_muted.."[InfoBox] "..dm_good.."Profile information cleared.\n")
+      return
+    end
+
+    setInfo(args)
+    cecho("\n"..dm_muted.."[InfoBox] "..dm_text.."Profile information updated: "..dm_good..args.."\n")
   end)
 
   -- =============================================================================

@@ -6,7 +6,7 @@
 -- collected, and renders a small scrollable UI showing the
 -- player list along with an "age" (seconds since last update).
 -- ===================================================================
-WhoWindow = WhoWindow or {}
+WhoWindow = {}
 
 --[[
   WhoWindow responsibilities:
@@ -17,18 +17,10 @@ WhoWindow = WhoWindow or {}
 ]]
 
 -- Configuration
-WhoWindow.config = {
-  -- font settings pulled from global configuration for consistent UI
-  fontSize = Darkmists.GlobalSettings.fontSize,
-  fontName = Darkmists.GlobalSettings.fontName,
-  -- whether to delete the original who lines from the main window
-  deleteOriginalLines = Darkmists.GlobalSettings.whoWindowDeleteOriginalLines,
-  -- timestamp (os.time) of the last successful capture; 0 == never
-  lastUpdated = 0
-}
+WhoWindow.config = {}
 
 -- State
-WhoWindow.lines = WhoWindow.lines or {}   -- array of formatted player lines
+WhoWindow.lines = {}                      -- array of formatted player lines
 WhoWindow.window = nil                    -- container tab panel
 WhoWindow.console = nil                   -- Geyser.MiniConsole instance
 WhoWindow.playerCount = 0                 -- last captured player count
@@ -65,6 +57,28 @@ function WhoWindow.create()
   WhoWindow.window:show()
   WhoWindow.window:raiseAll()
   Darkmists.Log("WhoWindow", "Container Created!")
+end
+
+--- Destroy the Who window and its trigger state during UI cleanup/reload.
+function WhoWindow.destroy()
+  if WhoWindow.playersFoundTrigger then
+    pcall(killTrigger, WhoWindow.playersFoundTrigger)
+    WhoWindow.playersFoundTrigger = nil
+  end
+
+  if WhoWindow.console and WhoWindow.console.delete then
+    pcall(WhoWindow.console.delete, WhoWindow.console)
+  end
+  WhoWindow.console = nil
+
+  if WhoWindow.window and WhoWindow.window.delete then
+    pcall(WhoWindow.window.delete, WhoWindow.window)
+  end
+  WhoWindow.window = nil
+
+  WhoWindow.lines = {}
+  WhoWindow.playerCount = 0
+  WhoWindow.config.lastUpdated = 0
 end
 
 -- ===================================================================
@@ -177,7 +191,6 @@ end
 -- ===================================================================
 -- INITIALIZATION
 -- ===================================================================
-
 --- Register trigger for "Players found:" line
 function WhoWindow.registerTriggers()
   -- remove existing trigger if present to avoid duplicates
@@ -194,18 +207,30 @@ function WhoWindow.registerTriggers()
   Darkmists.Log("WhoWindow", "Trigger Registered")
 end
 
---- Register prompt event handler for age updates
--- We update the age display on each prompt so the counter remains accurate
-DarkmistsEvents.add("WhoWindowPromptHandler", "dmapi.world.prompt", WhoWindow.updateAge)
-DarkmistsEvents.add("WhoWindowResize","sysWindowResizeEvent",
-  function()
-    if WhoWindow.window and WhoWindow.config.lastUpdated ~= 0 then
-      WhoWindow.render()
-    end
-  end
-)
+--- Initialize the Who window module.
+-- This sets config defaults and performs the runtime side effects.
+function WhoWindow.init()
+  -- font settings pulled from global configuration for consistent UI
+  WhoWindow.config.fontSize = Darkmists.GlobalSettings.fontSize
+  WhoWindow.config.fontName = Darkmists.GlobalSettings.fontName
 
---- Initialize window and triggers
-WhoWindow.create()
-WhoWindow.registerTriggers()
-Darkmists.Log("WhoWindow", "Initialized")
+  -- whether to delete the original who lines from the main window
+  WhoWindow.config.deleteOriginalLines = Darkmists.GlobalSettings.whoWindowDeleteOriginalLines
+
+  -- timestamp (os.time) of the last successful capture; 0 == never
+  WhoWindow.config.lastUpdated = WhoWindow.config.lastUpdated or 0
+
+  WhoWindow.create()
+  WhoWindow.registerTriggers()
+
+  DarkmistsEvents.add("WhoWindowPromptHandler", "dmapi.world.prompt", WhoWindow.updateAge)
+  DarkmistsEvents.add("WhoWindowResize","sysWindowResizeEvent",
+    function()
+      if WhoWindow.window and WhoWindow.config.lastUpdated ~= 0 then
+        WhoWindow.render()
+      end
+    end
+  )
+
+  Darkmists.Log("WhoWindow", "Initialized")
+end

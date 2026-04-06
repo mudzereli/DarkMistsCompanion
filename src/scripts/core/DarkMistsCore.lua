@@ -22,7 +22,7 @@ local mapDatPath       = getMudletHomeDir() .. "/DarkMistsCompanion/assets/map.d
 local eaConverterPath  = getMudletHomeDir() .. "/DarkMistsCompanion/assets/ea-save-converter.html"
 local eaFormulaParser  = getMudletHomeDir() .. "/DarkMistsCompanion/assets/alchemy-formula-parser.html"
 
-Darkmists = Darkmists or {}
+Darkmists = {}
 Darkmists.NAME = "DarkMistsCompanion"
 Darkmists.VERSION = "@VERSION@"
 Darkmists.GITHUB_URL_STABLE = "https://github.com/mudzereli/DarkMistsCompanion/releases/latest/download/DarkMistsCompanion.mpackage"
@@ -84,7 +84,7 @@ Darkmists.DefaultSettings = {
   layoutCacheVersion = Darkmists.LAYOUT_CACHE_VERSION,
 }
 
-Darkmists.GlobalSettings = Darkmists.GlobalSettings or {}
+Darkmists.GlobalSettings = {}
 
 -- =============================================================================
 -- LOCAL HELPER FUNCTIONS
@@ -519,90 +519,90 @@ function Darkmists.RegisterEvents()
     tempTimer(0.4, applyResize)
   end)
   
-  local function RickRollASCII()
-    DMAlertWindow.Show("You have become Immortalized!", function(win)
-        echo(win,"\n⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⣠⣤⢤⣤⣀⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀")
-        echo(win,"\n⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣠⣿⣿⣿⣿⣿⣿⣿⣦⣄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀")
-        echo(win,"\n⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣰⡿⣾⣿⣿⣿⣿⣿⣿⣿⣿⣧⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀")
-        echo(win,"\n⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣿⣶⠛⡏⠀⠀⠉⠀⠀⠉⢻⣿⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⠀⠀⠀⠀⠀⠀⠀")
-        echo(win,"\n⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣿⣿⣠⣦⣤⣄⢀⣀⡀⠀⢸⡿⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀")
-        echo(win,"\n⠀⠀⠀⠀⠀⠀⠀⠀⠀⢠⣿⠀⡟⠉⠙⣿⠀⠙⠛⠛⣿⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀")
-        echo(win,"\n⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⣿⡀⡇⠀⡴⠒⠒⠀⠀⢀⣿⠃⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⠀⠀⠀⠀⠀⠀⠀")
-        echo(win,"\n⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣸⣇⠈⠉⠁⠐⠆⣠⠞⠉⠀⠀⠀⠀⠀⢢⡀⠀⠀⠀⠋⠀⠀⠀⠀⠀⠀⠀")
-        echo(win,"\n⠀⠀⠀⠀⠀⠀⠀⠀⢀⠔⠋⣽⠾⢷⣶⣤⡤⠖⣿⡆⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀")
-        echo(win,"\n⠀⠀⠀⠀⠈⠀⠀⠤⣎⣀⣾⡟⠄⠀⠀⠀⠀⣠⠋⣿⣦⣀⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀")
-        echo(win,"\n⠀⠀⠀⠠⠊⠉⢉⣭⣿⡇⠀⣟⣶⣶⡀⣠⠞⠁⢸⣿⣿⣿⣿⣿⣷⣶⣶⣤⣄⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀")
-        echo(win,"\n⠀⢀⣤⣶⣽⣿⣿⣿⣿⠀⢀⡇⢸⣿⠋⠁⠀⣰⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣧⠀⠀⠀⠀⠀⠀⠀⠀")
-        echo(win,"\n⠀⢸⣿⣿⣿⣿⣿⣿⣿⣿⣿⣇⢀⣟⣓⣒⢴⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣇⠀⠀⠀⠀⠀⠀⠀")
-        echo(win,"\n⠀⢸⣿⣿⣿⣿⣿⣿⣿⣿⣿⡿⠻⣿⣻⢨⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠆⠀⠀⠀⠀⠀⠀")
-        echo(win,"\n⠀⣼⣿⣿⣿⣿⣿⣿⣿⣿⣒⡃⠀⠿⠯⢽⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣦⠀⠀⠀⠀⠀⠀")
-        echo(win,"\n⠀⣿⣿⣿⣿⣿⣿⣿⣿⣿⡯⠅⠀⠯⣍⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣦⣄⠀⠀⠀⠀")
-        echo(win,"\n⠀⣿⣿⣿⣿⣿⣿⣿⣿⣿⣯⣽⣿⣛⣳⣿⣿⣿⣿⢶⣭⠉⠉⠉⢻⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣷⣦⡀⠀")
-        echo(win,"\n⠀⢻⣿⣿⣿⣿⣿⣿⣿⣿⣗⣺⣿⠶⣽⣿⣿⣿⣿⣿⠀⣀⣀⠀⠀⢻⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡆")
-        echo(win,"\n⠀⣾⣿⣿⣿⣿⣿⣿⣿⣿⣿⠿⣿⣭⣿⣿⣿⣿⣿⣿⣯⣁⣀⡀⠀⠀⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡇")
-        echo(win,"\n⢸⣿⣿⣿⣿⡿⠿⠿⢿⣻⣿⣯⣽⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣦⣤⣾⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿")
-        echo(win,"\n⠀⢻⣿⣟⣥⠐⠢⠤⠤⢿⣿⣓⣿⣺⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠟⠃")
-        echo(win,"\n⠀⠘⣿⣿⣿⡆⢒⣶⣾⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡆⠀⠉⠉⠉⠀⠀⠀⠀⠀")
-        echo(win,"\n⠀⠀⠈⠙⢿⣿⣮⣽⣿⣿⣿⡶⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀")
-        echo(win,"\n⠀⠀⠈⠂⠀⠈⠉⣿⣿⣿⠿⣷⣻⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣷⠀⠀⠀⠀⠀⠀⠀⠀⠀")
-        echo(win,"\n⠀⠀⠀⠀⠀⠀⣠⣿⣿⣿⠀⢸⠛⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡆⠀⠀⠀⠀⠀⠀⠀⠀")
-        echo(win,"\nNever gonna give you up...             ")
-        echo(win,"\n            Never gonna let you down...")
-        cechoLink(win, "\n\n" .. DarkmistsTheme.mutedTag .. "<u>[" .. DarkmistsTheme.redTag .. "Go back to DM" .. DarkmistsTheme.mutedTag .. "]",
-          [[DMAlertWindow.Hide(); stopSounds(); ASCENDING = false;]],
-          "Go back to DM", true)
-    end, { width = 450, height = 600 })
-
-    local soundPath = getMudletHomeDir() .. "/DarkMistsCompanion/assets/sounds/ascension.mp3"
-
-    -- Normalize slashes (safety for Windows)
-    soundPath = soundPath:gsub("\\", "/")
-
-    playSoundFile({
-      name = soundPath,
-      volume = 75,
-      priority = 75,
-      tag = "ascension_sound"
-    })
-
-    tempTimer(8,function ()
-      stopSounds()
-      ASCENDING = false
-    end)
-  end
-
-  ASCENDING = false
-  DarkmistsEvents.add("DarkmistsImmortalButton","dmapi.world.enter",function()
-    ButtonBar:addButton("🔱 Make Me Immortal", function()
-      if ASCENDING then return end
-      ASCENDING = true
-      local t = 2.5
-      local events = {
-        {0,  DarkmistsTheme.goodTag,   "You step into the Circle of Ascension."},
-        {t*1,  DarkmistsTheme.accentTag, "Ancient sigils flare to life beneath your feet."},
-        {t*2,  DarkmistsTheme.textTag,   "A low chant echoes from unseen voices beyond the veil."},
-        {t*3,  DarkmistsTheme.warnTag,   "The air grows heavy with the weight of old magic."},
-        {t*4, DarkmistsTheme.infoTag,   "Starlight gathers above, spiraling toward your mortal form."},
-        {t*5, DarkmistsTheme.badTag,    "The heavens tremble as the gates of eternity begin to open."},
-        {t*6, DarkmistsTheme.textTag,   "A timeless voice intones: <b>'So it shall be.'"},
-        {t*7, DarkmistsTheme.goodTag,   "Your soul rises beyond the bounds of flesh..."},
-        {t*8, DarkmistsTheme.accentTag, "🎶 The Song of Immortality begins to play... 🎶"},
-      }
-
-      for _, ev in ipairs(events) do
-        local d, tag, msg = ev[1], ev[2], ev[3]
-        tempTimer(d, function()
-          cecho("\n" .. tag .. msg .. "\n")
-        end)
-      end
-
-      tempTimer(t*8, function()
-        send("yell I am a T-t-troll!")
-        RickRollASCII()
-      end)
-
-    end)
-  end,true)
+  --local function RickRollASCII()
+  --  DMAlertWindow.Show("You have become Immortalized!", function(win)
+  --      echo(win,"\n⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⣠⣤⢤⣤⣀⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀")
+  --      echo(win,"\n⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣠⣿⣿⣿⣿⣿⣿⣿⣦⣄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀")
+  --      echo(win,"\n⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣰⡿⣾⣿⣿⣿⣿⣿⣿⣿⣿⣧⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀")
+  --      echo(win,"\n⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣿⣶⠛⡏⠀⠀⠉⠀⠀⠉⢻⣿⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⠀⠀⠀⠀⠀⠀⠀")
+  --      echo(win,"\n⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣿⣿⣠⣦⣤⣄⢀⣀⡀⠀⢸⡿⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀")
+  --      echo(win,"\n⠀⠀⠀⠀⠀⠀⠀⠀⠀⢠⣿⠀⡟⠉⠙⣿⠀⠙⠛⠛⣿⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀")
+  --      echo(win,"\n⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⣿⡀⡇⠀⡴⠒⠒⠀⠀⢀⣿⠃⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⠀⠀⠀⠀⠀⠀⠀")
+  --      echo(win,"\n⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣸⣇⠈⠉⠁⠐⠆⣠⠞⠉⠀⠀⠀⠀⠀⢢⡀⠀⠀⠀⠋⠀⠀⠀⠀⠀⠀⠀")
+  --      echo(win,"\n⠀⠀⠀⠀⠀⠀⠀⠀⢀⠔⠋⣽⠾⢷⣶⣤⡤⠖⣿⡆⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀")
+  --      echo(win,"\n⠀⠀⠀⠀⠈⠀⠀⠤⣎⣀⣾⡟⠄⠀⠀⠀⠀⣠⠋⣿⣦⣀⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀")
+  --      echo(win,"\n⠀⠀⠀⠠⠊⠉⢉⣭⣿⡇⠀⣟⣶⣶⡀⣠⠞⠁⢸⣿⣿⣿⣿⣿⣷⣶⣶⣤⣄⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀")
+  --      echo(win,"\n⠀⢀⣤⣶⣽⣿⣿⣿⣿⠀⢀⡇⢸⣿⠋⠁⠀⣰⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣧⠀⠀⠀⠀⠀⠀⠀⠀")
+  --      echo(win,"\n⠀⢸⣿⣿⣿⣿⣿⣿⣿⣿⣿⣇⢀⣟⣓⣒⢴⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣇⠀⠀⠀⠀⠀⠀⠀")
+  --      echo(win,"\n⠀⢸⣿⣿⣿⣿⣿⣿⣿⣿⣿⡿⠻⣿⣻⢨⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠆⠀⠀⠀⠀⠀⠀")
+  --      echo(win,"\n⠀⣼⣿⣿⣿⣿⣿⣿⣿⣿⣒⡃⠀⠿⠯⢽⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣦⠀⠀⠀⠀⠀⠀")
+  --      echo(win,"\n⠀⣿⣿⣿⣿⣿⣿⣿⣿⣿⡯⠅⠀⠯⣍⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣦⣄⠀⠀⠀⠀")
+  --      echo(win,"\n⠀⣿⣿⣿⣿⣿⣿⣿⣿⣿⣯⣽⣿⣛⣳⣿⣿⣿⣿⢶⣭⠉⠉⠉⢻⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣷⣦⡀⠀")
+  --      echo(win,"\n⠀⢻⣿⣿⣿⣿⣿⣿⣿⣿⣗⣺⣿⠶⣽⣿⣿⣿⣿⣿⠀⣀⣀⠀⠀⢻⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡆")
+  --      echo(win,"\n⠀⣾⣿⣿⣿⣿⣿⣿⣿⣿⣿⠿⣿⣭⣿⣿⣿⣿⣿⣿⣯⣁⣀⡀⠀⠀⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡇")
+  --      echo(win,"\n⢸⣿⣿⣿⣿⡿⠿⠿⢿⣻⣿⣯⣽⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣦⣤⣾⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿")
+  --      echo(win,"\n⠀⢻⣿⣟⣥⠐⠢⠤⠤⢿⣿⣓⣿⣺⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠟⠃")
+  --      echo(win,"\n⠀⠘⣿⣿⣿⡆⢒⣶⣾⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡆⠀⠉⠉⠉⠀⠀⠀⠀⠀")
+  --      echo(win,"\n⠀⠀⠈⠙⢿⣿⣮⣽⣿⣿⣿⡶⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀")
+  --      echo(win,"\n⠀⠀⠈⠂⠀⠈⠉⣿⣿⣿⠿⣷⣻⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣷⠀⠀⠀⠀⠀⠀⠀⠀⠀")
+  --      echo(win,"\n⠀⠀⠀⠀⠀⠀⣠⣿⣿⣿⠀⢸⠛⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡆⠀⠀⠀⠀⠀⠀⠀⠀")
+  --      echo(win,"\nNever gonna give you up...             ")
+  --      echo(win,"\n            Never gonna let you down...")
+  --      cechoLink(win, "\n\n" .. DarkmistsTheme.mutedTag .. "<u>[" .. --DarkmistsTheme.redTag .. "Go back to DM" .. DarkmistsTheme.mutedTag .. "]",
+  --        [[DMAlertWindow.Hide(); stopSounds(); ASCENDING = false;]],
+  --        "Go back to DM", true)
+  --  end, { width = 450, height = 600 })
+  --
+  --  local soundPath = getMudletHomeDir() .. "/DarkMistsCompanion/assets/sounds/--ascension.mp3"
+  --
+  --  -- Normalize slashes (safety for Windows)
+  --  soundPath = soundPath:gsub("\\", "/")
+  --
+  --  playSoundFile({
+  --    name = soundPath,
+  --    volume = 75,
+  --    priority = 75,
+  --    tag = "ascension_sound"
+  --  })
+  --
+  --  tempTimer(8,function ()
+  --    stopSounds()
+  --    ASCENDING = false
+  --  end)
+  --end
+  --
+  --ASCENDING = false
+  --DarkmistsEvents.add("DarkmistsImmortalButton","dmapi.world.enter",function()
+  --  ButtonBar:addButton("🔱 Make Me Immortal", function()
+  --    if ASCENDING then return end
+  --    ASCENDING = true
+  --    local t = 2.5
+  --    local events = {
+  --      {0,  DarkmistsTheme.goodTag,   "You step into the Circle of Ascension."},
+  --      {t*1,  DarkmistsTheme.accentTag, "Ancient sigils flare to life beneath your --feet."},
+  --      {t*2,  DarkmistsTheme.textTag,   "A low chant echoes from unseen voices --beyond the veil."},
+  --      {t*3,  DarkmistsTheme.warnTag,   "The air grows heavy with the weight of --old magic."},
+  --      {t*4, DarkmistsTheme.infoTag,   "Starlight gathers above, spiraling toward --your mortal form."},
+  --      {t*5, DarkmistsTheme.badTag,    "The heavens tremble as the gates of --eternity begin to open."},
+  --      {t*6, DarkmistsTheme.textTag,   "A timeless voice intones: <b>'So it shall --be.'"},
+  --      {t*7, DarkmistsTheme.goodTag,   "Your soul rises beyond the bounds of --flesh..."},
+  --      {t*8, DarkmistsTheme.accentTag, "🎶 The Song of Immortality begins to --play... 🎶"},
+  --    }
+  --
+  --    for _, ev in ipairs(events) do
+  --      local d, tag, msg = ev[1], ev[2], ev[3]
+  --      tempTimer(d, function()
+  --        cecho("\n" .. tag .. msg .. "\n")
+  --      end)
+  --    end
+  --
+  --    tempTimer(t*8, function()
+  --      send("yell I am a T-t-troll!")
+  --      RickRollASCII()
+  --    end)
+  --
+  --  end)
+  --end,true)
 
   -- Hook into dmapi events so we can show the packaged-map prompt after a world enter
   -- Mark a pending flag when the world enter event fires (DMAPI's reset handler will send 'score')
@@ -668,14 +668,17 @@ function Darkmists.CleanupUI(opts)
   opts = opts or {}
   if DarkmistsAlias and DarkmistsAlias.clearAll then pcall(DarkmistsAlias.clearAll) end
   if DarkmistsEvents and DarkmistsEvents.clearAll then pcall(DarkmistsEvents.clearAll) end
+  if DarkmistsTrigger and DarkmistsTrigger.clearAll then pcall(DarkmistsTrigger.clearAll) end
 
-  if DMTabs and DMTabs.destroy then pcall(DMTabs.destroy) end
+  if DMAlertWindow and DMAlertWindow.Hide then pcall(DMAlertWindow.Hide) end
+  if AffectsWindow and AffectsWindow.destroy then pcall(AffectsWindow.destroy) end
+  if WhoWindow and WhoWindow.destroy then pcall(WhoWindow.destroy) end
+  if ScorePanel and ScorePanel.destroy then pcall(ScorePanel.destroy) end
   if DarkMistsMiniMap and DarkMistsMiniMap.destroy then pcall(DarkMistsMiniMap.destroy) end
   if ButtonBar and ButtonBar.destroy then pcall(ButtonBar.destroy) end
   if StatusBar and StatusBar.cleanup then pcall(StatusBar.cleanup) end
-  if DMAlertWindow and DMAlertWindow.Hide then pcall(DMAlertWindow.Hide) end
   if StatRoller and StatRoller.destroy then pcall(StatRoller.destroy) end
-  if AffectsWindow and AffectsWindow.destroy then pcall(AffectsWindow.destroy) end
+  if DMTabs and DMTabs.destroy then pcall(DMTabs.destroy) end
 
   if opts.uninstall then
     Darkmists.Log(DarkmistsTheme.purpleTag .. "Darkmists Core", "Resetting window borders to default...")
@@ -692,12 +695,12 @@ function Darkmists.LoadUIScripts()
 
   DMTabFrame.init()
   StatusBar.init()
-  dofile(getMudletHomeDir() .. "/DarkMistsCompanion/ui/whowindow.lua")
-  dofile(getMudletHomeDir() .. "/DarkMistsCompanion/ui/chathistory.lua")
+  WhoWindow.init()
+  ChatHistory.init()
   AffectsWindow.init()
-  dofile(getMudletHomeDir() .. "/DarkMistsCompanion/ui/scorepanel.lua")
+  ScorePanel.init()
   DarkMistsMiniMap.init()
-  dofile(getMudletHomeDir() .. "/DarkMistsCompanion/utility/mapcolor.lua")
+  MapColors.init()
   
   -- Initialize optional UI modules that need runtime context (e.g., connection state)
   if DarkMistsMiniMap and DarkMistsMiniMap.Init then
@@ -803,7 +806,7 @@ function Darkmists.Init()
   ItemTracker.init()
   StatRoller.init()
   MapDestinations.load()
-  dofile(getMudletHomeDir() .. "/DarkMistsCompanion/utility/enchanterassist.lua")
+  EnchanterAssist.init()
   SkillUps.init()
   DMClickables.init()
   ButtonBar.init()

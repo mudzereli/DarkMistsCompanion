@@ -6,7 +6,25 @@
               "isFolder": "no"
        },
        {
+              "name": "DMWhoWindow",
+              "isActive": "yes",
+              "script": "",
+              "isFolder": "no"
+       },
+       {
               "name": "DMAffectsWindow",
+              "isActive": "yes",
+              "script": "",
+              "isFolder": "no"
+       },
+       {
+              "name": "DMChatWindow",
+              "isActive": "yes",
+              "script": "",
+              "isFolder": "no"
+       },
+       {
+              "name": "DMPlayerWindow",
               "isActive": "yes",
               "script": "",
               "isFolder": "no"

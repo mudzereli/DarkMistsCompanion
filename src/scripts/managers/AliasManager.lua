@@ -2,8 +2,8 @@
 -- ALIAS MANAGER (prevents duplicates on reinstall)
 -- =============================================================================
 
-DarkmistsAlias = DarkmistsAlias or {}
-DarkmistsAlias.registry = DarkmistsAlias.registry or {}
+DarkmistsAlias = {}
+DarkmistsAlias.registry = {}
 
 local debug = false
 

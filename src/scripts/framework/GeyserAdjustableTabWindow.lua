@@ -3,7 +3,6 @@
 -- other functions
 -- by Edru 16th May 2020 
 
-Adjustable = Adjustable or {}
 Adjustable.TabWindow = Adjustable.TabWindow or Geyser.Container:new({name = "AdjustableTabWindowClass"})
 Adjustable.TabWindow.blockNextFloat = false
 

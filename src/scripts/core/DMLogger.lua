@@ -2,7 +2,7 @@
 -- DMLogger - small miniconsole for developer/runtime logs
 -- =============================================================================
 
-DMLogger = DMLogger or {}
+DMLogger = {}
 
 -- Standalone defaults (avoid referencing Darkmists globals here)
 DMLogger.config = {

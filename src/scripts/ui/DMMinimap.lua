@@ -1,5 +1,5 @@
-DarkMistsMiniMap = DarkMistsMiniMap or {}
-DarkMistsMiniMap.dock = DarkMistsMiniMap.dock or nil
+DarkMistsMiniMap = {}
+DarkMistsMiniMap.dock = nil
 
 function DarkMistsMiniMap.configure()
   if Darkmists and Darkmists.getSmartDockGeometry then
@@ -32,6 +32,7 @@ function DarkMistsMiniMap.create()
     padding = 10,
     adjLabelstyle = Darkmists.getDefaultAdjLabelstyle(),
     lockStyle = "border",
+    attached = dock.side,
     locked = false,
     autoSave = true,
     autoLoad = true,

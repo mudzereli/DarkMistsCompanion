@@ -34,5 +34,17 @@
               "isActive": "yes",
               "script": "",
               "isFolder": "no"
+       },
+       {
+              "name": "DMEnchanterAssist",
+              "isActive": "yes",
+              "script": "",
+              "isFolder": "no"
+       },
+       {
+              "name": "DMMapColors",
+              "isActive": "yes",
+              "script": "",
+              "isFolder": "no"
        }
 ]

@@ -2,8 +2,8 @@
 -- TRIGGER MANAGER (prevents duplicates on reinstall)
 -- =============================================================================
 
-DarkmistsTrigger = DarkmistsTrigger or {}
-DarkmistsTrigger.registry = DarkmistsTrigger.registry or {}
+DarkmistsTrigger = {}
+DarkmistsTrigger.registry = {}
 
 local debug = false -- set to false to disable trigger debug messages
 

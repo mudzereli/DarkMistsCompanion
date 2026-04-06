@@ -1,5 +1,5 @@
 -- DMAlertWindow: lightweight centered alert panel (header + close + body)
-DMAlertWindow = DMAlertWindow or {}
+DMAlertWindow = {}
 
 local panel    = {}   -- internal UI state and default dimensions
 local _queue   = {}   -- pending alerts waiting to be shown

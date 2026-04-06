@@ -2,7 +2,7 @@
 -- Clean Docked Button Bar (Adjustable.Container Panel)
 -- =============================================================================
 
-ButtonBar = ButtonBar or {}
+ButtonBar = {}
 
 ButtonBar.bg = "#000000"
 ButtonBar.padding = 2

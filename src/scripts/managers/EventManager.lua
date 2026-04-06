@@ -2,8 +2,8 @@
 -- EVENT HANDLER MANAGER (prevents duplicates on reinstall)
 -- =============================================================================
 
-DarkmistsEvents = DarkmistsEvents or {}
-DarkmistsEvents.registry = DarkmistsEvents.registry or {}
+DarkmistsEvents = {}
+DarkmistsEvents.registry = {}
 
 local debug = false -- set to false to disable event handler debug messages
 
