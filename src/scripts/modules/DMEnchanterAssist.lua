@@ -697,6 +697,7 @@ function EnchanterAssist.reset()
   EnchanterAssist.pendingKey = nil
   EnchanterAssist.sawFlare = false
   EnchanterAssist._attemptResolved = false
+  EnchanterAssist.missing = {}
   EnchanterAssist.sessionTrials     = 0
   EnchanterAssist.sessionFormulas = {}
 
@@ -704,7 +705,7 @@ function EnchanterAssist.reset()
   EnchanterAssist._shuffleMaterials()
 
   EnchanterAssist.save()
-  DMLogger.notify(ea_plugin, ea_good .. "Reset complete, Attempts + Missing materials preserved.")
+  DMLogger.notify(ea_plugin, ea_good .. "Reset complete, Attempts preserved.")
 end
 
 function EnchanterAssist.statsMissing()
