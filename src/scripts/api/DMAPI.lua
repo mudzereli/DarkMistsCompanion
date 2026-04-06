@@ -1969,7 +1969,8 @@ function dmapi.RegisterEvents()
     "dmapi.vitals.checkscore",
     "dmapi.player.vitals.updated",
     function(_, data)
-      if dmapi.player.vitals.hpMax == 1 then
+      local lastCommand = dmapi.core.state.lastCommand
+      if dmapi.player.vitals.hpMax == 1 and lastCommand ~= "score" then
         send("score")
       end
     end,
