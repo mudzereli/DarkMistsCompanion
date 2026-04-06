@@ -637,21 +637,6 @@ function Darkmists.RegisterEvents()
     end
   end)
 
-  -- When the package is installed, perform a single, guarded resetProfile() to
-  -- ensure the package has a clean runtime state. Use a short delay so the
-  -- installer finishes and set a session-only guard to avoid loops.
-  DarkmistsEvents.add("DarkmistsPackageInstall","sysInstallPackage",function (_,pkgName)
-    if pkgName == Darkmists.NAME then
-      -- Use a persisted flag because in-memory state is wiped by resetProfile().
-      if Darkmists.GlobalSettings._installResetDone then return end
-      Darkmists.GlobalSettings._installResetDone = true
-      Darkmists.SaveSettings()
-      tempTimer(1, function()
-        Darkmists.Log(DarkmistsTheme.purpleTag .. "Darkmists Core", ("%sPackage Install Detected: %s — performing safe reset"):format(DarkmistsTheme.warnTag, tostring(pkgName)))
-        pcall(resetProfile)
-      end)
-    end
-  end)
 end
 
 function Darkmists.SafeReload()
@@ -763,13 +748,9 @@ function Darkmists.Init()
   DMLogger.log(DarkmistsTheme.purpleTag .. "Darkmists Core", (DarkmistsTheme.mutedTag .. "Initializing Darkmists Core " .. DarkmistsTheme.infoTag .. "v%s<r>"):format(Darkmists.VERSION))
   dmapi.init()
   local hadSettings = Darkmists.LoadSettings()
-  -- If we previously persisted the one-shot install-reset guard, clear it now
-  -- so future installs will be able to trigger the guarded reset again.
-  if Darkmists.GlobalSettings._installResetDone then
-    Darkmists.GlobalSettings._installResetDone = nil
-    Darkmists.SaveSettings()
-    Darkmists.Log(DarkmistsTheme.purpleTag .. "Darkmists Core", "Cleared one-time install reset guard from settings.")
-  end
+  local savedLayoutVersion = Darkmists.GlobalSettings.layoutCacheVersion
+  local versionChanged = hadSettings and savedLayoutVersion ~= Darkmists.LAYOUT_CACHE_VERSION
+
   DarkmistsTheme.buildTheme()
   Darkmists.RegisterEvents()
   -- Version-based settings policy:
@@ -777,7 +758,7 @@ function Darkmists.Init()
   -- current package version, keep the user's settings. Otherwise (no saved
   -- settings, or a mismatched version), remove the saved file, apply defaults
   -- and persist defaults so the package starts clean for the new version.
-  if hadSettings and Darkmists.GlobalSettings.layoutCacheVersion == Darkmists.LAYOUT_CACHE_VERSION then
+  if hadSettings and savedLayoutVersion == Darkmists.LAYOUT_CACHE_VERSION then
     -- same version: keep loaded settings
   else
     -- version mismatch or no settings: remove any existing saved file and reset
@@ -789,6 +770,13 @@ function Darkmists.Init()
     Darkmists.SaveSettings()
     -- Reset UI layout cache to avoid stale UI artifacts from previous versions
     Darkmists.ResetUILayoutCache()
+  end
+
+  if versionChanged then
+    tempTimer(1, function()
+      DMLogger.notify(DarkmistsTheme.purpleTag .. "Darkmists Core", DarkmistsTheme.warnTag .. "Package version change detected — performing safe reset")
+      pcall(resetProfile)
+    end)
   end
 
   if Darkmists.GlobalSettings.minimalMode then
