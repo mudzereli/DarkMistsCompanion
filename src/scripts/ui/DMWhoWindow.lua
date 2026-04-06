@@ -66,24 +66,19 @@ function WhoWindow.destroy()
     WhoWindow.playersFoundTrigger = nil
   end
 
-  if WhoWindow.console then
-    pcall(function()
-      if WhoWindow.console.hide then WhoWindow.console:hide() end
-      if WhoWindow.console.delete then WhoWindow.console:delete() end
-    end)
-    WhoWindow.console = nil
+  if WhoWindow.console and WhoWindow.console.delete then
+    pcall(WhoWindow.console.delete, WhoWindow.console)
   end
+  WhoWindow.console = nil
 
-  if WhoWindow.window then
-    pcall(function()
-      if WhoWindow.window.hide then WhoWindow.window:hide() end
-      if WhoWindow.window.delete then WhoWindow.window:delete() end
-    end)
-    WhoWindow.window = nil
+  if WhoWindow.window and WhoWindow.window.delete then
+    pcall(WhoWindow.window.delete, WhoWindow.window)
   end
+  WhoWindow.window = nil
 
   WhoWindow.lines = {}
   WhoWindow.playerCount = 0
+  WhoWindow.config.lastUpdated = 0
 end
 
 -- ===================================================================

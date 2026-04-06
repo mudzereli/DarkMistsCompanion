@@ -105,21 +105,15 @@ ScorePanel.create = function()
 end
 
 ScorePanel.destroy = function()
-  if ScorePanel.console then
-    pcall(function()
-      if ScorePanel.console.hide then ScorePanel.console:hide() end
-      if ScorePanel.console.delete then ScorePanel.console:delete() end
-    end)
-    ScorePanel.console = nil
+  if ScorePanel.console and ScorePanel.console.delete then
+    pcall(ScorePanel.console.delete, ScorePanel.console)
   end
+  ScorePanel.console = nil
 
-  if ScorePanel.window then
-    pcall(function()
-      if ScorePanel.window.hide then ScorePanel.window:hide() end
-      if ScorePanel.window.delete then ScorePanel.window:delete() end
-    end)
-    ScorePanel.window = nil
+  if ScorePanel.window and ScorePanel.window.delete then
+    pcall(ScorePanel.window.delete, ScorePanel.window)
   end
+  ScorePanel.window = nil
 end
 
 ScorePanel.registerEvents = function()
