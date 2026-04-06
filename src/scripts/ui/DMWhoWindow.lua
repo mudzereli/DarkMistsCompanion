@@ -59,6 +59,33 @@ function WhoWindow.create()
   Darkmists.Log("WhoWindow", "Container Created!")
 end
 
+--- Destroy the Who window and its trigger state during UI cleanup/reload.
+function WhoWindow.destroy()
+  if WhoWindow.playersFoundTrigger then
+    pcall(killTrigger, WhoWindow.playersFoundTrigger)
+    WhoWindow.playersFoundTrigger = nil
+  end
+
+  if WhoWindow.console then
+    pcall(function()
+      if WhoWindow.console.hide then WhoWindow.console:hide() end
+      if WhoWindow.console.delete then WhoWindow.console:delete() end
+    end)
+    WhoWindow.console = nil
+  end
+
+  if WhoWindow.window then
+    pcall(function()
+      if WhoWindow.window.hide then WhoWindow.window:hide() end
+      if WhoWindow.window.delete then WhoWindow.window:delete() end
+    end)
+    WhoWindow.window = nil
+  end
+
+  WhoWindow.lines = {}
+  WhoWindow.playerCount = 0
+end
+
 -- ===================================================================
 -- DISPLAY FUNCTIONS
 -- ===================================================================

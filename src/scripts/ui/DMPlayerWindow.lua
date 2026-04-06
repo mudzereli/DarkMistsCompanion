@@ -104,6 +104,24 @@ ScorePanel.create = function()
   Darkmists.Log("ScorePanel","Score Panel Created")
 end
 
+ScorePanel.destroy = function()
+  if ScorePanel.console then
+    pcall(function()
+      if ScorePanel.console.hide then ScorePanel.console:hide() end
+      if ScorePanel.console.delete then ScorePanel.console:delete() end
+    end)
+    ScorePanel.console = nil
+  end
+
+  if ScorePanel.window then
+    pcall(function()
+      if ScorePanel.window.hide then ScorePanel.window:hide() end
+      if ScorePanel.window.delete then ScorePanel.window:delete() end
+    end)
+    ScorePanel.window = nil
+  end
+end
+
 ScorePanel.registerEvents = function()
   DarkmistsEvents.add("ScorePanelPromptHandler", "dmapi.world.prompt", ScorePanel.refresh)
   Darkmists.Log("ScorePanel","Events Registered")

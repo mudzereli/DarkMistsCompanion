@@ -668,6 +668,7 @@ function Darkmists.CleanupUI(opts)
   opts = opts or {}
   if DarkmistsAlias and DarkmistsAlias.clearAll then pcall(DarkmistsAlias.clearAll) end
   if DarkmistsEvents and DarkmistsEvents.clearAll then pcall(DarkmistsEvents.clearAll) end
+  if DarkmistsTrigger and DarkmistsTrigger.clearAll then pcall(DarkmistsTrigger.clearAll) end
 
   if DMTabs and DMTabs.destroy then pcall(DMTabs.destroy) end
   if DarkMistsMiniMap and DarkMistsMiniMap.destroy then pcall(DarkMistsMiniMap.destroy) end
@@ -676,6 +677,8 @@ function Darkmists.CleanupUI(opts)
   if DMAlertWindow and DMAlertWindow.Hide then pcall(DMAlertWindow.Hide) end
   if StatRoller and StatRoller.destroy then pcall(StatRoller.destroy) end
   if AffectsWindow and AffectsWindow.destroy then pcall(AffectsWindow.destroy) end
+  if WhoWindow and WhoWindow.destroy then pcall(WhoWindow.destroy) end
+  if ScorePanel and ScorePanel.destroy then pcall(ScorePanel.destroy) end
 
   if opts.uninstall then
     Darkmists.Log(DarkmistsTheme.purpleTag .. "Darkmists Core", "Resetting window borders to default...")
