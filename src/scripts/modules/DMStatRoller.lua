@@ -83,11 +83,12 @@ local function reset_stat_block(block)
 end
 
 local KEEPALIVE_STOP_KEY = "StatRoller.KeepaliveStop"
+local KEEPALIVE_TIMER_KEY = "StatRoller.KeepaliveTimer"
 
 local function clear_keepalive_timer()
   DarkmistsEvents.remove(KEEPALIVE_STOP_KEY)
   if StatRoller._keepalive_timer then
-    killTimer(StatRoller._keepalive_timer)
+    DarkmistsTimer.remove(KEEPALIVE_TIMER_KEY)
     StatRoller._keepalive_timer = nil
     return true
   end
@@ -357,7 +358,8 @@ end
 function StatRoller._start_keepalive()
   if StatRoller._keepalive_timer then return end
 
-  StatRoller._keepalive_timer = tempTimer(
+  StatRoller._keepalive_timer = DarkmistsTimer.add(
+    KEEPALIVE_TIMER_KEY,
     tonumber(StatRoller.settings.keepalive_interval) or 20,
     function()
       if StatRoller.state.done then

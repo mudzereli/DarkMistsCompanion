@@ -463,8 +463,11 @@ function AffectsWindow.getAge()
 end
 
 function AffectsWindow.startAgeTimer()
-  if AffectsWindow.ageTimer then killTimer(AffectsWindow.ageTimer) end
-  AffectsWindow.ageTimer = tempTimer(
+  if AffectsWindow.ageTimer then
+    DarkmistsTimer.remove("AffectsWindow.AgeTimer")
+  end
+  AffectsWindow.ageTimer = DarkmistsTimer.add(
+    "AffectsWindow.AgeTimer",
     AffectsWindow.config.updateInterval,
     AffectsWindow.refreshDisplay,
     true
@@ -537,7 +540,7 @@ end
 
 function AffectsWindow.destroy()
   if AffectsWindow.ageTimer then
-    killTimer(AffectsWindow.ageTimer)
+    DarkmistsTimer.remove("AffectsWindow.AgeTimer")
     AffectsWindow.ageTimer = nil
   end
 

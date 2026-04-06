@@ -183,10 +183,11 @@ function EnchanterAssist._ensureSleepTimer()
     return
   end
 
-  EnchanterAssist.sleepRefreshTimer = tempTimer(30, function()
+  EnchanterAssist.sleepRefreshTimer = DarkmistsTimer.add("EnchanterAssist.SleepRefresh", 30, function()
     if dmapi.player.status.sleeping then
       send("")  -- refresh prompt/stats
     else
+      DarkmistsTimer.remove("EnchanterAssist.SleepRefresh")
       EnchanterAssist.sleepRefreshTimer = nil
     end
   end, true)
@@ -908,7 +909,7 @@ function EnchanterAssist.init()
       -- Wake when fully recovered
       if high then
         if EnchanterAssist.sleepRefreshTimer then
-          killTimer(EnchanterAssist.sleepRefreshTimer)
+          DarkmistsTimer.remove("EnchanterAssist.SleepRefresh")
           EnchanterAssist.sleepRefreshTimer = nil
         end
 
