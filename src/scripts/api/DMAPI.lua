@@ -54,6 +54,7 @@ dmapi.core = {
     initialized = false,
     combatMissedPrompts = 0,
     lastCombatRoundFired = getEpoch(),
+    lastRegenPulseAt = 0,
     lastCommand = nil,
     capturingRoom = false,
     exitLineMarker = 0,
@@ -228,7 +229,8 @@ dmapi.world = {
   
   time = {
     isDay = true,
-    weather = "clear"
+    weather = "clear",
+    weatherDetail = "clear"
   }
 }
 
@@ -335,7 +337,8 @@ function dmapi.parsers.prompt(line)
 
     local data = {
       line = line,
-      tnl = -1
+      tnl = -1,
+      timestamp = getEpoch()
     }
 
     -- Helper: extract value and optional regen (HP/MN/MV only)
@@ -603,6 +606,56 @@ function dmapi.parsers.skillImproved(line)
   return nil
 end
 
+--- Parse eat/drink actions and failures
+-- @param line string The line to parse
+-- @return table|nil Parsed ingest event data
+function dmapi.parsers.ingest(line)
+  local item, container = line:match("^You drink (.+) from (.+)%.$")
+  if item and container then
+    return {
+      action = "drink",
+      success = true,
+      item = item,
+      container = container,
+      line = line,
+      timestamp = getEpoch()
+    }
+  end
+
+  item = line:match("^You eat (.+)%.$")
+  if item then
+    return {
+      action = "eat",
+      success = true,
+      item = item,
+      line = line,
+      timestamp = getEpoch()
+    }
+  end
+
+  if line:match("^You are too full to eat more%.$") then
+    return {
+      action = "eat",
+      success = false,
+      reason = "full",
+      line = line,
+      timestamp = getEpoch()
+    }
+  end
+
+  if line:match("^You fail to reach your mouth%.%s+%*Hic%*$") then
+    return {
+      action = "ingest",
+      success = false,
+      reason = "drunk",
+      line = line,
+      timestamp = getEpoch()
+    }
+  end
+
+  return nil
+end
+
 --- Parse death detection
 -- @param line string The line to parse
 -- @return boolean True if player death detected
@@ -833,6 +886,81 @@ end
 -- @return string|nil The last command
 function dmapi.core.getLastCommand()
   return dmapi.core.state.lastCommand
+end
+
+--- Fire a regen pulse event when the prompt reports passive recovery
+-- @param vitals table Prompt vitals data
+local function maybeFireRegenPulse(vitals)
+  local hpRegen = tonumber(vitals and vitals.hpRegen) or 0
+  local mnRegen = tonumber(vitals and vitals.mnRegen) or 0
+  local mvRegen = tonumber(vitals and vitals.mvRegen) or 0
+
+  if hpRegen <= 0 and mnRegen <= 0 and mvRegen <= 0 then
+    return
+  end
+
+  local now = vitals.timestamp or getEpoch()
+  dmapi.core.state.lastRegenPulseAt = now
+
+  dmapi.core.raiseEvent("dmapi.player.regen.pulse", {
+    hp = vitals.hp,
+    mn = vitals.mn,
+    mv = vitals.mv,
+    hpRegen = hpRegen,
+    mnRegen = mnRegen,
+    mvRegen = mvRegen,
+    totalRegen = hpRegen + mnRegen + mvRegen,
+    line = vitals.line,
+    timestamp = now
+  })
+end
+
+--- Fire periodic damage events for known tick-like afflictions
+-- @param line string Raw MUD line
+local function maybeFirePeriodicDamage(line)
+  if not line or line == "" then return end
+
+  local actor, kind
+
+  local function afflictionToKind(affliction)
+    affliction = affliction and affliction:lower() or nil
+    if affliction == "sickness" then
+      return "plague"
+    end
+    if affliction == "poison"
+      or affliction == "starvation"
+      or affliction == "dehydration"
+    then
+      return affliction
+    end
+    return nil
+  end
+
+  local affliction = line:match("^Your ([%a]+) [%a]+ you[!.]$")
+  if affliction then
+    kind = afflictionToKind(affliction)
+    if kind then
+      actor = "You"
+    end
+  end
+
+  if not kind then
+    local otherActor, otherAffliction = line:match("^(.-)'s ([%a]+) [%a]+ (him|her|them)[!.]$")
+    kind = afflictionToKind(otherAffliction)
+    if kind then
+      actor = otherActor
+    end
+  end
+
+  if not kind then return end
+
+  dmapi.core.raiseEvent("dmapi.player.damage.periodic", {
+    actor = actor or "You",
+    isPlayer = actor == nil or actor == "You",
+    kind = kind,
+    line = line,
+    timestamp = getEpoch()
+  })
 end
 
 --- Fire a combat round event if enough time has passed
@@ -1236,6 +1364,19 @@ function dmapi.core.LineTrigger(line)
     return
   end
 
+  -- Emit raw periodic-damage cues after communication parsing to avoid chat false positives.
+  maybeFirePeriodicDamage(line)
+
+  -- Parse ingest successes and failures.
+  local ingest = dmapi.parsers.ingest(line)
+  if ingest then
+    if ingest.success then
+      dmapi.core.raiseEvent("dmapi.player.ingest", ingest)
+    else
+      dmapi.core.raiseEvent("dmapi.player.ingest.fail", ingest)
+    end
+  end
+
   -- Parse closed door: The door is closed.
   local closedName = line:match("^The (.+) is closed%.$")
   if closedName then
@@ -1529,6 +1670,7 @@ function dmapi.core.LineTrigger(line)
     end
     
     dmapi.core.raiseEvent("dmapi.player.vitals.updated", vitals)
+    maybeFireRegenPulse(vitals)
     dmapi.core.raiseEvent("dmapi.world.prompt", vitals)
     return
   end
@@ -1556,9 +1698,11 @@ function dmapi.core.LineTrigger(line)
 
   if thirstLevel then
     dmapi.player.status.thirsty = thirstLevel
+
     dmapi.core.raiseEvent("dmapi.player.thirst.update", {
       intensity = thirstLevel,
-      line = line
+      line = line,
+      timestamp = getEpoch()
     })
     return
   end
@@ -1567,7 +1711,8 @@ function dmapi.core.LineTrigger(line)
   local hungerLevel =
         line:match("^You are hungry%.")              and 1
      or line:match("^You are famished!")             and 2
-     or line:match("^You are starving!")             and 3
+     or line:match("^You are beginning to starve!")  and 3
+     or line:match("^You are starving!")             and 4
      or line:match("^Your starvation")               and 4
      or line:match("^You are no longer hungry%.")    and 0
      or line:match("^You are full%.")                and -1
@@ -1575,9 +1720,11 @@ function dmapi.core.LineTrigger(line)
 
   if hungerLevel then
     dmapi.player.status.hungry = hungerLevel
+
     dmapi.core.raiseEvent("dmapi.player.hunger.update", {
       intensity = hungerLevel,
-      line = line
+      line = line,
+      timestamp = getEpoch()
     })
     return
   end
@@ -1646,17 +1793,54 @@ function dmapi.core.LineTrigger(line)
   end
   
   -- Parse weather
-  local weather =
-        line:match("no longer raining")   and "clear"
-     or line:match("very cloudy")         and "cloudy"
-     or line:match("calmness begins")     and "calm"
-     or line:match("The day has begun")   and "day"
-     or line:match("storm seems to cease") and "storm_end"
-     or line:match("begins to rain")      and "rain"
-     or line:match("The night has begun") and "night"
+  local weather, weatherDetail
+
+  if line:match("^The sun rises in the east%.$")
+    or line:match("^The day has begun%.?$") then
+    weather = "day"
+    weatherDetail = "sunrise"
+  elseif line:match("^The sun slowly disappears in the west%.$")
+    or line:match("^The night has begun%.?$") then
+    weather = "night"
+    weatherDetail = "sunset"
+  elseif line:match("^You look up and notice that it is no longer raining sleet%.$") then
+    weather = "clear"
+    weatherDetail = "sleet_end"
+  elseif line:match("^You look up and notice that it is no longer raining%.$")
+    or line:match("no longer raining") then
+    weather = "clear"
+    weatherDetail = "rain_end"
+  elseif line:match("^Torrential rain begins to fall as a storm erupts%.$") then
+    weather = "storm"
+    weatherDetail = "storm_rain"
+  elseif line:match("^Pelting freezing rain begins to furiously slap against your face%.$") then
+    weather = "storm"
+    weatherDetail = "freezing_rain_heavy"
+  elseif line:match("^Freezing rain begins to fall against your face%.$") then
+    weather = "rain"
+    weatherDetail = "freezing_rain"
+  elseif line:match("^The crackling sound of thunder booms%.$") then
+    weather = "storm"
+    weatherDetail = "thunder"
+  elseif line:match("^The thunderclap from the storm seems to cease%.$")
+    or line:match("storm seems to cease") then
+    weather = "storm_end"
+    weatherDetail = "storm_end"
+  elseif line:match("^The sky appears somewhat cloudy, and it begins to rain%.$")
+    or line:match("begins to rain") then
+    weather = "rain"
+    weatherDetail = "rain"
+  elseif line:match("very cloudy") then
+    weather = "cloudy"
+    weatherDetail = "cloudy"
+  elseif line:match("calmness begins") then
+    weather = "calm"
+    weatherDetail = "calm"
+  end
   
   if weather then
     dmapi.world.time.weather = weather
+    dmapi.world.time.weatherDetail = weatherDetail or weather
     
     if weather == "day" then
       dmapi.world.time.isDay = true
@@ -1666,8 +1850,10 @@ function dmapi.core.LineTrigger(line)
     
     dmapi.core.raiseEvent("dmapi.world.weather.update", {
       weather = weather,
+      detail = dmapi.world.time.weatherDetail,
       isDay = dmapi.world.time.isDay,
-      line = line
+      line = line,
+      timestamp = getEpoch()
     })
     return
   end
@@ -1902,7 +2088,6 @@ function dmapi.RegisterEvents()
     function(_, command)
       if not command or command == "" then return end
       dmapi.core.state.lastCommand = command
-      dmapi.core.raiseEvent("dmapi.core.command.sent", {command = command})
     end,
     false
   )
@@ -1960,18 +2145,6 @@ function dmapi.RegisterEvents()
     function(_, data)
       if dmapi.player.vitals.hpMax == 1 then
         expandAlias(string.format("dmapi guessvitals %d", data.level))
-      end
-    end,
-    false
-  )
-
-  DarkmistsEvents.add(
-    "dmapi.vitals.checkscore",
-    "dmapi.player.vitals.updated",
-    function(_, data)
-      local lastCommand = dmapi.core.state.lastCommand
-      if dmapi.player.vitals.hpMax == 1 and lastCommand ~= "score" then
-        send("score")
       end
     end,
     false
