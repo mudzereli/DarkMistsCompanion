@@ -654,6 +654,7 @@ function Darkmists.CleanupUI(opts)
   if DarkmistsAlias and DarkmistsAlias.clearAll then pcall(DarkmistsAlias.clearAll) end
   if DarkmistsEvents and DarkmistsEvents.clearAll then pcall(DarkmistsEvents.clearAll) end
   if DarkmistsTrigger and DarkmistsTrigger.clearAll then pcall(DarkmistsTrigger.clearAll) end
+  if DarkmistsTimer and DarkmistsTimer.clearAll then pcall(DarkmistsTimer.clearAll) end
 
   if DMAlertWindow and DMAlertWindow.Hide then pcall(DMAlertWindow.Hide) end
   if AffectsWindow and AffectsWindow.destroy then pcall(AffectsWindow.destroy) end

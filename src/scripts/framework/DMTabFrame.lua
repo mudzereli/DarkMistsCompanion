@@ -198,11 +198,9 @@ end
 function DMTabFrame.startAutosave()
   local tabs = DMTabFrame.tabs
   if not tabs then return end
-  if tabs._autosaveTimer then
-    pcall(killTimer, tabs._autosaveTimer)
-  end
+
   local currentTabs = tabs
-  tabs._autosaveTimer = tempTimer(120, function()
+  tabs._autosaveTimer = DarkmistsTimer.add("DMTabFrame.Autosave", 120, function()
     if DMTabFrame.tabs == currentTabs then
       currentTabs:save()
     end
@@ -310,7 +308,7 @@ function DMTabFrame.destroy()
 
   -- Stop the repeating autosave timer if present
   if DMTabFrame.tabs and DMTabFrame.tabs._autosaveTimer then
-    pcall(killTimer, DMTabFrame.tabs._autosaveTimer)
+    DarkmistsTimer.remove("DMTabFrame.Autosave")
     DMTabFrame.tabs._autosaveTimer = nil
   end
 
