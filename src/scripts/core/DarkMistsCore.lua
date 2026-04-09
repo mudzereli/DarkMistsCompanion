@@ -798,6 +798,7 @@ function Darkmists.Init()
   EnchanterAssist.init()
   SkillUps.init()
   DMClickables.init()
+  DMTickTracker.init()
   ButtonBar.init()
 
   -- UI Scripts

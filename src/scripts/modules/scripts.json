@@ -36,6 +36,12 @@
               "isFolder": "no"
        },
        {
+              "name": "DMTickTracker",
+              "isActive": "yes",
+              "script": "",
+              "isFolder": "no"
+       },
+       {
               "name": "DMEnchanterAssist",
               "isActive": "yes",
               "script": "",
