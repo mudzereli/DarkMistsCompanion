@@ -172,23 +172,8 @@ function CMudWrapper.installAlias(name, spec)
     local captured = matches or {}
 
     if spec.tail then
-      -- support patterns where the tail capture may be in matches[1] or matches[2]
-      local raw = captured[2] or captured[1] or ""
-      local words = {}
-      for w in raw:gmatch("%S+") do
-        words[#words + 1] = w
-      end
-
-      local mt = { [1] = captured[1] }
-      for i = 1, #words do mt[i + 1] = words[i] end
-
-      local neg = {}
-      for i = 1, #words do
-        neg[i] = table.concat(words, " ", i)
-      end
-      neg[1] = raw
-
-      CMudWrapper.runBody(spec.body, mt, neg)
+      local raw = trim(captured[2] or captured[1] or "")
+      CMudWrapper.runBody(spec.body, { [1] = raw, [2] = raw }, nil)
     else
       CMudWrapper.runBody(spec.body, captured, nil)
     end
