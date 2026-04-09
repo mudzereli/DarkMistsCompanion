@@ -20,7 +20,6 @@ CMudWrapper = {
   state = { aliases = {}, triggers = {}, vars = {}, defaults = {} },
   handles = { aliases = {}, triggers = {} },
   commandHandle = nil,
-  debug = false,
 }
 
 local function trim(s)
@@ -169,26 +168,7 @@ function CMudWrapper.installAlias(name, spec)
     pcall(killAlias, CMudWrapper.handles.aliases[name])
   end
 
-  -- show registration info (helpful to debug broken patterns)
-  if CMudWrapper.debug then
-    cecho(("<cyan>[CMudWrapper] registering alias: %s -> %s\n"):format(tostring(name), tostring(spec.pattern)))
-  end
-
   local function aliasHandler()
-    -- matches: table provided by Mudlet where matches[2].. are capture groups
-    -- Temporary invocation trace for debugging
-    do
-      local ok, _ = pcall(function()
-        local parts = {}
-        for i = 1, (matches and #matches) or 0 do parts[#parts+1] = tostring(i) .. ":" .. tostring(matches[i]) end
-        cecho(("<yellow>[CMudWrapper] invoked alias: %s matches=[%s]\n"):format(tostring(name), table.concat(parts, ", ")))
-        cecho(("<yellow>[CMudWrapper] alias body: %s\n"):format(tostring(spec.body)))
-      end)
-      if not ok then
-        cecho(("<red>[CMudWrapper] failed to print alias trace for %s\n"):format(tostring(name)))
-      end
-    end
-
     local captured = matches or {}
 
     if spec.tail then
@@ -217,9 +197,6 @@ function CMudWrapper.installAlias(name, spec)
   local ok, id_or_err = pcall(function() return tempAlias(spec.pattern, aliasHandler) end)
   if ok and id_or_err then
     CMudWrapper.handles.aliases[name] = id_or_err
-    if CMudWrapper.debug then
-      cecho(("<cyan>[CMudWrapper] registered id for %s: %s\n"):format(tostring(name), tostring(id_or_err)))
-    end
   else
     cecho(("<red>[CMudWrapper] failed to register alias '%s' pattern=%s error=%s\n"):format(tostring(name), tostring(spec.pattern), tostring(id_or_err)))
   end
@@ -342,11 +319,41 @@ function CMudWrapper.exec(line)
     CMudWrapper.removeTrigger(args[1])
 
   elseif isPrefix(verb, "VARIABLE") or isPrefix(verb, "VAR") or verb:upper() == "VA" then
-    assert(args[1], "#VARIABLE {name} {value}")
     local name = args[1]
-    local value = args[2] or ""
+    local value = args[2]
+
+    if not name then
+      cecho("<cyan>[CMudWrapper] Variables:\n")
+      for k, v in pairs(CMudWrapper.state.vars) do
+        cecho(("  <white>%s<r>: %s\n"):format(k, tostring(v)))
+      end
+      return true
+    end
+
+    if value == nil then
+      local current = CMudWrapper.state.vars[name]
+      if current ~= nil then
+        cecho(("<cyan>[CMudWrapper] %s -> %s\n"):format(name, tostring(current)))
+      else
+        cecho(("<yellow>[CMudWrapper] variable not found: %s\n"):format(name))
+      end
+      return true
+    end
+
     local default = args[3]
     CMudWrapper.setVariable(name, value, default)
+
+  elseif isPrefix(verb, "UNVARIABLE") or isPrefix(verb, "UNVAR") then
+    assert(args[1], "#UNVAR {name}")
+    local name = args[1]
+    if CMudWrapper.state.vars[name] ~= nil then
+      CMudWrapper.state.vars[name] = nil
+      CMudWrapper.state.defaults[name] = nil
+      CMudWrapper.save()
+      cecho(("<green>[CMudWrapper] variable removed: %s\n"):format(tostring(name)))
+    else
+      cecho(("<yellow>[CMudWrapper] variable not found: %s\n"):format(tostring(name)))
+    end
 
   elseif verb == "SHOW" or verb == "SAY" then
     cecho(applyVars(table.concat(args, " ")) .. "\n")
@@ -389,7 +396,7 @@ function CMudWrapper.load()
   end
 
   CMudWrapper.commandHandle = tempAlias([[^(#.+)$]], function()
-    CMudWrapper.exec(matches[2] or matches[1] or command or "")
+    CMudWrapper.exec(matches[1] or matches[2] or "")
   end)
 
   -- assignment alias: allow `name = value` or `name := value` without leading #
@@ -398,7 +405,7 @@ function CMudWrapper.load()
     CMudWrapper.assignHandle = nil
   end
 
-  CMudWrapper.assignHandle = tempAlias([[^\s*([\w_]+)\s*:??=\s*(.+)$]], function()
+  CMudWrapper.assignHandle = tempAlias([[^\s*([\w_]+)\s*:?=\s*(.+)$]], function()
     local var = matches[2]
     local val = matches[3]
     if var then
@@ -407,9 +414,6 @@ function CMudWrapper.load()
   end)
 
   for name, spec in pairs(CMudWrapper.state.aliases) do
-    if spec and spec.tail then
-      spec.pattern = "^" .. escapeRegex(name) .. "\\s*(.*)$"
-    end
     CMudWrapper.installAlias(name, spec)
   end
 
