@@ -291,19 +291,44 @@ function CMudWrapper.exec(line)
     assert(args[1], "#UNALIAS {name}")
     CMudWrapper.removeAlias(args[1])
 
-  elseif verb == "TRIGGER" or verb == "ACTION" then
+  elseif isPrefix(verb, "TRIGGER") or isPrefix(verb, "ACTION") then
     local name, pattern, body = args[1], args[2], args[3]
+
+    -- No args: list all triggers
+    if not name then
+      cecho("<cyan>[CMudWrapper] Triggers:\n")
+      for k, v in pairs(CMudWrapper.state.triggers) do
+        local pat = tostring((v or {}).pattern or "")
+        local body = tostring((v or {}).body or "")
+        cecho(("  <white>%s<r>: %s -> %s\n"):format(k, pat, body))
+      end
+      return true
+    end
+
+    -- Single arg: show definition for named trigger
+    if name and not pattern then
+      local def = CMudWrapper.state.triggers[name]
+      if def then
+        local pat = tostring(def.pattern or "")
+        local body = tostring(def.body or "")
+        cecho(("<cyan>[CMudWrapper] %s: %s -> %s\n"):format(name, pat, body))
+      else
+        cecho(("<yellow>[CMudWrapper] trigger not found: %s\n"):format(name))
+      end
+      return true
+    end
+
     assert(name and pattern and body, "#TRIGGER {name} {pattern} {body}")
     CMudWrapper.state.triggers[name] = { pattern = pattern, body = body }
     CMudWrapper.installTrigger(name, CMudWrapper.state.triggers[name])
     CMudWrapper.save()
     cecho(("<green>[CMudWrapper] trigger saved: %s\n"):format(name))
 
-  elseif verb == "UNTRIGGER" then
+  elseif isPrefix(verb, "UNTRIGGER") then
     assert(args[1], "#UNTRIGGER {name}")
     CMudWrapper.removeTrigger(args[1])
 
-  elseif isPrefix(verb, "VARIABLE") or isPrefix(verb, "VAR") or verb:upper() == "VA" then
+  elseif isPrefix(verb, "VARIABLE") then
     local name = args[1]
     local value = args[2]
 
@@ -328,7 +353,7 @@ function CMudWrapper.exec(line)
     local default = args[3]
     CMudWrapper.setVariable(name, value, default)
 
-  elseif isPrefix(verb, "UNVARIABLE") or isPrefix(verb, "UNVAR") then
+  elseif isPrefix(verb, "UNVARIABLE") then
     assert(args[1], "#UNVAR {name}")
     local name = args[1]
     if CMudWrapper.state.vars[name] ~= nil then
