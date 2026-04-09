@@ -172,10 +172,17 @@ function CMudWrapper.installAlias(name, spec)
 
   local function aliasHandler()
     -- matches: table provided by Mudlet where matches[2].. are capture groups
-    if CMudWrapper.debug then
-      local parts = {}
-      for i = 1, #matches do parts[#parts+1] = tostring(i) .. ":" .. tostring(matches[i]) end
-      cecho(("<yellow>[CMudWrapper] invoked alias: %s matches=[%s]\n"):format(tostring(name), table.concat(parts, ", ")))
+    -- Temporary invocation trace for debugging
+    do
+      local ok, _ = pcall(function()
+        local parts = {}
+        for i = 1, (matches and #matches) or 0 do parts[#parts+1] = tostring(i) .. ":" .. tostring(matches[i]) end
+        cecho(("<yellow>[CMudWrapper] invoked alias: %s matches=[%s]\n"):format(tostring(name), table.concat(parts, ", ")))
+        cecho(("<yellow>[CMudWrapper] alias body: %s\n"):format(tostring(spec.body)))
+      end)
+      if not ok then
+        cecho(("<red>[CMudWrapper] failed to print alias trace for %s\n"):format(tostring(name)))
+      end
     end
 
     if spec.tail then
@@ -269,7 +276,12 @@ function CMudWrapper.exec(line)
   local verb = (table.remove(args, 1) or "")
 
   if isPrefix(verb, "ALIAS") then
-    local name, pattern, body = args[1], args[2], args[3]
+    -- New simplified form: #ALIAS {name} {body}
+    local name = args[1]
+    local body = nil
+    if #args >= 2 then
+      body = table.concat(args, " ", 2)
+    end
     -- If no args: list aliases
     if not name then
       cecho("<cyan>[CMudWrapper] Aliases:\n")
@@ -280,7 +292,7 @@ function CMudWrapper.exec(line)
     end
 
     -- If only name provided, show definition
-    if name and not pattern and not body then
+    if name and not body then
       local def = CMudWrapper.state.aliases[name]
       if def then
         cecho(("<cyan>[CMudWrapper] %s -> %s\n"):format(name, def.body or ""))
@@ -290,17 +302,11 @@ function CMudWrapper.exec(line)
       return true
     end
 
-    -- Support shorthand form: #AL name {body}  (pattern omitted)
-    local usesTail = false
-    if not body then
-      body = pattern
-      -- simple parameter capture: everything after the alias name goes into a tail capture
-      -- capture everything after the alias name as a single tail (Lua pattern)
-      pattern = "^" .. name .. "%s*(.*)$"
-      usesTail = true
-    end
+    -- For the simplified API, build a default pattern that captures a tail
+    local usesTail = true
+    local pattern = "^" .. name .. "%s*(.*)$"
 
-    assert(name and pattern and body, "#ALIAS {name} {pattern} {body}")
+    assert(name and body, "#ALIAS {name} {body}")
     -- sanitize any protected/delayed-placeholder tokens that may have been
     -- introduced by earlier substitution passes (e.g. __CMW_PCT_fireball__)
     -- map negative placeholders first: __CMW_PCT_NEG_<n>__ -> %-<n>
