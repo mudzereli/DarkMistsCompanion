@@ -101,6 +101,10 @@ local function isPrefix(prefix, target)
   return target:sub(1, #prefix) == prefix
 end
 
+local function escapeRegex(text)
+  return (tostring(text):gsub("([%^%$%(%)%%%.%[%]%*%+%-%?])", "%%%1"))
+end
+
 function CMudWrapper.save()
   table.save(CMudWrapper.savePath, CMudWrapper.state)
 end
@@ -185,15 +189,17 @@ function CMudWrapper.installAlias(name, spec)
       end
     end
 
+    local captured = matches or {}
+
     if spec.tail then
       -- support patterns where the tail capture may be in matches[1] or matches[2]
-      local raw = matches[2] or matches[1] or ""
+      local raw = captured[2] or captured[1] or ""
       local words = {}
       for w in raw:gmatch("%S+") do
         words[#words + 1] = w
       end
 
-      local mt = { [1] = matches[1] }
+      local mt = { [1] = captured[1] }
       for i = 1, #words do mt[i + 1] = words[i] end
 
       local neg = {}
@@ -204,7 +210,7 @@ function CMudWrapper.installAlias(name, spec)
 
       CMudWrapper.runBody(spec.body, mt, neg)
     else
-      CMudWrapper.runBody(spec.body, matches, nil)
+      CMudWrapper.runBody(spec.body, captured, nil)
     end
   end
 
@@ -304,7 +310,7 @@ function CMudWrapper.exec(line)
 
     -- For the simplified API, build a default pattern that captures a tail
     local usesTail = true
-    local pattern = "^" .. name .. "%s*(.*)$"
+    local pattern = "^" .. escapeRegex(name) .. "\\s*(.*)$"
 
     assert(name and body, "#ALIAS {name} {body}")
     -- sanitize any protected/delayed-placeholder tokens that may have been
@@ -382,8 +388,8 @@ function CMudWrapper.load()
     pcall(killAlias, CMudWrapper.commandHandle)
   end
 
-  CMudWrapper.commandHandle = tempAlias([[^#.+$]], function()
-    CMudWrapper.exec(command)
+  CMudWrapper.commandHandle = tempAlias([[^(#.+)$]], function()
+    CMudWrapper.exec(matches[2] or matches[1] or command or "")
   end)
 
   -- assignment alias: allow `name = value` or `name := value` without leading #
@@ -392,7 +398,7 @@ function CMudWrapper.load()
     CMudWrapper.assignHandle = nil
   end
 
-  CMudWrapper.assignHandle = tempAlias([[^%s*([%w_]+)%s*:?=%s*(.+)$]], function()
+  CMudWrapper.assignHandle = tempAlias([[^\s*([\w_]+)\s*:??=\s*(.+)$]], function()
     local var = matches[2]
     local val = matches[3]
     if var then
@@ -401,6 +407,9 @@ function CMudWrapper.load()
   end)
 
   for name, spec in pairs(CMudWrapper.state.aliases) do
+    if spec and spec.tail then
+      spec.pattern = "^" .. escapeRegex(name) .. "\\s*(.*)$"
+    end
     CMudWrapper.installAlias(name, spec)
   end
 
