@@ -738,5 +738,10 @@
     "name": "a regulation Sudharma Cityguard Helmet",
     "vnum": "custom_0146",
     "details": "Area: The City of Sudharma\nObject 'a regulation Sudharma Cityguard Helmet' is type armor, extra flags none.\nWeight is 13.0 pounds, value is 5200, level is 25.\nMaterial is metal and leather.\nrestrict flags none.\nArmor class is 2 pierce, 2 bash, 2 slash, and 0 vs. magic.\nAffects armor class by -13."
+  },
+  {
+    "name": "a regulation Sudharma Cityguard Leather Belt",
+    "vnum": "custom_0147",
+    "details": "Area: The City of Sudharma\nObject 'a regulation Sudharma Cityguard Leather Belt' is type armor, extra flags none.\nWeight is 2.8 pounds, value is 3300, level is 25.\nMaterial is leather and brass.\nrestrict flags none.\nArmor class is 5 pierce, 5 bash, 5 slash, and 3 vs. magic.\nAffects hp by 21."
   }
 ]
