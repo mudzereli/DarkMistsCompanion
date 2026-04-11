@@ -358,27 +358,27 @@
   {
     "name": "a polished marble ring",
     "vnum": "custom_0042",
-    "details": "Area: The City of Sudharma\nObject 'a polished marble ring' is type jewelry, extra flags inventory.\nWeight is 0.3 pounds, value is 9711, level is 25.\nMaterial is marble.\nrestrict flags none."
+    "details": "Area: The City of Sudharma\nObject 'a polished marble ring' is type jewelry, extra flags bless inventory.\nWeight is 0.8 pounds, value is 8445, level is 25.\nMaterial is marble.\nrestrict flags none.\nAffects save vs spell by -1.\nAffects wisdom by 3.\nAffects intelligence by 3.\nAffects dexterity by 3."
   },
   {
     "name": "a polished ebony ring",
     "vnum": "custom_0043",
-    "details": "Area: The City of Sudharma\nObject 'a polished ebony ring' is type jewelry, extra flags inventory.\nWeight is 0.3 pounds, value is 14964, level is 25.\nMaterial is ebony.\nrestrict flags none."
+    "details": "Area: The City of Sudharma\nObject 'a polished ebony ring' is type jewelry, extra flags inventory.\nWeight is 0.3 pounds, value is 13013, level is 25.\nMaterial is ivory.\nrestrict flags none.\nAffects moves by 15.\nAffects hp by 10.\nAffects mana by 10.\nAffects armor class by -3."
   },
   {
     "name": "a polished ebony ring",
     "vnum": "custom_0044",
-    "details": "Area: The City of Sudharma\nObject 'a polished ebony ring' is type jewelry, extra flags inventory.\nWeight is 0.3 pounds, value is 14964, level is 25.\nMaterial is ebony.\nrestrict flags none."
+    "details": "Area: The City of Sudharma\nObject 'a polished ebony ring' is type jewelry, extra flags inventory.\nWeight is 0.5 pounds, value is 13013, level is 25.\nMaterial is ebony.\nrestrict flags none.\nAffects constitution by 3.\nAffects strength by 3.\nAffects armor class by -3."
   },
   {
     "name": "a polished elysium ring",
     "vnum": "custom_0045",
-    "details": "Area: The City of Sudharma\nObject 'a polished elysium ring' is type jewelry, extra flags inventory.\nWeight is 0.3 pounds, value is 16014, level is 25.\nMaterial is elysium.\nrestrict flags none."
+    "details": "Area: The City of Sudharma\nObject 'a polished elysium ring' is type jewelry, extra flags glowing inventory.\nWeight is 0.4 pounds, value is 13926, level is 25.\nMaterial is elysium.\nrestrict flags none.\nAffects armor class by -3.\nAffects moves by 15.\nAffects hp by 10.\nAffects mana by 10."
   },
   {
     "name": "a crystal suncatcher earring",
     "vnum": "custom_0046",
-    "details": "Area: The City of Sudharma\nObject 'a crystal suncatcher earring' is type jewelry, extra flags inventory.\nWeight is 1.3 pounds, value is 9243, level is 30.\nMaterial is crystal and mithril.\nrestrict flags none."
+    "details": "Area: The City of Sudharma\nObject 'a crystal suncatcher earring' is type jewelry, extra flags bless inventory.\nWeight is 1.3 pounds, value is 8038, level is 30.\nMaterial is mithril and crystal.\nrestrict flags none.\nAffects mana by 13.\nAffects damage roll by 3.\nAffects hit roll by 3."
   },
   {
     "name": "a green crystal suncatcher earring",
@@ -408,7 +408,7 @@
   {
     "name": "a crystalline ball",
     "vnum": "custom_0052",
-    "details": "Area: The City of Sudharma\nObject 'a crystalline ball' is type treasure, extra flags inventory.\nWeight is 2.0 pounds, value is 8416, level is 36.\nMaterial is crystal.\nrestrict flags none."
+    "details": "Area: The City of Sudharma\nObject 'a crystalline ball' is type treasure, extra flags inventory.\nWeight is 6.5 pounds, value is 7319, level is 36.\nMaterial is crystal and softwood.\nrestrict flags none.\nAffects spell power by 2.\nAffects mana by 30."
   }
   ,
   {
@@ -484,7 +484,7 @@
   {
     "name": "a gold box chain ring",
     "vnum": "custom_0067",
-    "details": "Area: The City of Sudharma\nObject 'a gold box chain ring' is type jewelry, extra flags burnproof.\nWeight is 0.7 pounds, value is 103500, level is 50.\nMaterial is gold.\nrestrict flags none."
+    "details": "Area: The City of Sudharma\nObject 'a gold box chain ring' is type jewelry, extra flags burnproof.\nWeight is 0.7 pounds, value is 90000, level is 50.\nMaterial is gold.\nrestrict flags none.\nAffects holy power by 3."
   },
   {
     "name": "a copper interlocking box chain bracelet",
@@ -504,7 +504,7 @@
   {
     "name": "a gold box chain bracelet",
     "vnum": "custom_0071",
-    "details": "Area: The City of Sudharma\nObject 'a gold box chain bracelet' is type jewelry, extra flags burnproof.\nWeight is 3.9 pounds, value is 103500, level is 50.\nMaterial is gold.\nrestrict flags none."
+    "details": "Area: The City of Sudharma\nObject 'a gold box chain bracelet' is type jewelry, extra flags burnproof.\nWeight is 3.4 pounds, value is 90000, level is 50.\nMaterial is gold.\nrestrict flags none.\nAffects holy power by 3."
   },
   {
     "name": "a string of pearls",
