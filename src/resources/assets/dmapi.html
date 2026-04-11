@@ -199,7 +199,6 @@ const dmapi = {
       title: "Core Events",
       events: [
         { name: "dmapi.core.loaded",         desc: "API finished initialization",       dir: "sys" },
-        { name: "dmapi.core.command.sent",   desc: "A command was sent to the MUD",     dir: "out" },
         { name: "dmapi.core.line",           desc: "Raw MUD output line parsed",        dir: "sys" },
       ]
     },
@@ -232,8 +231,12 @@ const dmapi = {
         { name: "dmapi.player.rest.exit",                desc: "Player stopped resting",        dir: "in"  },
         { name: "dmapi.player.affect.stunoff",           desc: "Stun effect ended",             dir: "in"  },
         { name: "dmapi.player.drink.empty",              desc: "Drink container is empty",      dir: "in"  },
+        { name: "dmapi.player.ingest",                   desc: "Eat or drink action succeeded", dir: "in"  },
+        { name: "dmapi.player.ingest.fail",              desc: "Eat or drink attempt failed",   dir: "in"  },
         { name: "dmapi.player.hunger.update",            desc: "Hunger state changed",          dir: "in"  },
         { name: "dmapi.player.thirst.update",            desc: "Thirst state changed",          dir: "in"  },
+        { name: "dmapi.player.regen.pulse",              desc: "Passive regeneration pulse",    dir: "in"  },
+        { name: "dmapi.player.damage.periodic",          desc: "Periodic affliction damage",    dir: "in"  },
         { name: "dmapi.player.inventory.itemnotfound",   desc: "Item lookup failed",            dir: "in"  },
         { name: "dmapi.player.stats.attributes.updated", desc: "Player attributes updated",     dir: "in"  },
       ]
@@ -317,19 +320,18 @@ const dmapi = {
 
 const eventPayloads = {
   "dmapi.core.loaded": "No payload",
-  "dmapi.core.command.sent": "{\n  command: string\n}",
   "dmapi.core.line": "{\n  line: string\n}",
 
   "dmapi.world.enter": "Optional payload from one-line mapping:\n{\n  line: string\n}",
   "dmapi.world.exit": "No payload",
   "dmapi.world.connect": "{\n  line: string\n}",
   "dmapi.world.pendingreturn": "{\n  line: string\n}",
-  "dmapi.world.prompt": "{\n  hp: number,\n  mn: number,\n  mv: number,\n  rg?: number,\n  tnl: number,\n  hpRegen?: number,\n  mnRegen?: number,\n  mvRegen?: number,\n  estimated?: boolean,\n  line: string\n}",
+  "dmapi.world.prompt": "{\n  hp: number,\n  mn: number,\n  mv: number,\n  rg?: number,\n  tnl: number,\n  hpRegen?: number,\n  mnRegen?: number,\n  mvRegen?: number,\n  estimated?: boolean,\n  line: string,\n  timestamp?: number\n}",
   "dmapi.world.room.name.updated": "string (room name)",
   "dmapi.world.room.exits.updated": "{\n  exits: string[],\n  line: string\n}",
-  "dmapi.world.weather.update": "{\n  weather: string,\n  isDay: boolean,\n  line: string\n}",
+  "dmapi.world.weather.update": "{\n  weather: string,\n  detail: string,\n  isDay: boolean,\n  line: string,\n  timestamp: number\n}",
 
-  "dmapi.player.vitals.updated": "{\n  hp: number,\n  mn: number,\n  mv: number,\n  hpMax?: number,\n  mnMax?: number,\n  mvMax?: number,\n  rg?: number,\n  tnl?: number,\n  hpRegen?: number,\n  mnRegen?: number,\n  mvRegen?: number,\n  estimated?: boolean,\n  line: string\n}",
+  "dmapi.player.vitals.updated": "{\n  hp: number,\n  mn: number,\n  mv: number,\n  hpMax?: number,\n  mnMax?: number,\n  mvMax?: number,\n  rg?: number,\n  tnl?: number,\n  hpRegen?: number,\n  mnRegen?: number,\n  mvRegen?: number,\n  estimated?: boolean,\n  line: string,\n  timestamp?: number\n}",
   "dmapi.player.level.updated": "{\n  level: number,\n  years: number,\n  hours: number,\n  line: string\n}",
   "dmapi.player.levelup": "{\n  hpGain: number,\n  hpMax: number,\n  mnGain: number,\n  mnMax: number,\n  mvGain: number,\n  mvMax: number,\n  prac: number,\n  pracTotal: number,\n  line: string\n}",
   "dmapi.player.death": "{\n  deaths: number,\n  line: string\n}",
@@ -340,8 +342,12 @@ const eventPayloads = {
   "dmapi.player.rest.exit": "{\n  line: string\n}",
   "dmapi.player.affect.stunoff": "{\n  line: string\n}",
   "dmapi.player.drink.empty": "{\n  line: string\n}",
-  "dmapi.player.hunger.update": "{\n  intensity: number,\n  line: string\n}",
-  "dmapi.player.thirst.update": "{\n  intensity: number,\n  line: string\n}",
+  "dmapi.player.ingest": "{\n  action: string,\n  success: true,\n  item: string,\n  container?: string,\n  line: string,\n  timestamp: number\n}",
+  "dmapi.player.ingest.fail": "{\n  action: string,\n  success: false,\n  reason: string,\n  line: string,\n  timestamp: number\n}",
+  "dmapi.player.hunger.update": "{\n  intensity: number,\n  line: string,\n  timestamp: number\n}",
+  "dmapi.player.thirst.update": "{\n  intensity: number,\n  line: string,\n  timestamp: number\n}",
+  "dmapi.player.regen.pulse": "{\n  hp: number,\n  mn: number,\n  mv: number,\n  hpRegen: number,\n  mnRegen: number,\n  mvRegen: number,\n  totalRegen: number,\n  line: string,\n  timestamp: number\n}",
+  "dmapi.player.damage.periodic": "{\n  actor: string,\n  isPlayer: boolean,\n  kind: string,\n  line: string,\n  timestamp: number\n}",
   "dmapi.player.inventory.itemnotfound": "{\n  line: string\n}",
   "dmapi.player.stats.attributes.updated": "{\n  str: { base: number, mod: number },\n  int: { base: number, mod: number },\n  wis: { base: number, mod: number },\n  dex: { base: number, mod: number },\n  con: { base: number, mod: number },\n  line: string\n}",
 

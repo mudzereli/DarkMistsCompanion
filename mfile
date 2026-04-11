@@ -2,7 +2,7 @@
        "package": "DarkMistsCompanion",
        "title": "A Mudlet package for Dark Mists (darkmists.org 2222) that improves awareness while preserving Dark Mists’ classic text-based gameplay",
        "description": "",
-       "version": "1.5.10-beta2",
+       "version": "1.5.0-beta6",
        "author": "Mudzereli",
        "icon": ".mudlet/Icon/darkmists.PNG",
        "dependencies": "",
