@@ -58,36 +58,37 @@ local function applyVars(text)
   return text
 end
 
-local function applyMatches(text, matchTable, negMap)
-  if not matchTable and not negMap then return text end
-  local protected = {}
-  -- Protect doubled-percent sequences like %%1 and %%-(1) -> placeholder so single-pass substitution
-  text = text:gsub("%%%%%-(%d+)", function(num)
-    local key = "__CMW_PCT_NEG_" .. num .. "__"
-    protected[key] = "%-" .. num
-    return key
-  end)
-  text = text:gsub("%%%%(%d+)", function(num)
-    local key = "__CMW_PCT_" .. num .. "__"
-    protected[key] = "%" .. num
-    return key
-  end)
-
+local function expandMatchTokens(text, matchTable)
   if matchTable then
     for i = 2, #matchTable do
-      text = text:gsub("%%" .. tostring(i - 1), matchTable[i] or "")
+      local replacement = matchTable[i] or ""
+      text = text:gsub("%%" .. tostring(i - 1), function()
+        return replacement
+      end)
     end
   end
 
-  if negMap then
-    text = text:gsub("%%-(%d+)", function(num)
-      return negMap[tonumber(num)] or ""
-    end)
-  end
+  return text
+end
 
-  -- restore protected tokens to single-percent form (delayed expansion)
-  for k, v in pairs(protected) do
-    text = text:gsub(k, v)
+local function applyMatches(text, matchTable)
+  if not matchTable then return text end
+  local delayed = {}
+
+  -- Protect delayed-expansion sequences like %%1 -> placeholder so they survive the first pass.
+  text = text:gsub("%%%%(%d+)", function(num)
+    local key = "__CMW_PCT_" .. num .. "__"
+    delayed[key] = "%" .. num
+    return key
+  end)
+
+  text = expandMatchTokens(text, matchTable)
+
+  -- restore delayed placeholders back to literal percent tokens without expanding them again.
+  for k, v in pairs(delayed) do
+    text = text:gsub(k, function()
+      return v
+    end)
   end
 
   return text
@@ -124,8 +125,8 @@ function CMudWrapper.setVariable(name, value, default)
   cecho(("<green>[CMudWrapper] variable set: %s = %s\n"):format(name, tostring(value)))
 end
 
-function CMudWrapper.runLine(line, matchTable, negMap)
-  line = trim(applyMatches(applyVars(line), matchTable, negMap))
+function CMudWrapper.runLine(line, matchTable)
+  line = trim(applyMatches(applyVars(line), matchTable))
   if line == "" then return end
 
   if line:sub(1, 1) == CMudWrapper.commandChar then
@@ -135,30 +136,37 @@ function CMudWrapper.runLine(line, matchTable, negMap)
   end
 end
 
-function CMudWrapper.runBody(body, matchTable, negMap)
-  body = applyMatches(applyVars(body or ""), matchTable, negMap)
-  -- build a character class of separators: include configured plus common ones
-  local configured = tostring(CMudWrapper.commandSeparator)
-  local candidates = {}
-  candidates[configured] = true
-  candidates["|"] = true
+function CMudWrapper.runBody(body, matchTable)
+  body = applyMatches(applyVars(body or ""), matchTable)
 
-  local chars = {}
-  for s, _ in pairs(candidates) do
-    -- only take first character if multi-char separator
-    local ch = s:sub(1,1)
-    -- escape magic characters for char class
-    ch = ch:gsub("([%]%\\%^%-])","%%%1")
-    chars[#chars+1] = ch
+  -- Split only on top-level separators so nested alias bodies like
+  -- `#al h {hang %1|hang %2|hang %3}` stay intact until the inner #AL runs.
+  local configured = tostring(CMudWrapper.commandSeparator)
+  local separator = configured:sub(1, 1)
+  if separator == "" then separator = "|" end
+
+  local commands = {}
+  local depth = 0
+  local start = 1
+  local i = 1
+  while i <= #body do
+    local ch = body:sub(i, i)
+    if ch == "{" then
+      depth = depth + 1
+    elseif ch == "}" then
+      if depth > 0 then depth = depth - 1 end
+    elseif ch == separator and depth == 0 then
+      commands[#commands + 1] = trim(body:sub(start, i - 1))
+      start = i + 1
+    end
+    i = i + 1
   end
 
-  local esc = table.concat(chars)
-  -- build proper pattern for char class
-  local pat = "([^" .. esc .. "]+)"
-  for cmd in body:gmatch(pat) do
-    cmd = trim(cmd)
+  commands[#commands + 1] = trim(body:sub(start))
+
+  for _, cmd in ipairs(commands) do
     if cmd ~= "" then
-      CMudWrapper.runLine(cmd, matchTable, negMap)
+      CMudWrapper.runLine(cmd, matchTable)
     end
   end
 end
@@ -183,16 +191,9 @@ function CMudWrapper.installAlias(name, spec)
         matchTable[i + 1] = args[i]
       end
 
-      -- build negMap for %-n: %-1 = all text after alias (raw), %-2 = everything after first param, etc.
-      local negMap = {}
-      negMap[1] = raw
-      for i = 2, #args do
-        negMap[i] = table.concat(args, " ", i)
-      end
-
-      CMudWrapper.runBody(spec.body, matchTable, negMap)
+      CMudWrapper.runBody(spec.body, matchTable)
     else
-      CMudWrapper.runBody(spec.body, captured, nil)
+      CMudWrapper.runBody(spec.body, captured)
     end
   end
 
@@ -210,7 +211,7 @@ function CMudWrapper.installTrigger(name, spec)
   end
 
   CMudWrapper.handles.triggers[name] = tempRegexTrigger(spec.pattern, function()
-    CMudWrapper.runBody(spec.body, matches, nil)
+    CMudWrapper.runBody(spec.body, matches)
   end)
 end
 
@@ -229,8 +230,13 @@ function CMudWrapper.removeTrigger(name)
     pcall(killTrigger, CMudWrapper.handles.triggers[name])
     CMudWrapper.handles.triggers[name] = nil
   end
-  CMudWrapper.state.triggers[name] = nil
-  CMudWrapper.save()
+  if CMudWrapper.state.triggers[name] ~= nil then
+    CMudWrapper.state.triggers[name] = nil
+    CMudWrapper.save()
+    cecho(("<green>[CMudWrapper] trigger removed: %s\n"):format(tostring(name)))
+  else
+    cecho(("<yellow>[CMudWrapper] trigger not found: %s\n"):format(tostring(name)))
+  end
 end
 
 function CMudWrapper.unload()
@@ -287,19 +293,16 @@ function CMudWrapper.exec(line)
       return true
     end
 
-    -- For the simplified API, build a default pattern that captures a tail
-    -- Require a non-word separator (or end-of-string) after the alias name so
-    -- short aliases don't eat longer words (e.g. `dr` shouldn't match `drink`).
+    -- For the simplified API, build a default pattern that captures a tail.
+    -- tempAlias uses PCRE-style regex, so use \W for a non-word boundary and
+    -- keep short aliases from matching the start of longer words.
     local usesTail = true
-    local pattern = "^" .. escapeRegex(name) .. "([%W].*)?$"
+    local pattern = "^" .. escapeRegex(name) .. "(?:\\W(.*))?$"
 
     assert(name and body, "#ALIAS {name} {body}")
-    -- sanitize any protected/delayed-placeholder tokens that may have been
-    -- introduced by earlier substitution passes (e.g. __CMW_PCT_fireball__)
-    -- map negative placeholders first: __CMW_PCT_NEG_<n>__ -> %-<n>
-    body = body:gsub("__CMW_PCT_NEG_(%d+)__", function(n) return "%-" .. n end)
-    -- map any remaining protected placeholders to a single positional token (%1)
-    body = body:gsub("__CMW_PCT_[^_]+__", "%%1")
+    -- Restore any delayed-expansion placeholders back to their original
+    -- positional token so %%2 stays %2, %%3 stays %3, and so on.
+    body = body:gsub("__CMW_PCT_(%d+)__", function(n) return "%" .. n end)
 
     CMudWrapper.state.aliases[name] = { pattern = pattern, body = body, tail = usesTail }
     CMudWrapper.installAlias(name, CMudWrapper.state.aliases[name])
