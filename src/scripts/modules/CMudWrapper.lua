@@ -173,7 +173,24 @@ function CMudWrapper.installAlias(name, spec)
 
     if spec.tail then
       local raw = trim(captured[2] or captured[1] or "")
-      CMudWrapper.runBody(spec.body, { [1] = raw, [2] = raw }, nil)
+      -- split raw into arguments using the same parser used by exec
+      local args = parseArgs(raw)
+
+      -- build matchTable so that matchTable[2] -> %1, matchTable[3] -> %2, etc.
+      local matchTable = {}
+      matchTable[1] = raw
+      for i = 1, #args do
+        matchTable[i + 1] = args[i]
+      end
+
+      -- build negMap for %-n: %-1 = all text after alias (raw), %-2 = everything after first param, etc.
+      local negMap = {}
+      negMap[1] = raw
+      for i = 2, #args do
+        negMap[i] = table.concat(args, " ", i)
+      end
+
+      CMudWrapper.runBody(spec.body, matchTable, negMap)
     else
       CMudWrapper.runBody(spec.body, captured, nil)
     end
@@ -271,8 +288,10 @@ function CMudWrapper.exec(line)
     end
 
     -- For the simplified API, build a default pattern that captures a tail
+    -- Require a non-word separator (or end-of-string) after the alias name so
+    -- short aliases don't eat longer words (e.g. `dr` shouldn't match `drink`).
     local usesTail = true
-    local pattern = "^" .. escapeRegex(name) .. "\\s*(.*)$"
+    local pattern = "^" .. escapeRegex(name) .. "([%W].*)?$"
 
     assert(name and body, "#ALIAS {name} {body}")
     -- sanitize any protected/delayed-placeholder tokens that may have been
