@@ -65,6 +65,7 @@ MapColors.AreaOverrides = {
   silverwood = MapColors.Terrain.THICK_WOODS,
   mists = MapColors.Terrain.MISTY,
   new_ethshar = MapColors.Terrain.STONY_PATH,
+  whispering_timbers = MapColors.Terrain.THICK_WOODS,
 }
 
 -- Terrain category sets (for adjacency analysis and context detection)
