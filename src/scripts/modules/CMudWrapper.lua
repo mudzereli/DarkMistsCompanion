@@ -16,7 +16,7 @@ CMudWrapper = {
   -- Default command separator used inside alias bodies. Common separators: ';' or '|'.
   -- Make this configurable; change at runtime with `CMudWrapper.commandSeparator = '|'`.
   commandSeparator = "|",
-  savePath = getMudletHomeDir() .. "/scripts/saved/cmud_wrapper.lua",
+  savePath = getMudletHomeDir() .. "/cmudwrapper_data.lua",
   state = { aliases = {}, triggers = {}, vars = {}, defaults = {} },
   handles = { aliases = {}, triggers = {} },
   commandHandle = nil,
@@ -122,7 +122,7 @@ function CMudWrapper.setVariable(name, value, default)
 
   CMudWrapper.state.vars[name] = value
   CMudWrapper.save()
-  cecho(("<green>[CMudWrapper] variable set: %s = %s\n"):format(name, tostring(value)))
+  DMLogger.notify(DarkmistsTheme.blueTag .. "CMudWrapper", DarkmistsTheme.goodTag .. ("variable set: %s = %s"):format(name, tostring(value)))
 end
 
 function CMudWrapper.runLine(line, matchTable)
@@ -201,7 +201,7 @@ function CMudWrapper.installAlias(name, spec)
   if ok and id_or_err then
     CMudWrapper.handles.aliases[name] = id_or_err
   else
-    cecho(("<red>[CMudWrapper] failed to register alias '%s' pattern=%s error=%s\n"):format(tostring(name), tostring(spec.pattern), tostring(id_or_err)))
+    DMLogger.notify(DarkmistsTheme.blueTag .. "CMudWrapper", DarkmistsTheme.badTag .. ("failed to register alias '%s' pattern=%s error=%s"):format(tostring(name), tostring(spec.pattern), tostring(id_or_err)))
   end
 end
 
@@ -222,7 +222,7 @@ function CMudWrapper.removeAlias(name)
   end
   CMudWrapper.state.aliases[name] = nil
   CMudWrapper.save()
-  cecho(("<green>[CMudWrapper] alias removed: %s\n"):format(tostring(name)))
+  DMLogger.notify(DarkmistsTheme.blueTag .. "CMudWrapper", DarkmistsTheme.goodTag .. ("alias removed: %s"):format(tostring(name)))
 end
 
 function CMudWrapper.removeTrigger(name)
@@ -233,9 +233,9 @@ function CMudWrapper.removeTrigger(name)
   if CMudWrapper.state.triggers[name] ~= nil then
     CMudWrapper.state.triggers[name] = nil
     CMudWrapper.save()
-    cecho(("<green>[CMudWrapper] trigger removed: %s\n"):format(tostring(name)))
+    DMLogger.notify(DarkmistsTheme.blueTag .. "CMudWrapper", DarkmistsTheme.goodTag .. ("trigger removed: %s"):format(tostring(name)))
   else
-    cecho(("<yellow>[CMudWrapper] trigger not found: %s\n"):format(tostring(name)))
+    DMLogger.notify(DarkmistsTheme.blueTag .. "CMudWrapper", DarkmistsTheme.warnTag .. ("trigger not found: %s"):format(tostring(name)))
   end
 end
 
@@ -275,9 +275,12 @@ function CMudWrapper.exec(line)
     end
     -- If no args: list aliases
     if not name then
-      cecho("<cyan>[CMudWrapper] Aliases:\n")
-      for k, v in pairs(CMudWrapper.state.aliases) do
-        cecho(("  <white>%s<r>: %s\n"):format(k, v.body or ""))
+      do
+        local msg = DarkmistsTheme.infoTag .. "Aliases:\n"
+        for k, v in pairs(CMudWrapper.state.aliases) do
+          msg = msg .. "  " .. DarkmistsTheme.textTag .. tostring(k) .. DarkmistsTheme.mutedTag .. ": " .. tostring(v.body or "") .. "\n"
+        end
+        DMLogger.notify(DarkmistsTheme.blueTag .. "CMudWrapper", msg)
       end
       return true
     end
@@ -286,9 +289,9 @@ function CMudWrapper.exec(line)
     if name and not body then
       local def = CMudWrapper.state.aliases[name]
       if def then
-        cecho(("<cyan>[CMudWrapper] %s -> %s\n"):format(name, def.body or ""))
+        DMLogger.notify(DarkmistsTheme.blueTag .. "CMudWrapper", DarkmistsTheme.infoTag .. ("%s -> %s"):format(name, def.body or ""))
       else
-        cecho(("<yellow>[CMudWrapper] alias not found: %s\n"):format(name))
+        DMLogger.notify(DarkmistsTheme.blueTag .. "CMudWrapper", DarkmistsTheme.warnTag .. ("alias not found: %s"):format(name))
       end
       return true
     end
@@ -307,7 +310,7 @@ function CMudWrapper.exec(line)
     CMudWrapper.state.aliases[name] = { pattern = pattern, body = body, tail = usesTail }
     CMudWrapper.installAlias(name, CMudWrapper.state.aliases[name])
     CMudWrapper.save()
-    cecho(("<green>[CMudWrapper] alias saved: %s\n"):format(name))
+    DMLogger.notify(DarkmistsTheme.blueTag .. "CMudWrapper", DarkmistsTheme.goodTag .. ("alias saved: %s"):format(name))
 
   elseif isPrefix(verb, "UNALIAS") then
     assert(args[1], "#UNALIAS {name}")
@@ -318,11 +321,14 @@ function CMudWrapper.exec(line)
 
     -- No args: list all triggers
     if not name then
-      cecho("<cyan>[CMudWrapper] Triggers:\n")
-      for k, v in pairs(CMudWrapper.state.triggers) do
-        local pat = tostring((v or {}).pattern or "")
-        local body = tostring((v or {}).body or "")
-        cecho(("  <white>%s<r>: %s -> %s\n"):format(k, pat, body))
+      do
+        local msg = DarkmistsTheme.infoTag .. "Triggers:\n"
+        for k, v in pairs(CMudWrapper.state.triggers) do
+          local pat = tostring((v or {}).pattern or "")
+          local body = tostring((v or {}).body or "")
+          msg = msg .. "  " .. DarkmistsTheme.textTag .. tostring(k) .. DarkmistsTheme.mutedTag .. ": " .. pat .. " -> " .. body .. "\n"
+        end
+        DMLogger.notify(DarkmistsTheme.blueTag .. "CMudWrapper", msg)
       end
       return true
     end
@@ -333,9 +339,9 @@ function CMudWrapper.exec(line)
       if def then
         local pat = tostring(def.pattern or "")
         local body = tostring(def.body or "")
-        cecho(("<cyan>[CMudWrapper] %s: %s -> %s\n"):format(name, pat, body))
+        DMLogger.notify(DarkmistsTheme.blueTag .. "CMudWrapper", DarkmistsTheme.infoTag .. ("%s: %s -> %s"):format(name, pat, body))
       else
-        cecho(("<yellow>[CMudWrapper] trigger not found: %s\n"):format(name))
+        DMLogger.notify(DarkmistsTheme.blueTag .. "CMudWrapper", DarkmistsTheme.warnTag .. ("trigger not found: %s"):format(name))
       end
       return true
     end
@@ -344,7 +350,7 @@ function CMudWrapper.exec(line)
     CMudWrapper.state.triggers[name] = { pattern = pattern, body = body }
     CMudWrapper.installTrigger(name, CMudWrapper.state.triggers[name])
     CMudWrapper.save()
-    cecho(("<green>[CMudWrapper] trigger saved: %s\n"):format(name))
+    DMLogger.notify(DarkmistsTheme.blueTag .. "CMudWrapper", DarkmistsTheme.goodTag .. ("trigger saved: %s"):format(name))
 
   elseif isPrefix(verb, "UNTRIGGER") then
     assert(args[1], "#UNTRIGGER {name}")
@@ -355,9 +361,12 @@ function CMudWrapper.exec(line)
     local value = args[2]
 
     if not name then
-      cecho("<cyan>[CMudWrapper] Variables:\n")
-      for k, v in pairs(CMudWrapper.state.vars) do
-        cecho(("  <white>%s<r>: %s\n"):format(k, tostring(v)))
+      do
+        local msg = DarkmistsTheme.infoTag .. "Variables:\n"
+        for k, v in pairs(CMudWrapper.state.vars) do
+          msg = msg .. "  " .. DarkmistsTheme.textTag .. tostring(k) .. DarkmistsTheme.mutedTag .. ": " .. tostring(v) .. "\n"
+        end
+        DMLogger.notify(DarkmistsTheme.blueTag .. "CMudWrapper", msg)
       end
       return true
     end
@@ -365,9 +374,9 @@ function CMudWrapper.exec(line)
     if value == nil then
       local current = CMudWrapper.state.vars[name]
       if current ~= nil then
-        cecho(("<cyan>[CMudWrapper] %s -> %s\n"):format(name, tostring(current)))
+        DMLogger.notify(DarkmistsTheme.blueTag .. "CMudWrapper", DarkmistsTheme.infoTag .. ("%s -> %s"):format(name, tostring(current)))
       else
-        cecho(("<yellow>[CMudWrapper] variable not found: %s\n"):format(name))
+        DMLogger.notify(DarkmistsTheme.blueTag .. "CMudWrapper", DarkmistsTheme.warnTag .. ("variable not found: %s"):format(name))
       end
       return true
     end
@@ -382,13 +391,13 @@ function CMudWrapper.exec(line)
       CMudWrapper.state.vars[name] = nil
       CMudWrapper.state.defaults[name] = nil
       CMudWrapper.save()
-      cecho(("<green>[CMudWrapper] variable removed: %s\n"):format(tostring(name)))
+      DMLogger.notify(DarkmistsTheme.blueTag .. "CMudWrapper", DarkmistsTheme.goodTag .. ("variable removed: %s"):format(tostring(name)))
     else
-      cecho(("<yellow>[CMudWrapper] variable not found: %s\n"):format(tostring(name)))
+      DMLogger.notify(DarkmistsTheme.blueTag .. "CMudWrapper", DarkmistsTheme.warnTag .. ("variable not found: %s"):format(tostring(name)))
     end
 
   elseif verb == "SHOW" or verb == "SAY" then
-    cecho(applyVars(table.concat(args, " ")) .. "\n")
+    DMLogger.notify(DarkmistsTheme.blueTag .. "CMudWrapper", DarkmistsTheme.textTag .. applyVars(table.concat(args, " ")))
 
   elseif verb == "SEND" then
     send(applyVars(table.concat(args, " ")))
@@ -408,7 +417,7 @@ function CMudWrapper.exec(line)
     end
 
   else
-    cecho(("<yellow>[CMudWrapper] unsupported command: %s\n"):format(verb))
+    DMLogger.notify(DarkmistsTheme.blueTag .. "CMudWrapper", DarkmistsTheme.warnTag .. ("unsupported command: %s"):format(verb))
   end
 
   return true
@@ -452,6 +461,5 @@ function CMudWrapper.load()
   for name, spec in pairs(CMudWrapper.state.triggers) do
     CMudWrapper.installTrigger(name, spec)
   end
+  DMLogger.log(DarkmistsTheme.purpleTag .. "CMudWrapper", DarkmistsTheme.goodTag .. "Loaded!")
 end
-
-CMudWrapper.load()
