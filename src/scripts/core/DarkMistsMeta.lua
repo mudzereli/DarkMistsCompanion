@@ -745,10 +745,14 @@ function DarkMistsMeta.init()
       return
     end
 
-    -- AREA SEARCH (accepts underscores, case-insensitive)
+    -- AREA SEARCH (accepts spaces, quotes, case-insensitive)
     do
-      local areaSearch = arg:match("^area%s+([%w_]+)$")
+      local areaSearch = arg:match("^area%s+(.+)$")
       if areaSearch then
+        -- trim whitespace
+        areaSearch = areaSearch:gsub("^%s*(.-)%s*$", "%1")
+        -- strip surrounding quotes if present
+        areaSearch = areaSearch:gsub('^"(.*)"$', "%1"):gsub("^'(.*)'$", "%1")
         local ok, code, data = MapDestinations.navigateToArea(areaSearch)
 
         if not ok then
