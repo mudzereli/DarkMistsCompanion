@@ -842,6 +842,23 @@ function DarkMistsMeta.init()
             DMLogger.notify("WALK",
               ("%sYou are already in %s%s"):format(dm_warn, c, data)
             )
+          elseif code == "AREA_AMBIGUOUS" then
+            DMLogger.notify("WALK", dm_warn .. "Ambiguous area — did you mean:")
+            local names = {}
+            for name in data:gmatch("[^,]+") do
+              names[#names + 1] = name:match("^%s*(.-)%s*$")
+            end
+            cecho("  ")
+            for i, name in ipairs(names) do
+              if i > 1 then cecho(dm_muted .. ", ") end
+              cechoLink(
+                c .. "<u>" .. name .. "</u>",
+                function() expandAlias("walk area " .. name) end,
+                "Click: walk area " .. name,
+                true
+              )
+            end
+            cecho("\n")
           elseif code == "AREA_NOT_FOUND" then
             DMLogger.notify("WALK",
               ("%sNo area matching %s%s"):format(dm_bad, c, data)
