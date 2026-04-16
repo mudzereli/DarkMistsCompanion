@@ -525,6 +525,16 @@ function ItemTracker.findFirstItemInLine(line)
   else
     phrase = lower
     offset = 0
+
+    -- Additional special-case: lines like "<thing> is carried by <mob>" or
+    -- "<thing> is in <location>". When present, trim to the left-side phrase
+    -- so item names at the start of the line will be matched correctly.
+    local cpos = lower:find(" is carried by ")
+    if not cpos then cpos = lower:find(" is in ") end
+    if cpos then
+      phrase = trim(lower:sub(1, cpos - 1))
+      offset = 0
+    end
   end
 
   -- Try each item name (longest first)

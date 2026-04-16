@@ -424,6 +424,12 @@ function ButtonBar.build()
     end},
   }},
 
+  {label="📜 Scripting", children={
+    {label="⌨️ CMud Wrapper", action=function()
+      expandAlias("dmc help cmud")
+    end},
+  }},
+
   })
 
   return true
