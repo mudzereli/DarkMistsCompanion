@@ -732,7 +732,7 @@ function CMudWrapper.exec(line)
     end
 
   elseif isPrefix(verb, "SHOW") or isPrefix(verb, "SAY") then
-    DMLogger.notify(DarkmistsTheme.blueTag .. "CMudWrapper", DarkmistsTheme.textTag .. applyVars(table.concat(args, " ")))
+    cecho("\n" .. DarkmistsTheme.textTag .. applyVars(table.concat(args, " ")))
 
   elseif isPrefix(verb, "SEND") then
     send(applyVars(table.concat(args, " ")))
