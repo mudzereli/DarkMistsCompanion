@@ -227,6 +227,8 @@ Prefix every command with # (e.g. #alias, #trigger).
   #send {text}             – send text to server
   #repeat {n} {command}    – run command n times
   #{n} {command}           – shorthand for #repeat
+  #sep {char}              – set command separator character (default: |)
+  #sep                     – show current separator
 
 ──── CROSS-INVOCATION ───────────────────────────────────────────
   Alias bodies can call other aliases by name (cross-invocation).
