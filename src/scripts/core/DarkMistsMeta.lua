@@ -162,6 +162,86 @@ Character creation stat rolling helper.
 • No effect on gameplay afterward
     ]],
   },
+
+  cmud = {
+    title = "CMud Scripting",
+    desc  = "CMUD-style aliases, triggers, and variables stored across sessions.",
+    info  = [[
+CMUD-compatible scripting layer. Aliases, triggers, and variables
+are saved to disk and restored on each login.
+
+Prefix every command with # (e.g. #alias, #trigger).
+
+──── ALIASES ────────────────────────────────────────────────────
+  #alias {name} {body}     – define or update an alias
+  #alias {name}            – show alias definition
+  #alias                   – list all aliases
+  #unalias {name}          – remove an alias
+
+  Body syntax:
+    %1 %2 …     positional args from the alias invocation
+    %%1 %%2 …   delayed expansion (survive inner alias calls)
+    @VarName    expands a stored variable
+    | or ;      command separator (configurable)
+
+──── TRIGGERS ───────────────────────────────────────────────────
+  #trigger {name} {pattern} {body}   – CMUD wildcard pattern
+  #rxtrigger {name} {pattern} {body} – raw PCRE regex pattern
+  #trigger {name}                    – show trigger definition
+  #trigger                           – list all triggers
+  #untrigger {name}                  – remove a trigger
+
+  Wildcard tokens (for #trigger / #action):
+    *         any sequence of characters
+    ?         any single character
+    %d        one or more digits (0-9)
+    %n        signed number (+ or -)
+    %w        one or more alpha characters
+    %a        one or more alphanumeric characters
+    %s        one or more whitespace characters
+    %x        one or more non-whitespace characters
+    %p        punctuation
+    %t        a direction command (north, south, …)
+    [abc]     any characters in range
+    (pat)     capture group → %1 … %99 in body
+    {a|b|c}   alternation (match any listed value)
+    {^str}    negation (do NOT match str)
+    &nn       exactly nn characters
+    &VarName  capture into @VarName variable
+    ~x        literal x  (escape next character)
+    ~~        literal ~
+    ^ $       line anchors
+
+──── VARIABLES ──────────────────────────────────────────────────
+  #var {name} {value}      – set a variable
+  #var {name}              – show variable value
+  #var                     – list all variables
+  #unvar {name}            – remove a variable
+  name = value             – shorthand assignment (no # needed)
+
+  Reference a variable with @VarName in alias/trigger bodies.
+  &VarName captures in trigger patterns auto-assign the variable.
+
+──── UTILITY ────────────────────────────────────────────────────
+  #show {text}             – echo text (variable expansion applies)
+  #send {text}             – send text to server
+  #repeat {n} {command}    – run command n times
+  #{n} {command}           – shorthand for #repeat
+  #sep {char}              – set command separator character (default: |)
+  #sep                     – show current separator
+
+──── CROSS-INVOCATION ───────────────────────────────────────────
+  Alias bodies can call other aliases by name (cross-invocation).
+  Trigger bodies can also invoke aliases the same way.
+  Self-recursion is blocked with a warning.
+
+──── EXAMPLES ───────────────────────────────────────────────────
+  #alias z {zap %1}
+  #trigger hitme {You are hit by * for %d damage.} {#show ouch}
+  #rxtrigger hpline {^HP:\s*(\d+)/(\d+)} {#var hp %1|#var hpmax %2}
+  #trigger getitem {* drops &ItemName} {#show Dropped: @ItemName}
+    ]],
+  },
 }
 
 local helpSections = {
@@ -180,6 +260,10 @@ local helpSections = {
   {
     title = "Character",
     keys  = { "skillups", "statroll", "es" },
+  },
+  {
+    title = "Scripting",
+    keys  = { "cmud" },
   },
 }
 
@@ -745,10 +829,14 @@ function DarkMistsMeta.init()
       return
     end
 
-    -- AREA SEARCH (accepts underscores, case-insensitive)
+    -- AREA SEARCH (accepts spaces, quotes, case-insensitive)
     do
-      local areaSearch = arg:match("^area%s+([%w_]+)$")
+      local areaSearch = arg:match("^area%s+(.+)$")
       if areaSearch then
+        -- trim whitespace
+        areaSearch = areaSearch:gsub("^%s*(.-)%s*$", "%1")
+        -- strip surrounding quotes if present
+        areaSearch = areaSearch:gsub('^"(.*)"$', "%1"):gsub("^'(.*)'$", "%1")
         local ok, code, data = MapDestinations.navigateToArea(areaSearch)
 
         if not ok then
@@ -756,6 +844,23 @@ function DarkMistsMeta.init()
             DMLogger.notify("WALK",
               ("%sYou are already in %s%s"):format(dm_warn, c, data)
             )
+          elseif code == "AREA_AMBIGUOUS" then
+            DMLogger.notify("WALK", dm_warn .. "Ambiguous area — did you mean:")
+            local names = {}
+            for name in data:gmatch("[^,]+") do
+              names[#names + 1] = name:match("^%s*(.-)%s*$")
+            end
+            cecho("  ")
+            for i, name in ipairs(names) do
+              if i > 1 then cecho(dm_muted .. ", ") end
+              cechoLink(
+                c .. "<u>" .. name .. "</u>",
+                function() expandAlias("walk area " .. name) end,
+                "Click: walk area " .. name,
+                true
+              )
+            end
+            cecho("\n")
           elseif code == "AREA_NOT_FOUND" then
             DMLogger.notify("WALK",
               ("%sNo area matching %s%s"):format(dm_bad, c, data)
