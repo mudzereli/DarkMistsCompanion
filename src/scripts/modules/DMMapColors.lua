@@ -56,16 +56,16 @@ MapColors.TerrainColor = {
 
 -- Hardcoded area overrides (takes precedence over keyword matching)
 MapColors.AreaOverrides = {
-  emerald_forest = MapColors.Terrain.THICK_WOODS,
-  dark_mist_caves = MapColors.Terrain.VALLEY,
-  tarot_tower = MapColors.Terrain.VALLEY,
-  arkham = MapColors.Terrain.VALLEY,
-  rift_of_unending_darkness = MapColors.Terrain.CORRUPTED,
-  marsh = MapColors.Terrain.SWAMP_WATER,
-  silverwood = MapColors.Terrain.THICK_WOODS,
-  mists = MapColors.Terrain.MISTY,
-  new_ethshar = MapColors.Terrain.STONY_PATH,
-  whispering_timbers = MapColors.Terrain.THICK_WOODS,
+  ["Emerald Forest"] = MapColors.Terrain.THICK_WOODS,
+  ["Dark Mist Caves"] = MapColors.Terrain.VALLEY,
+  ["Tarot Tower"] = MapColors.Terrain.VALLEY,
+  ["Arkham"] = MapColors.Terrain.VALLEY,
+  ["The Rift of Unending Darkness"] = MapColors.Terrain.CORRUPTED,
+  ["Marsh"] = MapColors.Terrain.SWAMP_WATER,
+  ["Silverwood"] = MapColors.Terrain.THICK_WOODS,
+  ["The Mists"] = MapColors.Terrain.MISTY,
+  ["New Ethshar"] = MapColors.Terrain.STONY_PATH,
+  ["Whispering Timberlands"] = MapColors.Terrain.THICK_WOODS,
 }
 
 -- Terrain category sets (for adjacency analysis and context detection)
@@ -772,7 +772,8 @@ function MapColors.UpdateMapColors()
   for _, id in ipairs(MapColors._allRoomIds) do
     if MapColors.isUncolored(id) then
       local data = MapColors._roomData[id]
-      local color = MapColors.AreaOverrides[data.areaName]
+      local areaKey = data.areaName and data.areaName:lower():gsub("%s+", "_") or ""
+      local color = MapColors.AreaOverrides[areaKey] or MapColors.AreaOverrides[data.areaName]
       if color then
         applyEnv(id, color)
       end
