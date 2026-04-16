@@ -162,6 +162,84 @@ Character creation stat rolling helper.
 • No effect on gameplay afterward
     ]],
   },
+
+  cmud = {
+    title = "CMud Scripting",
+    desc  = "CMUD-style aliases, triggers, and variables stored across sessions.",
+    info  = [[
+CMUD-compatible scripting layer. Aliases, triggers, and variables
+are saved to disk and restored on each login.
+
+Prefix every command with # (e.g. #alias, #trigger).
+
+──── ALIASES ────────────────────────────────────────────────────
+  #alias {name} {body}     – define or update an alias
+  #alias {name}            – show alias definition
+  #alias                   – list all aliases
+  #unalias {name}          – remove an alias
+
+  Body syntax:
+    %1 %2 …     positional args from the alias invocation
+    %%1 %%2 …   delayed expansion (survive inner alias calls)
+    @VarName    expands a stored variable
+    | or ;      command separator (configurable)
+
+──── TRIGGERS ───────────────────────────────────────────────────
+  #trigger {name} {pattern} {body}   – CMUD wildcard pattern
+  #rxtrigger {name} {pattern} {body} – raw PCRE regex pattern
+  #trigger {name}                    – show trigger definition
+  #trigger                           – list all triggers
+  #untrigger {name}                  – remove a trigger
+
+  Wildcard tokens (for #trigger / #action):
+    *         any sequence of characters
+    ?         any single character
+    %d        one or more digits (0-9)
+    %n        signed number (+ or -)
+    %w        one or more alpha characters
+    %a        one or more alphanumeric characters
+    %s        one or more whitespace characters
+    %x        one or more non-whitespace characters
+    %p        punctuation
+    %t        a direction command (north, south, …)
+    [abc]     any characters in range
+    (pat)     capture group → %1 … %99 in body
+    {a|b|c}   alternation (match any listed value)
+    {^str}    negation (do NOT match str)
+    &nn       exactly nn characters
+    &VarName  capture into @VarName variable
+    ~x        literal x  (escape next character)
+    ~~        literal ~
+    ^ $       line anchors
+
+──── VARIABLES ──────────────────────────────────────────────────
+  #var {name} {value}      – set a variable
+  #var {name}              – show variable value
+  #var                     – list all variables
+  #unvar {name}            – remove a variable
+  name = value             – shorthand assignment (no # needed)
+
+  Reference a variable with @VarName in alias/trigger bodies.
+  &VarName captures in trigger patterns auto-assign the variable.
+
+──── UTILITY ────────────────────────────────────────────────────
+  #show {text}             – echo text (variable expansion applies)
+  #send {text}             – send text to server
+  #repeat {n} {command}    – run command n times
+  #{n} {command}           – shorthand for #repeat
+
+──── CROSS-INVOCATION ───────────────────────────────────────────
+  Alias bodies can call other aliases by name (cross-invocation).
+  Trigger bodies can also invoke aliases the same way.
+  Self-recursion is blocked with a warning.
+
+──── EXAMPLES ───────────────────────────────────────────────────
+  #alias z {zap %1}
+  #trigger hitme {You are hit by * for %d damage.} {#show ouch}
+  #rxtrigger hpline {^HP:\s*(\d+)/(\d+)} {#var hp %1|#var hpmax %2}
+  #trigger getitem {* drops &ItemName} {#show Dropped: @ItemName}
+    ]],
+  },
 }
 
 local helpSections = {
@@ -180,6 +258,10 @@ local helpSections = {
   {
     title = "Character",
     keys  = { "skillups", "statroll", "es" },
+  },
+  {
+    title = "Scripting",
+    keys  = { "cmud" },
   },
 }
 
