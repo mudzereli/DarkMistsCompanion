@@ -552,7 +552,7 @@ function CMudWrapper.exec(line)
   if line:sub(1, 1) ~= CMudWrapper.commandChar then return false end
 
   local args = parseArgs(line:sub(2))
-  local verb = (table.remove(args, 1) or "")
+  local verb = (table.remove(args, 1) or ""):upper()
 
   if isPrefix(verb, "ALIAS") then
     -- New simplified form: #ALIAS {name} {body}
@@ -731,13 +731,13 @@ function CMudWrapper.exec(line)
       DMLogger.notify(DarkmistsTheme.blueTag .. "CMudWrapper", DarkmistsTheme.warnTag .. ("variable not found: %s"):format(tostring(name)))
     end
 
-  elseif verb == "SHOW" or verb == "SAY" then
+  elseif isPrefix(verb, "SHOW") or isPrefix(verb, "SAY") then
     DMLogger.notify(DarkmistsTheme.blueTag .. "CMudWrapper", DarkmistsTheme.textTag .. applyVars(table.concat(args, " ")))
 
-  elseif verb == "SEND" then
+  elseif isPrefix(verb, "SEND") then
     send(applyVars(table.concat(args, " ")))
 
-  elseif verb == "REPEAT" then
+  elseif isPrefix(verb, "REPEAT") then
     local n = tonumber(args[1]) or 1
     local text = table.concat(args, " ", 2)
     for _ = 1, n do
