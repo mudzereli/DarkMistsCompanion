@@ -744,6 +744,17 @@ function CMudWrapper.exec(line)
       CMudWrapper.runLine(text)
     end
 
+  elseif isPrefix(verb, "SEPARATOR") or isPrefix(verb, "SEP") then
+    local newSep = args[1]
+    if not newSep or newSep == "" then
+      DMLogger.notify(DarkmistsTheme.blueTag .. "CMudWrapper",
+        ("Command separator: %s%s"):format(DarkmistsTheme.textTag, CMudWrapper.commandSeparator))
+    else
+      CMudWrapper.commandSeparator = newSep:sub(1, 1)
+      DMLogger.notify(DarkmistsTheme.blueTag .. "CMudWrapper",
+        ("Command separator set to: %s%s"):format(DarkmistsTheme.textTag, CMudWrapper.commandSeparator))
+    end
+
   elseif verb:match("^%d+$") then
     local n = tonumber(verb) or 1
     local text = table.concat(args, " ")
