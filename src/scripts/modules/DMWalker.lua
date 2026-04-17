@@ -370,22 +370,43 @@ function MapDestinations.navigateToArea(search)
   end
 
   local rooms = getAreaRooms(areaId)
-  local firstRoom = rooms and rooms[0]
-
-  if not firstRoom then
+  if not rooms then
     return false, "AREA_EMPTY", areaName
   end
 
-  local ok = getPath(currentRoom, firstRoom)
-  if not ok or not speedWalkDir or #speedWalkDir == 0 then
+  local candidates = {}
+  local seen = {}
+
+  if rooms[0] then
+    candidates[#candidates + 1] = rooms[0]
+    seen[rooms[0]] = true
+  end
+
+  for _, roomId in pairs(rooms) do
+    if not seen[roomId] then
+      candidates[#candidates + 1] = roomId
+      seen[roomId] = true
+    end
+  end
+
+  local targetRoom = nil
+  for _, roomId in ipairs(candidates) do
+    local ok = getPath(currentRoom, roomId)
+    if ok and speedWalkDir and #speedWalkDir > 0 then
+      targetRoom = roomId
+      break
+    end
+  end
+
+  if not targetRoom then
     return false, "NO_PATH", areaName
   end
 
   MapDestinations.setAreaWalkTarget(areaId, areaName)
-  MapDestinations.setWalkTargetRoom(firstRoom)
+  MapDestinations.setWalkTargetRoom(targetRoom)
   MapDestinations._isWalking = true
-  gotoRoom(firstRoom)
-  return true, firstRoom, areaName
+  gotoRoom(targetRoom)
+  return true, targetRoom, areaName
 end
 
 -- Public mutation API: add destination and persist immediately.
