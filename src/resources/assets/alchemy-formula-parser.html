@@ -458,7 +458,7 @@ function buildFormulaRowElement(formula) {
     row.appendChild(cell0)
 
     const cell1 = document.createElement("td")
-    cell1.innerText = materials
+    cell1.innerText = materials.replace(/,\s*/g, " ").trim()
     row.appendChild(cell1)
 
     const cell2 = document.createElement("td")

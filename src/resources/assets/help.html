@@ -218,7 +218,7 @@
         <code>skillups</code> &nbsp;·&nbsp; <code>sb</code> &nbsp;·&nbsp;
         <code>ch</code> &nbsp;·&nbsp; <code>who</code> &nbsp;·&nbsp;
         <code>affects</code> &nbsp;·&nbsp; <code>infobox</code> &nbsp;·&nbsp; <code>dmid</code> &nbsp;·&nbsp;
-        <code>map</code> &nbsp;·&nbsp; <code>statroll</code>
+        <code>map</code> &nbsp;·&nbsp; <code>statroll</code> &nbsp;·&nbsp; <code>cmud</code>
       </div>
 
       <table>
@@ -460,7 +460,7 @@
           </tr>
           <tr>
             <td>Help</td>
-            <td>General, World, Character, and Interface help topics</td>
+            <td>General, World, Character, Interface, and Scripting help topics</td>
           </tr>
         </tbody>
       </table>
@@ -718,6 +718,125 @@
       </div>
 
 
+      <!-- ·· CMud Wrapper ······························ -->
+      <h2 id="util-cmud">CMud Scripting Layer</h2>
+
+      <p>
+        CMudWrapper is a CMUD-compatible scripting layer built into DMC. It lets you define
+        persistent aliases, triggers, and variables using familiar CMUD syntax — all saved to
+        disk and restored on each login. Every command is prefixed with <code>#</code>.
+      </p>
+
+      <div class="tip">
+        <strong>In-game help:</strong> Type <code>dmc help cmud</code> or <code>#help</code>
+        to view the full command reference inside Mudlet.
+      </div>
+
+      <h3>Aliases</h3>
+      <table>
+        <thead><tr><th>Command</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>#alias {name} {body}</code></td><td>Define or update an alias</td></tr>
+          <tr><td><code>#alias {name}</code></td><td>Show an alias definition</td></tr>
+          <tr><td><code>#alias</code></td><td>List all aliases</td></tr>
+          <tr><td><code>#unalias {name}</code></td><td>Remove an alias</td></tr>
+        </tbody>
+      </table>
+
+      <p>Inside an alias body:</p>
+      <ul>
+        <li><code>%1 %2 …</code> — positional arguments from the alias invocation</li>
+        <li><code>@VarName</code> — expands a stored variable</li>
+        <li><code>|</code> or <code>;</code> — command separator (configurable with <code>#sep</code>)</li>
+      </ul>
+
+      <h3>Triggers</h3>
+      <table>
+        <thead><tr><th>Command</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>#trigger {name} {pattern} {body}</code></td><td>Add a trigger using CMUD wildcard pattern syntax</td></tr>
+          <tr><td><code>#rxtrigger {name} {pattern} {body}</code></td><td>Add a trigger using raw PCRE regex</td></tr>
+          <tr><td><code>#trigger {name}</code></td><td>Show a trigger definition</td></tr>
+          <tr><td><code>#trigger</code></td><td>List all triggers</td></tr>
+          <tr><td><code>#untrigger {name}</code></td><td>Remove a trigger</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Wildcard Tokens (for <code>#trigger</code>)</h3>
+      <table>
+        <thead><tr><th>Token</th><th>Matches</th></tr></thead>
+        <tbody>
+          <tr><td><code>*</code></td><td>Any sequence of characters</td></tr>
+          <tr><td><code>?</code></td><td>Any single character</td></tr>
+          <tr><td><code>%d</code></td><td>One or more digits (0–9)</td></tr>
+          <tr><td><code>%n</code></td><td>Signed number (optional + or −)</td></tr>
+          <tr><td><code>%w</code></td><td>One or more alpha characters</td></tr>
+          <tr><td><code>%a</code></td><td>One or more alphanumeric characters</td></tr>
+          <tr><td><code>%s</code></td><td>One or more whitespace characters</td></tr>
+          <tr><td><code>%x</code></td><td>One or more non-whitespace characters</td></tr>
+          <tr><td><code>%p</code></td><td>Punctuation</td></tr>
+          <tr><td><code>%t</code></td><td>A direction word (north, south, east, west, …)</td></tr>
+          <tr><td><code>[abc]</code></td><td>Any character in the set</td></tr>
+          <tr><td><code>(pat)</code></td><td>Capture group — result available as <code>%1</code> … <code>%99</code> in the body</td></tr>
+          <tr><td><code>{a|b|c}</code></td><td>Alternation — matches any listed value</td></tr>
+          <tr><td><code>{^str}</code></td><td>Negation — does <em>not</em> match <code>str</code></td></tr>
+          <tr><td><code>&amp;nn</code></td><td>Exactly <em>nn</em> characters</td></tr>
+          <tr><td><code>&amp;VarName</code></td><td>Capture into CMud variable <code>@VarName</code></td></tr>
+          <tr><td><code>~x</code></td><td>Literal character <code>x</code> (escape next char)</td></tr>
+          <tr><td><code>~~</code></td><td>Literal <code>~</code></td></tr>
+          <tr><td><code>^ $</code></td><td>Line anchors</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Variables</h3>
+      <table>
+        <thead><tr><th>Command</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>#var {name} {value}</code></td><td>Set a variable</td></tr>
+          <tr><td><code>#var {name}</code></td><td>Show a variable's value</td></tr>
+          <tr><td><code>#var</code></td><td>List all variables</td></tr>
+          <tr><td><code>#unvar {name}</code></td><td>Remove a variable</td></tr>
+        </tbody>
+      </table>
+      <p>Reference a variable with <code>@VarName</code> inside alias and trigger bodies.
+      <code>&amp;VarName</code> captures in trigger patterns auto-assign the variable.</p>
+
+      <h3>Utility Commands</h3>
+      <table>
+        <thead><tr><th>Command</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>#show {text}</code></td><td>Echo text to screen (variable expansion applies)</td></tr>
+          <tr><td><code>#send {text}</code></td><td>Send text to the server</td></tr>
+          <tr><td><code>#repeat {n} {cmd}</code></td><td>Run command <em>n</em> times</td></tr>
+          <tr><td><code>#{n} {cmd}</code></td><td>Shorthand for <code>#repeat</code></td></tr>
+          <tr><td><code>#sep {char}</code></td><td>Set the command separator character (default: <code>|</code>)</td></tr>
+          <tr><td><code>#sep</code></td><td>Show the current separator</td></tr>
+          <tr><td><code>#help</code></td><td>Show the CMud help page in-game</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Cross-Invocation</h3>
+      <p>
+        Alias bodies can call other aliases by name — just write the alias name as a command in
+        the body. Trigger bodies can invoke aliases the same way. Self-recursion (an alias calling
+        itself) is automatically blocked with a warning.
+      </p>
+
+      <h3>Examples</h3>
+      <pre>#alias z {zap %1}
+#alias heal {cast heal %1|cast armor %1}
+
+#var target skeleton
+#alias kt {kill @target}
+
+#trigger hitme {You are hit by * for %d damage.} {#show ouch!}
+#trigger getitem {* drops &amp;ItemName} {#show Dropped: @ItemName}
+#rxtrigger hpline {^HP:\s*(\d+)/(\d+)} {#var hp %1|#var hpmax %2}
+
+#sep ;
+#alias combo {north;kill rat;get all}</pre>
+
+
       <!-- ·· Stat Roller ······························ -->
       <h2 id="util-statroller">Stat Roller</h2>
 
@@ -857,6 +976,20 @@
           <tr><td><code>skillups reset</code></td><td>Clear history</td><td>Skill Ups</td></tr>
           <!-- Item Tracker -->
           <tr><td><code>dmid &lt;item name&gt;</code></td><td>Search item database</td><td>Item Tracker</td></tr>
+          <!-- CMud Wrapper -->
+          <tr><td><code>#alias {name} {body}</code></td><td>Define a persistent alias</td><td>CMud</td></tr>
+          <tr><td><code>#alias [name]</code></td><td>List or inspect aliases</td><td>CMud</td></tr>
+          <tr><td><code>#unalias {name}</code></td><td>Remove an alias</td><td>CMud</td></tr>
+          <tr><td><code>#trigger {name} {pattern} {body}</code></td><td>Add trigger (CMUD wildcards)</td><td>CMud</td></tr>
+          <tr><td><code>#rxtrigger {name} {pattern} {body}</code></td><td>Add trigger (raw PCRE)</td><td>CMud</td></tr>
+          <tr><td><code>#untrigger {name}</code></td><td>Remove a trigger</td><td>CMud</td></tr>
+          <tr><td><code>#var {name} [value]</code></td><td>Set or inspect a variable</td><td>CMud</td></tr>
+          <tr><td><code>#unvar {name}</code></td><td>Remove a variable</td><td>CMud</td></tr>
+          <tr><td><code>#show {text}</code></td><td>Echo text (expands variables)</td><td>CMud</td></tr>
+          <tr><td><code>#send {text}</code></td><td>Send text to server</td><td>CMud</td></tr>
+          <tr><td><code>#repeat {n} {cmd}</code></td><td>Run command n times</td><td>CMud</td></tr>
+          <tr><td><code>#sep [char]</code></td><td>Get or set command separator</td><td>CMud</td></tr>
+          <tr><td><code>#help</code></td><td>Show CMud help in-game</td><td>CMud</td></tr>
         </tbody>
       </table>
     </section>

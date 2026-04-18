@@ -801,6 +801,11 @@ function Darkmists.Init()
   DMTickTracker.init()
   ButtonBar.init()
 
+  -- CMud compatibility wrapper: persistent aliases/triggers/vars
+  if CMudWrapper and CMudWrapper.load then
+    pcall(CMudWrapper.load)
+  end
+
   -- UI Scripts
   if not Darkmists.GlobalSettings.minimalMode then
     Darkmists.LoadUIScripts()

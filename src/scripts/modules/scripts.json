@@ -53,4 +53,11 @@
               "script": "",
               "isFolder": "no"
        }
+       ,
+       {
+              "name": "CMudWrapper",
+              "isActive": "yes",
+              "script": "",
+              "isFolder": "no"
+       }
 ]

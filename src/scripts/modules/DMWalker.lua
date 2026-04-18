@@ -329,36 +329,84 @@ function MapDestinations.navigateToArea(search)
 
   local currentAreaId = currentRoom and getRoomArea(currentRoom)
 
+  -- Collect matches, separating exact from partial so "glyndane" doesn't
+  -- accidentally resolve to "Glyndane Library" instead of "Glyndane".
+  local exactMatch     = nil
+  local partialMatches = {}
+
   for areaName, areaId in pairs(areaTable) do
-    if areaName:lower():find(search, 1, true) then
-
-      -- Already in this area?
-      if currentAreaId and currentAreaId == areaId then
-        MapDestinations.stop()
-        return false, "ALREADY_IN_AREA", areaName
-      end
-
-      local rooms = getAreaRooms(areaId)
-      local firstRoom = rooms and rooms[0]
-
-      if not firstRoom then
-        return false, "AREA_EMPTY", areaName
-      end
-
-      local ok = getPath(currentRoom, firstRoom)
-      if not ok or not speedWalkDir or #speedWalkDir == 0 then
-        return false, "NO_PATH", areaName
-      end
-
-      MapDestinations.setAreaWalkTarget(areaId, areaName)
-      MapDestinations.setWalkTargetRoom(firstRoom)
-      MapDestinations._isWalking = true
-      gotoRoom(firstRoom)
-      return true, firstRoom, areaName
+    local lower = areaName:lower()
+    if lower == search then
+      exactMatch = { areaName = areaName, areaId = areaId }
+    elseif lower:find(search, 1, true) then
+      partialMatches[#partialMatches + 1] = { areaName = areaName, areaId = areaId }
     end
   end
 
-  return false, "AREA_NOT_FOUND", search
+  -- Exact match beats all partials; single partial is fine; multiple = ambiguous.
+  local chosen
+  if exactMatch then
+    chosen = exactMatch
+  elseif #partialMatches == 1 then
+    chosen = partialMatches[1]
+  elseif #partialMatches > 1 then
+    table.sort(partialMatches, function(a, b) return a.areaName < b.areaName end)
+    local names = {}
+    for _, m in ipairs(partialMatches) do names[#names + 1] = m.areaName end
+    return false, "AREA_AMBIGUOUS", table.concat(names, ", ")
+  end
+
+  if not chosen then
+    return false, "AREA_NOT_FOUND", search
+  end
+
+  local areaName = chosen.areaName
+  local areaId   = chosen.areaId
+
+  -- Already in this area?
+  if currentAreaId and currentAreaId == areaId then
+    MapDestinations.stop()
+    return false, "ALREADY_IN_AREA", areaName
+  end
+
+  local rooms = getAreaRooms(areaId)
+  if not rooms then
+    return false, "AREA_EMPTY", areaName
+  end
+
+  local candidates = {}
+  local seen = {}
+
+  if rooms[0] then
+    candidates[#candidates + 1] = rooms[0]
+    seen[rooms[0]] = true
+  end
+
+  for _, roomId in pairs(rooms) do
+    if not seen[roomId] then
+      candidates[#candidates + 1] = roomId
+      seen[roomId] = true
+    end
+  end
+
+  local targetRoom = nil
+  for _, roomId in ipairs(candidates) do
+    local ok = getPath(currentRoom, roomId)
+    if ok and speedWalkDir and #speedWalkDir > 0 then
+      targetRoom = roomId
+      break
+    end
+  end
+
+  if not targetRoom then
+    return false, "NO_PATH", areaName
+  end
+
+  MapDestinations.setAreaWalkTarget(areaId, areaName)
+  MapDestinations.setWalkTargetRoom(targetRoom)
+  MapDestinations._isWalking = true
+  gotoRoom(targetRoom)
+  return true, targetRoom, areaName
 end
 
 -- Public mutation API: add destination and persist immediately.
