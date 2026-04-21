@@ -455,6 +455,12 @@ function CMudWrapper.installAlias(name, spec)
 end
 
 function CMudWrapper.installTrigger(name, spec)
+  -- If a trigger spec has `enabled = false`, do not create a runtime
+  -- handle. This lets triggers remain defined but disabled until the
+  -- user explicitly enables them with `#TR+ name`.
+  if spec and spec.enabled == false then
+    return
+  end
   if CMudWrapper.handles.triggers[name] then
     pcall(killTrigger, CMudWrapper.handles.triggers[name])
   end
@@ -596,6 +602,38 @@ function CMudWrapper.exec(line)
     assert(args[1], "#UNALIAS {name}")
     CMudWrapper.removeAlias(args[1])
 
+  elseif verb == "TR+" or verb == "TR-" then
+    -- #TR+ name -> enable trigger
+    -- #TR- name -> disable trigger
+    assert(args[1], "#TR+/#TR- {name}")
+    local tname = args[1]
+    if isPrefix(verb, "TR+") then
+      local spec = CMudWrapper.state.triggers[tname]
+      if not spec then
+        CMudWrapper.notify(DarkmistsTheme.warnTag .. ("trigger not found: %s"):format(tname))
+        return true
+      end
+      spec.enabled = true
+      CMudWrapper.installTrigger(tname, spec)
+      CMudWrapper.save()
+      CMudWrapper.notify(DarkmistsTheme.goodTag .. ("trigger enabled: %s"):format(tname))
+    else
+      -- disable: kill any active handle and mark disabled in state
+      if CMudWrapper.handles.triggers[tname] then
+        pcall(killTrigger, CMudWrapper.handles.triggers[tname])
+        CMudWrapper.handles.triggers[tname] = nil
+      end
+      local spec = CMudWrapper.state.triggers[tname]
+      if spec then
+        spec.enabled = false
+        CMudWrapper.save()
+        CMudWrapper.notify(DarkmistsTheme.warnTag .. ("trigger disabled: %s"):format(tname))
+      else
+        CMudWrapper.notify(DarkmistsTheme.warnTag .. ("trigger not found: %s"):format(tname))
+      end
+    end
+    return true
+
   elseif isPrefix(verb, "TRIGGER") or isPrefix(verb, "ACTION") then
     -- #TRIGGER {name} {pattern} {body}
     -- Pattern uses CMUD wildcard syntax (* ? %d %w etc.). Use #RXTRIGGER for raw PCRE.
@@ -609,8 +647,10 @@ function CMudWrapper.exec(line)
           local pat  = tostring((v or {}).pattern or "")
           local bod  = tostring((v or {}).body or "")
           local kind = (v and v.cmud) and "[wildcard]" or "[regex]"
-          msg = msg .. "  " .. DarkmistsTheme.textTag .. tostring(k) ..
-            DarkmistsTheme.mutedTag .. " " .. kind .. ": " .. pat .. " -> " .. bod .. "\n"
+          local enabled = not (v and v.enabled == false)
+          local nameColor = enabled and (DarkmistsTheme.goodTag) or (DarkmistsTheme.warnTag)
+          local nameDisplay = nameColor .. tostring(k) .. DarkmistsTheme.mutedTag
+          msg = msg .. "  " .. nameDisplay .. " " .. kind .. ": " .. pat .. " -> " .. bod .. "\n"
         end
         CMudWrapper.notify(msg)
       end
@@ -624,7 +664,10 @@ function CMudWrapper.exec(line)
         local pat  = tostring(def.pattern or "")
         local bod  = tostring(def.body or "")
         local kind = def.cmud and "[wildcard]" or "[regex]"
-        CMudWrapper.notify(DarkmistsTheme.infoTag .. ("%s %s: %s -> %s"):format(name, kind, pat, bod))
+        local enabled = not (def and def.enabled == false)
+        local nameColor = enabled and (DarkmistsTheme.goodTag) or (DarkmistsTheme.warnTag)
+        local nameDisplay = nameColor .. name .. DarkmistsTheme.mutedTag
+        CMudWrapper.notify(DarkmistsTheme.infoTag .. ("%s %s: %s -> %s"):format(nameDisplay, kind, pat, bod))
       else
         CMudWrapper.notify(DarkmistsTheme.warnTag .. ("trigger not found: %s"):format(name))
       end
@@ -651,8 +694,10 @@ function CMudWrapper.exec(line)
         local msg = DarkmistsTheme.infoTag .. "Regex Triggers:\n"
         for k, v in pairs(CMudWrapper.state.triggers) do
           if v and not v.cmud then
-            msg = msg .. "  " .. DarkmistsTheme.textTag .. tostring(k) ..
-              DarkmistsTheme.mutedTag .. ": " .. tostring(v.pattern or "") ..
+            local enabled = not (v and v.enabled == false)
+            local nameColor = enabled and (DarkmistsTheme.goodTag) or (DarkmistsTheme.warnTag)
+            local nameDisplay = nameColor .. tostring(k) .. DarkmistsTheme.mutedTag
+            msg = msg .. "  " .. nameDisplay .. ": " .. tostring(v.pattern or "") ..
               " -> " .. tostring(v.body or "") .. "\n"
           end
         end
@@ -664,7 +709,10 @@ function CMudWrapper.exec(line)
     if name and not pattern then
       local def = CMudWrapper.state.triggers[name]
       if def and not def.cmud then
-        CMudWrapper.notify(DarkmistsTheme.infoTag .. ("%s [regex]: %s -> %s"):format(name, tostring(def.pattern or ""), tostring(def.body or "")))
+        local enabled = not (def and def.enabled == false)
+        local nameColor = enabled and (DarkmistsTheme.goodTag) or (DarkmistsTheme.warnTag)
+        local nameDisplay = nameColor .. name .. DarkmistsTheme.mutedTag
+        CMudWrapper.notify(DarkmistsTheme.infoTag .. ("%s [regex]: %s -> %s"):format(nameDisplay, tostring(def.pattern or ""), tostring(def.body or "")))
       elseif def then
         CMudWrapper.notify(DarkmistsTheme.warnTag .. ("'%s' exists but is a wildcard trigger, not a regex trigger"):format(name))
       else
