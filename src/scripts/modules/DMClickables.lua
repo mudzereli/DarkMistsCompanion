@@ -68,7 +68,8 @@ function DMClickables.ClickablePractices()
 
     if levelPrefix then
         cecho(txtColor .. levelPrefix)
-    elseif (not DMClickables.settings.lastSkillCommand:match("^prac")) then
+    elseif DMClickables.settings.lastSkillCommand:match("(.*)list$")
+      or (not DMClickables.settings.lastSkillCommand:match("^prac")) then
         cecho(txtColor.."          ")
     end
 
