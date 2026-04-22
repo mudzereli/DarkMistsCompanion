@@ -405,11 +405,69 @@ function CMudWrapper.runBody(body, matchTable)
 
   commands[#commands + 1] = trim(body:sub(start))
 
-  for _, cmd in ipairs(commands) do
-    if cmd ~= "" then
-      CMudWrapper.runLine(cmd, matchTable)
+  -- Helper to execute commands from index `i` forward. Supports
+  -- asynchronous pause via the `#WAIT <ms>` (delay milliseconds)
+  -- or `#WAIT` (wait for next MUD line) commands. Remaining commands
+  -- are resumed after the delay/event.
+  CMudWrapper._wait = CMudWrapper._wait or { timers = {}, triggers = {} }
+
+  local function executeFrom(i)
+    for idx = i, #commands do
+      local cmd = commands[idx]
+      if cmd ~= "" then
+        -- If this is a CMudWrapper command, check for WAIT specially.
+        if cmd:sub(1,1) == CMudWrapper.commandChar then
+          local argstr = cmd:sub(2)
+          local carg = parseArgs(argstr)
+          local verb = (table.remove(carg,1) or ""):upper()
+          if isPrefix(verb, "WAIT") then
+            local t = tonumber(carg[1])
+            if t and t > 0 then
+              -- schedule timer (Mudlet tempTimer uses seconds).
+              -- Use a table so the id is guaranteed to be set before
+              -- the callback reads it (avoids nil-key errors).
+              local ws = {}
+              ws.tid = tempTimer(t / 1000, function()
+                if CMudWrapper._wait and ws.tid then
+                  CMudWrapper._wait.timers[ws.tid] = nil
+                end
+                executeFrom(idx + 1)
+              end)
+              if CMudWrapper._wait and ws.tid then
+                CMudWrapper._wait.timers[ws.tid] = true
+              end
+              return
+            else
+              -- wait-for-line: fire on the very next MUD line then stop.
+              -- `^(.*)$` matches every line, so we use a `fired` flag to
+              -- guarantee exactly-once execution even if Mudlet delivers
+              -- the kill asynchronously and the trigger fires again.
+              local ws = { fired = false }
+              ws.rid = tempRegexTrigger([[^(.*)$]], function()
+                if ws.fired then return end
+                ws.fired = true
+                pcall(killTrigger, ws.rid)
+                if CMudWrapper._wait and ws.rid then
+                  CMudWrapper._wait.triggers[ws.rid] = nil
+                end
+                executeFrom(idx + 1)
+              end)
+              if CMudWrapper._wait and ws.rid then
+                CMudWrapper._wait.triggers[ws.rid] = true
+              end
+              return
+            end
+          end
+        end
+
+        -- Normal execution
+        CMudWrapper.runLine(cmd, matchTable)
+      end
     end
   end
+
+  -- Start execution from the first command.
+  executeFrom(1)
 end
 
 function CMudWrapper.installAlias(name, spec)
@@ -556,6 +614,16 @@ function CMudWrapper.unload()
   end
 
   CMudWrapper.handles = { aliases = {}, triggers = {} }
+  -- cleanup any pending wait timers/triggers
+  if CMudWrapper._wait then
+    for id in pairs(CMudWrapper._wait.timers or {}) do
+      pcall(killTimer, id)
+    end
+    for id in pairs(CMudWrapper._wait.triggers or {}) do
+      pcall(killTrigger, id)
+    end
+    CMudWrapper._wait = nil
+  end
 end
 
 function CMudWrapper.exec(line)
@@ -563,6 +631,15 @@ function CMudWrapper.exec(line)
 
   local args = parseArgs(line:sub(2))
   local verb = (table.remove(args, 1) or ""):upper()
+
+  -- Support top-level `#WAIT` (and shorthand like `#WA`) by delegating
+  -- the full input line to `runBody`, which already implements async
+  -- WAIT semantics (timers and wait-for-line triggers) and handles
+  -- multiple commands separated by the configured separator.
+  if isPrefix(verb, "WAIT") then
+    CMudWrapper.runBody(line, {})
+    return true
+  end
 
   if isPrefix(verb, "ALIAS") then
     -- New simplified form: #ALIAS {name} {body}
