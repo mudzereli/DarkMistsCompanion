@@ -563,8 +563,12 @@ function CMudWrapper.exec(line)
     if not name then
       do
         local msg = DarkmistsTheme.infoTag .. "Aliases:\n"
-        for k, v in pairs(CMudWrapper.state.aliases) do
-          msg = msg .. "  " .. DarkmistsTheme.textTag .. tostring(k) .. DarkmistsTheme.mutedTag .. ": " .. tostring(v.body or "") .. "\n"
+        local names = {}
+        for k in pairs(CMudWrapper.state.aliases) do names[#names+1] = k end
+        table.sort(names, function(a,b) return tostring(a):lower() < tostring(b):lower() end)
+        for _, k in ipairs(names) do
+          local v = CMudWrapper.state.aliases[k]
+          msg = msg .. "  " .. DarkmistsTheme.textTag .. tostring(k) .. DarkmistsTheme.mutedTag .. ": " .. tostring((v or {}).body or "") .. "\n"
         end
         CMudWrapper.notify(msg)
       end
@@ -643,7 +647,11 @@ function CMudWrapper.exec(line)
     if not name then
       do
         local msg = DarkmistsTheme.infoTag .. "Triggers:\n"
-        for k, v in pairs(CMudWrapper.state.triggers) do
+        local names = {}
+        for k in pairs(CMudWrapper.state.triggers) do names[#names+1] = k end
+        table.sort(names, function(a,b) return tostring(a):lower() < tostring(b):lower() end)
+        for _, k in ipairs(names) do
+          local v = CMudWrapper.state.triggers[k]
           local pat  = tostring((v or {}).pattern or "")
           local bod  = tostring((v or {}).body or "")
           local kind = (v and v.cmud) and "[wildcard]" or "[regex]"
@@ -692,14 +700,16 @@ function CMudWrapper.exec(line)
     if not name then
       do
         local msg = DarkmistsTheme.infoTag .. "Regex Triggers:\n"
-        for k, v in pairs(CMudWrapper.state.triggers) do
-          if v and not v.cmud then
-            local enabled = not (v and v.enabled == false)
-            local nameColor = enabled and (DarkmistsTheme.goodTag) or (DarkmistsTheme.warnTag)
-            local nameDisplay = nameColor .. tostring(k) .. DarkmistsTheme.mutedTag
-            msg = msg .. "  " .. nameDisplay .. ": " .. tostring(v.pattern or "") ..
-              " -> " .. tostring(v.body or "") .. "\n"
-          end
+        local names = {}
+        for k, v in pairs(CMudWrapper.state.triggers) do if v and not v.cmud then names[#names+1] = k end end
+        table.sort(names, function(a,b) return tostring(a):lower() < tostring(b):lower() end)
+        for _, k in ipairs(names) do
+          local v = CMudWrapper.state.triggers[k]
+          local enabled = not (v and v.enabled == false)
+          local nameColor = enabled and (DarkmistsTheme.goodTag) or (DarkmistsTheme.warnTag)
+          local nameDisplay = nameColor .. tostring(k) .. DarkmistsTheme.mutedTag
+          msg = msg .. "  " .. nameDisplay .. ": " .. tostring((v or {}).pattern or "") ..
+            " -> " .. tostring((v or {}).body or "") .. "\n"
         end
         CMudWrapper.notify(msg)
       end
@@ -734,7 +744,11 @@ function CMudWrapper.exec(line)
     if not name then
       do
         local msg = DarkmistsTheme.infoTag .. "Variables:\n"
-        for k, v in pairs(CMudWrapper.state.vars) do
+        local names = {}
+        for k in pairs(CMudWrapper.state.vars) do names[#names+1] = k end
+        table.sort(names, function(a,b) return tostring(a):lower() < tostring(b):lower() end)
+        for _, k in ipairs(names) do
+          local v = CMudWrapper.state.vars[k]
           msg = msg .. "  " .. DarkmistsTheme.textTag .. tostring(k) .. DarkmistsTheme.mutedTag .. ": " .. tostring(v) .. "\n"
         end
         CMudWrapper.notify(msg)
