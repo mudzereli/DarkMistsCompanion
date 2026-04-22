@@ -18,12 +18,18 @@ CMudWrapper = {
   commandSeparator = "|",
   savePath = getMudletHomeDir() .. "/cmudwrapper_data.lua",
   state = { aliases = {}, triggers = {}, vars = {}, defaults = {} },
+  -- per-variable metadata (e.g., enabled/disabled) stored separately
+  -- so `vars` can remain a simple name->value map.
+  state = nil,
   handles = { aliases = {}, triggers = {} },
   commandHandle = nil,
   -- Tracks names of aliases/triggers currently executing. Used to block
   -- self/mutual recursion when alias bodies call other aliases.
   _callStack = {},
 }
+
+-- initialize state with varmeta while keeping previous shape
+CMudWrapper.state = CMudWrapper.state or { aliases = {}, triggers = {}, vars = {}, defaults = {}, varmeta = {} }
 
 -- Convenience notify wrapper for this module.
 -- Automatically prefixes messages with the module tag and appends a
@@ -407,6 +413,12 @@ function CMudWrapper.runBody(body, matchTable)
 end
 
 function CMudWrapper.installAlias(name, spec)
+  -- If a alias spec has `enabled = false`, do not create a runtime
+  -- handle. This lets aliases remain defined but disabled until the
+  -- user explicitly enables them with `#T+ name`.
+  if spec and spec.enabled == false then
+    return
+  end
   if CMudWrapper.handles.aliases[name] then
     pcall(killAlias, CMudWrapper.handles.aliases[name])
   end
@@ -457,7 +469,7 @@ end
 function CMudWrapper.installTrigger(name, spec)
   -- If a trigger spec has `enabled = false`, do not create a runtime
   -- handle. This lets triggers remain defined but disabled until the
-  -- user explicitly enables them with `#TR+ name`.
+  -- user explicitly enables them with `#T+ name`.
   if spec and spec.enabled == false then
     return
   end
@@ -568,7 +580,10 @@ function CMudWrapper.exec(line)
         table.sort(names, function(a,b) return tostring(a):lower() < tostring(b):lower() end)
         for _, k in ipairs(names) do
           local v = CMudWrapper.state.aliases[k]
-          msg = msg .. "  " .. DarkmistsTheme.textTag .. tostring(k) .. DarkmistsTheme.mutedTag .. ": " .. tostring((v or {}).body or "") .. "\n"
+          local enabled = not (v and v.enabled == false)
+          local nameColor = enabled and (DarkmistsTheme.goodTag) or (DarkmistsTheme.warnTag)
+          local nameDisplay = nameColor .. tostring(k) .. DarkmistsTheme.mutedTag
+          msg = msg .. "  " .. nameDisplay .. ": " .. tostring((v or {}).body or "") .. "\n"
         end
         CMudWrapper.notify(msg)
       end
@@ -579,7 +594,10 @@ function CMudWrapper.exec(line)
     if name and not body then
       local def = CMudWrapper.state.aliases[name]
       if def then
-        CMudWrapper.notify(DarkmistsTheme.infoTag .. ("%s -> %s"):format(name, def.body or ""))
+        local enabled = not (def and def.enabled == false)
+        local nameColor = enabled and (DarkmistsTheme.goodTag) or (DarkmistsTheme.warnTag)
+        local nameDisplay = nameColor .. name .. DarkmistsTheme.mutedTag
+        CMudWrapper.notify(DarkmistsTheme.infoTag .. ("%s -> %s"):format(nameDisplay, def.body or ""))
       else
         CMudWrapper.notify(DarkmistsTheme.warnTag .. ("alias not found: %s"):format(name))
       end
@@ -606,35 +624,71 @@ function CMudWrapper.exec(line)
     assert(args[1], "#UNALIAS {name}")
     CMudWrapper.removeAlias(args[1])
 
-  elseif verb == "TR+" or verb == "TR-" then
-    -- #TR+ name -> enable trigger
-    -- #TR- name -> disable trigger
-    assert(args[1], "#TR+/#TR- {name}")
+  elseif verb == "T+" or verb == "T-" then
+    -- #T+ name -> enable alias/trigger/variable
+    -- #T- name -> disable alias/trigger/variable
+    assert(args[1], "#T+/#T- {name}")
     local tname = args[1]
-    if isPrefix(verb, "TR+") then
-      local spec = CMudWrapper.state.triggers[tname]
-      if not spec then
-        CMudWrapper.notify(DarkmistsTheme.warnTag .. ("trigger not found: %s"):format(tname))
+    if verb == "T+" then
+      -- Try alias
+      local spec = CMudWrapper.state.aliases[tname]
+      if spec then
+        spec.enabled = true
+        CMudWrapper.installAlias(tname, spec)
+        CMudWrapper.save()
+        CMudWrapper.notify(DarkmistsTheme.goodTag .. ("alias enabled: %s"):format(tname))
         return true
       end
-      spec.enabled = true
-      CMudWrapper.installTrigger(tname, spec)
-      CMudWrapper.save()
-      CMudWrapper.notify(DarkmistsTheme.goodTag .. ("trigger enabled: %s"):format(tname))
+      -- Try trigger
+      spec = CMudWrapper.state.triggers[tname]
+      if spec then
+        spec.enabled = true
+        CMudWrapper.installTrigger(tname, spec)
+        CMudWrapper.save()
+        CMudWrapper.notify(DarkmistsTheme.goodTag .. ("trigger enabled: %s"):format(tname))
+        return true
+      end
+      -- Try variable
+      if CMudWrapper.state.vars[tname] ~= nil then
+        CMudWrapper.state.varmeta = CMudWrapper.state.varmeta or {}
+        CMudWrapper.state.varmeta[tname] = true
+        CMudWrapper.save()
+        CMudWrapper.notify(DarkmistsTheme.goodTag .. ("variable enabled: %s"):format(tname))
+        return true
+      end
+      CMudWrapper.notify(DarkmistsTheme.warnTag .. ("name not found: %s"):format(tname))
     else
-      -- disable: kill any active handle and mark disabled in state
+      -- disable: try alias
+      if CMudWrapper.handles.aliases[tname] then
+        pcall(killAlias, CMudWrapper.handles.aliases[tname])
+        CMudWrapper.handles.aliases[tname] = nil
+      end
+      if CMudWrapper.state.aliases[tname] then
+        CMudWrapper.state.aliases[tname].enabled = false
+        CMudWrapper.save()
+        CMudWrapper.notify(DarkmistsTheme.warnTag .. ("alias disabled: %s"):format(tname))
+        return true
+      end
+      -- disable trigger
       if CMudWrapper.handles.triggers[tname] then
         pcall(killTrigger, CMudWrapper.handles.triggers[tname])
         CMudWrapper.handles.triggers[tname] = nil
       end
-      local spec = CMudWrapper.state.triggers[tname]
-      if spec then
-        spec.enabled = false
+      if CMudWrapper.state.triggers[tname] then
+        CMudWrapper.state.triggers[tname].enabled = false
         CMudWrapper.save()
         CMudWrapper.notify(DarkmistsTheme.warnTag .. ("trigger disabled: %s"):format(tname))
-      else
-        CMudWrapper.notify(DarkmistsTheme.warnTag .. ("trigger not found: %s"):format(tname))
+        return true
       end
+      -- disable variable
+      if CMudWrapper.state.vars[tname] ~= nil then
+        CMudWrapper.state.varmeta = CMudWrapper.state.varmeta or {}
+        CMudWrapper.state.varmeta[tname] = false
+        CMudWrapper.save()
+        CMudWrapper.notify(DarkmistsTheme.warnTag .. ("variable disabled: %s"):format(tname))
+        return true
+      end
+      CMudWrapper.notify(DarkmistsTheme.warnTag .. ("name not found: %s"):format(tname))
     end
     return true
 
@@ -744,13 +798,16 @@ function CMudWrapper.exec(line)
     if not name then
       do
         local msg = DarkmistsTheme.infoTag .. "Variables:\n"
-        local names = {}
-        for k in pairs(CMudWrapper.state.vars) do names[#names+1] = k end
-        table.sort(names, function(a,b) return tostring(a):lower() < tostring(b):lower() end)
-        for _, k in ipairs(names) do
-          local v = CMudWrapper.state.vars[k]
-          msg = msg .. "  " .. DarkmistsTheme.textTag .. tostring(k) .. DarkmistsTheme.mutedTag .. ": " .. tostring(v) .. "\n"
-        end
+          local names = {}
+          for k in pairs(CMudWrapper.state.vars) do names[#names+1] = k end
+          table.sort(names, function(a,b) return tostring(a):lower() < tostring(b):lower() end)
+          for _, k in ipairs(names) do
+            local v = CMudWrapper.state.vars[k]
+            local enabled = not (CMudWrapper.state.varmeta and CMudWrapper.state.varmeta[k] == false)
+            local nameColor = enabled and (DarkmistsTheme.goodTag) or (DarkmistsTheme.warnTag)
+            local nameDisplay = nameColor .. tostring(k) .. DarkmistsTheme.mutedTag
+            msg = msg .. "  " .. nameDisplay .. ": " .. tostring(v) .. "\n"
+          end
         CMudWrapper.notify(msg)
       end
       return true
@@ -759,7 +816,10 @@ function CMudWrapper.exec(line)
     if value == nil then
       local current = CMudWrapper.state.vars[name]
       if current ~= nil then
-        CMudWrapper.notify(DarkmistsTheme.infoTag .. ("%s -> %s"):format(name, tostring(current)))
+        local enabled = not (CMudWrapper.state.varmeta and CMudWrapper.state.varmeta[name] == false)
+        local nameColor = enabled and (DarkmistsTheme.goodTag) or (DarkmistsTheme.warnTag)
+        local nameDisplay = nameColor .. tostring(name) .. DarkmistsTheme.mutedTag
+        CMudWrapper.notify(DarkmistsTheme.infoTag .. ("%s -> %s"):format(nameDisplay, tostring(current)))
       else
         CMudWrapper.notify(DarkmistsTheme.warnTag .. ("variable not found: %s"):format(name))
       end
@@ -825,6 +885,7 @@ function CMudWrapper.load()
   CMudWrapper.state.triggers = data.triggers or {}
   CMudWrapper.state.vars = data.vars or {}
   CMudWrapper.state.defaults = data.defaults or {}
+  CMudWrapper.state.varmeta = data.varmeta or {}
 
   if CMudWrapper.commandHandle then
     pcall(killAlias, CMudWrapper.commandHandle)
