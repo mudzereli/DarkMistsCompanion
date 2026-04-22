@@ -222,6 +222,20 @@ Prefix every command with # (e.g. #alias, #trigger).
   Reference a variable with @VarName in alias/trigger bodies.
   &VarName captures in trigger patterns auto-assign the variable.
 
+──── ENABLE / DISABLE ───────────────────────────────────────────
+  #T+ {name}               – enable alias / trigger / variable
+  #T- {name}               – disable alias / trigger / variable
+
+  Disabled items remain defined but inactive until re-enabled.
+  Listings show enabled names in green and disabled names in yellow.
+
+──── ASYNC DELAY ────────────────────────────────────────────────
+  #WAIT {ms}               – pause N milliseconds then continue
+  #WAIT                    – wait for the next MUD line then continue
+
+  Shorthand prefixes are accepted (e.g. #WA 5000).
+  Use inside alias bodies to sequence timed or event-driven commands.
+
 ──── UTILITY ────────────────────────────────────────────────────
   #show {text}             – echo text (variable expansion applies)
   #send {text}             – send text to server
@@ -240,6 +254,16 @@ Prefix every command with # (e.g. #alias, #trigger).
   #trigger hitme {You are hit by * for %d damage.} {#show ouch}
   #rxtrigger hpline {^HP:\s*(\d+)/(\d+)} {#var hp %1|#var hpmax %2}
   #trigger getitem {* drops &ItemName} {#show Dropped: @ItemName}
+
+  -- wait 5 s then look
+  #alias j {#WA 5000|l}
+
+  -- loot, wait for next MUD line, then look
+  #alias loot {get all corpse|#WA|l}
+
+  -- disable a trigger without removing it
+  #T- hitme
+  #T+ hitme
     ]],
   },
 }
