@@ -62,6 +62,10 @@ Darkmists.DefaultSettings = {
   affectsWindowAffectNameLength = 20,
   -- How many characters to cut off Affect Mod At
   affectsWindowAffectModLength = 16,
+  -- Spam prevention threshold before fallback/deny triggers
+  spamThreshold = 24,
+  -- Optional fallback command sent when spam threshold is reached
+  spamFallbackCommand = "save",
   -- Clickable Item Link Color (lua showColors(3) to see allowable colors)
   itemTrackerLinkColorDarkMode = "pale_goldenrod",
   -- Clickable Item Link Color (lua showColors(3) to see allowable colors)
@@ -815,6 +819,9 @@ function Darkmists.Init()
 
   -- Meta Help / Command
   DarkMistsMeta.init()
+
+  -- Spam Prevention
+  SpamPrevention.init()
 
   tempTimer(1, function() DMLogger.hide() end)
   DMLogger.notify(DarkmistsTheme.purpleTag .. "Darkmists Core", (DarkmistsTheme.mutedTag .. "Loaded Darkmists Core " .. DarkmistsTheme.infoTag .. "v%s<r>"):format(Darkmists.VERSION))

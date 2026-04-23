@@ -53,5 +53,11 @@
               "isActive": "yes",
               "script": "",
               "isFolder": "no"
+       },
+       {
+              "name": "DMSpamPrevention",
+              "isActive": "yes",
+              "script": "",
+              "isFolder": "no"
        }
 ]

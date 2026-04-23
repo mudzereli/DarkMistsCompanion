@@ -217,7 +217,8 @@
         Available topics: <code>es</code> &nbsp;·&nbsp; <code>walk</code> &nbsp;·&nbsp;
         <code>skillups</code> &nbsp;·&nbsp; <code>sb</code> &nbsp;·&nbsp;
         <code>ch</code> &nbsp;·&nbsp; <code>who</code> &nbsp;·&nbsp;
-        <code>affects</code> &nbsp;·&nbsp; <code>infobox</code> &nbsp;·&nbsp; <code>dmid</code> &nbsp;·&nbsp;
+        <code>affects</code> &nbsp;·&nbsp; <code>infobox</code> &nbsp;·&nbsp;
+        <code>spam</code> &nbsp;·&nbsp; <code>dmid</code> &nbsp;·&nbsp;
         <code>map</code> &nbsp;·&nbsp; <code>statroll</code> &nbsp;·&nbsp; <code>cmud</code>
       </div>
 
@@ -227,9 +228,10 @@
           <tr><td><code>dmc</code></td><td>Show the main DMC help index</td></tr>
           <tr><td><code>dmc help &lt;topic&gt;</code></td><td>Show in-depth help for a module</td></tr>
           <tr><td><code>dmc ui</code></td><td>Toggle between full and minimal UI mode</td></tr>
-          <tr><td><code>dmc infobox</code></td><td>Show, set, or clear the profile info box</td></tr>
           <tr><td><code>dmc ui on</code></td><td>Force full UI mode on</td></tr>
           <tr><td><code>dmc ui off</code></td><td>Switch to minimal UI mode</td></tr>
+          <tr><td><code>dmc infobox</code></td><td>Show, set, or clear the profile info box</td></tr>
+          <tr><td><code>dmc spam</code></td><td>View or configure spam prevention settings</td></tr>
         </tbody>
       </table>
     </section>
@@ -732,6 +734,24 @@
         to view the full command reference inside Mudlet.
       </div>
 
+      <h3>Spam Prevention</h3>
+      <p>
+        Spam prevention is configured through <code>dmc spam</code>. It tracks repeated commands
+        and can deny them after a configurable threshold, optionally sending a fallback command
+        when the limit is reached.
+      </p>
+      <table>
+        <thead><tr><th>Command</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>dmc spam status</code></td><td>Show enabled state, threshold, and fallback command</td></tr>
+          <tr><td><code>dmc spam on</code></td><td>Enable spam prevention</td></tr>
+          <tr><td><code>dmc spam off</code></td><td>Disable spam prevention</td></tr>
+          <tr><td><code>dmc spam threshold &lt;n&gt;</code></td><td>Set the repeat limit before denial</td></tr>
+          <tr><td><code>dmc spam fallback &lt;cmd&gt;</code></td><td>Send this command when the threshold is hit</td></tr>
+          <tr><td><code>dmc spam fallback clear</code></td><td>Disable the fallback command</td></tr>
+        </tbody>
+      </table>
+
       <h3>Aliases</h3>
       <table>
         <thead><tr><th>Command</th><th>Description</th></tr></thead>
@@ -801,6 +821,38 @@
       <p>Reference a variable with <code>@VarName</code> inside alias and trigger bodies.
       <code>&amp;VarName</code> captures in trigger patterns auto-assign the variable.</p>
 
+      <h3>Enable / Disable</h3>
+      <p>
+        Aliases, triggers, and variables can be toggled on and off without removing them.
+        Disabled items show in <span style="color:var(--warn)">yellow</span> in listings;
+        enabled items appear in <span style="color:var(--good)">green</span>.
+      </p>
+      <table>
+        <thead><tr><th>Command</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>#T+ {name}</code></td><td>Enable the named alias, trigger, or variable</td></tr>
+          <tr><td><code>#T- {name}</code></td><td>Disable the named alias, trigger, or variable</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Async Delay &mdash; <code>#WAIT</code></h3>
+      <p>
+        <code>#WAIT</code> pauses execution of remaining commands in an alias body and resumes
+        them after a delay or after the next line arrives from the MUD. Shorthand prefixes
+        like <code>#WA</code> are accepted.
+      </p>
+      <table>
+        <thead><tr><th>Command</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>#WAIT {ms}</code></td><td>Pause for <em>ms</em> milliseconds, then continue</td></tr>
+          <tr><td><code>#WAIT</code></td><td>Wait until the next line arrives from the MUD, then continue</td></tr>
+        </tbody>
+      </table>
+      <div class="tip">
+        <strong>Example:</strong> <code>#alias j {#WA 5000|l}</code> &mdash; wait 5&nbsp;s then look.<br>
+        <strong>Example:</strong> <code>#alias loot {get all corpse|#WA|l}</code> &mdash; loot, wait for the MUD response, then look.
+      </div>
+
       <h3>Utility Commands</h3>
       <table>
         <thead><tr><th>Command</th><th>Description</th></tr></thead>
@@ -834,7 +886,17 @@
 #rxtrigger hpline {^HP:\s*(\d+)/(\d+)} {#var hp %1|#var hpmax %2}
 
 #sep ;
-#alias combo {north;kill rat;get all}</pre>
+#alias combo {north;kill rat;get all}
+
+-- wait 5 s then look
+#alias j {#WA 5000|l}
+
+-- loot, wait for next MUD line, then look
+#alias loot {get all corpse|#WA|l}
+
+-- disable a trigger without removing it, re-enable later
+#T- hitme
+#T+ hitme</pre>
 
 
       <!-- ·· Stat Roller ······························ -->
@@ -985,6 +1047,10 @@
           <tr><td><code>#untrigger {name}</code></td><td>Remove a trigger</td><td>CMud</td></tr>
           <tr><td><code>#var {name} [value]</code></td><td>Set or inspect a variable</td><td>CMud</td></tr>
           <tr><td><code>#unvar {name}</code></td><td>Remove a variable</td><td>CMud</td></tr>
+          <tr><td><code>#T+ {name}</code></td><td>Enable alias / trigger / variable</td><td>CMud</td></tr>
+          <tr><td><code>#T- {name}</code></td><td>Disable alias / trigger / variable</td><td>CMud</td></tr>
+          <tr><td><code>#WAIT {ms}</code></td><td>Pause N ms then continue alias body</td><td>CMud</td></tr>
+          <tr><td><code>#WAIT</code></td><td>Wait for next MUD line then continue alias body</td><td>CMud</td></tr>
           <tr><td><code>#show {text}</code></td><td>Echo text (expands variables)</td><td>CMud</td></tr>
           <tr><td><code>#send {text}</code></td><td>Send text to server</td><td>CMud</td></tr>
           <tr><td><code>#repeat {n} {cmd}</code></td><td>Run command n times</td><td>CMud</td></tr>

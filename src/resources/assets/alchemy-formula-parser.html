@@ -460,6 +460,7 @@ function buildFormulaRowElement(formula) {
     const cell1 = document.createElement("td")
     cell1.innerText = materials.replace(/,\s*/g, " ").trim()
     row.appendChild(cell1)
+    row._materialCount = materialArray.length
 
     const cell2 = document.createElement("td")
     cell2.innerText = formula.stats || formatStatsText(stats, flags)
@@ -523,8 +524,8 @@ function updateSummaryFromTable() {
     const partCounts = {1:0,2:0,3:0,4:0,5:0}
 
     rows.forEach(row => {
-        const materials = row.cells[1].innerText || ""
-        const n = materials.split(",").map(m => m.trim()).filter(Boolean).length
+        const n = row._materialCount ||
+            (row.cells[1].innerText || "").split(" ").filter(Boolean).length
         if (n >= 1 && n <= 5) partCounts[n]++
     })
 

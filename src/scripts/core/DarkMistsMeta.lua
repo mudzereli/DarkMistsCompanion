@@ -163,6 +163,30 @@ Character creation stat rolling helper.
     ]],
   },
 
+  spam = {
+    title = "Spam Prevention",
+    desc = "Prevent accidental command spam by denying repeated commands.",
+    info  = [[
+Prevents accidental command spam by tracking consecutive identical commands
+and denying them after a configurable threshold.
+
+• dmc spam status         – show enabled status, threshold, and fallback
+• dmc spam on / off       – enable or disable spam prevention
+• dmc spam threshold <n>  – set repeat limit (default: 20)
+• dmc spam fallback <cmd> – send this command instead when threshold hit
+• dmc spam fallback clear – disable fallback, just deny
+
+When the threshold is reached for a repeated command:
+  – current send is denied (denyCurrentSend)
+  – fallback command is sent (if configured)
+  – notification is shown with repeat count
+
+Example:
+  dmc spam threshold 15
+  dmc spam fallback look
+    ]],
+  },
+
   cmud = {
     title = "CMud Scripting",
     desc  = "CMUD-style aliases, triggers, and variables stored across sessions.",
@@ -222,6 +246,20 @@ Prefix every command with # (e.g. #alias, #trigger).
   Reference a variable with @VarName in alias/trigger bodies.
   &VarName captures in trigger patterns auto-assign the variable.
 
+──── ENABLE / DISABLE ───────────────────────────────────────────
+  #T+ {name}               – enable alias / trigger / variable
+  #T- {name}               – disable alias / trigger / variable
+
+  Disabled items remain defined but inactive until re-enabled.
+  Listings show enabled names in green and disabled names in yellow.
+
+──── ASYNC DELAY ────────────────────────────────────────────────
+  #WAIT {ms}               – pause N milliseconds then continue
+  #WAIT                    – wait for the next MUD line then continue
+
+  Shorthand prefixes are accepted (e.g. #WA 5000).
+  Use inside alias bodies to sequence timed or event-driven commands.
+
 ──── UTILITY ────────────────────────────────────────────────────
   #show {text}             – echo text (variable expansion applies)
   #send {text}             – send text to server
@@ -240,18 +278,28 @@ Prefix every command with # (e.g. #alias, #trigger).
   #trigger hitme {You are hit by * for %d damage.} {#show ouch}
   #rxtrigger hpline {^HP:\s*(\d+)/(\d+)} {#var hp %1|#var hpmax %2}
   #trigger getitem {* drops &ItemName} {#show Dropped: @ItemName}
+
+  -- wait 5 s then look
+  #alias j {#WA 5000|l}
+
+  -- loot, wait for next MUD line, then look
+  #alias loot {get all corpse|#WA|l}
+
+  -- disable a trigger without removing it
+  #T- hitme
+  #T+ hitme
     ]],
   },
 }
 
 local helpSections = {
   {
-    title = "Meta",
-    keys  = { "dmc" },
+    title = "Misc",
+    keys  = { "dmc", "spam", "infobox" },
   },
   {
     title = "Interface",
-    keys  = {"ui", "infobox", "ch", "sb", "dmid", "who", "affects" },
+    keys  = {"ui", "ch", "sb", "dmid", "who", "affects" },
   },
   {
     title = "Travel & Map",
@@ -847,7 +895,7 @@ function DarkMistsMeta.init()
           elseif code == "AREA_AMBIGUOUS" then
             DMLogger.notify("WALK", dm_warn .. "Ambiguous area — did you mean:")
             local names = {}
-            for name in data:gmatch("[^,]+") do
+            for name in (data or ""):gmatch("[^,]+") do
               names[#names + 1] = name:match("^%s*(.-)%s*$")
             end
             cecho("  ")
@@ -921,6 +969,70 @@ function DarkMistsMeta.init()
       ("%sGenerating path to %s%s %s[%s%d%s] %s%s")
         :format(dm_header_color, c, arg, dm_muted, c, a, dm_muted, c, b)
     )
+  end)
+
+  -- =============================================================================
+  -- SPAM PREVENTION COMMANDS
+  -- =============================================================================
+  DarkmistsAlias.add("^dmc\\s+spam$", function()
+    local entry = DarkMistsMeta.helpIndex.spam
+    dm_header(entry.title)
+    cecho(dm_muted .. (entry.info or "No additional information available.") .. "\n")
+  end)
+
+  DarkmistsAlias.add("^dmc\\s+spam\\s+threshold\\s+(\\d+)$", function()
+    local n = tonumber(matches[2])
+    if not n or n < 1 then
+      DMLogger.notify("SpamPrevention", dm_bad .. "Threshold must be a positive integer.")
+      return
+    end
+    SpamPrevention.threshold = n
+    Darkmists.GlobalSettings.spamThreshold = n
+    Darkmists.SaveSettings()
+    DMLogger.notify("SpamPrevention", string.format(
+      "%sThreshold set to %s%d",
+      dm_muted,
+      dm_text,
+      n
+    ))
+  end)
+
+  DarkmistsAlias.add("^dmc\\s+spam\\s+fallback\\s+(.+)$", function()
+    local arg = matches[2]
+    if arg == "clear" or arg == "none" then
+      SpamPrevention.fallbackCommand = nil
+      Darkmists.GlobalSettings.spamFallbackCommand = nil
+      Darkmists.SaveSettings()
+      DMLogger.notify("SpamPrevention", dm_muted .. "Fallback command cleared.")
+    else
+      SpamPrevention.fallbackCommand = arg
+      Darkmists.GlobalSettings.spamFallbackCommand = arg
+      Darkmists.SaveSettings()
+      DMLogger.notify("SpamPrevention", string.format("%sFallback set to: %s%s", dm_muted, dm_good, arg))
+    end
+  end)
+
+  DarkmistsAlias.add("^dmc\\s+spam\\s+(on|off|status)$", function()
+    local cmd = matches[2]
+
+    if cmd == "on" then
+      SpamPrevention.enabled = true
+      DMLogger.notify("SpamPrevention", dm_good .. "Enabled")
+    elseif cmd == "off" then
+      SpamPrevention.enabled = false
+      DMLogger.notify("SpamPrevention", dm_bad .. "Disabled")
+    else
+      DMLogger.notify("SpamPrevention", string.format(
+        "%sEnabled: %s%s%s  Threshold: %s%d%s  Fallback: %s%s",
+        dm_muted,
+        SpamPrevention.enabled and dm_good or dm_bad,
+        tostring(SpamPrevention.enabled),
+        dm_muted, dm_text,
+        SpamPrevention.threshold,
+        dm_muted, dm_text,
+        SpamPrevention.fallbackCommand or "(none)"
+      ))
+    end
   end)
 
   -- =============================================================================
