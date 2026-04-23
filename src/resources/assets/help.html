@@ -217,7 +217,8 @@
         Available topics: <code>es</code> &nbsp;·&nbsp; <code>walk</code> &nbsp;·&nbsp;
         <code>skillups</code> &nbsp;·&nbsp; <code>sb</code> &nbsp;·&nbsp;
         <code>ch</code> &nbsp;·&nbsp; <code>who</code> &nbsp;·&nbsp;
-        <code>affects</code> &nbsp;·&nbsp; <code>infobox</code> &nbsp;·&nbsp; <code>dmid</code> &nbsp;·&nbsp;
+        <code>affects</code> &nbsp;·&nbsp; <code>infobox</code> &nbsp;·&nbsp;
+        <code>spam</code> &nbsp;·&nbsp; <code>dmid</code> &nbsp;·&nbsp;
         <code>map</code> &nbsp;·&nbsp; <code>statroll</code> &nbsp;·&nbsp; <code>cmud</code>
       </div>
 
@@ -227,9 +228,10 @@
           <tr><td><code>dmc</code></td><td>Show the main DMC help index</td></tr>
           <tr><td><code>dmc help &lt;topic&gt;</code></td><td>Show in-depth help for a module</td></tr>
           <tr><td><code>dmc ui</code></td><td>Toggle between full and minimal UI mode</td></tr>
-          <tr><td><code>dmc infobox</code></td><td>Show, set, or clear the profile info box</td></tr>
           <tr><td><code>dmc ui on</code></td><td>Force full UI mode on</td></tr>
           <tr><td><code>dmc ui off</code></td><td>Switch to minimal UI mode</td></tr>
+          <tr><td><code>dmc infobox</code></td><td>Show, set, or clear the profile info box</td></tr>
+          <tr><td><code>dmc spam</code></td><td>View or configure spam prevention settings</td></tr>
         </tbody>
       </table>
     </section>
@@ -731,6 +733,24 @@
         <strong>In-game help:</strong> Type <code>dmc help cmud</code> or <code>#help</code>
         to view the full command reference inside Mudlet.
       </div>
+
+      <h3>Spam Prevention</h3>
+      <p>
+        Spam prevention is configured through <code>dmc spam</code>. It tracks repeated commands
+        and can deny them after a configurable threshold, optionally sending a fallback command
+        when the limit is reached.
+      </p>
+      <table>
+        <thead><tr><th>Command</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>dmc spam status</code></td><td>Show enabled state, threshold, and fallback command</td></tr>
+          <tr><td><code>dmc spam on</code></td><td>Enable spam prevention</td></tr>
+          <tr><td><code>dmc spam off</code></td><td>Disable spam prevention</td></tr>
+          <tr><td><code>dmc spam threshold &lt;n&gt;</code></td><td>Set the repeat limit before denial</td></tr>
+          <tr><td><code>dmc spam fallback &lt;cmd&gt;</code></td><td>Send this command when the threshold is hit</td></tr>
+          <tr><td><code>dmc spam fallback clear</code></td><td>Disable the fallback command</td></tr>
+        </tbody>
+      </table>
 
       <h3>Aliases</h3>
       <table>

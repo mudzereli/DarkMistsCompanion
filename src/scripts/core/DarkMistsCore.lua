@@ -816,6 +816,9 @@ function Darkmists.Init()
   -- Meta Help / Command
   DarkMistsMeta.init()
 
+  -- Spam Prevention
+  SpamPrevention.init()
+
   tempTimer(1, function() DMLogger.hide() end)
   DMLogger.notify(DarkmistsTheme.purpleTag .. "Darkmists Core", (DarkmistsTheme.mutedTag .. "Loaded Darkmists Core " .. DarkmistsTheme.infoTag .. "v%s<r>"):format(Darkmists.VERSION))
 end
