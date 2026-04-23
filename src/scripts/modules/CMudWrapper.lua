@@ -17,19 +17,14 @@ CMudWrapper = {
   -- Make this configurable; change at runtime with `CMudWrapper.commandSeparator = '|'`.
   commandSeparator = "|",
   savePath = getMudletHomeDir() .. "/cmudwrapper_data.lua",
-  state = { aliases = {}, triggers = {}, vars = {}, defaults = {} },
-  -- per-variable metadata (e.g., enabled/disabled) stored separately
-  -- so `vars` can remain a simple name->value map.
-  state = nil,
+  -- Full state shape including varmeta for per-variable enabled/disabled tracking.
+  state = { aliases = {}, triggers = {}, vars = {}, defaults = {}, varmeta = {} },
   handles = { aliases = {}, triggers = {} },
   commandHandle = nil,
   -- Tracks names of aliases/triggers currently executing. Used to block
   -- self/mutual recursion when alias bodies call other aliases.
   _callStack = {},
 }
-
--- initialize state with varmeta while keeping previous shape
-CMudWrapper.state = CMudWrapper.state or { aliases = {}, triggers = {}, vars = {}, defaults = {}, varmeta = {} }
 
 -- Convenience notify wrapper for this module.
 -- Automatically prefixes messages with the module tag and appends a

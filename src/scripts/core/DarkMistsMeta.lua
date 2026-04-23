@@ -871,7 +871,7 @@ function DarkMistsMeta.init()
           elseif code == "AREA_AMBIGUOUS" then
             DMLogger.notify("WALK", dm_warn .. "Ambiguous area — did you mean:")
             local names = {}
-            for name in data:gmatch("[^,]+") do
+            for name in (data or ""):gmatch("[^,]+") do
               names[#names + 1] = name:match("^%s*(.-)%s*$")
             end
             cecho("  ")
