@@ -987,6 +987,8 @@ function DarkMistsMeta.init()
       return
     end
     SpamPrevention.threshold = n
+    Darkmists.GlobalSettings.spamThreshold = n
+    Darkmists.SaveSettings()
     DMLogger.notify("SpamPrevention", string.format(
       "%sThreshold set to %s%d",
       dm_muted,
@@ -999,9 +1001,13 @@ function DarkMistsMeta.init()
     local arg = matches[2]
     if arg == "clear" or arg == "none" then
       SpamPrevention.fallbackCommand = nil
+      Darkmists.GlobalSettings.spamFallbackCommand = nil
+      Darkmists.SaveSettings()
       DMLogger.notify("SpamPrevention", dm_muted .. "Fallback command cleared.")
     else
       SpamPrevention.fallbackCommand = arg
+      Darkmists.GlobalSettings.spamFallbackCommand = arg
+      Darkmists.SaveSettings()
       DMLogger.notify("SpamPrevention", string.format("%sFallback set to: %s%s", dm_muted, dm_good, arg))
     end
   end)

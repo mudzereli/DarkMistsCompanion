@@ -77,6 +77,15 @@ end
 -- Init / reload-safe registration
 -- -----------------------------------------------------------------------------
 function SpamPrevention.init()
+  if Darkmists and Darkmists.GlobalSettings then
+    if Darkmists.GlobalSettings.spamThreshold ~= nil then
+      SpamPrevention.threshold = tonumber(Darkmists.GlobalSettings.spamThreshold) or SpamPrevention.threshold
+    end
+    if Darkmists.GlobalSettings.spamFallbackCommand ~= nil then
+      SpamPrevention.fallbackCommand = Darkmists.GlobalSettings.spamFallbackCommand
+    end
+  end
+
   DarkmistsEvents.add("spamPreventionSend", "sysDataSendRequest", SpamPrevention._onSend)
 
   local good = DarkmistsTheme and DarkmistsTheme.goodTag or ""
