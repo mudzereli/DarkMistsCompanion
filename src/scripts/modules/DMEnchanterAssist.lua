@@ -136,6 +136,10 @@ EnchanterAssist.allmats = {
 -- UTIL
 -- ============================================================================
 
+function EnchanterAssist._raiseTrialEvent(event, data)
+  raiseEvent(event, data or {})
+end
+
 function EnchanterAssist._contains(set, key)
   return set[key] ~= nil
 end
@@ -533,6 +537,7 @@ function EnchanterAssist.run()
           ea_muted .. "TRY " .. ea_text .. key .. "\n")
 
         EnchanterAssist.state = "brewing"
+        EnchanterAssist._raiseTrialEvent("ea.trial.start", { key = key, partCount = r, trial = EnchanterAssist.sessionTrials })
         dmapi.core.send("get", "key", EnchanterAssist.container)
         dmapi.core.send("alchemy", "key", table.concat(picks, " "))
         dmapi.core.send("alchemy essence")
@@ -556,6 +561,7 @@ function EnchanterAssist.run()
         ea_muted .. "TRY " .. ea_text .. key .. "\n")
 
       EnchanterAssist.state = "brewing"
+      EnchanterAssist._raiseTrialEvent("ea.trial.start", { key = key, partCount = r, trial = EnchanterAssist.sessionTrials })
       dmapi.core.send("get", "key", EnchanterAssist.container)
       dmapi.core.send("alchemy", "key", table.concat(picks, " "))
       dmapi.core.send("alchemy essence")
@@ -794,6 +800,7 @@ function EnchanterAssist.on_line(ln)
     -- Do NOT mark attempt
     -- Do NOT advance combo index
     -- Keep pendingKey intact so it retries after rest
+    EnchanterAssist._raiseTrialEvent("ea.trial.tired", { key = EnchanterAssist.pendingKey })
     EnchanterAssist._startRestCycle(ea_good .. "Too tired - Forcing Rest")
 
     return
@@ -825,7 +832,8 @@ function EnchanterAssist.on_line(ln)
   end
   
   if  ln:match("^You botch the brew, and your alchemy process") then
-    if EnchanterAssist.state == "brewing" then
+    if EnchanterAssist.state == "brewing" then      
+      EnchanterAssist._raiseTrialEvent("ea.trial.botch", { key = EnchanterAssist.pendingKey })      
       EnchanterAssist._attemptResolved = true
     end
     DMLogger.notify(ea_plugin, ea_bad .. "Skill check failed.")
@@ -839,6 +847,7 @@ function EnchanterAssist.on_line(ln)
       EnchanterAssist.save()
     end
     if EnchanterAssist.state == "brewing" then
+      EnchanterAssist._raiseTrialEvent("ea.trial.nomatch", { key = EnchanterAssist.pendingKey })
       EnchanterAssist._attemptResolved = true
     end
     return
@@ -856,6 +865,7 @@ function EnchanterAssist.on_line(ln)
         .. ea_muted .. ")"
       DMLogger.notify(ea_plugin, msg)
       EnchanterAssist._playDiscoverSound()
+      EnchanterAssist._raiseTrialEvent("ea.trial.discovered", { key = EnchanterAssist.pendingKey, formula = formula })
       dmapi.core.send("alc info",formula)
       EnchanterAssist._add(EnchanterAssist.attempted, EnchanterAssist.pendingKey)
       EnchanterAssist.save()
