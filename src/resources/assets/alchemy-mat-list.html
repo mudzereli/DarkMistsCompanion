@@ -328,6 +328,7 @@ const materials = [
 //{ id:44, material:"Softwood", item:"Coconut", source:"Arkham", notes:"Arkham - bought from Bluebeard's pub (coconut); Gate point: //Jed" },
 //{ id:45, material:"Steel", item:"Long sword", source:"Glyndane", notes:"Glyndane weapon shops" },
 { id:45, material:"Steel", item:"Prisoner's Cake", source:"The City of Sudharma", notes:"City Bakery of Sudharma" },
+{ id:38, material:"Steel", item:"an ebony and quartz flail", source:"The City of Sudharma", notes:"The East Main Street Weapon Smithy" },
 //{ id:46, material:"Stone", item:"Stone shortsword", source:"Wistfolk", notes:"Wistfolk vendors" },
 { id:46, material:"Stone", item:"a colorful polished stone", source:"The City of Sudharma", notes:"Ny's Wonders and Baubles - Ground Floor" },
 { id:46, material:"Stone", item:"Stonecrust Forge Loaf", source:"The City of Sudharma", notes:"City Bakery of Sudharma" },
@@ -356,6 +357,9 @@ function renderTable() {
 	materials.forEach(m => {
 
 		let row = document.createElement("tr")
+		row.dataset.item = (m.item || "").toLowerCase()
+		row.dataset.material = (m.material || "").toLowerCase()
+		row.dataset.source = (m.source || "").toLowerCase()
 
 		row.innerHTML = `
 <td>${m.id}</td>
@@ -399,13 +403,28 @@ document.getElementById("search")
 const rows =
 document.querySelectorAll("#table tbody tr")
 
+const matchedItems = new Set()
+
+rows.forEach(row => {
+
+const text =
+row.innerText.toLowerCase()
+
+if (!query || text.includes(query)) {
+matchedItems.add(row.dataset.item || "")
+}
+
+})
+
 rows.forEach(row => {
 
 const text =
 row.innerText.toLowerCase()
 
 row.style.display =
-text.includes(query) ? "" : "none"
+!query || text.includes(query) || matchedItems.has(row.dataset.item || "")
+? ""
+: "none"
 
 })
 
