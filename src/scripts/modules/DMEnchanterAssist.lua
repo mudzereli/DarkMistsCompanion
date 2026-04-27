@@ -252,39 +252,42 @@ end
 
 function EnchanterAssist._pickRandomUnattemptedCombination(pool, r)
   local n = #pool
-  if n < r then
-    return nil, nil
-  end
+  if n < r then return nil, nil end
 
-  local indices = {}
-  for i = 1, r do
-    indices[i] = i
-  end
-
-  local selectedPicks = nil
-  local selectedKey = nil
-  local seen = 0
-
-  while indices do
+  -- Pass 1: count unattempted combinations
+  local count = 0
+  local idx = {}
+  for i = 1, r do idx[i] = i end
+  while idx do
     local picks = {}
-    for i = 1, r do
-      table.insert(picks, pool[indices[i]])
-    end
+    for i = 1, r do picks[i] = pool[idx[i]] end
     table.sort(picks)
+    if not EnchanterAssist.attempted[r .. ":" .. table.concat(picks, "|")] then
+      count = count + 1
+    end
+    idx = EnchanterAssist._nextCombination(idx, n, r)
+  end
 
+  if count == 0 then return nil, nil end
+
+  -- Pass 2: return the randomly chosen N-th unattempted combination
+  local target = math.random(count)
+  local found  = 0
+  idx = {}
+  for i = 1, r do idx[i] = i end
+  while idx do
+    local picks = {}
+    for i = 1, r do picks[i] = pool[idx[i]] end
+    table.sort(picks)
     local key = r .. ":" .. table.concat(picks, "|")
     if not EnchanterAssist.attempted[key] then
-      seen = seen + 1
-      if math.random(seen) == 1 then
-        selectedPicks = picks
-        selectedKey = key
-      end
+      found = found + 1
+      if found == target then return picks, key end
     end
-
-    indices = EnchanterAssist._nextCombination(indices, n, r)
+    idx = EnchanterAssist._nextCombination(idx, n, r)
   end
 
-  return selectedPicks, selectedKey
+  return nil, nil
 end
 
 function EnchanterAssist._isBelowRestThreshold()
@@ -707,7 +710,7 @@ function EnchanterAssist.reset()
   EnchanterAssist.sessionTrials     = 0
   EnchanterAssist.sessionFormulas = {}
 
-  math.randomseed(os.time())   -- seed once per session
+  math.randomseed(math.floor(((getEpoch and getEpoch()) or os.time()) * 1000))  -- millisecond precision
   EnchanterAssist._shuffleMaterials()
 
   EnchanterAssist.save()
@@ -980,7 +983,7 @@ function EnchanterAssist.init()
   end)
 
   EnchanterAssist.load()
-  math.randomseed(os.time())   -- seed once per session
+  math.randomseed(math.floor(((getEpoch and getEpoch()) or os.time()) * 1000))  -- millisecond precision
   EnchanterAssist._shuffleMaterials()
   --EnchanterAssist.stats()
 
