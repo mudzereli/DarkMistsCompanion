@@ -20,6 +20,7 @@ SpamPrevention = {
   fallbackCommand = "save",  -- optional command to send instead when threshold is hit
   lastCommand     = "",
   spamCount       = 0,
+  minLength       = 3,
   enabled         = true,
 }
 
@@ -37,6 +38,8 @@ function SpamPrevention._onSend(_, data)
   end
   SpamPrevention.lastCommand = data
 
+  if #data < SpamPrevention.minLength then return end
+  
   local warningThreshold = math.max(1, math.floor(SpamPrevention.threshold * 0.75))
   if SpamPrevention.spamCount >= warningThreshold and SpamPrevention.spamCount < SpamPrevention.threshold then
     DMLogger.notify("SpamPrevention", string.format(
