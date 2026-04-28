@@ -28,7 +28,7 @@ Darkmists.VERSION = "@VERSION@"
 Darkmists.GITHUB_URL_STABLE = "https://github.com/mudzereli/DarkMistsCompanion/releases/latest/download/DarkMistsCompanion.mpackage"
 Darkmists.GITHUB_URL_BETA = "https://github.com/mudzereli/DarkMistsCompanion/raw/refs/heads/beta/build/DarkMistsCompanion.mpackage"
 Darkmists.UI_LOADED = false
-Darkmists.LAYOUT_CACHE_VERSION = "@VERSION@"
+Darkmists.LAYOUT_CACHE_VERSION = "1.5.1" -- bump this when making layout-breaking changes to force a cache reset
 Darkmists.saveFilePath = saveFilePath
 Darkmists._resizePending = false
 
