@@ -963,6 +963,48 @@ local function maybeFirePeriodicDamage(line)
   })
 end
 
+--- Fire alchemy outcome events from raw line matches
+-- @param line string Raw MUD line
+local function maybeFireAlchemyOutcome(line)
+  if not line or line == "" then return false end
+
+  if line:match("^You are too tired to complete the process") then
+    dmapi.core.raiseEvent("dmapi.player.alchemy.tired", {
+      line = line,
+      timestamp = getEpoch()
+    })
+    return true
+  end
+
+  if line:match("^You botch the brew, and your alchemy process") then
+    dmapi.core.raiseEvent("dmapi.player.alchemy.botch", {
+      line = line,
+      timestamp = getEpoch()
+    })
+    return true
+  end
+
+  if line:match("^Your alchemy process results in a gooey mess") then
+    dmapi.core.raiseEvent("dmapi.player.alchemy.nomatch", {
+      line = line,
+      timestamp = getEpoch()
+    })
+    return true
+  end
+
+  local formula = line:match("^You have discovered the alchemy formula (.*)!")
+  if formula then
+    dmapi.core.raiseEvent("dmapi.player.alchemy.discovered", {
+      formula = formula,
+      line = line,
+      timestamp = getEpoch()
+    })
+    return true
+  end
+
+  return false
+end
+
 --- Fire a combat round event if enough time has passed
 -- @param mobState table The mob state data
 local function maybeFireCombatRound(mobState)
@@ -1361,6 +1403,10 @@ function dmapi.core.LineTrigger(line)
   end
 
   if handleCommunicationLine(line) then
+    return
+  end
+
+  if maybeFireAlchemyOutcome(line) then
     return
   end
 

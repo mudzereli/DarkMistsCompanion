@@ -789,26 +789,6 @@ function EnchanterAssist.on_line(ln)
       return
   end
 
-  if ln:match("^You are too tired to complete the process") then
-    -- If autorun is OFF, do not force rest.
-    if not EnchanterAssist.autoRun then
-        DMLogger.notify(
-          ea_plugin,
-          ea_warn .. "Too tired - Manual mode, not forcing rest."
-        )
-        EnchanterAssist.state = "idle"
-        return
-    end
-
-    -- Do NOT mark attempt
-    -- Do NOT advance combo index
-    -- Keep pendingKey intact so it retries after rest
-    EnchanterAssist._raiseTrialEvent("ea.trial.tired", { key = EnchanterAssist.pendingKey })
-    EnchanterAssist._startRestCycle(ea_good .. "Too tired - Forcing Rest")
-
-    return
-  end
-
   local m = ln:match("^You do not have essence of (%w+)%.")
   if m then
     DMLogger.notify(ea_plugin, ea_warn .. "Missing Essence: " .. ea_text .. m)
@@ -828,52 +808,6 @@ function EnchanterAssist.on_line(ln)
   or ln:match("^You must only use raw materials")
   or ln:match("^Alchemy only needs one of each kind of ingredient") then
     DMLogger.notify(ea_plugin, ea_bad .. "Bad Materials")
-    if EnchanterAssist.state == "brewing" then
-      EnchanterAssist._attemptResolved = true
-    end
-    return
-  end
-  
-  if  ln:match("^You botch the brew, and your alchemy process") then
-    if EnchanterAssist.state == "brewing" then      
-      EnchanterAssist._raiseTrialEvent("ea.trial.botch", { key = EnchanterAssist.pendingKey })      
-      EnchanterAssist._attemptResolved = true
-    end
-    DMLogger.notify(ea_plugin, ea_bad .. "Skill check failed.")
-    return
-  end
-
-  if ln:match("^Your alchemy process results in a gooey mess") then
-    if EnchanterAssist.state == "brewing" and not EnchanterAssist._contains(EnchanterAssist.attempted, EnchanterAssist.pendingKey) then
-      DMLogger.notify(ea_plugin, ea_warn .. "No formula from: " .. ea_text .. EnchanterAssist.pendingKey)
-      EnchanterAssist._add(EnchanterAssist.attempted, EnchanterAssist.pendingKey)
-      EnchanterAssist.save()
-    end
-    if EnchanterAssist.state == "brewing" then
-      EnchanterAssist._raiseTrialEvent("ea.trial.nomatch", { key = EnchanterAssist.pendingKey })
-      EnchanterAssist._attemptResolved = true
-    end
-    return
-  end
-
-  local formula = ln:match("^You have discovered the alchemy formula (.*)!")
-  if formula then
-    if EnchanterAssist.state == "brewing" and not EnchanterAssist._contains(EnchanterAssist.attempted, EnchanterAssist.pendingKey) then
-      table.insert(EnchanterAssist.sessionFormulas, formula)
-      dmapi.core.send("save")
-      local msg = "Formula Discovered! "
-        .. ea_text .. formula
-        .. " " .. ea_muted .. "("
-        .. ea_text .. EnchanterAssist.pendingKey
-        .. ea_muted .. ")"
-      DMLogger.notify(ea_plugin, msg)
-      EnchanterAssist._playDiscoverSound()
-      EnchanterAssist._raiseTrialEvent("ea.trial.discovered", { key = EnchanterAssist.pendingKey, formula = formula })
-      dmapi.core.send("alc info",formula)
-      EnchanterAssist._add(EnchanterAssist.attempted, EnchanterAssist.pendingKey)
-      EnchanterAssist.save()
-    end
-    dmapi.core.send("alc", "extract", "key")
     if EnchanterAssist.state == "brewing" then
       EnchanterAssist._attemptResolved = true
     end
@@ -972,6 +906,78 @@ function EnchanterAssist.init()
       return
     end
 
+  end)
+
+  DarkmistsEvents.add("EnchanterAssist.AlchemyTired", "dmapi.player.alchemy.tired", function(_, data)
+    if EnchanterAssist.state ~= "brewing" then
+      return
+    end
+
+    -- If autorun is OFF, do not force rest.
+    if not EnchanterAssist.autoRun then
+      DMLogger.notify(
+        ea_plugin,
+        ea_warn .. "Too tired - Manual mode, not forcing rest."
+      )
+      EnchanterAssist.state = "idle"
+      return
+    end
+
+    -- Do NOT mark attempt
+    -- Do NOT advance combo index
+    -- Keep pendingKey intact so it retries after rest
+    EnchanterAssist._raiseTrialEvent("ea.trial.tired", { key = EnchanterAssist.pendingKey, line = data and data.line })
+    EnchanterAssist._startRestCycle(ea_good .. "Too tired - Forcing Rest")
+  end)
+
+  DarkmistsEvents.add("EnchanterAssist.AlchemyBotch", "dmapi.player.alchemy.botch", function(_, data)
+    if EnchanterAssist.state ~= "brewing" then
+      return
+    end
+
+    EnchanterAssist._raiseTrialEvent("ea.trial.botch", { key = EnchanterAssist.pendingKey, line = data and data.line })
+    EnchanterAssist._attemptResolved = true
+    DMLogger.notify(ea_plugin, ea_bad .. "Skill check failed.")
+  end)
+
+  DarkmistsEvents.add("EnchanterAssist.AlchemyNomatch", "dmapi.player.alchemy.nomatch", function(_, data)
+    if EnchanterAssist.state ~= "brewing" then
+      return
+    end
+
+    if not EnchanterAssist._contains(EnchanterAssist.attempted, EnchanterAssist.pendingKey) then
+      DMLogger.notify(ea_plugin, ea_warn .. "No formula from: " .. ea_text .. EnchanterAssist.pendingKey)
+      EnchanterAssist._add(EnchanterAssist.attempted, EnchanterAssist.pendingKey)
+      EnchanterAssist.save()
+    end
+
+    EnchanterAssist._raiseTrialEvent("ea.trial.nomatch", { key = EnchanterAssist.pendingKey, line = data and data.line })
+    EnchanterAssist._attemptResolved = true
+  end)
+
+  DarkmistsEvents.add("EnchanterAssist.AlchemyDiscovered", "dmapi.player.alchemy.discovered", function(_, data)
+    if EnchanterAssist.state ~= "brewing" then
+      return
+    end
+
+    local formula = data and data.formula
+    if formula and not EnchanterAssist._contains(EnchanterAssist.attempted, EnchanterAssist.pendingKey) then
+      table.insert(EnchanterAssist.sessionFormulas, formula)
+      dmapi.core.send("save")
+      local msg = "Formula Discovered! "
+        .. ea_text .. formula
+        .. " " .. ea_muted .. "("
+        .. ea_text .. EnchanterAssist.pendingKey
+        .. ea_muted .. ")"
+      DMLogger.notify(ea_plugin, msg)
+      EnchanterAssist._playDiscoverSound()
+      EnchanterAssist._raiseTrialEvent("ea.trial.discovered", { key = EnchanterAssist.pendingKey, formula = formula, line = data and data.line })
+      dmapi.core.send("alc info",formula)
+      EnchanterAssist._add(EnchanterAssist.attempted, EnchanterAssist.pendingKey)
+      EnchanterAssist.save()
+    end
+    dmapi.core.send("alc", "extract", "key")
+    EnchanterAssist._attemptResolved = true
   end)
 
   DarkmistsEvents.add("EnchanterAssist.WorldEnter", "dmapi.world.enter", function()
