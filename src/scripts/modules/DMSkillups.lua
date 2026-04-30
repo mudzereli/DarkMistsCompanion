@@ -3,7 +3,7 @@
 -- ===================================================================
 SkillUps = {
   config = {
-    maxSkillUps = 20,  -- Keep last 20 skill ups
+    maxSkillUps = 50,  -- Keep last 50 skill ups
   },
   history = {},
   -- No need for eventHandler tracking; managed by EventManager
@@ -74,7 +74,7 @@ function SkillUps.display()
     ))
   end
   
-  cecho(string.format("\n%s═══════════════════════════════════════════════════", DarkmistsTheme.cyanTag))
+  cecho(string.format("%s═══════════════════════════════════════════════════", DarkmistsTheme.cyanTag))
 end
 
 function SkillUps.reset()
