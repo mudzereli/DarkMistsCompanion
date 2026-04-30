@@ -1044,6 +1044,7 @@ local HOUSE_CHANNELS = {
   GAR = true,
   GML = true,
   SG = true,
+  OE = true,
   DRE = true,
   KEY = true,
   HIVEMIND = true
