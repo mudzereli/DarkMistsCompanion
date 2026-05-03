@@ -694,7 +694,9 @@ function DarkMistsMeta.init()
       for i = 1, shown do
         local item = results[i]
         cecho(string.format("   "..dm_text.."%d) ", i))
+        local areaTag = item.area and ("[" .. item.area .. "] ") or ""
         cechoLink(
+          dm_muted .. areaTag .. dm_text ..
           ItemTracker.settings.itemLinkColor .. item.name .. dm_text.."\n",
           ItemTracker.getHandler(item.name),
           "Click: tooltip | Shift+Click: full identify",
