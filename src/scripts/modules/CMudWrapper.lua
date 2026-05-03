@@ -655,7 +655,7 @@ function CMudWrapper.exec(line)
           local enabled = not (v and v.enabled == false)
           local nameColor = enabled and (DarkmistsTheme.goodTag) or (DarkmistsTheme.warnTag)
           local nameDisplay = nameColor .. tostring(k) .. DarkmistsTheme.mutedTag
-          msg = msg .. "  " .. nameDisplay .. ": " .. tostring((v or {}).body or "") .. "\n"
+          msg = msg .. string.format("  %s %s» %s%s\n", nameDisplay, DarkmistsTheme.mutedTag, DarkmistsTheme.textTag, tostring((v or {}).body or ""))
         end
         CMudWrapper.notify(msg)
       end
@@ -669,7 +669,7 @@ function CMudWrapper.exec(line)
         local enabled = not (def and def.enabled == false)
         local nameColor = enabled and (DarkmistsTheme.goodTag) or (DarkmistsTheme.warnTag)
         local nameDisplay = nameColor .. name .. DarkmistsTheme.mutedTag
-        CMudWrapper.notify(DarkmistsTheme.infoTag .. ("%s -> %s"):format(nameDisplay, def.body or ""))
+        CMudWrapper.notify(DarkmistsTheme.infoTag .. string.format("%s %s» %s%s", nameDisplay, DarkmistsTheme.mutedTag, DarkmistsTheme.textTag, tostring(def.body or "")))
       else
         CMudWrapper.notify(DarkmistsTheme.warnTag .. ("alias not found: %s"):format(name))
       end
@@ -784,7 +784,10 @@ function CMudWrapper.exec(line)
           local enabled = not (v and v.enabled == false)
           local nameColor = enabled and (DarkmistsTheme.goodTag) or (DarkmistsTheme.warnTag)
           local nameDisplay = nameColor .. tostring(k) .. DarkmistsTheme.mutedTag
-          msg = msg .. "  " .. nameDisplay .. " " .. kind .. ": " .. pat .. " -> " .. bod .. "\n"
+          msg = msg .. string.format("%s %s» %s: %s%s %s» %s%s\n", 
+            nameDisplay, DarkmistsTheme.mutedTag, 
+            kind, DarkmistsTheme.textTag, pat, DarkmistsTheme.mutedTag,
+            DarkmistsTheme.textTag,bod)
         end
         CMudWrapper.notify(msg)
       end
@@ -801,7 +804,10 @@ function CMudWrapper.exec(line)
         local enabled = not (def and def.enabled == false)
         local nameColor = enabled and (DarkmistsTheme.goodTag) or (DarkmistsTheme.warnTag)
         local nameDisplay = nameColor .. name .. DarkmistsTheme.mutedTag
-        CMudWrapper.notify(DarkmistsTheme.infoTag .. ("%s %s: %s -> %s"):format(nameDisplay, kind, pat, bod))
+        CMudWrapper.notify(string.format("%s %s» %s: %s%s %s» %s%s", 
+            nameDisplay, DarkmistsTheme.mutedTag, 
+            kind, DarkmistsTheme.textTag, pat, DarkmistsTheme.mutedTag,
+            DarkmistsTheme.textTag,bod))
       else
         CMudWrapper.notify(DarkmistsTheme.warnTag .. ("trigger not found: %s"):format(name))
       end
@@ -834,8 +840,13 @@ function CMudWrapper.exec(line)
           local enabled = not (v and v.enabled == false)
           local nameColor = enabled and (DarkmistsTheme.goodTag) or (DarkmistsTheme.warnTag)
           local nameDisplay = nameColor .. tostring(k) .. DarkmistsTheme.mutedTag
-          msg = msg .. "  " .. nameDisplay .. ": " .. tostring((v or {}).pattern or "") ..
-            " -> " .. tostring((v or {}).body or "") .. "\n"
+          local pat  = tostring((v or {}).pattern or "")
+          local bod  = tostring((v or {}).body or "")
+          local kind = "[regex]"
+          msg = msg .. string.format("%s %s» %s: %s%s %s» %s%s\n",
+            nameDisplay, DarkmistsTheme.mutedTag,
+            kind, DarkmistsTheme.textTag, pat, DarkmistsTheme.mutedTag,
+            DarkmistsTheme.textTag, bod)
         end
         CMudWrapper.notify(msg)
       end
@@ -848,7 +859,10 @@ function CMudWrapper.exec(line)
         local enabled = not (def and def.enabled == false)
         local nameColor = enabled and (DarkmistsTheme.goodTag) or (DarkmistsTheme.warnTag)
         local nameDisplay = nameColor .. name .. DarkmistsTheme.mutedTag
-        CMudWrapper.notify(DarkmistsTheme.infoTag .. ("%s [regex]: %s -> %s"):format(nameDisplay, tostring(def.pattern or ""), tostring(def.body or "")))
+        CMudWrapper.notify(DarkmistsTheme.infoTag .. string.format("%s %s» %s: %s%s %s» %s%s",
+          nameDisplay, DarkmistsTheme.mutedTag,
+          "[regex]", DarkmistsTheme.textTag, tostring(def.pattern or ""), DarkmistsTheme.mutedTag,
+          DarkmistsTheme.textTag, tostring(def.body or "")))
       elseif def then
         CMudWrapper.notify(DarkmistsTheme.warnTag .. ("'%s' exists but is a wildcard trigger, not a regex trigger"):format(name))
       else
@@ -878,7 +892,7 @@ function CMudWrapper.exec(line)
             local enabled = not (CMudWrapper.state.varmeta and CMudWrapper.state.varmeta[k] == false)
             local nameColor = enabled and (DarkmistsTheme.goodTag) or (DarkmistsTheme.warnTag)
             local nameDisplay = nameColor .. tostring(k) .. DarkmistsTheme.mutedTag
-            msg = msg .. "  " .. nameDisplay .. ": " .. tostring(v) .. "\n"
+            msg = msg .. string.format("  %s@%s » %s%s\n", DarkmistsTheme.blueTag, nameDisplay, DarkmistsTheme.textTag, tostring(v))
           end
         CMudWrapper.notify(msg)
       end
@@ -891,7 +905,7 @@ function CMudWrapper.exec(line)
         local enabled = not (CMudWrapper.state.varmeta and CMudWrapper.state.varmeta[name] == false)
         local nameColor = enabled and (DarkmistsTheme.goodTag) or (DarkmistsTheme.warnTag)
         local nameDisplay = nameColor .. tostring(name) .. DarkmistsTheme.mutedTag
-        CMudWrapper.notify(DarkmistsTheme.infoTag .. ("%s -> %s"):format(nameDisplay, tostring(current)))
+        CMudWrapper.notify(("%s@%s » %s"):format(DarkmistsTheme.blueTag,nameDisplay, tostring(current)))
       else
         CMudWrapper.notify(DarkmistsTheme.warnTag .. ("variable not found: %s"):format(name))
       end
