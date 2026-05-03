@@ -83,6 +83,8 @@ local function expandMatchTokens(text, matchTable)
         return replacement
       end)
     end
+
+    text = text:gsub("%%(%d+)", "")
   end
 
   return text
@@ -488,7 +490,7 @@ function CMudWrapper.installAlias(name, spec)
     CMudWrapper._callStack[name] = true
     local ok, err = pcall(function()
       if spec.tail then
-        local raw = trim(captured[2] or captured[1] or "")
+        local raw = trim(captured[2] or "")
         -- split raw into arguments using the same parser used by exec
         local args = parseArgs(raw)
 
