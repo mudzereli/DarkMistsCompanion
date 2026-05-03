@@ -234,6 +234,10 @@ th.grouped {
           <div class="card-body py-2">
             <h6 class="text-secondary mb-2">🔍 Text Search</h6>
             <input id="search" class="form-control form-control-sm" placeholder="Name, stats, flags, description, etc…">
+            <div class="form-check mt-2">
+              <input class="form-check-input" type="checkbox" id="excludeSpecialAreas" checked>
+              <label class="form-check-label small" for="excludeSpecialAreas">Exclude special areas</label>
+            </div>
             <div class="form-text">Searches full item text</div>
           </div>
         </div>
@@ -484,10 +488,15 @@ let items = [];
 let sortKey = null;
 let sortAsc = true;
 let areaStats = {};
+const SPECIAL_AREAS = new Set(['Quests', 'Fastolph\'s Shrine', 'Valhalla', 'Prizes', 'Shrine of Duality', 'Special Stuff', 'Thera Ball']);
 
 const $ = (id) => document.getElementById(id);
 const tbody = document.querySelector('tbody');
 const stats = $('stats');
+
+function excludeSpecialAreasEnabled() {
+  return $('excludeSpecialAreas')?.checked;
+}
 
 function syncStickyHeaderOffset() {
   const groupedHeader = $('groupedHeader');
@@ -1056,6 +1065,7 @@ function populateAreaFilter() {
    ========================================================= */
 function getItemsMatchingFiltersExceptArea() {
   const searchVal = $('search').value.toLowerCase();
+  const excludeSpecialAreas = excludeSpecialAreasEnabled();
   
   const wear = [...document.querySelectorAll('#wearSlotOptions input:checked')].map(c => c.value);
   const types = [...document.querySelectorAll('#typeOptions input:checked')].map(c => c.value);
@@ -1084,6 +1094,7 @@ function getItemsMatchingFiltersExceptArea() {
   const maxValue = Number($('maxValue').value || Infinity);
 
   return items.filter(item => {
+    if (excludeSpecialAreas && SPECIAL_AREAS.has((item.area || '').trim())) return false;
     if (searchVal && !item.rawLower.includes(searchVal)) return false;
     if (wear.length && !wear.includes(item.wearSlot)) return false;
     if (types.length && !types.includes(item.type)) return false;
@@ -1194,6 +1205,7 @@ function buildBadgeHTML(item) {
    ========================================================= */
 function render() {
   const searchVal = $('search').value.toLowerCase();
+  const excludeSpecialAreas = excludeSpecialAreasEnabled();
   const areas = [...document.querySelectorAll('#areaOptions input:checked')].map(c => c.value);
   const wear = [...document.querySelectorAll('#wearSlotOptions input:checked')].map(c => c.value);
   const types = [...document.querySelectorAll('#typeOptions input:checked')].map(c => c.value);
@@ -1244,6 +1256,7 @@ function render() {
   if (maxWeight && maxWeight < Infinity) chips.push(`Max Weight: ${maxWeight}`);
   if (minValue && minValue > 0) chips.push(`Min Value: ${minValue}`);
   if (maxValue && maxValue < Infinity) chips.push(`Max Value: ${maxValue}`);
+  if (excludeSpecialAreas) chips.push('Special Areas: excluded');
 
   $('activeFilters').innerHTML = chips
     .map(c => `<span class="badge text-bg-secondary me-1">${c}</span>`)
@@ -1251,6 +1264,7 @@ function render() {
   
   // Filter items
   let filtered = items.filter(item => {
+    if (excludeSpecialAreas && SPECIAL_AREAS.has((item.area || '').trim())) return false;
     if (searchVal && !item.rawLower.includes(searchVal)) return false;
     if (areas.length && !areas.includes(item.area)) return false;
     if (wear.length && !wear.includes(item.wearSlot)) return false;
