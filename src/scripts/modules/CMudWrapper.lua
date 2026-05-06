@@ -190,6 +190,115 @@ local function escapeRegex(text)
   return (tostring(text):gsub("([%^%$%(%)%%%.%[%]%*%+%-%?])", "%%%1"))
 end
 
+local function exportArg(text)
+  return "{" .. tostring(text or "") .. "}"
+end
+
+local function echoExport(lines)
+  if not lines or #lines == 0 then return false end
+  echo("\n")
+  for _, line in ipairs(lines) do
+    cecho(line .. "\n")
+  end
+  return true
+end
+
+local function formatExportBody(text)
+  return "{" .. formatDisplayBody(tostring(text or "")) .. "}"
+end
+
+function CMudWrapper.exportAlias(name)
+  local spec = CMudWrapper.state.aliases[name]
+  if not spec then
+    return false, ("alias not found: %s"):format(tostring(name))
+  end
+
+  local lines = {
+    DarkmistsTheme.blueTag .. "#ALIAS" .. DarkmistsTheme.textTag .. " "
+      .. DarkmistsTheme.textTag .. exportArg(name) .. " "
+      .. formatExportBody(spec.body),
+  }
+  if spec.enabled == false then
+    lines[#lines + 1] = DarkmistsTheme.blueTag .. "#T-" .. DarkmistsTheme.textTag .. " " .. DarkmistsTheme.textTag .. exportArg(name)
+  end
+  return echoExport(lines), nil
+end
+
+function CMudWrapper.exportTrigger(name)
+  local spec = CMudWrapper.state.triggers[name]
+  if not spec then
+    return false, ("trigger not found: %s"):format(tostring(name))
+  end
+
+  local commandName = spec.cmud and "#TRIGGER" or "#RXTRIGGER"
+  local lines = {
+    DarkmistsTheme.blueTag .. commandName .. DarkmistsTheme.textTag .. " "
+      .. DarkmistsTheme.textTag .. exportArg(name) .. " "
+      .. DarkmistsTheme.textTag .. exportArg(spec.pattern or "") .. " "
+      .. formatExportBody(spec.body),
+  }
+
+  if spec.enabled == false then
+    lines[#lines + 1] = DarkmistsTheme.blueTag .. "#T-" .. DarkmistsTheme.textTag .. " " .. DarkmistsTheme.textTag .. exportArg(name)
+  end
+
+  return echoExport(lines), nil
+end
+
+function CMudWrapper.exportVariable(name)
+  if CMudWrapper.state.vars[name] == nil then
+    return false, ("variable not found: %s"):format(tostring(name))
+  end
+
+  local value = CMudWrapper.state.vars[name]
+  local default = CMudWrapper.state.defaults[name]
+  local line = DarkmistsTheme.blueTag .. "#VARIABLE" .. DarkmistsTheme.textTag .. " "
+    .. DarkmistsTheme.textTag .. exportArg(name) .. " "
+    .. DarkmistsTheme.textTag .. exportArg(value)
+  if default ~= nil then
+    line = line .. " " .. exportArg(default)
+  end
+
+  local lines = { line }
+  if CMudWrapper.state.varmeta and CMudWrapper.state.varmeta[name] == false then
+    lines[#lines + 1] = DarkmistsTheme.blueTag .. "#T-" .. DarkmistsTheme.textTag .. " " .. DarkmistsTheme.textTag .. exportArg(name)
+  end
+
+  return echoExport(lines), nil
+end
+
+function CMudWrapper.exportDefinition(name, kind)
+  kind = tostring(kind or ""):lower()
+  if kind == "alias" then
+    return CMudWrapper.exportAlias(name)
+  elseif kind == "trigger" or kind == "rxtrigger" or kind == "action" or kind == "rxaction" then
+    return CMudWrapper.exportTrigger(name)
+  elseif kind == "variable" then
+    return CMudWrapper.exportVariable(name)
+  end
+
+  local exported = false
+
+  if CMudWrapper.state.aliases[name] then
+    local ok = CMudWrapper.exportAlias(name)
+    exported = exported or ok
+  end
+  if CMudWrapper.state.triggers[name] then
+    local ok = CMudWrapper.exportTrigger(name)
+    exported = exported or ok
+  end
+  if CMudWrapper.state.vars[name] ~= nil then
+    local ok = CMudWrapper.exportVariable(name)
+    exported = exported or ok
+  end
+
+  if not exported then
+    return false, ("name not found: %s"):format(tostring(name))
+  end
+
+  return true, nil
+end
+
 -- ---------------------------------------------------------------------------
 -- CMUD wildcard pattern translator
 --
@@ -404,6 +513,7 @@ function CMudWrapper.tryInvokeAlias(line)
 
   local spec = CMudWrapper.state.aliases[word]
   if not spec then return false end
+  if spec.enabled == false then return false end
 
   if CMudWrapper._callStack[word] then
     CMudWrapper.notify(DarkmistsTheme.warnTag .. ("recursion blocked: alias '%s' called itself"):format(word))
@@ -611,6 +721,16 @@ function CMudWrapper.installTrigger(name, spec)
   else
     CMudWrapper.notify(DarkmistsTheme.badTag .. ("failed to register trigger '%s' pattern=%s"):format(tostring(name), tostring(regex)))
   end
+end
+
+function CMudWrapper.replaceTrigger(name, spec)
+  if CMudWrapper.handles.triggers[name] then
+    pcall(killTrigger, CMudWrapper.handles.triggers[name])
+    CMudWrapper.handles.triggers[name] = nil
+  end
+
+  CMudWrapper.state.triggers[name] = spec
+  CMudWrapper.installTrigger(name, spec)
 end
 
 function CMudWrapper.removeAlias(name)
@@ -862,8 +982,7 @@ function CMudWrapper.exec(line)
     end
 
     assert(name and pattern and body, "#TRIGGER {name} {wildcard-pattern} {body}")
-    CMudWrapper.state.triggers[name] = { pattern = pattern, body = body, cmud = true }
-    CMudWrapper.installTrigger(name, CMudWrapper.state.triggers[name])
+    CMudWrapper.replaceTrigger(name, { pattern = pattern, body = body, cmud = true })
     CMudWrapper.save()
     CMudWrapper.notify(DarkmistsTheme.goodTag .. ("trigger saved: %s"):format(name))
 
@@ -919,8 +1038,7 @@ function CMudWrapper.exec(line)
     end
 
     assert(name and pattern and body, "#RXTRIGGER {name} {pcre-pattern} {body}")
-    CMudWrapper.state.triggers[name] = { pattern = pattern, body = body }
-    CMudWrapper.installTrigger(name, CMudWrapper.state.triggers[name])
+    CMudWrapper.replaceTrigger(name, { pattern = pattern, body = body })
     CMudWrapper.save()
     CMudWrapper.notify(DarkmistsTheme.goodTag .. ("regex trigger saved: %s"):format(name))
 
@@ -966,6 +1084,31 @@ function CMudWrapper.exec(line)
 
     local default = args[3]
     CMudWrapper.setVariable(name, value, default)
+
+  elseif isPrefix(verb, "EXPORT") then
+    local first = args[1]
+    local second = args[2]
+
+    if not first then
+      echo("\n#EXPORT {name}\n#EXPORT {alias|trigger|variable} {name}\n")
+      return true
+    end
+
+    local kind = nil
+    local name = first
+    if second then
+      local lowered = tostring(first):lower()
+      if lowered == "alias" or lowered == "trigger" or lowered == "rxtrigger" or lowered == "action" or lowered == "rxaction" or lowered == "variable" then
+        kind = lowered
+        name = second
+      end
+    end
+
+    local ok, err = CMudWrapper.exportDefinition(name, kind)
+    if not ok and err then
+      echo("\n" .. tostring(err) .. "\n")
+    end
+    return true
 
   elseif isPrefix(verb, "UNVARIABLE") then
     assert(args[1], "#UNVAR {name}")
