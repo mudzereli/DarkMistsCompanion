@@ -204,7 +204,66 @@ local function echoExport(lines)
 end
 
 local function formatExportBody(text)
-  return "{" .. formatDisplayBody(tostring(text or "")) .. "}"
+  return DarkmistsTheme.textTag .. "{" .. formatDisplayBody(tostring(text or "")) .. DarkmistsTheme.textTag .. "}"
+end
+
+local function buildExportAliasLines(name)
+  local spec = CMudWrapper.state.aliases[name]
+  if not spec then
+    return nil, ("alias not found: %s"):format(tostring(name))
+  end
+
+  local lines = {
+    DarkmistsTheme.blueTag .. "#ALIAS" .. DarkmistsTheme.textTag .. " "
+      .. DarkmistsTheme.textTag .. exportArg(name) .. " "
+      .. formatExportBody(spec.body),
+  }
+  if spec.enabled == false then
+    lines[#lines + 1] = DarkmistsTheme.blueTag .. "#T-" .. DarkmistsTheme.textTag .. " " .. DarkmistsTheme.textTag .. exportArg(name)
+  end
+  return lines, nil
+end
+
+local function buildExportTriggerLines(name)
+  local spec = CMudWrapper.state.triggers[name]
+  if not spec then
+    return nil, ("trigger not found: %s"):format(tostring(name))
+  end
+
+  local commandName = spec.cmud and "#TRIGGER" or "#RXTRIGGER"
+  local lines = {
+    DarkmistsTheme.blueTag .. commandName .. DarkmistsTheme.textTag .. " "
+      .. DarkmistsTheme.textTag .. exportArg(name) .. " "
+      .. DarkmistsTheme.textTag .. exportArg(spec.pattern or "") .. " "
+      .. formatExportBody(spec.body),
+  }
+
+  if spec.enabled == false then
+    lines[#lines + 1] = DarkmistsTheme.blueTag .. "#T-" .. DarkmistsTheme.textTag .. " " .. DarkmistsTheme.textTag .. exportArg(name)
+  end
+  return lines, nil
+end
+
+local function buildExportVariableLines(name)
+  if CMudWrapper.state.vars[name] == nil then
+    return nil, ("variable not found: %s"):format(tostring(name))
+  end
+
+  local value = CMudWrapper.state.vars[name]
+  local default = CMudWrapper.state.defaults[name]
+  local line = DarkmistsTheme.blueTag .. "#VARIABLE" .. DarkmistsTheme.textTag .. " "
+    .. DarkmistsTheme.textTag .. exportArg(name) .. " "
+    .. DarkmistsTheme.textTag .. exportArg(value)
+  if default ~= nil then
+    line = line .. " " .. exportArg(default)
+  end
+
+  local lines = { line }
+  if CMudWrapper.state.varmeta and CMudWrapper.state.varmeta[name] == false then
+    lines[#lines + 1] = DarkmistsTheme.blueTag .. "#T-" .. DarkmistsTheme.textTag .. " " .. DarkmistsTheme.textTag .. exportArg(name)
+  end
+
+  return lines, nil
 end
 
 function CMudWrapper.exportAlias(name)
@@ -297,6 +356,70 @@ function CMudWrapper.exportDefinition(name, kind)
   end
 
   return true, nil
+end
+
+function CMudWrapper.exportAll()
+  local lines = {}
+  local wroteSection = false
+
+  local function addSection(title)
+    if wroteSection then
+      lines[#lines + 1] = ""
+    end
+    wroteSection = true
+    lines[#lines + 1] = DarkmistsTheme.infoTag .. title
+  end
+
+  local function addItem(itemLines)
+    for _, line in ipairs(itemLines or {}) do
+      lines[#lines + 1] = line
+    end
+  end
+
+  local aliasNames = {}
+  for name in pairs(CMudWrapper.state.aliases) do aliasNames[#aliasNames + 1] = name end
+  table.sort(aliasNames, function(a, b) return tostring(a):lower() < tostring(b):lower() end)
+  if #aliasNames > 0 then
+    --addSection("Aliases:")
+    for _, name in ipairs(aliasNames) do
+      addItem((buildExportAliasLines(name)))
+    end
+  end
+
+  local triggerNames = {}
+  for name in pairs(CMudWrapper.state.triggers) do triggerNames[#triggerNames + 1] = name end
+  table.sort(triggerNames, function(a, b) return tostring(a):lower() < tostring(b):lower() end)
+  if #triggerNames > 0 then
+    --addSection("Triggers:")
+    for _, name in ipairs(triggerNames) do
+      addItem((buildExportTriggerLines(name)))
+    end
+  end
+
+  local variableNames = {}
+  for name in pairs(CMudWrapper.state.vars) do variableNames[#variableNames + 1] = name end
+  table.sort(variableNames, function(a, b) return tostring(a):lower() < tostring(b):lower() end)
+  if #variableNames > 0 then
+    --addSection("Variables:")
+    for _, name in ipairs(variableNames) do
+      addItem((buildExportVariableLines(name)))
+    end
+  end
+
+  if #lines == 0 then
+    echo("\n" .. DarkmistsTheme.warnTag .. "nothing to export\n")
+    return true
+  end
+
+  echo("\n")
+  for _, line in ipairs(lines) do
+    if line == "" then
+      echo("\n")
+    else
+      cecho(line .. "\n")
+    end
+  end
+  return true
 end
 
 -- ---------------------------------------------------------------------------
@@ -1090,7 +1213,7 @@ function CMudWrapper.exec(line)
     local second = args[2]
 
     if not first then
-      echo("\n#EXPORT {name}\n#EXPORT {alias|trigger|variable} {name}\n")
+      CMudWrapper.exportAll()
       return true
     end
 
