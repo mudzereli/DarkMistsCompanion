@@ -777,6 +777,7 @@ function EnchanterAssist.on_line(ln)
             )
 
             EnchanterAssist.save()
+            dmapi.core.send("alc", "extract", "key")
             EnchanterAssist._attemptResolved = true
         end
 
@@ -928,6 +929,27 @@ function EnchanterAssist.init()
     -- Keep pendingKey intact so it retries after rest
     EnchanterAssist._raiseTrialEvent("ea.trial.tired", { key = EnchanterAssist.pendingKey, line = data and data.line })
     EnchanterAssist._startRestCycle(ea_good .. "Too tired - Forcing Rest")
+  end)
+
+  DarkmistsEvents.add("EnchanterAssist.AlchemyNoItem", "dmapi.player.alchemy.noitem", function(_, data)
+    if EnchanterAssist.state ~= "brewing" then
+      return
+    end
+
+    DMLogger.notify(ea_plugin, ea_warn .. "Out of keys - stopping Enchanter Assist.")
+    EnchanterAssist._raiseTrialEvent("ea.trial.noitem", { key = EnchanterAssist.pendingKey, line = data and data.line })
+    EnchanterAssist.hardStop()
+    EnchanterAssist.finishAttempt()
+  end)
+
+  DarkmistsEvents.add("EnchanterAssist.AlchemyAlreadyDone", "dmapi.player.alchemy.alreadydone", function(_, data)
+    if EnchanterAssist.state ~= "brewing" then
+      return
+    end
+
+    DMLogger.notify(ea_plugin, ea_warn .. "Item already alchemied - restarting attempt.")
+    EnchanterAssist._raiseTrialEvent("ea.trial.alreadydone", { key = EnchanterAssist.pendingKey, line = data and data.line })
+    EnchanterAssist.finishAttempt()
   end)
 
   DarkmistsEvents.add("EnchanterAssist.AlchemyBotch", "dmapi.player.alchemy.botch", function(_, data)

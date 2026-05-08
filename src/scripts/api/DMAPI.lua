@@ -976,6 +976,22 @@ local function maybeFireAlchemyOutcome(line)
     return true
   end
 
+  if line:match("^You do not have that to perform alchemy on") then
+    dmapi.core.raiseEvent("dmapi.player.alchemy.noitem", {
+      line = line,
+      timestamp = getEpoch()
+    })
+    return true
+  end
+
+  if line:match("^No further alchemy may be performed on that item%.") then
+    dmapi.core.raiseEvent("dmapi.player.alchemy.alreadydone", {
+      line = line,
+      timestamp = getEpoch()
+    })
+    return true
+  end
+
   if line:match("^You botch the brew, and your alchemy process") then
     dmapi.core.raiseEvent("dmapi.player.alchemy.botch", {
       line = line,
@@ -1044,6 +1060,7 @@ local HOUSE_CHANNELS = {
   GAR = true,
   GML = true,
   SG = true,
+  OE = true,
   DRE = true,
   KEY = true,
   HIVEMIND = true

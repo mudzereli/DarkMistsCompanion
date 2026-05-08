@@ -273,6 +273,52 @@ function DMClickables.ClickableAuctions()
   cecho("\n")
 end
 
+DMClickables.quests = {
+  active = false,
+  linesLeft = 0,
+}
+
+function DMClickables.ClickableQuests()
+  local raw = getCurrentLine()
+  if not raw or raw == "" then return end
+
+  local state = DMClickables.quests
+
+  -- Header line activates the state machine
+  if raw:match("^Quest%s+Title%s+Summary") then
+    state.active = true
+    state.linesLeft = 30
+    return
+  end
+
+  if not state.active then return end
+  if state.linesLeft <= 0 then
+    state.active = false
+    return
+  end
+  state.linesLeft = state.linesLeft - 1
+
+  -- Quest line: number + description
+  local questNum, rest = raw:match("^%s*(%d+)%s%s+(.+)$")
+  if not questNum then return end
+
+  local txtColor = "<r>"
+  replaceLine("")
+  cechoLink(
+    string.format("<forest_green>%12s%s  %s\n", "<u>"..questNum.."</u>", txtColor, rest),
+    function()
+      if holdingModifiers(mudlet.keymodifier.Shift) then
+        send("quest drop " .. questNum)
+        send("quest current")
+      else
+        send("quest read " .. questNum)
+      end
+    end,
+    string.format("Click: quest read %s | Shift+Click: quest drop %s", questNum, questNum),
+    true
+  )
+end
+
 DMClickables.essence = {
   active = false,
   cap = 225
@@ -347,6 +393,11 @@ function DMClickables.init()
     DMClickables.auctions.linesLeft = 0
   end)
 
+  DarkmistsEvents.add("DMClickables.QuestPromptReset", "dmapi.world.prompt", function()
+    DMClickables.quests.active = false
+    DMClickables.quests.linesLeft = 0
+  end)
+
   DarkmistsEvents.add("DMClickables.Auctions", "dmapi.core.line", function()
     DMClickables.ClickableAuctions()
   end)
@@ -357,5 +408,9 @@ function DMClickables.init()
 
   DarkmistsEvents.add("DMClickables.Essences", "dmapi.core.line", function()
     DMClickables.ClickableEssences()
+  end)
+
+  DarkmistsEvents.add("DMClickables.Quests", "dmapi.core.line", function()
+    DMClickables.ClickableQuests()
   end)
 end

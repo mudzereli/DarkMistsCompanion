@@ -268,6 +268,10 @@ Prefix every command with # (e.g. #alias, #trigger).
   #sep {char}              – set command separator character (default: |)
   #sep                     – show current separator
 
+──── EXPORT ────────────────────────────────────────────────────
+  #export                  – export all aliases, triggers, and variables
+  #export {name}           – export a named alias, trigger, or variable
+
 ──── CROSS-INVOCATION ───────────────────────────────────────────
   Alias bodies can call other aliases by name (cross-invocation).
   Trigger bodies can also invoke aliases the same way.
@@ -694,7 +698,9 @@ function DarkMistsMeta.init()
       for i = 1, shown do
         local item = results[i]
         cecho(string.format("   "..dm_text.."%d) ", i))
+        local areaTag = item.area and ("[" .. item.area .. "] ") or ""
         cechoLink(
+          dm_muted .. areaTag .. dm_text ..
           ItemTracker.settings.itemLinkColor .. item.name .. dm_text.."\n",
           ItemTracker.getHandler(item.name),
           "Click: tooltip | Shift+Click: full identify",

@@ -866,6 +866,20 @@
         </tbody>
       </table>
 
+      <h3>Export</h3>
+      <p>
+        <code>#export</code> prints stored CMUD definitions back out as command lines you can
+        copy or save. Use it with no arguments to export everything, or with a specific name to
+        export one alias, trigger, action, or variable.
+      </p>
+      <table>
+        <thead><tr><th>Command</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>#export</code></td><td>Export all aliases, triggers, and variables</td></tr>
+          <tr><td><code>#export {name}</code></td><td>Export a named alias, trigger, or variable</td></tr>
+        </tbody>
+      </table>
+
       <h3>Cross-Invocation</h3>
       <p>
         Alias bodies can call other aliases by name — just write the alias name as a command in
@@ -1054,6 +1068,7 @@
           <tr><td><code>#send {text}</code></td><td>Send text to server</td><td>CMud</td></tr>
           <tr><td><code>#repeat {n} {cmd}</code></td><td>Run command n times</td><td>CMud</td></tr>
           <tr><td><code>#sep [char]</code></td><td>Get or set command separator</td><td>CMud</td></tr>
+          <tr><td><code>#export</code></td><td>Export stored aliases, triggers, and variables</td><td>CMud</td></tr>
           <tr><td><code>#help</code></td><td>Show CMud help in-game</td><td>CMud</td></tr>
         </tbody>
       </table>

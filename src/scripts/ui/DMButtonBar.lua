@@ -206,6 +206,16 @@ function ButtonBar.build()
       {label="🧭 Zones", action=function() MapColors.AuditCurrentArea() end},
       {label="❓ Walk", action=function() expandAlias("dmc help walk") end},
     }},
+    -- Item Tracker Module
+    {label="🔎 Item Tracker", children={
+      {label="🏷️ Item Tracker", action=function()
+        expandAlias("dmc help dmid")
+      end},
+      {label="🔮 Offline Item Browser", action=function() Darkmists.OpenItemViewer() end},
+      {label="❓ Item Tracker", action=function()
+        expandAlias("dmc help dmid")
+      end},
+    }},
     -- Enchant Assist Module
     {label="🧪 Enchant Assist", children={
       {label="⚗️ Trials", children={
@@ -229,15 +239,6 @@ function ButtonBar.build()
         {label="🔄 EA Save Converter", action=function() Darkmists.OpenEAConverter() end},
       }},
       {label="❓ Enchant Assist", action=function() expandAlias("dmc help es") end}
-    }},
-    {label="🔎 Item Tracker", children={
-      {label="🏷️ Item Tracker", action=function()
-        expandAlias("dmc help dmid")
-      end},
-      {label="🔮 Offline Item Browser", action=function() Darkmists.OpenItemViewer() end},
-      {label="❓ Item Tracker", action=function()
-        expandAlias("dmc help dmid")
-      end},
     }}
   })
 
@@ -311,72 +312,6 @@ function ButtonBar.build()
         {label = "📚 DMAPI Extension", action = function() Darkmists.OpenDMAPIDocs() end},
       }},
     }}
-    --[[
-    {label="💬 Chat History", children={
-      {label="👁️ Show", action=function() ChatHistory.window:show() end},
-      {label="❌ Hide", action=function() ChatHistory.window:hide() end},
-    }},
-    {label="👥 Who List", children={
-      {label="👁️ Show", action=function() WhoWindow.window:show() end},
-      {label="❌ Hide", action=function() WhoWindow.window:hide() end},
-      {label="✂️ Delete Original Lines", action=function() 
-        local new_value = not WhoWindow.config.deleteOriginalLines
-        WhoWindow.config.deleteOriginalLines = new_value
-        Darkmists.GlobalSettings.whoWindowDeleteOriginalLines = new_value
-        DMLogger.notify("WhoWindow",("<red>Delete Original Lines: %s"):format(tostring(new_value)))
-        Darkmists.SaveSettings()
-      end},
-    }},
-    {label="✨ Affects List", children={
-      {label="👁️ Show", action=function() AffectsWindow.window:show() end},
-      {label="❌ Hide", action=function() AffectsWindow.window:hide() end},
-      {label="✂️ Delete Original Lines", action=function() 
-        local new_value = not AffectsWindow.config.deleteOriginalLines
-        AffectsWindow.config.deleteOriginalLines = new_value
-        Darkmists.GlobalSettings.affectsWindowDeleteOriginalLines = new_value
-        DMLogger.notify("AffectsWindow",("<red>Delete Original Lines: %s"):format(tostring(new_value)))
-        Darkmists.SaveSettings()
-      end},
-    }},
-    {label="🗺️ Map Window", children={
-      {label="👁️ Show", action=function() DarkMistsMiniMap.container:show() end},
-      {label="❌ Hide", action=function() DarkMistsMiniMap.container:hide() end},
-    }},
-    {label="📊 Status Bars", children={
-      {label="👁️ Show", action=function() StatusBar.config.enabled = true StatusBar.showAll() end},
-      {label="❌ Hide", action=function() StatusBar.config.enabled = false StatusBar.hideAll() end},
-      {label="🔄 Reload", action=function() StatusBar.recreate() end},
-      {label="↔️ Moveable Bar Toggle", action=function() 
-        StatusBar.toggleMoveable()
-      end},
-    }},
-    {label="🖼️ Borders", children = {
-      {label = "Top", children = {
-        {label = "Border Top: 0%", action = function() Darkmists.SetWindowBorderPercent("top",0) Darkmists.SaveSettings() end},
-        {label = "Border Top: 10%", action = function() Darkmists.SetWindowBorderPercent("top",10) Darkmists.SaveSettings() end},
-        {label = "Border Top: 20%", action = function() Darkmists.SetWindowBorderPercent("top",20) Darkmists.SaveSettings() end},
-        {label = "Border Top: 30%", action = function() Darkmists.SetWindowBorderPercent("top",30) Darkmists.SaveSettings() end},
-      }},
-      {label = "Bottom", children = {
-        {label = "Border Bottom: 0%", action = function() Darkmists.SetWindowBorderPercent("bottom",0) Darkmists.SaveSettings() end},
-        {label = "Border Bottom: 10%", action = function() Darkmists.SetWindowBorderPercent("bottom",10) Darkmists.SaveSettings() end},
-        {label = "Border Bottom: 20%", action = function() Darkmists.SetWindowBorderPercent("bottom",20) Darkmists.SaveSettings() end},
-        {label = "Border Bottom: 30%", action = function() Darkmists.SetWindowBorderPercent("bottom",30) Darkmists.SaveSettings() end},
-      }},
-      {label = "Left", children = {
-        {label = "Border Left: 0%", action = function() Darkmists.SetWindowBorderPercent("left",0) Darkmists.SaveSettings() end},
-        {label = "Border Left: 10%", action = function() Darkmists.SetWindowBorderPercent("left",10) Darkmists.SaveSettings() end},
-        {label = "Border Left: 20%", action = function() Darkmists.SetWindowBorderPercent("left",20) Darkmists.SaveSettings() end},
-        {label = "Border Left: 30%", action = function() Darkmists.SetWindowBorderPercent("left",30) Darkmists.SaveSettings() end},
-      }},
-      {label = "Right", children = {
-        {label = "Border Right: 0%", action = function() Darkmists.SetWindowBorderPercent("right",0) Darkmists.SaveSettings() end},
-        {label = "Border Right: 10%", action = function() Darkmists.SetWindowBorderPercent("right",10) Darkmists.SaveSettings() end},
-        {label = "Border Right: 20%", action = function() Darkmists.SetWindowBorderPercent("right",20) Darkmists.SaveSettings() end},
-        {label = "Border Right: 30%", action = function() Darkmists.SetWindowBorderPercent("right",30) Darkmists.SaveSettings() end},
-      }},
-    }},
-    ]]--
   })
 
   ButtonBar:addDropdown("❓ Help", {
