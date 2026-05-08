@@ -936,8 +936,9 @@ function EnchanterAssist.init()
       return
     end
 
-    DMLogger.notify(ea_plugin, ea_warn .. "Missing item - restarting attempt.")
+    DMLogger.notify(ea_plugin, ea_warn .. "Out of keys - stopping Enchanter Assist.")
     EnchanterAssist._raiseTrialEvent("ea.trial.noitem", { key = EnchanterAssist.pendingKey, line = data and data.line })
+    EnchanterAssist.hardStop()
     EnchanterAssist.finishAttempt()
   end)
 
