@@ -66,6 +66,8 @@ MapColors.AreaOverrides = {
   ["The Mists"] = MapColors.Terrain.MISTY,
   ["New Ethshar"] = MapColors.Terrain.STONY_PATH,
   ["Whispering Timberlands"] = MapColors.Terrain.THICK_WOODS,
+  ["The Mane Event"] = MapColors.Terrain.THICK_WOODS,
+  ["The Landshark Breeding Grounds"] = MapColors.Terrain.STONE_WHITE,
 }
 
 -- Terrain category sets (for adjacency analysis and context detection)
@@ -151,6 +153,7 @@ MapColors.WordAssociations = {
   { "glade", MapColors.Terrain.LIGHT_WOODS }, { "mossy", MapColors.Terrain.LIGHT_WOODS },
   { "moss", MapColors.Terrain.LIGHT_WOODS }, { "orchard", MapColors.Terrain.LIGHT_WOODS },
   { "fruitland", MapColors.Terrain.LIGHT_WOODS }, { "farm", MapColors.Terrain.LIGHT_WOODS },
+  { "campfire", MapColors.Terrain.FIERY },
 
   -- Grassy areas
   { "yard", MapColors.Terrain.GRASSY }, { "park", MapColors.Terrain.GRASSY },
@@ -193,7 +196,7 @@ MapColors.WordAssociations = {
   { "village", MapColors.Terrain.ENCAMPMENT }, { "compound", MapColors.Terrain.ENCAMPMENT },
   { "cave", MapColors.Terrain.CAVE }, { "cavern", MapColors.Terrain.CAVE }, { "den", MapColors.Terrain.CAVE },
   { "crater", MapColors.Terrain.CAVE }, { "dungeon", MapColors.Terrain.CAVE },
-  { "tent", MapColors.Terrain.HOLY },
+  { "tent", MapColors.Terrain.HOLY }, { "quarry", MapColors.Terrain.STONY },
 
   -- Castle/city structural elements
   { "ramparts", MapColors.Terrain.STONY }, { "battlement", MapColors.Terrain.STONY },
@@ -324,6 +327,11 @@ MapColors.WordAssociations = {
   { "river bank", MapColors.Terrain.MUDDY },
   { "the banks", MapColors.Terrain.MUDDY },
   { "bank of the", MapColors.Terrain.MUDDY },
+  { "The Yard - *", MapColors.Terrain.GRASSY },
+  { "The Admin* Block - *", MapColors.Terrain.STONE_WHITE },
+  { "Administrative Corridor - *", MapColors.Terrain.STONE_WHITE },
+  { "South Yard - *", MapColors.Terrain.GRASSY },
+  { "Northeast Pasture - *", MapColors.Terrain.PLAINS }
 }
 
 -- Connector keywords (for rooms linking different terrains)
