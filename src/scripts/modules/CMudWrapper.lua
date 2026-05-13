@@ -687,7 +687,27 @@ function CMudWrapper.tryInvokeAlias(line)
   local word = line:match("^([^%s]+)")
   if not word then return false end
 
-  local spec = CMudWrapper.state.aliases[word]
+  -- Fast path: single-word alias name
+  local name = word
+  local spec = CMudWrapper.state.aliases[name]
+
+  -- Slow path: multi-word alias names (e.g. "dr f")
+  -- Find the longest stored name that is a prefix of the typed line.
+  if not spec then
+    local bestLen = 0
+    for k in pairs(CMudWrapper.state.aliases) do
+      local klen = #k
+      if klen > bestLen and k:find(" ", 1, true) then
+        local after = line:sub(klen + 1, klen + 1)
+        if line:sub(1, klen) == k and (after == "" or after:match("%s")) then
+          name = k
+          spec = CMudWrapper.state.aliases[k]
+          bestLen = klen
+        end
+      end
+    end
+  end
+
   if not spec then return false end
   if spec.enabled == false then return false end
   if spec.class then
@@ -695,22 +715,22 @@ function CMudWrapper.tryInvokeAlias(line)
     if cls and cls.enabled == false then return false end
   end
 
-  if CMudWrapper._callStack[word] then
-    CMudWrapper.notify(DarkmistsTheme.warnTag .. ("recursion blocked: alias '%s' called itself"):format(word))
+  if CMudWrapper._callStack[name] then
+    CMudWrapper.notify(DarkmistsTheme.warnTag .. ("recursion blocked: alias '%s' called itself"):format(name))
     return true
   end
 
-  local tail = trim(line:sub(#word + 1))
+  local tail = trim(line:sub(#name + 1))
   local args = parseArgs(tail)
   local matchTable = { tail }
   for i = 1, #args do matchTable[i + 1] = args[i] end
 
-  CMudWrapper._callStack[word] = true
+  CMudWrapper._callStack[name] = true
   local ok, err = pcall(CMudWrapper.runBody, spec.body, matchTable)
-  CMudWrapper._callStack[word] = nil
+  CMudWrapper._callStack[name] = nil
 
   if not ok then
-    CMudWrapper.notify(DarkmistsTheme.badTag .. ("alias '%s' error: %s"):format(word, tostring(err)))
+    CMudWrapper.notify(DarkmistsTheme.badTag .. ("alias '%s' error: %s"):format(name, tostring(err)))
   end
 
   return true
