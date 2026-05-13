@@ -742,7 +742,7 @@
 
       <p>
         CMudWrapper is a CMUD-compatible scripting layer built into DMC. It lets you define
-        persistent aliases, triggers, and variables using familiar CMUD syntax — all saved to
+        persistent aliases, triggers, variables, and classes using familiar CMUD syntax — all saved to
         disk and restored on each login. Every command is prefixed with <code>#</code>.
       </p>
 
@@ -756,8 +756,9 @@
         <thead><tr><th>Command</th><th>Description</th></tr></thead>
         <tbody>
           <tr><td><code>#alias {name} {body}</code></td><td>Define or update an alias</td></tr>
+          <tr><td><code>#alias {name} {body} {class}</code></td><td>Define with an inline class assignment</td></tr>
           <tr><td><code>#alias {name}</code></td><td>Show an alias definition</td></tr>
-          <tr><td><code>#alias</code></td><td>List all aliases</td></tr>
+          <tr><td><code>#alias</code></td><td>List all aliases (sorted by class, then name)</td></tr>
           <tr><td><code>#unalias {name}</code></td><td>Remove an alias</td></tr>
         </tbody>
       </table>
@@ -765,6 +766,7 @@
       <p>Inside an alias body:</p>
       <ul>
         <li><code>%1 %2 …</code> — positional arguments from the alias invocation</li>
+        <li><code>%-1 %-2 …</code> — rest-of-args from position N onward (multi-word safe)</li>
         <li><code>@VarName</code> — expands a stored variable</li>
         <li><code>|</code> or <code>;</code> — command separator (configurable with <code>#sep</code>)</li>
       </ul>
@@ -774,9 +776,11 @@
         <thead><tr><th>Command</th><th>Description</th></tr></thead>
         <tbody>
           <tr><td><code>#trigger {name} {pattern} {body}</code></td><td>Add a trigger using CMUD wildcard pattern syntax</td></tr>
+          <tr><td><code>#trigger {name} {pattern} {body} {class}</code></td><td>Add wildcard trigger with inline class</td></tr>
           <tr><td><code>#rxtrigger {name} {pattern} {body}</code></td><td>Add a trigger using raw PCRE regex</td></tr>
+          <tr><td><code>#rxtrigger {name} {pattern} {body} {class}</code></td><td>Add regex trigger with inline class</td></tr>
           <tr><td><code>#trigger {name}</code></td><td>Show a trigger definition</td></tr>
-          <tr><td><code>#trigger</code></td><td>List all triggers</td></tr>
+          <tr><td><code>#trigger</code></td><td>List all triggers (sorted by class, then name)</td></tr>
           <tr><td><code>#untrigger {name}</code></td><td>Remove a trigger</td></tr>
         </tbody>
       </table>
@@ -812,6 +816,8 @@
         <thead><tr><th>Command</th><th>Description</th></tr></thead>
         <tbody>
           <tr><td><code>#var {name} {value}</code></td><td>Set a variable</td></tr>
+          <tr><td><code>#var {name} {value} {class}</code></td><td>Set a variable with an inline class (no default)</td></tr>
+          <tr><td><code>#var {name} {value} {default} {class}</code></td><td>Set a variable with both a default and an inline class</td></tr>
           <tr><td><code>#var {name}</code></td><td>Show a variable's value</td></tr>
           <tr><td><code>#var</code></td><td>List all variables</td></tr>
           <tr><td><code>#unvar {name}</code></td><td>Remove a variable</td></tr>
@@ -820,10 +826,44 @@
       <p>Reference a variable with <code>@VarName</code> inside alias and trigger bodies.
       <code>&amp;VarName</code> captures in trigger patterns auto-assign the variable.</p>
 
+      <h3>Classes</h3>
+      <p>
+        Classes let you group aliases, triggers, and variables together so you can enable or
+        disable them all at once. The current <em>default class</em> is applied to every new
+        definition until you change or reset it. You can also assign a class inline as the
+        last argument of <code>#alias</code>, <code>#trigger</code>, <code>#rxtrigger</code>,
+        or <code>#var</code> — this overrides the default.
+      </p>
+      <table>
+        <thead><tr><th>Command</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>#class</code></td><td>List all classes and the current default</td></tr>
+          <tr><td><code>#class {name}</code></td><td>Set <em>name</em> as the default class for new definitions (auto-creates if new)</td></tr>
+          <tr><td><code>#class 0</code></td><td>Reset the default class to &lt;None&gt;</td></tr>
+          <tr><td><code>#class {name} 1</code></td><td>Enable class — reinstalls handles for all members</td></tr>
+          <tr><td><code>#class {name} 0</code></td><td>Disable class — kills handles for all members</td></tr>
+          <tr><td><code>#class {name} {enable}</code></td><td>Enable class (text option form)</td></tr>
+          <tr><td><code>#class {name} {disable}</code></td><td>Disable class</td></tr>
+          <tr><td><code>#class {name} {hidden}</code></td><td>Hide class members from <code>#alias</code> / <code>#trigger</code> listings</td></tr>
+          <tr><td><code>#class {name} {unhide}</code></td><td>Unhide a hidden class</td></tr>
+          <tr><td><code>#class {name} {remove}</code></td><td>Delete the class record (members are not removed)</td></tr>
+        </tbody>
+      </table>
+      <div class="tip">
+        <strong>Hidden classes</strong> are still fully active — their aliases and triggers fire
+        normally. They are simply omitted from <code>#alias</code> and <code>#trigger</code>
+        listings to keep the output clean.
+      </div>
+      <div class="tip">
+        <strong>Listings</strong> are sorted by class first, then by name within each class.
+        Class names appear in <span style="color:var(--good)">green</span> if enabled,
+        <span style="color:var(--warn)">orange</span> if disabled.
+      </div>
+
       <h3>Enable / Disable</h3>
       <p>
-        Aliases, triggers, and variables can be toggled on and off without removing them.
-        Disabled items show in <span style="color:var(--warn)">yellow</span> in listings;
+        Individual aliases, triggers, and variables can be toggled on and off without removing them.
+        Disabled items show in <span style="color:var(--warn)">orange</span> in listings;
         enabled items appear in <span style="color:var(--good)">green</span>.
       </p>
       <table>
@@ -862,20 +902,27 @@
           <tr><td><code>#{n} {cmd}</code></td><td>Shorthand for <code>#repeat</code></td></tr>
           <tr><td><code>#sep {char}</code></td><td>Set the command separator character (default: <code>|</code>)</td></tr>
           <tr><td><code>#sep</code></td><td>Show the current separator</td></tr>
+          <tr><td><code>#killall</code></td><td>Erase <strong>all</strong> aliases, triggers, variables, and classes — cannot be abbreviated</td></tr>
           <tr><td><code>#help</code></td><td>Show the CMud help page in-game</td></tr>
         </tbody>
       </table>
 
+      <div class="warn-box">
+        <strong>Warning:</strong> <code>#killall</code> is irreversible and wipes all saved state immediately.
+        It is intentionally not abbreviatable — you must type it in full.
+      </div>
+
       <h3>Export</h3>
       <p>
-        <code>#export</code> prints stored CMUD definitions back out as command lines you can
-        copy or save. Use it with no arguments to export everything, or with a specific name to
-        export one alias, trigger, action, or variable.
+        <code>#export</code> prints stored definitions back out as command lines you can
+        copy or save. The output includes <code>#class</code> declarations first, followed by
+        all aliases, triggers, and variables with their trailing class arguments — so the
+        exported output can be re-imported exactly as-is.
       </p>
       <table>
         <thead><tr><th>Command</th><th>Description</th></tr></thead>
         <tbody>
-          <tr><td><code>#export</code></td><td>Export all aliases, triggers, and variables</td></tr>
+          <tr><td><code>#export</code></td><td>Export class declarations, then all aliases, triggers, and variables</td></tr>
           <tr><td><code>#export {name}</code></td><td>Export a named alias, trigger, or variable</td></tr>
         </tbody>
       </table>
@@ -897,6 +944,21 @@
 #trigger hitme {You are hit by * for %d damage.} {#show ouch!}
 #trigger getitem {* drops &amp;ItemName} {#show Dropped: @ItemName}
 #rxtrigger hpline {^HP:\s*(\d+)/(\d+)} {#var hp %1|#var hpmax %2}
+
+-- rest-of-args: "attack c blind" → attack1 = "c blind"
+#alias attack {#var attack1 %-1}
+
+-- group combat aliases into a class, then toggle them together
+#class combat
+#alias atk {kill %1}
+#alias fl {flee}
+#class 0
+#class combat 0     -- disables atk and fl
+#class combat 1     -- re-enables both
+
+-- hide internal helpers from listings (still active)
+#class internal {hidden}
+#alias _helper {some body} {internal}
 
 #sep ;
 #alias combo {north;kill rat;get all}
@@ -1053,13 +1115,25 @@
           <tr><td><code>dmid &lt;item name&gt;</code></td><td>Search item database</td><td>Item Tracker</td></tr>
           <!-- CMud Wrapper -->
           <tr><td><code>#alias {name} {body}</code></td><td>Define a persistent alias</td><td>CMud</td></tr>
+          <tr><td><code>#alias {name} {body} {class}</code></td><td>Define alias with inline class</td><td>CMud</td></tr>
           <tr><td><code>#alias [name]</code></td><td>List or inspect aliases</td><td>CMud</td></tr>
           <tr><td><code>#unalias {name}</code></td><td>Remove an alias</td><td>CMud</td></tr>
           <tr><td><code>#trigger {name} {pattern} {body}</code></td><td>Add trigger (CMUD wildcards)</td><td>CMud</td></tr>
+          <tr><td><code>#trigger {name} {pattern} {body} {class}</code></td><td>Add wildcard trigger with inline class</td><td>CMud</td></tr>
           <tr><td><code>#rxtrigger {name} {pattern} {body}</code></td><td>Add trigger (raw PCRE)</td><td>CMud</td></tr>
+          <tr><td><code>#rxtrigger {name} {pattern} {body} {class}</code></td><td>Add regex trigger with inline class</td><td>CMud</td></tr>
           <tr><td><code>#untrigger {name}</code></td><td>Remove a trigger</td><td>CMud</td></tr>
           <tr><td><code>#var {name} [value]</code></td><td>Set or inspect a variable</td><td>CMud</td></tr>
+          <tr><td><code>#var {name} {value} {class}</code></td><td>Set variable with inline class (no default)</td><td>CMud</td></tr>
+          <tr><td><code>#var {name} {value} {default} {class}</code></td><td>Set variable with default and class</td><td>CMud</td></tr>
           <tr><td><code>#unvar {name}</code></td><td>Remove a variable</td><td>CMud</td></tr>
+          <tr><td><code>#class</code></td><td>List classes and current default</td><td>CMud</td></tr>
+          <tr><td><code>#class {name}</code></td><td>Set default class for new definitions</td><td>CMud</td></tr>
+          <tr><td><code>#class 0</code></td><td>Reset default class to &lt;None&gt;</td><td>CMud</td></tr>
+          <tr><td><code>#class {name} 1 / 0</code></td><td>Enable or disable class (applies to all members)</td><td>CMud</td></tr>
+          <tr><td><code>#class {name} {hidden}</code></td><td>Hide class members from listings</td><td>CMud</td></tr>
+          <tr><td><code>#class {name} {unhide}</code></td><td>Unhide a hidden class</td><td>CMud</td></tr>
+          <tr><td><code>#class {name} {remove}</code></td><td>Delete the class record</td><td>CMud</td></tr>
           <tr><td><code>#T+ {name}</code></td><td>Enable alias / trigger / variable</td><td>CMud</td></tr>
           <tr><td><code>#T- {name}</code></td><td>Disable alias / trigger / variable</td><td>CMud</td></tr>
           <tr><td><code>#WAIT {ms}</code></td><td>Pause N ms then continue alias body</td><td>CMud</td></tr>
@@ -1068,7 +1142,8 @@
           <tr><td><code>#send {text}</code></td><td>Send text to server</td><td>CMud</td></tr>
           <tr><td><code>#repeat {n} {cmd}</code></td><td>Run command n times</td><td>CMud</td></tr>
           <tr><td><code>#sep [char]</code></td><td>Get or set command separator</td><td>CMud</td></tr>
-          <tr><td><code>#export</code></td><td>Export stored aliases, triggers, and variables</td><td>CMud</td></tr>
+          <tr><td><code>#killall</code></td><td>Erase all aliases, triggers, variables, and classes</td><td>CMud</td></tr>
+          <tr><td><code>#export</code></td><td>Export class declarations + all stored items</td><td>CMud</td></tr>
           <tr><td><code>#help</code></td><td>Show CMud help in-game</td><td>CMud</td></tr>
         </tbody>
       </table>

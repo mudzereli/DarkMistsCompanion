@@ -189,31 +189,35 @@ Example:
 
   cmud = {
     title = "CMud Scripting",
-    desc  = "CMUD-style aliases, triggers, and variables stored across sessions.",
+    desc  = "CMUD-style aliases, triggers, variables, and classes stored across sessions.",
     info  = [[
-CMUD-compatible scripting layer. Aliases, triggers, and variables
-are saved to disk and restored on each login.
+CMUD-compatible scripting layer. Aliases, triggers, variables, and
+classes are saved to disk and restored on each login.
 
 Prefix every command with # (e.g. #alias, #trigger).
 
 ──── ALIASES ────────────────────────────────────────────────────
-  #alias {name} {body}     – define or update an alias
-  #alias {name}            – show alias definition
-  #alias                   – list all aliases
-  #unalias {name}          – remove an alias
+  #alias {name} {body}           – define or update an alias
+  #alias {name} {body} {class}   – define with an inline class
+  #alias {name}                  – show alias definition
+  #alias                         – list all aliases (sorted by class)
+  #unalias {name}                – remove an alias
 
   Body syntax:
     %1 %2 …     positional args from the alias invocation
+    %-1 %-2 …   rest-of-args from position N onward
     %%1 %%2 …   delayed expansion (survive inner alias calls)
     @VarName    expands a stored variable
     | or ;      command separator (configurable)
 
 ──── TRIGGERS ───────────────────────────────────────────────────
-  #trigger {name} {pattern} {body}   – CMUD wildcard pattern
-  #rxtrigger {name} {pattern} {body} – raw PCRE regex pattern
-  #trigger {name}                    – show trigger definition
-  #trigger                           – list all triggers
-  #untrigger {name}                  – remove a trigger
+  #trigger {name} {pattern} {body}          – CMUD wildcard pattern
+  #trigger {name} {pattern} {body} {class}  – with inline class
+  #rxtrigger {name} {pattern} {body}        – raw PCRE regex pattern
+  #rxtrigger {name} {pattern} {body} {class}
+  #trigger {name}                           – show trigger definition
+  #trigger                                  – list all triggers
+  #untrigger {name}                         – remove a trigger
 
   Wildcard tokens (for #trigger / #action):
     *         any sequence of characters
@@ -237,14 +241,33 @@ Prefix every command with # (e.g. #alias, #trigger).
     ^ $       line anchors
 
 ──── VARIABLES ──────────────────────────────────────────────────
-  #var {name} {value}      – set a variable
-  #var {name}              – show variable value
-  #var                     – list all variables
-  #unvar {name}            – remove a variable
-  name = value             – shorthand assignment (no # needed)
+  #var {name} {value}               – set a variable
+  #var {name} {value} {class}       – set variable with inline class
+  #var {name} {value} {def} {class} – set variable, default, and class
+  #var {name}                       – show variable value
+  #var                              – list all variables
+  #unvar {name}                     – remove a variable
+  name = value                      – shorthand assignment (no # needed)
 
   Reference a variable with @VarName in alias/trigger bodies.
   &VarName captures in trigger patterns auto-assign the variable.
+
+──── CLASSES ────────────────────────────────────────────────────
+  #class                         – list all classes and current default
+  #class {name}                  – set as default class for new items
+  #class 0                       – reset default class to <None>
+  #class {name} 1                – enable class (reinstalls all members)
+  #class {name} 0                – disable class (kills all handles)
+  #class {name} {enable}         – enable class (text form)
+  #class {name} {disable}        – disable class
+  #class {name} {hidden}         – hide class members from listings
+  #class {name} {unhide}         – unhide class members
+  #class {name} {remove}         – delete the class record entirely
+
+  The default class is set per session and is never persisted.
+  Inline class args on #alias/#trigger/#var override the default.
+  Hidden classes remain fully active — only their listings are hidden.
+  Disabled classes have all their handles killed until re-enabled.
 
 ──── ENABLE / DISABLE ───────────────────────────────────────────
   #T+ {name}               – enable alias / trigger / variable
@@ -267,10 +290,14 @@ Prefix every command with # (e.g. #alias, #trigger).
   #{n} {command}           – shorthand for #repeat
   #sep {char}              – set command separator character (default: |)
   #sep                     – show current separator
+  #killall                 – erase ALL aliases, triggers, variables, and classes
 
-──── EXPORT ────────────────────────────────────────────────────
-  #export                  – export all aliases, triggers, and variables
+──── EXPORT ─────────────────────────────────────────────────────
+  #export                  – export everything (class defs then items)
   #export {name}           – export a named alias, trigger, or variable
+
+  Exported output includes #class declarations and trailing class
+  args on each definition, so the full setup can be re-imported.
 
 ──── CROSS-INVOCATION ───────────────────────────────────────────
   Alias bodies can call other aliases by name (cross-invocation).
@@ -278,6 +305,23 @@ Prefix every command with # (e.g. #alias, #trigger).
   Self-recursion is blocked with a warning.
 
 ──── EXAMPLES ───────────────────────────────────────────────────
+  -- group items into a class and disable them together
+  #class combat
+  #alias atk {kill %1}
+  #alias fl {flee}
+  #class combat 0          -- disables atk and fl
+  #class combat 1          -- re-enables both
+  
+  -- assign a single new alias to a class without changing the default
+  #alias fl {flee} {combat}
+
+  -- hide internal helpers from listings
+  #class internal {hidden}
+  #alias _dosomething {some internal body} {internal}
+
+  -- rest-of-args expansion
+  #alias attack1 {#var attack %-1}   -- "attack1 c blind" → attack = "c blind"
+
   #alias z {zap %1}
   #trigger hitme {You are hit by * for %d damage.} {#show ouch}
   #rxtrigger hpline {^HP:\s*(\d+)/(\d+)} {#var hp %1|#var hpmax %2}
