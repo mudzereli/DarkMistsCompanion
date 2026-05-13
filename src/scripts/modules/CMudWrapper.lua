@@ -18,9 +18,12 @@ CMudWrapper = {
   commandSeparator = "|",
   savePath = getMudletHomeDir() .. "/cmudwrapper_data.lua",
   -- Full state shape including varmeta for per-variable enabled/disabled tracking.
-  state = { aliases = {}, triggers = {}, vars = {}, defaults = {}, varmeta = {} },
+  state = { aliases = {}, triggers = {}, vars = {}, defaults = {}, varmeta = {}, classes = {} },
   handles = { aliases = {}, triggers = {} },
   commandHandle = nil,
+  -- Runtime-only: the current default class (never persisted; reset on load).
+  -- Set with `#CLASS name`, reset with `#CLASS 0`.
+  defaultClass = nil,
   -- Tracks names of aliases/triggers currently executing. Used to block
   -- self/mutual recursion when alias bodies call other aliases.
   _callStack = {},
@@ -236,10 +239,11 @@ local function buildExportAliasLines(name)
     return nil, ("alias not found: %s"):format(tostring(name))
   end
 
+  local classArg = spec.class and (" " .. DarkmistsTheme.textTag .. exportArg(spec.class)) or ""
   local lines = {
     DarkmistsTheme.blueTag .. "#ALIAS" .. DarkmistsTheme.textTag .. " "
       .. DarkmistsTheme.textTag .. exportArg(name) .. " "
-      .. formatExportBody(spec.body),
+      .. formatExportBody(spec.body) .. classArg,
   }
   if spec.enabled == false then
     lines[#lines + 1] = DarkmistsTheme.blueTag .. "#T-" .. DarkmistsTheme.textTag .. " " .. DarkmistsTheme.textTag .. exportArg(name)
@@ -254,11 +258,12 @@ local function buildExportTriggerLines(name)
   end
 
   local commandName = spec.cmud and "#TRIGGER" or "#RXTRIGGER"
+  local classArg = spec.class and (" " .. DarkmistsTheme.textTag .. exportArg(spec.class)) or ""
   local lines = {
     DarkmistsTheme.blueTag .. commandName .. DarkmistsTheme.textTag .. " "
       .. DarkmistsTheme.textTag .. exportArg(name) .. " "
       .. DarkmistsTheme.textTag .. exportArg(spec.pattern or "") .. " "
-      .. formatExportBody(spec.body),
+      .. formatExportBody(spec.body) .. classArg,
   }
 
   if spec.enabled == false then
@@ -274,11 +279,16 @@ local function buildExportVariableLines(name)
 
   local value = CMudWrapper.state.vars[name]
   local default = CMudWrapper.state.defaults[name]
+  local varClass = CMudWrapper.state.varmeta and CMudWrapper.state.varmeta["__class__" .. name]
   local line = DarkmistsTheme.blueTag .. "#VARIABLE" .. DarkmistsTheme.textTag .. " "
     .. DarkmistsTheme.textTag .. exportArg(name) .. " "
     .. DarkmistsTheme.textTag .. exportArg(value)
   if default ~= nil then
     line = line .. " " .. exportArg(default)
+  end
+  if varClass then
+    if default == nil then line = line .. " " .. exportArg("") end
+    line = line .. " " .. DarkmistsTheme.textTag .. exportArg(varClass)
   end
 
   local lines = { line }
@@ -295,10 +305,11 @@ function CMudWrapper.exportAlias(name)
     return false, ("alias not found: %s"):format(tostring(name))
   end
 
+  local classArg = spec.class and (" " .. DarkmistsTheme.textTag .. exportArg(spec.class)) or ""
   local lines = {
     DarkmistsTheme.blueTag .. "#ALIAS" .. DarkmistsTheme.textTag .. " "
       .. DarkmistsTheme.textTag .. exportArg(name) .. " "
-      .. formatExportBody(spec.body),
+      .. formatExportBody(spec.body) .. classArg,
   }
   if spec.enabled == false then
     lines[#lines + 1] = DarkmistsTheme.blueTag .. "#T-" .. DarkmistsTheme.textTag .. " " .. DarkmistsTheme.textTag .. exportArg(name)
@@ -313,11 +324,12 @@ function CMudWrapper.exportTrigger(name)
   end
 
   local commandName = spec.cmud and "#TRIGGER" or "#RXTRIGGER"
+  local classArg = spec.class and (" " .. DarkmistsTheme.textTag .. exportArg(spec.class)) or ""
   local lines = {
     DarkmistsTheme.blueTag .. commandName .. DarkmistsTheme.textTag .. " "
       .. DarkmistsTheme.textTag .. exportArg(name) .. " "
       .. DarkmistsTheme.textTag .. exportArg(spec.pattern or "") .. " "
-      .. formatExportBody(spec.body),
+      .. formatExportBody(spec.body) .. classArg,
   }
 
   if spec.enabled == false then
@@ -334,11 +346,16 @@ function CMudWrapper.exportVariable(name)
 
   local value = CMudWrapper.state.vars[name]
   local default = CMudWrapper.state.defaults[name]
+  local varClass = CMudWrapper.state.varmeta and CMudWrapper.state.varmeta["__class__" .. name]
   local line = DarkmistsTheme.blueTag .. "#VARIABLE" .. DarkmistsTheme.textTag .. " "
     .. DarkmistsTheme.textTag .. exportArg(name) .. " "
     .. DarkmistsTheme.textTag .. exportArg(value)
   if default ~= nil then
     line = line .. " " .. exportArg(default)
+  end
+  if varClass then
+    if default == nil then line = line .. " " .. exportArg("") end
+    line = line .. " " .. DarkmistsTheme.textTag .. exportArg(varClass)
   end
 
   local lines = { line }
@@ -397,6 +414,19 @@ function CMudWrapper.exportAll()
     for _, line in ipairs(itemLines or {}) do
       lines[#lines + 1] = line
     end
+  end
+
+  -- Emit #CLASS definitions first so they exist when definitions reference them.
+  local classNames = {}
+  for k in pairs(CMudWrapper.state.classes) do classNames[#classNames + 1] = k end
+  table.sort(classNames, function(a, b) return tostring(a):lower() < tostring(b):lower() end)
+  for _, k in ipairs(classNames) do
+    local cls = CMudWrapper.state.classes[k]
+    local opts = {}
+    if cls.enabled == false then opts[#opts + 1] = "disable" else opts[#opts + 1] = "enable" end
+    if cls.hidden then opts[#opts + 1] = "hidden" end
+    lines[#lines + 1] = DarkmistsTheme.blueTag .. "#CLASS" .. DarkmistsTheme.textTag .. " "
+      .. exportArg(k) .. " " .. exportArg(table.concat(opts, ", "))
   end
 
   local aliasNames = {}
@@ -660,6 +690,10 @@ function CMudWrapper.tryInvokeAlias(line)
   local spec = CMudWrapper.state.aliases[word]
   if not spec then return false end
   if spec.enabled == false then return false end
+  if spec.class then
+    local cls = CMudWrapper.state.classes and CMudWrapper.state.classes[spec.class]
+    if cls and cls.enabled == false then return false end
+  end
 
   if CMudWrapper._callStack[word] then
     CMudWrapper.notify(DarkmistsTheme.warnTag .. ("recursion blocked: alias '%s' called itself"):format(word))
@@ -775,6 +809,11 @@ function CMudWrapper.installAlias(name, spec)
   if spec and spec.enabled == false then
     return
   end
+  -- If the alias belongs to a disabled class, do not install.
+  if spec and spec.class then
+    local cls = CMudWrapper.state.classes and CMudWrapper.state.classes[spec.class]
+    if cls and cls.enabled == false then return end
+  end
   if CMudWrapper.handles.aliases[name] then
     pcall(killAlias, CMudWrapper.handles.aliases[name])
   end
@@ -828,6 +867,11 @@ function CMudWrapper.installTrigger(name, spec)
   -- user explicitly enables them with `#T+ name`.
   if spec and spec.enabled == false then
     return
+  end
+  -- If the trigger belongs to a disabled class, do not install.
+  if spec and spec.class then
+    local cls = CMudWrapper.state.classes and CMudWrapper.state.classes[spec.class]
+    if cls and cls.enabled == false then return end
   end
   if CMudWrapper.handles.triggers[name] then
     pcall(killTrigger, CMudWrapper.handles.triggers[name])
@@ -950,10 +994,12 @@ function CMudWrapper.exec(line)
   end
 
   if isPrefix(verb, "ALIAS") then
-    -- New simplified form: #ALIAS {name} {body}
+    -- Form: #ALIAS {name} {body} [{class}]
+    -- Inline class (args[3]) takes priority over defaultClass.
     local name = args[1]
-    local body = nil
-    if #args >= 2 then
+    local body = args[2]
+    if #args >= 2 and not args[3] then
+      -- no class arg; allow unbraced body by joining remaining tokens
       body = table.concat(args, " ", 2)
     end
     -- If no args: list aliases
@@ -962,13 +1008,26 @@ function CMudWrapper.exec(line)
         local msg = DarkmistsTheme.infoTag .. "Aliases:\n"
         local names = {}
         for k in pairs(CMudWrapper.state.aliases) do names[#names+1] = k end
-        table.sort(names, function(a,b) return tostring(a):lower() < tostring(b):lower() end)
+        table.sort(names, function(a, b)
+          local ca = tostring((CMudWrapper.state.aliases[a] or {}).class or ""):lower()
+          local cb = tostring((CMudWrapper.state.aliases[b] or {}).class or ""):lower()
+          if ca ~= cb then return ca < cb end
+          return tostring(a):lower() < tostring(b):lower()
+        end)
         for _, k in ipairs(names) do
           local v = CMudWrapper.state.aliases[k]
-          local enabled = not (v and v.enabled == false)
-          local nameColor = enabled and (DarkmistsTheme.goodTag) or (DarkmistsTheme.warnTag)
-          local nameDisplay = nameColor .. tostring(k) .. DarkmistsTheme.mutedTag
-          msg = msg .. string.format("  %s %s» %s\n", nameDisplay, DarkmistsTheme.mutedTag, formatDisplayBody(tostring((v or {}).body or "")))
+          local _cls = v.class and CMudWrapper.state.classes and CMudWrapper.state.classes[v.class]
+          if not (_cls and _cls.hidden) then
+            local enabled = not (v and v.enabled == false)
+            local nameColor = enabled and (DarkmistsTheme.goodTag) or (DarkmistsTheme.warnTag)
+            local nameDisplay = nameColor .. tostring(k) .. DarkmistsTheme.mutedTag
+            local classStr = ""
+            if v.class then
+              local clsColor = (_cls and _cls.enabled == false) and DarkmistsTheme.warnTag or DarkmistsTheme.goodTag
+              classStr = DarkmistsTheme.mutedTag .. "[" .. clsColor .. v.class .. DarkmistsTheme.mutedTag .. "] "
+            end
+            msg = msg .. string.format("  %s%s %s» %s\n", classStr, nameDisplay, DarkmistsTheme.mutedTag, formatDisplayBody(tostring((v or {}).body or "")))
+          end
         end
         CMudWrapper.notify(msg)
       end
@@ -982,7 +1041,13 @@ function CMudWrapper.exec(line)
         local enabled = not (def and def.enabled == false)
         local nameColor = enabled and (DarkmistsTheme.goodTag) or (DarkmistsTheme.warnTag)
         local nameDisplay = nameColor .. name .. DarkmistsTheme.mutedTag
-        CMudWrapper.notify(DarkmistsTheme.infoTag .. string.format("%s %s» %s", nameDisplay, DarkmistsTheme.mutedTag, formatDisplayBody(tostring(def.body or ""))))
+        local classStr = ""
+        if def.class then
+          local cls = CMudWrapper.state.classes and CMudWrapper.state.classes[def.class]
+          local clsColor = (cls and cls.enabled == false) and DarkmistsTheme.warnTag or DarkmistsTheme.goodTag
+          classStr = DarkmistsTheme.mutedTag .. "[" .. clsColor .. def.class .. DarkmistsTheme.mutedTag .. "] "
+        end
+        CMudWrapper.notify(DarkmistsTheme.infoTag .. string.format("%s%s %s» %s", classStr, nameDisplay, DarkmistsTheme.mutedTag, formatDisplayBody(tostring(def.body or ""))))
       else
         CMudWrapper.notify(DarkmistsTheme.warnTag .. ("alias not found: %s"):format(name))
       end
@@ -995,12 +1060,13 @@ function CMudWrapper.exec(line)
     local usesTail = true
     local pattern = "^" .. escapeRegex(name) .. "(?:\\W(.*))?$"
 
-    assert(name and body, "#ALIAS {name} {body}")
+    assert(name and body, "#ALIAS {name} {body} [{class}]")
     -- Restore any delayed-expansion placeholders back to their original
     -- positional token so %%2 stays %2, %%3 stays %3, and so on.
     body = body:gsub("__CMW_PCT_(%d+)__", function(n) return "%" .. n end)
 
-    CMudWrapper.state.aliases[name] = { pattern = pattern, body = body, tail = usesTail }
+    local inlineClass = args[3]  -- optional trailing {ClassName}
+    CMudWrapper.state.aliases[name] = { pattern = pattern, body = body, tail = usesTail, class = inlineClass or CMudWrapper.defaultClass }
     CMudWrapper.installAlias(name, CMudWrapper.state.aliases[name])
     CMudWrapper.save()
     CMudWrapper.notify(DarkmistsTheme.goodTag .. ("alias saved: %s"):format(name))
@@ -1088,19 +1154,32 @@ function CMudWrapper.exec(line)
         local msg = DarkmistsTheme.infoTag .. "Triggers:\n"
         local names = {}
         for k in pairs(CMudWrapper.state.triggers) do names[#names+1] = k end
-        table.sort(names, function(a,b) return tostring(a):lower() < tostring(b):lower() end)
+        table.sort(names, function(a, b)
+          local ca = tostring((CMudWrapper.state.triggers[a] or {}).class or ""):lower()
+          local cb = tostring((CMudWrapper.state.triggers[b] or {}).class or ""):lower()
+          if ca ~= cb then return ca < cb end
+          return tostring(a):lower() < tostring(b):lower()
+        end)
         for _, k in ipairs(names) do
           local v = CMudWrapper.state.triggers[k]
-          local pat  = tostring((v or {}).pattern or "")
-          local bod  = tostring((v or {}).body or "")
-          local kind = (v and v.cmud) and "[wildcard]" or "[regex]"
-          local enabled = not (v and v.enabled == false)
-          local nameColor = enabled and (DarkmistsTheme.goodTag) or (DarkmistsTheme.warnTag)
-          local nameDisplay = nameColor .. tostring(k) .. DarkmistsTheme.mutedTag
-          msg = msg .. string.format("  %s %s» %s: %s%s %s» %s\n", 
-            nameDisplay, DarkmistsTheme.mutedTag, 
-            kind, DarkmistsTheme.textTag, pat, DarkmistsTheme.mutedTag,
-            formatDisplayBody(bod))
+          local _cls = v.class and CMudWrapper.state.classes and CMudWrapper.state.classes[v.class]
+          if not (_cls and _cls.hidden) then
+            local pat  = tostring((v or {}).pattern or "")
+            local bod  = tostring((v or {}).body or "")
+            local kind = (v and v.cmud) and "[wildcard]" or "[regex]"
+            local enabled = not (v and v.enabled == false)
+            local nameColor = enabled and (DarkmistsTheme.goodTag) or (DarkmistsTheme.warnTag)
+            local nameDisplay = nameColor .. tostring(k) .. DarkmistsTheme.mutedTag
+            local classStr = ""
+            if v.class then
+              local clsColor = (_cls and _cls.enabled == false) and DarkmistsTheme.warnTag or DarkmistsTheme.goodTag
+              classStr = DarkmistsTheme.mutedTag .. "[" .. clsColor .. v.class .. DarkmistsTheme.mutedTag .. "] "
+            end
+            msg = msg .. string.format("  %s%s %s» %s: %s%s %s» %s\n", 
+              classStr, nameDisplay, DarkmistsTheme.mutedTag, 
+              kind, DarkmistsTheme.textTag, pat, DarkmistsTheme.mutedTag,
+              formatDisplayBody(bod))
+          end
         end
         CMudWrapper.notify(msg)
       end
@@ -1117,8 +1196,14 @@ function CMudWrapper.exec(line)
         local enabled = not (def and def.enabled == false)
         local nameColor = enabled and (DarkmistsTheme.goodTag) or (DarkmistsTheme.warnTag)
         local nameDisplay = nameColor .. name .. DarkmistsTheme.mutedTag
-        CMudWrapper.notify(string.format("%s %s» %s: %s%s %s» %s", 
-            nameDisplay, DarkmistsTheme.mutedTag, 
+        local classStr = ""
+        if def.class then
+          local cls = CMudWrapper.state.classes and CMudWrapper.state.classes[def.class]
+          local clsColor = (cls and cls.enabled == false) and DarkmistsTheme.warnTag or DarkmistsTheme.goodTag
+          classStr = DarkmistsTheme.mutedTag .. "[" .. clsColor .. def.class .. DarkmistsTheme.mutedTag .. "] "
+        end
+        CMudWrapper.notify(string.format("%s%s %s» %s: %s%s %s» %s", 
+            classStr, nameDisplay, DarkmistsTheme.mutedTag, 
             kind, DarkmistsTheme.textTag, pat, DarkmistsTheme.mutedTag,
             formatDisplayBody(bod)))
       else
@@ -1127,8 +1212,9 @@ function CMudWrapper.exec(line)
       return true
     end
 
-    assert(name and pattern and body, "#TRIGGER {name} {wildcard-pattern} {body}")
-    CMudWrapper.replaceTrigger(name, { pattern = pattern, body = body, cmud = true })
+    assert(name and pattern and body, "#TRIGGER {name} {wildcard-pattern} {body} [{class}]")
+    local inlineClass = args[4]  -- optional trailing {ClassName}
+    CMudWrapper.replaceTrigger(name, { pattern = pattern, body = body, cmud = true, class = inlineClass or CMudWrapper.defaultClass })
     CMudWrapper.save()
     CMudWrapper.notify(DarkmistsTheme.goodTag .. ("trigger saved: %s"):format(name))
 
@@ -1146,19 +1232,32 @@ function CMudWrapper.exec(line)
         local msg = DarkmistsTheme.infoTag .. "Regex Triggers:\n"
         local names = {}
         for k, v in pairs(CMudWrapper.state.triggers) do if v and not v.cmud then names[#names+1] = k end end
-        table.sort(names, function(a,b) return tostring(a):lower() < tostring(b):lower() end)
+        table.sort(names, function(a, b)
+          local ca = tostring((CMudWrapper.state.triggers[a] or {}).class or ""):lower()
+          local cb = tostring((CMudWrapper.state.triggers[b] or {}).class or ""):lower()
+          if ca ~= cb then return ca < cb end
+          return tostring(a):lower() < tostring(b):lower()
+        end)
         for _, k in ipairs(names) do
           local v = CMudWrapper.state.triggers[k]
-          local enabled = not (v and v.enabled == false)
-          local nameColor = enabled and (DarkmistsTheme.goodTag) or (DarkmistsTheme.warnTag)
-          local nameDisplay = nameColor .. tostring(k) .. DarkmistsTheme.mutedTag
-          local pat  = tostring((v or {}).pattern or "")
-          local bod  = tostring((v or {}).body or "")
-          local kind = "[regex]"
-          msg = msg .. string.format("%s %s» %s: %s%s %s» %s\n",
-            nameDisplay, DarkmistsTheme.mutedTag,
-            kind, DarkmistsTheme.textTag, pat, DarkmistsTheme.mutedTag,
-            formatDisplayBody(bod))
+          local _cls = v.class and CMudWrapper.state.classes and CMudWrapper.state.classes[v.class]
+          if not (_cls and _cls.hidden) then
+            local enabled = not (v and v.enabled == false)
+            local nameColor = enabled and (DarkmistsTheme.goodTag) or (DarkmistsTheme.warnTag)
+            local nameDisplay = nameColor .. tostring(k) .. DarkmistsTheme.mutedTag
+            local classStr = ""
+            if v.class then
+              local clsColor = (_cls and _cls.enabled == false) and DarkmistsTheme.warnTag or DarkmistsTheme.goodTag
+              classStr = DarkmistsTheme.mutedTag .. "[" .. clsColor .. v.class .. DarkmistsTheme.mutedTag .. "] "
+            end
+            local pat  = tostring((v or {}).pattern or "")
+            local bod  = tostring((v or {}).body or "")
+            local kind = "[regex]"
+            msg = msg .. string.format("%s%s %s» %s: %s%s %s» %s\n",
+              classStr, nameDisplay, DarkmistsTheme.mutedTag,
+              kind, DarkmistsTheme.textTag, pat, DarkmistsTheme.mutedTag,
+              formatDisplayBody(bod))
+          end
         end
         CMudWrapper.notify(msg)
       end
@@ -1171,8 +1270,14 @@ function CMudWrapper.exec(line)
         local enabled = not (def and def.enabled == false)
         local nameColor = enabled and (DarkmistsTheme.goodTag) or (DarkmistsTheme.warnTag)
         local nameDisplay = nameColor .. name .. DarkmistsTheme.mutedTag
-        CMudWrapper.notify(DarkmistsTheme.infoTag .. string.format("%s %s» %s: %s%s %s» %s",
-          nameDisplay, DarkmistsTheme.mutedTag,
+        local classStr = ""
+        if def.class then
+          local cls = CMudWrapper.state.classes and CMudWrapper.state.classes[def.class]
+          local clsColor = (cls and cls.enabled == false) and DarkmistsTheme.warnTag or DarkmistsTheme.goodTag
+          classStr = DarkmistsTheme.mutedTag .. "[" .. clsColor .. def.class .. DarkmistsTheme.mutedTag .. "] "
+        end
+        CMudWrapper.notify(DarkmistsTheme.infoTag .. string.format("%s%s %s» %s: %s%s %s» %s",
+          classStr, nameDisplay, DarkmistsTheme.mutedTag,
           "[regex]", DarkmistsTheme.textTag, tostring(def.pattern or ""), DarkmistsTheme.mutedTag,
           formatDisplayBody(tostring(def.body or ""))))
       elseif def then
@@ -1183,8 +1288,9 @@ function CMudWrapper.exec(line)
       return true
     end
 
-    assert(name and pattern and body, "#RXTRIGGER {name} {pcre-pattern} {body}")
-    CMudWrapper.replaceTrigger(name, { pattern = pattern, body = body })
+    assert(name and pattern and body, "#RXTRIGGER {name} {pcre-pattern} {body} [{class}]")
+    local inlineClass = args[4]  -- optional trailing {ClassName}
+    CMudWrapper.replaceTrigger(name, { pattern = pattern, body = body, class = inlineClass or CMudWrapper.defaultClass })
     CMudWrapper.save()
     CMudWrapper.notify(DarkmistsTheme.goodTag .. ("regex trigger saved: %s"):format(name))
 
@@ -1229,7 +1335,15 @@ function CMudWrapper.exec(line)
     end
 
     local default = args[3]
+    local inlineClass = args[4]  -- optional trailing {ClassName}
     CMudWrapper.setVariable(name, value, default)
+    -- Stamp class on the variable if provided.
+    local assignedClass = inlineClass or CMudWrapper.defaultClass
+    if assignedClass then
+      CMudWrapper.state.varmeta = CMudWrapper.state.varmeta or {}
+      CMudWrapper.state.varmeta["__class__" .. name] = assignedClass
+      CMudWrapper.save()
+    end
 
   elseif isPrefix(verb, "EXPORT") then
     local first = args[1]
@@ -1312,6 +1426,130 @@ function CMudWrapper.exec(line)
       CMudWrapper.runLine(text)
     end
 
+  elseif isPrefix(verb, "CLASS") then
+    local classname = args[1]
+    local stateArg  = args[2]
+
+    -- #CLASS (no args): list all defined classes and current default.
+    if not classname then
+      local msg = DarkmistsTheme.infoTag .. "Classes:\n"
+      local defDisplay = CMudWrapper.defaultClass or "<None>"
+      msg = msg .. string.format("  %sDefault: %s%s\n", DarkmistsTheme.mutedTag, DarkmistsTheme.textTag, defDisplay)
+      local names = {}
+      for k in pairs(CMudWrapper.state.classes) do names[#names+1] = k end
+      table.sort(names, function(a, b) return tostring(a):lower() < tostring(b):lower() end)
+      if #names == 0 then
+        msg = msg .. DarkmistsTheme.mutedTag .. "  (no classes defined)\n"
+      else
+        for _, k in ipairs(names) do
+          local cls = CMudWrapper.state.classes[k]
+          local enabled = cls.enabled ~= false
+          local statusColor = enabled and DarkmistsTheme.goodTag or DarkmistsTheme.warnTag
+          local status = enabled and "enabled" or "disabled"
+          local flags = {}
+          if cls.hidden then flags[#flags+1] = "hidden" end
+          local flagStr = #flags > 0 and (" " .. DarkmistsTheme.mutedTag .. "[" .. table.concat(flags, ", ") .. "]") or ""
+          msg = msg .. string.format("  %s%s%s: %s%s%s\n",
+            DarkmistsTheme.textTag, k, DarkmistsTheme.mutedTag,
+            statusColor, status, flagStr)
+        end
+      end
+      CMudWrapper.notify(msg)
+      return true
+    end
+
+    -- #CLASS 0: reset default class to <None>.
+    if classname == "0" and not stateArg then
+      CMudWrapper.defaultClass = nil
+      CMudWrapper.notify(DarkmistsTheme.goodTag .. "Default class reset to <None>")
+      return true
+    end
+
+    -- #CLASS classname (single arg): set as the default class for new definitions.
+    if not stateArg then
+      CMudWrapper.defaultClass = classname
+      -- Auto-create the class entry if it doesn't exist yet.
+      if not CMudWrapper.state.classes[classname] then
+        CMudWrapper.state.classes[classname] = { enabled = true }
+        CMudWrapper.save()
+      end
+      CMudWrapper.notify(DarkmistsTheme.goodTag .. ("default class set to: %s"):format(classname))
+      return true
+    end
+
+    -- #CLASS classname {options}: create/configure a class with text options.
+    -- Options: enable, disable, remove, hidden, unhide
+    local numeric = tonumber(stateArg)
+    if numeric == nil then
+      local opts = {}
+      for opt in tostring(stateArg):lower():gmatch("[^,%s]+") do
+        opts[opt] = true
+      end
+      if opts["remove"] then
+        CMudWrapper.state.classes[classname] = nil
+        CMudWrapper.save()
+        CMudWrapper.notify(DarkmistsTheme.goodTag .. ("class removed: %s"):format(classname))
+        return true
+      end
+      local cls = CMudWrapper.state.classes[classname] or { enabled = true }
+      if opts["enable"]  then cls.enabled = true  end
+      if opts["disable"] then cls.enabled = false end
+      if opts["hidden"]  then cls.hidden  = true  end
+      if opts["unhide"] or opts["show"] then cls.hidden = nil end
+      CMudWrapper.state.classes[classname] = cls
+      CMudWrapper.save()
+      CMudWrapper.notify(DarkmistsTheme.goodTag .. ("class configured: %s"):format(classname))
+      return true
+    end
+
+    -- #CLASS classname 1/0: enable or disable, and apply to all members.
+    local cls = CMudWrapper.state.classes[classname]
+    if not cls then
+      CMudWrapper.state.classes[classname] = { enabled = numeric ~= 0 }
+      CMudWrapper.save()
+      CMudWrapper.notify(DarkmistsTheme.goodTag .. ("class created and %s: %s"):format(
+        numeric ~= 0 and "enabled" or "disabled", classname))
+      return true
+    end
+
+    cls.enabled = numeric ~= 0
+    CMudWrapper.save()
+
+    -- Apply the new state to every alias and trigger in this class.
+    for aname, spec in pairs(CMudWrapper.state.aliases) do
+      if spec.class == classname then
+        if cls.enabled then
+          -- Only reinstall if the alias itself isn't individually disabled.
+          if spec.enabled ~= false then
+            CMudWrapper.installAlias(aname, spec)
+          end
+        else
+          if CMudWrapper.handles.aliases[aname] then
+            pcall(killAlias, CMudWrapper.handles.aliases[aname])
+            CMudWrapper.handles.aliases[aname] = nil
+          end
+        end
+      end
+    end
+    for tname, spec in pairs(CMudWrapper.state.triggers) do
+      if spec.class == classname then
+        if cls.enabled then
+          if spec.enabled ~= false then
+            CMudWrapper.installTrigger(tname, spec)
+          end
+        else
+          if CMudWrapper.handles.triggers[tname] then
+            pcall(killTrigger, CMudWrapper.handles.triggers[tname])
+            CMudWrapper.handles.triggers[tname] = nil
+          end
+        end
+      end
+    end
+
+    CMudWrapper.notify(DarkmistsTheme.goodTag .. ("class %s: %s"):format(
+      cls.enabled and "enabled" or "disabled", classname))
+    return true
+
   else
     CMudWrapper.notify(DarkmistsTheme.warnTag .. ("unsupported command: %s"):format(verb))
   end
@@ -1328,6 +1566,8 @@ function CMudWrapper.load()
   CMudWrapper.state.vars = data.vars or {}
   CMudWrapper.state.defaults = data.defaults or {}
   CMudWrapper.state.varmeta = data.varmeta or {}
+  CMudWrapper.state.classes = data.classes or {}
+  CMudWrapper.defaultClass = nil  -- always reset to <None> on load
 
   if CMudWrapper.commandHandle then
     pcall(killAlias, CMudWrapper.commandHandle)
