@@ -1290,6 +1290,21 @@ function CMudWrapper.exec(line)
       CMudWrapper.notify(("Command separator set to: %s%s"):format(DarkmistsTheme.textTag, CMudWrapper.commandSeparator))
     end
 
+  elseif verb == "KILLALL" then
+    -- Must be typed in full — not abbreviatable.
+    -- Kill all runtime handles then wipe all state.
+    for aname, id in pairs(CMudWrapper.handles.aliases) do
+      pcall(killAlias, id)
+    end
+    for tname, id in pairs(CMudWrapper.handles.triggers) do
+      pcall(killTrigger, id)
+    end
+    CMudWrapper.handles = { aliases = {}, triggers = {} }
+    CMudWrapper.state = { aliases = {}, triggers = {}, vars = {}, defaults = {}, varmeta = {}, classes = {} }
+    CMudWrapper.defaultClass = nil
+    CMudWrapper.save()
+    CMudWrapper.notify(DarkmistsTheme.warnTag .. "KILLALL: all aliases, triggers, variables, and classes have been erased.")
+
   elseif verb:match("^%d+$") then
     local n = tonumber(verb) or 1
     local text = table.concat(args, " ")
