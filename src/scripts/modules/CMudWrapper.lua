@@ -287,7 +287,8 @@ local function buildExportVariableLines(name)
     line = line .. " " .. exportArg(default)
   end
   if varClass then
-    if default == nil then line = line .. " " .. exportArg("") end
+    -- 3-arg form: class only (no default placeholder needed)
+    -- 4-arg form: default class (only when default is also set)
     line = line .. " " .. DarkmistsTheme.textTag .. exportArg(varClass)
   end
 
@@ -354,7 +355,6 @@ function CMudWrapper.exportVariable(name)
     line = line .. " " .. exportArg(default)
   end
   if varClass then
-    if default == nil then line = line .. " " .. exportArg("") end
     line = line .. " " .. DarkmistsTheme.textTag .. exportArg(varClass)
   end
 
@@ -667,7 +667,7 @@ end
 function CMudWrapper.setVariable(name, value, default)
   if not name then return end
   name = tostring(name)
-  if default then
+  if default and default ~= "" then
     if default == "_nodef" then
       CMudWrapper.state.defaults[name] = nil
     else
@@ -1334,8 +1334,16 @@ function CMudWrapper.exec(line)
       return true
     end
 
-    local default = args[3]
-    local inlineClass = args[4]  -- optional trailing {ClassName}
+    -- 3 args: name value class (no default)
+    -- 4 args: name value default class
+    local default, inlineClass
+    if args[4] then
+      default = (args[3] ~= "") and args[3] or nil
+      inlineClass = args[4]
+    else
+      default = nil
+      inlineClass = (args[3] ~= "") and args[3] or nil
+    end
     CMudWrapper.setVariable(name, value, default)
     -- Stamp class on the variable if provided.
     local assignedClass = inlineClass or CMudWrapper.defaultClass
