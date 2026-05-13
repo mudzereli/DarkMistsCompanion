@@ -77,6 +77,26 @@ end
 
 local function expandMatchTokens(text, matchTable)
   if matchTable then
+    -- %-N: rest-of-args from position N onwards (expand before %N to avoid overlap).
+    -- Wrap multi-word results in {} so re-tokenization via parseArgs treats the
+    -- whole expansion as a single argument (e.g. #var x %-1 with "kill buddy" →
+    -- #var x {kill buddy} → value = "kill buddy", not just "kill").
+    text = text:gsub("%%%-(%d+)", function(num)
+      local n = tonumber(num)
+      if not n or n < 1 then return "%-" .. num end
+      local val
+      if n == 1 then
+        val = matchTable[1] or ""
+      else
+        local parts = {}
+        for i = n + 1, #matchTable do
+          parts[#parts + 1] = matchTable[i] or ""
+        end
+        val = table.concat(parts, " ")
+      end
+      return val:find(" ", 1, true) and ("{" .. val .. "}") or val
+    end)
+
     for i = 2, #matchTable do
       local replacement = matchTable[i] or ""
       text = text:gsub("%%" .. tostring(i - 1), function()
@@ -161,6 +181,9 @@ local function formatDisplayBody(text, opts)
 
   for index, command in ipairs(commands) do
     command = tostring(command or "")
+    command = command:gsub("%%%-(%d+)", function(num)
+      return DarkmistsTheme.yellowTag .. "%-" .. num .. DarkmistsTheme.textTag
+    end)
     command = command:gsub("%%(%d+)", function(num)
       return DarkmistsTheme.yellowTag .. "%" .. num .. DarkmistsTheme.textTag
     end)
