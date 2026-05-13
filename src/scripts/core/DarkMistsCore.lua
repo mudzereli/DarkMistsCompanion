@@ -41,7 +41,7 @@ Darkmists.DefaultSettings = {
   -- Font Size for additional Information Windows (Chat History, Who List, Affects)
   fontSize = 11,
   -- Font Face for additional Information Windows (Chat History, Who List, Affects)
-  fontName = "Lucida Console",
+  fontName = getFont(),
   -- Colors for Status Bars (these are expressed in RGBA format which allows a wider variety of colors)
   statusBarColors = {
     hp    = { bar = "128,0,0,255",   backdrop = "32,0,0,255" },

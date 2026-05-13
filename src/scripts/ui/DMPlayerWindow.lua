@@ -12,7 +12,7 @@ local StatusIcons = {
 ScorePanel = {}
 ScorePanel.config = {
   fontSize = 10,
-  fontName = "Consolas",
+  fontName = getFont(),
 }
 
 -- Theme-aware tags
@@ -33,7 +33,7 @@ function ScorePanel.applyTheme()
   local settings = (Darkmists and Darkmists.GlobalSettings) or {}
 
   ScorePanel.config.fontSize = settings.fontSize or ScorePanel.config.fontSize or 10
-  ScorePanel.config.fontName = settings.fontName or ScorePanel.config.fontName or "Consolas"
+  ScorePanel.config.fontName = settings.fontName or ScorePanel.config.fontName
 
   sectionTag = theme.skyTag or sectionTag
   label = theme.mutedTag or label
