@@ -1093,7 +1093,7 @@ function CMudWrapper.exec(line)
 
   elseif isPrefix(verb, "UNALIAS") then
     assert(args[1], "#UNALIAS {name}")
-    CMudWrapper.removeAlias(args[1])
+    CMudWrapper.removeAlias(table.concat(args, " "))
 
   elseif verb == "T+" or verb == "T-" then
     -- #T+ name -> enable alias/trigger/variable
