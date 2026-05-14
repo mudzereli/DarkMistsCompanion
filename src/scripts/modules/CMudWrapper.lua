@@ -398,7 +398,7 @@ function CMudWrapper.exportDefinition(name, kind)
   return true, nil
 end
 
-function CMudWrapper.exportAll()
+function CMudWrapper.exportAll(classFilter)
   local lines = {}
   local wroteSection = false
 
@@ -416,9 +416,18 @@ function CMudWrapper.exportAll()
     end
   end
 
-  -- Emit #CLASS definitions first so they exist when definitions reference them.
+  local function matchesClass(specClass)
+    if not classFilter then return true end
+    return tostring(specClass or ""):lower() == classFilter:lower()
+  end
+
+  -- Emit #CLASS definitions. When filtering, only emit the relevant class.
   local classNames = {}
-  for k in pairs(CMudWrapper.state.classes) do classNames[#classNames + 1] = k end
+  for k in pairs(CMudWrapper.state.classes) do
+    if not classFilter or tostring(k):lower() == classFilter:lower() then
+      classNames[#classNames + 1] = k
+    end
+  end
   table.sort(classNames, function(a, b) return tostring(a):lower() < tostring(b):lower() end)
   for _, k in ipairs(classNames) do
     local cls = CMudWrapper.state.classes[k]
@@ -430,30 +439,40 @@ function CMudWrapper.exportAll()
   end
 
   local aliasNames = {}
-  for name in pairs(CMudWrapper.state.aliases) do aliasNames[#aliasNames + 1] = name end
+  for name in pairs(CMudWrapper.state.aliases) do
+    if matchesClass((CMudWrapper.state.aliases[name] or {}).class) then
+      aliasNames[#aliasNames + 1] = name
+    end
+  end
   table.sort(aliasNames, function(a, b) return tostring(a):lower() < tostring(b):lower() end)
   if #aliasNames > 0 then
-    --addSection("Aliases:")
     for _, name in ipairs(aliasNames) do
       addItem((buildExportAliasLines(name)))
     end
   end
 
   local triggerNames = {}
-  for name in pairs(CMudWrapper.state.triggers) do triggerNames[#triggerNames + 1] = name end
+  for name in pairs(CMudWrapper.state.triggers) do
+    if matchesClass((CMudWrapper.state.triggers[name] or {}).class) then
+      triggerNames[#triggerNames + 1] = name
+    end
+  end
   table.sort(triggerNames, function(a, b) return tostring(a):lower() < tostring(b):lower() end)
   if #triggerNames > 0 then
-    --addSection("Triggers:")
     for _, name in ipairs(triggerNames) do
       addItem((buildExportTriggerLines(name)))
     end
   end
 
   local variableNames = {}
-  for name in pairs(CMudWrapper.state.vars) do variableNames[#variableNames + 1] = name end
+  for name in pairs(CMudWrapper.state.vars) do
+    local varClass = CMudWrapper.state.varmeta and CMudWrapper.state.varmeta["__class__" .. name]
+    if matchesClass(varClass) then
+      variableNames[#variableNames + 1] = name
+    end
+  end
   table.sort(variableNames, function(a, b) return tostring(a):lower() < tostring(b):lower() end)
   if #variableNames > 0 then
-    --addSection("Variables:")
     for _, name in ipairs(variableNames) do
       addItem((buildExportVariableLines(name)))
     end
@@ -1055,11 +1074,18 @@ function CMudWrapper.exec(line)
       body = table.concat(args, " ", 2)
     end
     -- If no args: list aliases
-    if not name then
+    -- Single arg matching a known class name: list aliases for that class
+    if not name or (not body and CMudWrapper.state.classes[name] and not CMudWrapper.state.aliases[name]) then
+      local classFilter = (name and CMudWrapper.state.classes[name]) and name or nil
       do
-        local msg = DarkmistsTheme.infoTag .. "Aliases:\n"
+        local msg = DarkmistsTheme.infoTag .. (classFilter and ("Aliases [" .. classFilter .. "]:\n") or "Aliases:\n")
         local names = {}
-        for k in pairs(CMudWrapper.state.aliases) do names[#names+1] = k end
+        for k in pairs(CMudWrapper.state.aliases) do
+          local v = CMudWrapper.state.aliases[k]
+          if not classFilter or tostring(v.class or ""):lower() == classFilter:lower() then
+            names[#names+1] = k
+          end
+        end
         table.sort(names, function(a, b)
           local ca = tostring((CMudWrapper.state.aliases[a] or {}).class or ""):lower()
           local cb = tostring((CMudWrapper.state.aliases[b] or {}).class or ""):lower()
@@ -1069,7 +1095,7 @@ function CMudWrapper.exec(line)
         for _, k in ipairs(names) do
           local v = CMudWrapper.state.aliases[k]
           local _cls = v.class and CMudWrapper.state.classes and CMudWrapper.state.classes[v.class]
-          if not (_cls and _cls.hidden) then
+          if classFilter or not (_cls and _cls.hidden) then
             local enabled = not (v and v.enabled == false)
             local nameColor = enabled and (DarkmistsTheme.goodTag) or (DarkmistsTheme.warnTag)
             local nameDisplay = nameColor .. tostring(k) .. DarkmistsTheme.mutedTag
@@ -1201,11 +1227,18 @@ function CMudWrapper.exec(line)
     local name, pattern, body = args[1], args[2], args[3]
 
     -- No args: list all triggers
-    if not name then
+    -- Single arg matching a known class name: list triggers for that class
+    if not name or (not pattern and CMudWrapper.state.classes[name] and not CMudWrapper.state.triggers[name]) then
+      local classFilter = (name and CMudWrapper.state.classes[name]) and name or nil
       do
-        local msg = DarkmistsTheme.infoTag .. "Triggers:\n"
+        local msg = DarkmistsTheme.infoTag .. (classFilter and ("Triggers [" .. classFilter .. "]:\n") or "Triggers:\n")
         local names = {}
-        for k in pairs(CMudWrapper.state.triggers) do names[#names+1] = k end
+        for k in pairs(CMudWrapper.state.triggers) do
+          local v = CMudWrapper.state.triggers[k]
+          if v and v.cmud and (not classFilter or tostring(v.class or ""):lower() == classFilter:lower()) then
+            names[#names+1] = k
+          end
+        end
         table.sort(names, function(a, b)
           local ca = tostring((CMudWrapper.state.triggers[a] or {}).class or ""):lower()
           local cb = tostring((CMudWrapper.state.triggers[b] or {}).class or ""):lower()
@@ -1215,7 +1248,7 @@ function CMudWrapper.exec(line)
         for _, k in ipairs(names) do
           local v = CMudWrapper.state.triggers[k]
           local _cls = v.class and CMudWrapper.state.classes and CMudWrapper.state.classes[v.class]
-          if not (_cls and _cls.hidden) then
+          if classFilter or not (_cls and _cls.hidden) then
             local pat  = tostring((v or {}).pattern or "")
             local bod  = tostring((v or {}).body or "")
             local kind = (v and v.cmud) and "[wildcard]" or "[regex]"
@@ -1279,11 +1312,16 @@ function CMudWrapper.exec(line)
     -- Pattern is raw PCRE regex. Use #TRIGGER for the friendlier CMUD wildcard syntax.
     local name, pattern, body = args[1], args[2], args[3]
 
-    if not name then
+    if not name or (not pattern and CMudWrapper.state.classes[name] and not CMudWrapper.state.triggers[name]) then
+      local classFilter = (name and CMudWrapper.state.classes[name]) and name or nil
       do
-        local msg = DarkmistsTheme.infoTag .. "Regex Triggers:\n"
+        local msg = DarkmistsTheme.infoTag .. (classFilter and ("Regex Triggers [" .. classFilter .. "]:\n") or "Regex Triggers:\n")
         local names = {}
-        for k, v in pairs(CMudWrapper.state.triggers) do if v and not v.cmud then names[#names+1] = k end end
+        for k, v in pairs(CMudWrapper.state.triggers) do
+          if v and not v.cmud and (not classFilter or tostring(v.class or ""):lower() == classFilter:lower()) then
+            names[#names+1] = k
+          end
+        end
         table.sort(names, function(a, b)
           local ca = tostring((CMudWrapper.state.triggers[a] or {}).class or ""):lower()
           local cb = tostring((CMudWrapper.state.triggers[b] or {}).class or ""):lower()
@@ -1293,7 +1331,7 @@ function CMudWrapper.exec(line)
         for _, k in ipairs(names) do
           local v = CMudWrapper.state.triggers[k]
           local _cls = v.class and CMudWrapper.state.classes and CMudWrapper.state.classes[v.class]
-          if not (_cls and _cls.hidden) then
+          if classFilter or not (_cls and _cls.hidden) then
             local enabled = not (v and v.enabled == false)
             local nameColor = enabled and (DarkmistsTheme.goodTag) or (DarkmistsTheme.warnTag)
             local nameDisplay = nameColor .. tostring(k) .. DarkmistsTheme.mutedTag
@@ -1350,11 +1388,17 @@ function CMudWrapper.exec(line)
     local name = args[1]
     local value = args[2]
 
-    if not name then
+    if not name or (value == nil and CMudWrapper.state.classes[name] and CMudWrapper.state.vars[name] == nil) then
+      local classFilter = (name and CMudWrapper.state.classes[name]) and name or nil
       do
-        local msg = DarkmistsTheme.infoTag .. "Variables:\n"
+        local msg = DarkmistsTheme.infoTag .. (classFilter and ("Variables [" .. classFilter .. "]:\n") or "Variables:\n")
           local names = {}
-          for k in pairs(CMudWrapper.state.vars) do names[#names+1] = k end
+          for k in pairs(CMudWrapper.state.vars) do
+            local varClass = CMudWrapper.state.varmeta and CMudWrapper.state.varmeta["__class__" .. k]
+            if not classFilter or tostring(varClass or ""):lower() == classFilter:lower() then
+              names[#names+1] = k
+            end
+          end
           table.sort(names, function(a,b) return tostring(a):lower() < tostring(b):lower() end)
           for _, k in ipairs(names) do
             local v = CMudWrapper.state.vars[k]
@@ -1411,6 +1455,12 @@ function CMudWrapper.exec(line)
 
     if not first then
       CMudWrapper.exportAll()
+      return true
+    end
+
+    -- #EXPORT {classname} → export all members of a class
+    if CMudWrapper.state.classes[first] and not second then
+      CMudWrapper.exportAll(first)
       return true
     end
 
