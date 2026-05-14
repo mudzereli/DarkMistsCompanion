@@ -217,7 +217,7 @@ local function escapeRegex(text)
 end
 
 local function exportArg(text)
-  return "{" .. tostring(text or "") .. "}"
+  return DarkmistsTheme.mutedTag .. "{" .. DarkmistsTheme.textTag .. tostring(text or "") .. DarkmistsTheme.mutedTag .. "}"
 end
 
 local function echoExport(lines)
@@ -230,7 +230,7 @@ local function echoExport(lines)
 end
 
 local function formatExportBody(text)
-  return DarkmistsTheme.textTag .. "{" .. formatDisplayBody(tostring(text or "")) .. DarkmistsTheme.textTag .. "}"
+  return DarkmistsTheme.mutedTag .. "{" .. formatDisplayBody(tostring(text or "")) .. DarkmistsTheme.mutedTag .. "}"
 end
 
 local function buildExportAliasLines(name)
@@ -919,7 +919,9 @@ function CMudWrapper.installTrigger(name, spec)
       return
     end
     CMudWrapper._callStack[name] = true
+    CMudWrapper._currentMatches = matches
     local ok, err = pcall(CMudWrapper.runBody, spec.body, matches)
+    CMudWrapper._currentMatches = nil
     CMudWrapper._callStack[name] = nil
     if not ok then
       CMudWrapper.notify(DarkmistsTheme.badTag .. ("trigger '%s' error: %s"):format(name, tostring(err)))
@@ -1013,7 +1015,37 @@ function CMudWrapper.exec(line)
     return true
   end
 
-  if isPrefix(verb, "ALIAS") then
+  if isPrefix(verb, "CW") then
+    -- #CW color          → color the first capture group of the firing trigger
+    -- #CW pattern color  → color every occurrence of pattern in the current line
+    local function colorWord(text, colorName)
+      if not text or text == "" then return end
+      local i = 1
+      while selectString(text, i) >= 0 do
+        fg(colorName)
+        i = i + 1
+      end
+      resetFormat()
+    end
+    if args[2] then
+      -- 2-arg form: explicit pattern + color
+      colorWord(args[1], args[2])
+    elseif args[1] then
+      -- 1-arg form: color the trigger match.
+      -- Prefer the first capture group (matches[2]) if present; fall back to
+      -- the full trigger match (matches[1]) so that bare patterns like
+      -- #TRIGGER {Zugg} {#CW red} work without needing a capture group.
+      local m = CMudWrapper._currentMatches
+      local captured = (m and m[2] ~= nil and m[2] ~= "") and m[2] or (m and m[1])
+      if captured and captured ~= "" then
+        colorWord(captured, args[1])
+      else
+        CMudWrapper.notify(DarkmistsTheme.warnTag .. "#CW: not inside a trigger context — use #CW {pattern} {color} instead")
+      end
+    end
+    return true
+
+  elseif isPrefix(verb, "ALIAS") then
     -- Form: #ALIAS {name} {body} [{class}]
     -- Inline class (args[3]) takes priority over defaultClass.
     local name = args[1]
@@ -1526,6 +1558,33 @@ function CMudWrapper.exec(line)
       if opts["unhide"] or opts["show"] then cls.hidden = nil end
       CMudWrapper.state.classes[classname] = cls
       CMudWrapper.save()
+      -- Apply enable/disable to live handles so triggers/aliases start or stop firing.
+      if opts["enable"] or opts["disable"] then
+        for aname, spec in pairs(CMudWrapper.state.aliases) do
+          if spec.class == classname then
+            if cls.enabled then
+              if spec.enabled ~= false then CMudWrapper.installAlias(aname, spec) end
+            else
+              if CMudWrapper.handles.aliases[aname] then
+                pcall(killAlias, CMudWrapper.handles.aliases[aname])
+                CMudWrapper.handles.aliases[aname] = nil
+              end
+            end
+          end
+        end
+        for tname, spec in pairs(CMudWrapper.state.triggers) do
+          if spec.class == classname then
+            if cls.enabled then
+              if spec.enabled ~= false then CMudWrapper.installTrigger(tname, spec) end
+            else
+              if CMudWrapper.handles.triggers[tname] then
+                pcall(killTrigger, CMudWrapper.handles.triggers[tname])
+                CMudWrapper.handles.triggers[tname] = nil
+              end
+            end
+          end
+        end
+      end
       CMudWrapper.notify(DarkmistsTheme.goodTag .. ("class configured: %s"):format(classname))
       return true
     end
