@@ -201,7 +201,11 @@ Prefix every command with # (e.g. #alias, #trigger).
   #alias {name} {body} {class}   – define with an inline class
   #alias {name}                  – show alias definition
   #alias                         – list all aliases (sorted by class)
+  #alias {classname}             – list aliases in that class (includes hidden)
   #unalias {name}                – remove an alias
+
+  Names may be multi-word by wrapping in braces: #alias {dr f} {drink flask}
+  #unalias also accepts bare multi-word names without braces.
 
   Body syntax:
     %1 %2 …     positional args from the alias invocation
@@ -217,7 +221,9 @@ Prefix every command with # (e.g. #alias, #trigger).
   #rxtrigger {name} {pattern} {body} {class}
   #trigger {name}                           – show trigger definition
   #trigger                                  – list all triggers
+  #trigger {classname}                      – list triggers in that class
   #untrigger {name}                         – remove a trigger
+  (#action and #rxaction are synonyms for #trigger / #rxtrigger)
 
   Wildcard tokens (for #trigger / #action):
     *         any sequence of characters
@@ -246,6 +252,7 @@ Prefix every command with # (e.g. #alias, #trigger).
   #var {name} {value} {def} {class} – set variable, default, and class
   #var {name}                       – show variable value
   #var                              – list all variables
+  #var {classname}                  – list variables in that class
   #unvar {name}                     – remove a variable
   name = value                      – shorthand assignment (no # needed)
 
@@ -283,6 +290,25 @@ Prefix every command with # (e.g. #alias, #trigger).
   Shorthand prefixes are accepted (e.g. #WA 5000).
   Use inside alias bodies to sequence timed or event-driven commands.
 
+──── COLORING ───────────────────────────────────────────────────
+  #CW {color}                – (inside trigger body) color the trigger match
+  #CW {pattern} {color}      – create a persistent trigger that colors every
+                               occurrence of {pattern} on matching lines
+  #COLOR {color}             – (inside trigger body) color the entire current line
+  #COLOR {pattern} {color}   – create a persistent trigger that colors the entire
+                               line whenever {pattern} is matched
+
+  Both commands accept an optional third arg {class} to assign the
+  auto-created trigger to a class.
+
+  Colors are any Mudlet color name (e.g. red, green, DodgerBlue).
+  Use showColors() in Mudlet to list all available names.
+
+  Examples:
+    #CW sleeping blue                  – always highlight "sleeping" in blue
+    #COLOR {You are hit} red           – color lines matching "You are hit" red
+    #CW {You are hit} orange {combat}  – same, assigned to class combat
+
 ──── UTILITY ────────────────────────────────────────────────────
   #show {text}             – echo text (variable expansion applies)
   #send {text}             – send text to server
@@ -293,8 +319,12 @@ Prefix every command with # (e.g. #alias, #trigger).
   #killall                 – erase ALL aliases, triggers, variables, and classes
 
 ──── EXPORT ─────────────────────────────────────────────────────
-  #export                  – export everything (class defs then items)
-  #export {name}           – export a named alias, trigger, or variable
+  #export                        – export everything (class defs then items)
+  #export {classname}            – export all members of that class
+  #export {name}                 – export a named alias, trigger, or variable
+  #export alias {name}           – export a specific alias by name
+  #export trigger {name}         – export a specific trigger by name
+  #export variable {name}        – export a specific variable by name
 
   Exported output includes #class declarations and trailing class
   args on each definition, so the full setup can be re-imported.
