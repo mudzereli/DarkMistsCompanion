@@ -302,12 +302,12 @@ Prefix every command with # (e.g. #alias, #trigger).
   auto-created trigger to a class.
 
   Colors are any Mudlet color name (e.g. red, green, DodgerBlue).
-  Use showColors() in Mudlet to list all available names.
+  Use lua showColors() in Mudlet to list all available names.
 
   Examples:
     #CW sleeping blue                  – always highlight "sleeping" in blue
-    #COLOR {You are hit} red           – color lines matching "You are hit" red
-    #CW {You are hit} orange {combat}  – same, assigned to class combat
+    #COLOR {You are hit} red           – color entire line matching "You are hit" red
+    #CW {You are hit} orange {combat}  – same as above except only color "You are hit", assigned to class combat
 
 ──── UTILITY ────────────────────────────────────────────────────
   #show {text}             – echo text (variable expansion applies)
