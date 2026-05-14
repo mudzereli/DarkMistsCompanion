@@ -759,14 +759,17 @@
           <tr><td><code>#alias {name} {body} {class}</code></td><td>Define with an inline class assignment</td></tr>
           <tr><td><code>#alias {name}</code></td><td>Show an alias definition</td></tr>
           <tr><td><code>#alias</code></td><td>List all aliases (sorted by class, then name)</td></tr>
-          <tr><td><code>#unalias {name}</code></td><td>Remove an alias</td></tr>
+          <tr><td><code>#alias {classname}</code></td><td>List aliases in that class (shows hidden members)</td></tr>
+          <tr><td><code>#unalias {name}</code></td><td>Remove an alias (multi-word names work bare, without braces)</td></tr>
         </tbody>
       </table>
 
+      <p>Alias names may be multi-word — wrap them in braces: <code>#alias {dr f} {drink flask}</code>.</p>
       <p>Inside an alias body:</p>
       <ul>
         <li><code>%1 %2 …</code> — positional arguments from the alias invocation</li>
         <li><code>%-1 %-2 …</code> — rest-of-args from position N onward (multi-word safe)</li>
+        <li><code>%%1 %%2 …</code> — delayed expansion (survive inner alias calls)</li>
         <li><code>@VarName</code> — expands a stored variable</li>
         <li><code>|</code> or <code>;</code> — command separator (configurable with <code>#sep</code>)</li>
       </ul>
@@ -781,7 +784,9 @@
           <tr><td><code>#rxtrigger {name} {pattern} {body} {class}</code></td><td>Add regex trigger with inline class</td></tr>
           <tr><td><code>#trigger {name}</code></td><td>Show a trigger definition</td></tr>
           <tr><td><code>#trigger</code></td><td>List all triggers (sorted by class, then name)</td></tr>
+          <tr><td><code>#trigger {classname}</code></td><td>List triggers in that class (shows hidden members)</td></tr>
           <tr><td><code>#untrigger {name}</code></td><td>Remove a trigger</td></tr>
+          <tr><td colspan="2"><em><code>#action</code> and <code>#rxaction</code> are synonyms for <code>#trigger</code> and <code>#rxtrigger</code>.</em></td></tr>
         </tbody>
       </table>
 
@@ -820,6 +825,7 @@
           <tr><td><code>#var {name} {value} {default} {class}</code></td><td>Set a variable with both a default and an inline class</td></tr>
           <tr><td><code>#var {name}</code></td><td>Show a variable's value</td></tr>
           <tr><td><code>#var</code></td><td>List all variables</td></tr>
+          <tr><td><code>#var {classname}</code></td><td>List variables in that class (shows hidden members)</td></tr>
           <tr><td><code>#unvar {name}</code></td><td>Remove a variable</td></tr>
         </tbody>
       </table>
@@ -912,6 +918,33 @@
         It is intentionally not abbreviatable — you must type it in full.
       </div>
 
+      <h3>Coloring — <code>#CW</code> / <code>#COLOR</code></h3>
+      <p>
+        <code>#CW</code> and <code>#COLOR</code> colorize output. Used with two arguments they
+        create <strong>persistent triggers</strong> that fire on every matching line. Used with
+        one argument inside a trigger body they colorize the current line.
+      </p>
+      <table>
+        <thead><tr><th>Command</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>#CW {pattern} {color}</code></td><td>Create a persistent trigger that colors every occurrence of <em>pattern</em> with <em>color</em></td></tr>
+          <tr><td><code>#CW {color}</code></td><td>(Inside a trigger body) Color the trigger match in <em>color</em></td></tr>
+          <tr><td><code>#COLOR {pattern} {color}</code></td><td>Create a persistent trigger that colors the entire matching line with <em>color</em></td></tr>
+          <tr><td><code>#COLOR {color}</code></td><td>(Inside a trigger body) Color the entire current line in <em>color</em></td></tr>
+        </tbody>
+      </table>
+      <p>
+        Both commands accept an optional third argument <code>{class}</code> to assign the
+        auto-created trigger to a class. Color names are Mudlet color names
+        (e.g. <code>red</code>, <code>blue</code>, <code>DodgerBlue</code>).
+        Run <code>showColors()</code> in the Mudlet script editor to list all available names.
+      </p>
+      <div class="tip">
+        <strong>Example:</strong> <code>#CW thirsty blue</code> — always highlight the word <em>thirsty</em> in blue.<br>
+        <strong>Example:</strong> <code>#COLOR {You are hit} red</code> — color the entire line red whenever it matches.<br>
+        <strong>Example:</strong> <code>#CW {You are hit} orange {combat}</code> — same, assigned to class <em>combat</em>.
+      </div>
+
       <h3>Export</h3>
       <p>
         <code>#export</code> prints stored definitions back out as command lines you can
@@ -923,7 +956,11 @@
         <thead><tr><th>Command</th><th>Description</th></tr></thead>
         <tbody>
           <tr><td><code>#export</code></td><td>Export class declarations, then all aliases, triggers, and variables</td></tr>
-          <tr><td><code>#export {name}</code></td><td>Export a named alias, trigger, or variable</td></tr>
+          <tr><td><code>#export {classname}</code></td><td>Export all members of a specific class</td></tr>
+          <tr><td><code>#export {name}</code></td><td>Export a single named alias, trigger, or variable</td></tr>
+          <tr><td><code>#export alias {name}</code></td><td>Export a specific alias by name</td></tr>
+          <tr><td><code>#export trigger {name}</code></td><td>Export a specific trigger by name</td></tr>
+          <tr><td><code>#export variable {name}</code></td><td>Export a specific variable by name</td></tr>
         </tbody>
       </table>
 
@@ -948,6 +985,9 @@
 -- rest-of-args: "attack c blind" → attack1 = "c blind"
 #alias attack {#var attack1 %-1}
 
+-- delayed expansion: %%1 stays as %1 for the inner alias to receive
+#alias outer {#alias inner {echo %%1}}
+
 -- group combat aliases into a class, then toggle them together
 #class combat
 #alias atk {kill %1}
@@ -959,6 +999,13 @@
 -- hide internal helpers from listings (still active)
 #class internal {hidden}
 #alias _helper {some body} {internal}
+
+-- multi-word alias names
+#alias {dr f} {drink flask}
+
+-- word and line coloring
+#CW Abasdarhon blue            -- highlight the name in blue, permanently
+#COLOR {You are hit} red       -- color the whole line red, permanently
 
 #sep ;
 #alias combo {north;kill rat;get all}
@@ -1117,25 +1164,33 @@
           <tr><td><code>#alias {name} {body}</code></td><td>Define a persistent alias</td><td>CMud</td></tr>
           <tr><td><code>#alias {name} {body} {class}</code></td><td>Define alias with inline class</td><td>CMud</td></tr>
           <tr><td><code>#alias [name]</code></td><td>List or inspect aliases</td><td>CMud</td></tr>
-          <tr><td><code>#unalias {name}</code></td><td>Remove an alias</td><td>CMud</td></tr>
+          <tr><td><code>#alias {classname}</code></td><td>List aliases in a class (shows hidden)</td><td>CMud</td></tr>
+          <tr><td><code>#unalias {name}</code></td><td>Remove an alias (multi-word names work without braces)</td><td>CMud</td></tr>
           <tr><td><code>#trigger {name} {pattern} {body}</code></td><td>Add trigger (CMUD wildcards)</td><td>CMud</td></tr>
           <tr><td><code>#trigger {name} {pattern} {body} {class}</code></td><td>Add wildcard trigger with inline class</td><td>CMud</td></tr>
           <tr><td><code>#rxtrigger {name} {pattern} {body}</code></td><td>Add trigger (raw PCRE)</td><td>CMud</td></tr>
           <tr><td><code>#rxtrigger {name} {pattern} {body} {class}</code></td><td>Add regex trigger with inline class</td><td>CMud</td></tr>
+          <tr><td><code>#trigger {classname}</code></td><td>List triggers in a class (shows hidden)</td><td>CMud</td></tr>
           <tr><td><code>#untrigger {name}</code></td><td>Remove a trigger</td><td>CMud</td></tr>
           <tr><td><code>#var {name} [value]</code></td><td>Set or inspect a variable</td><td>CMud</td></tr>
           <tr><td><code>#var {name} {value} {class}</code></td><td>Set variable with inline class (no default)</td><td>CMud</td></tr>
           <tr><td><code>#var {name} {value} {default} {class}</code></td><td>Set variable with default and class</td><td>CMud</td></tr>
+          <tr><td><code>#var {classname}</code></td><td>List variables in a class (shows hidden)</td><td>CMud</td></tr>
           <tr><td><code>#unvar {name}</code></td><td>Remove a variable</td><td>CMud</td></tr>
           <tr><td><code>#class</code></td><td>List classes and current default</td><td>CMud</td></tr>
           <tr><td><code>#class {name}</code></td><td>Set default class for new definitions</td><td>CMud</td></tr>
           <tr><td><code>#class 0</code></td><td>Reset default class to &lt;None&gt;</td><td>CMud</td></tr>
           <tr><td><code>#class {name} 1 / 0</code></td><td>Enable or disable class (applies to all members)</td><td>CMud</td></tr>
+          <tr><td><code>#class {name} {enable/disable}</code></td><td>Enable or disable class (text form)</td><td>CMud</td></tr>
           <tr><td><code>#class {name} {hidden}</code></td><td>Hide class members from listings</td><td>CMud</td></tr>
           <tr><td><code>#class {name} {unhide}</code></td><td>Unhide a hidden class</td><td>CMud</td></tr>
           <tr><td><code>#class {name} {remove}</code></td><td>Delete the class record</td><td>CMud</td></tr>
           <tr><td><code>#T+ {name}</code></td><td>Enable alias / trigger / variable</td><td>CMud</td></tr>
           <tr><td><code>#T- {name}</code></td><td>Disable alias / trigger / variable</td><td>CMud</td></tr>
+          <tr><td><code>#CW {pattern} {color}</code></td><td>Persistent trigger: color matching word</td><td>CMud</td></tr>
+          <tr><td><code>#CW {color}</code></td><td>(Inside trigger) Color the trigger match</td><td>CMud</td></tr>
+          <tr><td><code>#COLOR {pattern} {color}</code></td><td>Persistent trigger: color matching line</td><td>CMud</td></tr>
+          <tr><td><code>#COLOR {color}</code></td><td>(Inside trigger) Color the entire current line</td><td>CMud</td></tr>
           <tr><td><code>#WAIT {ms}</code></td><td>Pause N ms then continue alias body</td><td>CMud</td></tr>
           <tr><td><code>#WAIT</code></td><td>Wait for next MUD line then continue alias body</td><td>CMud</td></tr>
           <tr><td><code>#show {text}</code></td><td>Echo text (expands variables)</td><td>CMud</td></tr>
@@ -1144,6 +1199,8 @@
           <tr><td><code>#sep [char]</code></td><td>Get or set command separator</td><td>CMud</td></tr>
           <tr><td><code>#killall</code></td><td>Erase all aliases, triggers, variables, and classes</td><td>CMud</td></tr>
           <tr><td><code>#export</code></td><td>Export class declarations + all stored items</td><td>CMud</td></tr>
+          <tr><td><code>#export {classname}</code></td><td>Export all members of a class</td><td>CMud</td></tr>
+          <tr><td><code>#export alias/trigger/variable {name}</code></td><td>Export a specific item by kind and name</td><td>CMud</td></tr>
           <tr><td><code>#help</code></td><td>Show CMud help in-game</td><td>CMud</td></tr>
         </tbody>
       </table>
