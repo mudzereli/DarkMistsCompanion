@@ -927,21 +927,25 @@
       <table>
         <thead><tr><th>Command</th><th>Description</th></tr></thead>
         <tbody>
-          <tr><td><code>#CW {pattern} {color}</code></td><td>Create a persistent trigger that colors every occurrence of <em>pattern</em> with <em>color</em></td></tr>
-          <tr><td><code>#CW {color}</code></td><td>(Inside a trigger body) Color the trigger match in <em>color</em></td></tr>
-          <tr><td><code>#COLOR {pattern} {color}</code></td><td>Create a persistent trigger that colors the entire matching line with <em>color</em></td></tr>
-          <tr><td><code>#COLOR {color}</code></td><td>(Inside a trigger body) Color the entire current line in <em>color</em></td></tr>
+          <tr><td><code>#CW {pattern} {fg bg}</code></td><td>Create a persistent trigger that colors every occurrence of <em>pattern</em> with the given color(s)</td></tr>
+          <tr><td><code>#CW {fg bg}</code></td><td>(Inside a trigger body) Color the trigger match with the given color(s)</td></tr>
+          <tr><td><code>#COLOR {pattern} {fg bg}</code></td><td>Create a persistent trigger that colors the entire matching line with the given color(s)</td></tr>
+          <tr><td><code>#COLOR {fg bg}</code></td><td>(Inside a trigger body) Color the entire current line with the given color(s)</td></tr>
         </tbody>
       </table>
       <p>
+        The color argument is a single brace-wrapped token containing one or two space-separated
+        Mudlet color names. A single name sets the foreground only (e.g. <code>{red}</code>);
+        two names set foreground and background (e.g. <code>{white black}</code>).
         Both commands accept an optional third argument <code>{class}</code> to assign the
-        auto-created trigger to a class. Color names are Mudlet color names
-        (e.g. <code>red</code>, <code>blue</code>, <code>DodgerBlue</code>).
+        auto-created trigger to a class.
         Run <code>lua showColors()</code> in the Mudlet script editor to list all available names.
       </p>
       <div class="tip">
         <strong>Example:</strong> <code>#CW thirsty blue</code> — always highlight the word <em>thirsty</em> in blue.<br>
+        <strong>Example:</strong> <code>#CW thirsty {white black}</code> — highlight <em>thirsty</em> white on black.<br>
         <strong>Example:</strong> <code>#COLOR {You are hit} red</code> — color the entire line red whenever it matches.<br>
+        <strong>Example:</strong> <code>#COLOR {You are hit} {yellow black}</code> — yellow text on black background.<br>
         <strong>Example:</strong> <code>#CW {You are hit} orange {combat}</code> — same, assigned to class <em>combat</em>.
       </div>
 
@@ -1004,8 +1008,10 @@
 #alias {dr f} {drink flask}
 
 -- word and line coloring
-#CW Abasdarhon blue            -- highlight the name in blue, permanently
-#COLOR {You are hit} red       -- color the whole line red, permanently
+#CW Abasdarhon blue              -- highlight the name in blue, permanently
+#CW Abasdarhon {white black}     -- highlight white on black, permanently
+#COLOR {You are hit} red         -- color the whole line red, permanently
+#COLOR {You are hit} {yellow black} -- yellow text on black background, permanently
 
 #sep ;
 #alias combo {north;kill rat;get all}
@@ -1187,10 +1193,10 @@
           <tr><td><code>#class {name} {remove}</code></td><td>Delete the class record</td><td>CMud</td></tr>
           <tr><td><code>#T+ {name}</code></td><td>Enable alias / trigger / variable</td><td>CMud</td></tr>
           <tr><td><code>#T- {name}</code></td><td>Disable alias / trigger / variable</td><td>CMud</td></tr>
-          <tr><td><code>#CW {pattern} {color}</code></td><td>Persistent trigger: color matching word</td><td>CMud</td></tr>
-          <tr><td><code>#CW {color}</code></td><td>(Inside trigger) Color the trigger match</td><td>CMud</td></tr>
-          <tr><td><code>#COLOR {pattern} {color}</code></td><td>Persistent trigger: color matching line</td><td>CMud</td></tr>
-          <tr><td><code>#COLOR {color}</code></td><td>(Inside trigger) Color the entire current line</td><td>CMud</td></tr>
+          <tr><td><code>#CW {pattern} {fg bg}</code></td><td>Persistent trigger: color matching word (one or two colors)</td><td>CMud</td></tr>
+          <tr><td><code>#CW {fg bg}</code></td><td>(Inside trigger) Color the trigger match</td><td>CMud</td></tr>
+          <tr><td><code>#COLOR {pattern} {fg bg}</code></td><td>Persistent trigger: color matching line (one or two colors)</td><td>CMud</td></tr>
+          <tr><td><code>#COLOR {fg bg}</code></td><td>(Inside trigger) Color the entire current line</td><td>CMud</td></tr>
           <tr><td><code>#WAIT {ms}</code></td><td>Pause N ms then continue alias body</td><td>CMud</td></tr>
           <tr><td><code>#WAIT</code></td><td>Wait for next MUD line then continue alias body</td><td>CMud</td></tr>
           <tr><td><code>#show {text}</code></td><td>Echo text (expands variables)</td><td>CMud</td></tr>
