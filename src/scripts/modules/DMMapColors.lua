@@ -331,7 +331,8 @@ MapColors.WordAssociations = {
   { "The Admin* Block - *", MapColors.Terrain.STONE_WHITE },
   { "Administrative Corridor - *", MapColors.Terrain.STONE_WHITE },
   { "South Yard - *", MapColors.Terrain.GRASSY },
-  { "Northeast Pasture - *", MapColors.Terrain.PLAINS }
+  { "Northeast Pasture - *", MapColors.Terrain.PLAINS },
+  { "* Feet Below The Surface", MapColors.Terrain.DEEP_WATER }
 }
 
 -- Connector keywords (for rooms linking different terrains)

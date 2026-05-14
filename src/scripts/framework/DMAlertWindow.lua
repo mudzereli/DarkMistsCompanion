@@ -51,8 +51,11 @@ local function ensure_init()
   panel.bodyFontSize = 12
 
   setMiniConsoleFontSize(panel.header, 14)
+  setFont(panel.header, getFont())
   setMiniConsoleFontSize(panel.close, 14)
+  setFont(panel.close, getFont())
   setMiniConsoleFontSize(panel.body, panel.bodyFontSize)
+  setFont(panel.body, getFont())
 
   _applyTheme()
 

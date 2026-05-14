@@ -39,9 +39,9 @@ Darkmists.DefaultSettings = {
   -- Percentage of screen space reserved for each border region
   borders = { top = 0, bottom = 0, left = 0, right = 0 },
   -- Font Size for additional Information Windows (Chat History, Who List, Affects)
-  fontSize = 11,
+  fontSize = math.ceil(getFontSize()*0.75),--11,
   -- Font Face for additional Information Windows (Chat History, Who List, Affects)
-  fontName = "Lucida Console",
+  fontName = getFont(),
   -- Colors for Status Bars (these are expressed in RGBA format which allows a wider variety of colors)
   statusBarColors = {
     hp    = { bar = "128,0,0,255",   backdrop = "32,0,0,255" },
@@ -423,6 +423,10 @@ function Darkmists.LoadSettings()
     local settings = {}
 ---@diagnostic disable-next-line: undefined-field
     table.load(saveFilePath, settings)
+    
+    -- Override user saved settings with Defaults derived from mudlet settings
+    settings.fontName = Darkmists.DefaultSettings.fontName
+    settings.fontSize = Darkmists.DefaultSettings.fontSize
 
     -- Merge settings (preserve values even if layoutCacheVersion missing)
     DMUtil.deep_copy_into(Darkmists.GlobalSettings, settings)

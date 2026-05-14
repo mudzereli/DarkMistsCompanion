@@ -11,7 +11,7 @@ ChatHistory = {}
 ChatHistory.config = {
   maxMessages = 100,
   fontSize   = 10,
-  fontName   = "Consolas",
+  fontName   = getFont(),
 }
 
 -- Runtime state is rebuilt on every load so we never reuse stale Geyser refs.
@@ -69,7 +69,7 @@ function ChatHistory.applyTheme()
   local theme = rawget(_G, "DarkmistsTheme") or {}
 
   ChatHistory.config.fontSize = settings.fontSize or ChatHistory.config.fontSize or 10
-  ChatHistory.config.fontName = settings.fontName or ChatHistory.config.fontName or "Consolas"
+  ChatHistory.config.fontName = settings.fontName or ChatHistory.config.fontName
 
   textTag   = theme.textTag or textTag
   mutedTag  = theme.mutedTag or mutedTag

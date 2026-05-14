@@ -10,7 +10,7 @@ AffectsWindow = {}
 
 AffectsWindow.config = {
   fontSize       = 10,
-  fontName       = "Bitstream Vera Sans Mono",
+  fontName       = getFont(),
   updateInterval = 1,
   textLengthAffectName = 30,
   textLengthAffectMod  = 20,

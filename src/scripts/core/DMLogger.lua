@@ -7,7 +7,7 @@ DMLogger = {}
 -- Standalone defaults (avoid referencing Darkmists globals here)
 DMLogger.config = {
   fontSize = 11,
-  fontName = "Lucida Console",
+  fontName = getFont(),
   height = 120,
   visible = false
 }
