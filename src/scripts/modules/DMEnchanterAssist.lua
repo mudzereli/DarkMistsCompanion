@@ -595,7 +595,7 @@ function EnchanterAssist.showSessionFormulas()
 
   for _, name in ipairs(EnchanterAssist.sessionFormulas) do
     cechoLink(
-      string.format("%s• %s%s\n", ea_accent, ea_text, name),
+      string.format("%s• %s<u>%s</u>\n", ea_accent, ea_text, name),
       function()
         send("alch info " .. name)
       end,
@@ -685,7 +685,7 @@ function EnchanterAssist.stats()
 
   if discoveredCount > 0 then
     cechoLink(
-      ea_gold .. "[View All]",
+      ea_gold .. "<u>[View All]</u>",
       function()
         EnchanterAssist.showSessionFormulas()
       end,
