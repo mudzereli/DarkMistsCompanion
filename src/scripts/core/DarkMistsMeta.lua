@@ -292,22 +292,26 @@ Prefix every command with # (e.g. #alias, #trigger).
 
 ──── COLORING ───────────────────────────────────────────────────
   #CW {color}                – (inside trigger body) color the trigger match
-  #CW {pattern} {color}      – create a persistent trigger that colors every
+  #CW {pattern} {fg bg}      – create a persistent trigger that colors every
                                occurrence of {pattern} on matching lines
   #COLOR {color}             – (inside trigger body) color the entire current line
-  #COLOR {pattern} {color}   – create a persistent trigger that colors the entire
+  #COLOR {pattern} {fg bg}   – create a persistent trigger that colors the entire
                                line whenever {pattern} is matched
 
-  Both commands accept an optional third arg {class} to assign the
-  auto-created trigger to a class.
+  The color argument may contain a single color name (e.g. {blue}) or two
+  space-separated names for fg and bg (e.g. {white black}). Both commands
+  accept an optional third arg {class} to assign the auto-created trigger
+  to a class.
 
   Colors are any Mudlet color name (e.g. red, green, DodgerBlue).
   Use lua showColors() in Mudlet to list all available names.
 
   Examples:
-    #CW sleeping blue                  – always highlight "sleeping" in blue
-    #COLOR {You are hit} red           – color entire line matching "You are hit" red
-    #CW {You are hit} orange {combat}  – same as above except only color "You are hit", assigned to class combat
+    #CW sleeping blue                    – always highlight "sleeping" in blue
+    #CW sleeping {white black}           – highlight "sleeping" white on black
+    #COLOR {You are hit} red             – color entire line matching "You are hit" red
+    #COLOR {You are hit} {yellow black}  – same, yellow text on black background
+    #CW {You are hit} orange {combat}    – only color "You are hit", assigned to class combat
 
 ──── UTILITY ────────────────────────────────────────────────────
   #show {text}             – echo text (variable expansion applies)

@@ -1038,37 +1038,42 @@ function CMudWrapper.exec(line)
     local function cleanColor(s)
       return (tostring(s or "")):match("^{(.-)}$") or tostring(s or "")
     end
-    local function colorWord(text, colorName)
+    local function splitColors(s)
+      local fg_c, bg_c = s:match("^(%S+)%s+(%S+)$")
+      return fg_c or s, bg_c
+    end
+    local function colorWord(text, colorStr)
       if not text or text == "" then return end
-      colorName = cleanColor(colorName)
+      local fg_c, bg_c = splitColors(colorStr)
       local i = 1
       while selectString(text, i) >= 0 do
-        fg(colorName)
+        fg(fg_c)
+        if bg_c then bg(bg_c) end
         i = i + 1
       end
       resetFormat()
     end
     if args[2] then
-      -- 2-arg form: #CW {pattern} {color} → persistent trigger that colors the phrase
-      -- Equivalent to: #TRIGGER {pattern} {#CW color}
+      -- 2-arg form: #CW {pattern} {fg bg} → persistent trigger that colors matched word
       local pattern  = args[1]
       local colorStr = cleanColor(args[2])
       local autoName = "cw:" .. pattern
       local inlineClass = args[3] or CMudWrapper.defaultClass
+      local colorArg = colorStr:find("%s") and ("{" .. colorStr .. "}") or colorStr
       CMudWrapper.replaceTrigger(autoName, {
         pattern = pattern,
-        body    = CMudWrapper.commandChar .. "CW " .. colorStr,
+        body    = CMudWrapper.commandChar .. "CW " .. colorArg,
         cmud    = true,
         class   = inlineClass,
       })
       CMudWrapper.save()
       CMudWrapper.notify(DarkmistsTheme.goodTag .. ("word-color trigger created: %s → %s"):format(pattern, colorStr))
     elseif args[1] then
-      -- 1-arg form: color the trigger match on the current line.
+      -- 1-arg form: #CW {fg bg} → color the trigger match on the current line
       local m = CMudWrapper._currentMatches
       local captured = (m and m[2] ~= nil and m[2] ~= "") and m[2] or (m and m[1])
       if captured and captured ~= "" then
-        colorWord(captured, args[1])
+        colorWord(captured, cleanColor(args[1]))
       else
         CMudWrapper.notify(DarkmistsTheme.warnTag .. "#CW: not inside a trigger context — use #CW {pattern} {color} to create a persistent trigger")
       end
@@ -1079,25 +1084,32 @@ function CMudWrapper.exec(line)
     local function cleanColor(s)
       return (tostring(s or "")):match("^{(.-)}$") or tostring(s or "")
     end
+    local function splitColors(s)
+      local fg_c, bg_c = s:match("^(%S+)%s+(%S+)$")
+      return fg_c or s, bg_c
+    end
     if args[2] then
-      -- 2-arg form: #COLOR {pattern} {color} → persistent trigger that colors the whole line
-      -- Equivalent to: #TRIGGER {pattern} {#COLOR color}
+      -- 2-arg form: #COLOR {pattern} {fg bg} → persistent trigger that colors matched line
       local pattern  = args[1]
       local colorStr = cleanColor(args[2])
       local autoName = "co:" .. pattern
       local inlineClass = args[3] or CMudWrapper.defaultClass
+      local colorArg = colorStr:find("%s") and ("{" .. colorStr .. "}") or colorStr
       CMudWrapper.replaceTrigger(autoName, {
         pattern = pattern,
-        body    = CMudWrapper.commandChar .. "COLOR " .. colorStr,
+        body    = CMudWrapper.commandChar .. "COLOR " .. colorArg,
         cmud    = true,
         class   = inlineClass,
       })
       CMudWrapper.save()
       CMudWrapper.notify(DarkmistsTheme.goodTag .. ("line-color trigger created: %s → %s"):format(pattern, colorStr))
     elseif args[1] then
-      -- 1-arg form: #COLOR {color} → color the entire current line
+      -- 1-arg form: #COLOR {fg bg} → color the entire current line
+      local colorStr = cleanColor(args[1])
+      local fg_c, bg_c = splitColors(colorStr)
       selectCurrentLine()
-      fg(cleanColor(args[1]))
+      fg(fg_c)
+      if bg_c then bg(bg_c) end
       resetFormat()
     end
     return true
