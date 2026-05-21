@@ -91,18 +91,10 @@ end
 function DarkMistsMiniMap.update()
   if not map then return end
   if not map.configs then return end
-  local name, id, area
-
   local selection = getMapSelection()
-  if selection then
-    id = selection.center
-    if id then
-      name = getRoomName(id)
-      if name then
-        area = getRoomAreaName(getRoomArea(id))
-      end
-    end
-  end
+  local id = selection and selection.center
+  local name = id and getRoomName(id)
+  local area = name and getRoomAreaName(getRoomArea(id))
 
   -- Prefer the selected room; fall back to the live room when selection is incomplete.
   if not (name and id and area) and map.currentRoom then
@@ -186,20 +178,20 @@ end
 function DarkMistsMiniMap.init()
   DarkMistsMiniMap.configure()
   local _, _, connected = getConnectionInfo()
-  if connected then
-    initMiniMap()
+  if not connected then
+    DarkmistsEvents.add("DarkMistsMiniMap.OnConnect", "sysConnectionEvent",
+      function()
+        local _,_,c = getConnectionInfo()
+        if c then
+          initMiniMap()
+        end
+      end,
+      true
+    )
     return true
   end
 
-  DarkmistsEvents.add("DarkMistsMiniMap.OnConnect", "sysConnectionEvent",
-    function()
-      local _,_,c = getConnectionInfo()
-      if c then
-        initMiniMap()
-      end
-    end,
-    true
-  )
+  initMiniMap()
 
   return true
 end
