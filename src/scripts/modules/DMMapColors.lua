@@ -68,6 +68,7 @@ MapColors.AreaOverrides = {
   ["Whispering Timberlands"] = MapColors.Terrain.THICK_WOODS,
   ["The Mane Event"] = MapColors.Terrain.THICK_WOODS,
   ["The Landshark Breeding Grounds"] = MapColors.Terrain.STONE_WHITE,
+  ["The Nine Hells"] = MapColors.Terrain.FIERY,
 }
 
 -- Terrain category sets (for adjacency analysis and context detection)
