@@ -21,11 +21,9 @@ CMudWrapper = {
   state = { aliases = {}, triggers = {}, vars = {}, defaults = {}, varmeta = {}, classes = {} },
   handles = { aliases = {}, triggers = {} },
   commandHandle = nil,
-  -- Runtime-only: the current default class (never persisted; reset on load).
-  -- Set with `#CLASS name`, reset with `#CLASS 0`.
+  -- Runtime-only default class. Set with `#CLASS name`, reset with `#CLASS 0`.
   defaultClass = nil,
-  -- Tracks names of aliases/triggers currently executing. Used to block
-  -- self/mutual recursion when alias bodies call other aliases.
+  -- Tracks active alias/trigger names so nested bodies cannot recurse forever.
   _callStack = {},
 }
 
@@ -41,6 +39,10 @@ function CMudWrapper.notify(msg)
   local prefix = DarkmistsTheme and (DarkmistsTheme.blueTag .. "CMudWrapper") or "CMudWrapper"
   DMLogger.notify(prefix, msg)
 end
+
+--================================--
+-- Command Dispatch
+--================================--
 
 local function trim(s)
   return (s or ""):match("^%s*(.-)%s*$")
@@ -78,12 +80,12 @@ local function applyVars(text)
   return text
 end
 
+-- Match token expansion is deliberately ordered: protect delayed literals first,
+-- then expand positional references, then restore anything that was meant to stay literal.
 local function expandMatchTokens(text, matchTable)
   if matchTable then
-    -- %-N: rest-of-args from position N onwards (expand before %N to avoid overlap).
-    -- Wrap multi-word results in {} so re-tokenization via parseArgs treats the
-    -- whole expansion as a single argument (e.g. #var x %-1 with "kill buddy" →
-    -- #var x {kill buddy} → value = "kill buddy", not just "kill").
+    -- %-N expands to the tail of the captured argument list starting at slot N.
+    -- Wrapping multi-word results in {} keeps parseArgs from splitting the tail back apart.
     text = text:gsub("%%%-(%d+)", function(num)
       local n = tonumber(num)
       if not n or n < 1 then return "%-" .. num end
@@ -107,6 +109,7 @@ local function expandMatchTokens(text, matchTable)
       end)
     end
 
+    -- Any positional token with no capture is removed, matching the wrapper's empty-string fallback.
     text = text:gsub("%%(%d+)", "")
   end
 
@@ -117,7 +120,7 @@ local function applyMatches(text, matchTable)
   if not matchTable then return text end
   local delayed = {}
 
-  -- Protect delayed-expansion sequences like %%1 -> placeholder so they survive the first pass.
+  -- Protect literal %%1-style tokens so the first pass does not turn them into captures.
   text = text:gsub("%%%%(%d+)", function(num)
     local key = "__CMW_PCT_" .. num .. "__"
     delayed[key] = "%" .. num
@@ -126,7 +129,7 @@ local function applyMatches(text, matchTable)
 
   text = expandMatchTokens(text, matchTable)
 
-  -- restore delayed placeholders back to literal percent tokens without expanding them again.
+  -- Restore the escaped tokens after positional expansion has finished.
   for k, v in pairs(delayed) do
     text = text:gsub(k, function()
       return v
@@ -762,8 +765,7 @@ function CMudWrapper.runLine(line, matchTable)
   if line:sub(1, 1) == CMudWrapper.commandChar then
     CMudWrapper.exec(line)
   else
-    -- Check registered aliases first so trigger/alias bodies can chain into
-    -- other aliases without sending the command to the server.
+    -- Let scripted bodies chain through aliases before falling back to send().
     if CMudWrapper.tryInvokeAlias(line) then return end
     send(line)
   end
@@ -772,21 +774,15 @@ end
 function CMudWrapper.runBody(body, matchTable)
   body = applyMatches(applyVars(body or ""), matchTable)
 
-  -- Split only on top-level separators so nested alias bodies like
-  -- `#al h {hang %1|hang %2|hang %3}` stay intact until the inner #AL runs.
   local commands = splitTopLevelCommands(body, CMudWrapper.commandSeparator)
 
-  -- Helper to execute commands from index `i` forward. Supports
-  -- asynchronous pause via the `#WAIT <ms>` (delay milliseconds)
-  -- or `#WAIT` (wait for next MUD line) commands. Remaining commands
-  -- are resumed after the delay/event.
+  -- Execute top-level commands sequentially and suspend the remainder for #WAIT.
   CMudWrapper._wait = CMudWrapper._wait or { timers = {}, triggers = {} }
 
   local function executeFrom(i)
     for idx = i, #commands do
       local cmd = commands[idx]
       if cmd ~= "" then
-        -- If this is a CMudWrapper command, check for WAIT specially.
         if cmd:sub(1,1) == CMudWrapper.commandChar then
           local argstr = cmd:sub(2)
           local carg = parseArgs(argstr)
@@ -842,13 +838,11 @@ function CMudWrapper.runBody(body, matchTable)
 end
 
 function CMudWrapper.installAlias(name, spec)
-  -- If a alias spec has `enabled = false`, do not create a runtime
-  -- handle. This lets aliases remain defined but disabled until the
-  -- user explicitly enables them with `#T+ name`.
+  -- Disabled aliases stay defined but do not get runtime handles until re-enabled.
   if spec and spec.enabled == false then
     return
   end
-  -- If the alias belongs to a disabled class, do not install.
+  -- Skip aliases in disabled classes.
   if spec and spec.class then
     local cls = CMudWrapper.state.classes and CMudWrapper.state.classes[spec.class]
     if cls and cls.enabled == false then return end
@@ -860,7 +854,7 @@ function CMudWrapper.installAlias(name, spec)
   local function aliasHandler()
     local captured = matches or {}
 
-    -- Recursion guard: block re-entry if this alias is already on the call stack.
+    -- Block self-recursion before running the body.
     if CMudWrapper._callStack[name] then
         CMudWrapper.notify(DarkmistsTheme.warnTag .. ("recursion blocked: alias '%s' called itself"):format(name))
       return
@@ -901,13 +895,11 @@ function CMudWrapper.installAlias(name, spec)
 end
 
 function CMudWrapper.installTrigger(name, spec)
-  -- If a trigger spec has `enabled = false`, do not create a runtime
-  -- handle. This lets triggers remain defined but disabled until the
-  -- user explicitly enables them with `#T+ name`.
+  -- Disabled triggers stay defined but do not get runtime handles until re-enabled.
   if spec and spec.enabled == false then
     return
   end
-  -- If the trigger belongs to a disabled class, do not install.
+  -- Skip triggers in disabled classes.
   if spec and spec.class then
     local cls = CMudWrapper.state.classes and CMudWrapper.state.classes[spec.class]
     if cls and cls.enabled == false then return end
@@ -923,7 +915,7 @@ function CMudWrapper.installTrigger(name, spec)
   end
 
   local handle = tempRegexTrigger(regex, function()
-    -- Assign &VarName captures into CMudWrapper variables before running the body.
+    -- Assign &VarName captures before firing the body so later commands can reuse them.
     if #varMapping > 0 and matches then
       for _, mapping in ipairs(varMapping) do
         local val = matches[mapping.idx + 1]  -- matches[1] = full match, [2+] = captures
@@ -932,7 +924,7 @@ function CMudWrapper.installTrigger(name, spec)
         end
       end
     end
-    -- Recursion guard: block re-entry if this trigger is already on the call stack.
+    -- Block trigger re-entry while the body is executing.
     if CMudWrapper._callStack[name] then
       CMudWrapper.notify(DarkmistsTheme.warnTag .. ("recursion blocked: trigger '%s'"):format(name))
       return
@@ -1007,7 +999,7 @@ function CMudWrapper.unload()
   end
 
   CMudWrapper.handles = { aliases = {}, triggers = {} }
-  -- cleanup any pending wait timers/triggers
+  -- Clear any suspended #WAIT state so reloads do not resume stale bodies.
   if CMudWrapper._wait then
     for id in pairs(CMudWrapper._wait.timers or {}) do
       pcall(killTimer, id)
