@@ -25,6 +25,8 @@ CMudWrapper = {
   defaultClass = nil,
   -- Tracks active alias/trigger names so nested bodies cannot recurse forever.
   _callStack = {},
+  -- Runtime-only index of trigger definitions that reference @vars in their pattern.
+  _patternDeps = {},
 }
 
 -- Convenience notify wrapper for this module.
@@ -217,6 +219,72 @@ end
 
 local function escapeRegex(text)
   return (tostring(text):gsub("([%^%$%(%)%%%.%[%]%*%+%-%?])", "%%%1"))
+end
+
+local function escapeCmudLiteral(text)
+  text = tostring(text or "")
+  text = text:gsub("~", "~~")
+  text = text:gsub("%%", function() return "~%" end)
+  text = text:gsub("%*", "~*")
+  text = text:gsub("%?", "~?")
+  text = text:gsub("%^", "~^")
+  text = text:gsub("%$", "~$")
+  text = text:gsub("%[", "~[")
+  text = text:gsub("%]", "~]")
+  text = text:gsub("%{", "~{")
+  text = text:gsub("%}", "~}")
+  text = text:gsub("%(", "~(")
+  text = text:gsub("%)", "~)")
+  text = text:gsub("%|", "~|")
+  text = text:gsub("%&", "~&")
+  return text
+end
+
+-- Trigger definitions can use {@var} or bare @var so the variable is resolved before the pattern is compiled.
+local function applyPatternVars(text, regexMode)
+  text = tostring(text or "")
+
+  local function expand(name)
+    local value = CMudWrapper.state.vars[name]
+    if value == nil then return "" end
+    value = tostring(value)
+    if regexMode then
+      return escapeRegex(value)
+    end
+    return escapeCmudLiteral(value)
+  end
+
+  text = text:gsub("%{@([%w_]+)%}", expand)
+  return text:gsub("@([%a_][%w_]*)", expand)
+end
+
+local function collectPatternVars(text)
+  local deps = {}
+  tostring(text or ""):gsub("%{@([%w_]+)%}", function(name)
+    deps[name] = true
+  end)
+  tostring(text or ""):gsub("@([%a_][%w_]*)", function(name)
+    deps[name] = true
+  end)
+  return deps
+end
+
+function CMudWrapper.refreshPatternTriggersFor(name)
+  if not name or not CMudWrapper._patternDeps then return end
+
+  local affected = {}
+  for triggerName, deps in pairs(CMudWrapper._patternDeps) do
+    if deps and deps[name] then
+      affected[#affected + 1] = triggerName
+    end
+  end
+
+  for _, triggerName in ipairs(affected) do
+    local spec = CMudWrapper.state.triggers[triggerName]
+    if spec then
+      CMudWrapper.installTrigger(triggerName, spec)
+    end
+  end
 end
 
 local function exportArg(text)
@@ -699,6 +767,7 @@ function CMudWrapper.setVariable(name, value, default)
 
   CMudWrapper.state.vars[name] = value
   CMudWrapper.save()
+  CMudWrapper.refreshPatternTriggersFor(name)
   CMudWrapper.notify(DarkmistsTheme.goodTag .. ("variable set: %s = %s"):format(name, tostring(value)))
 end
 
@@ -908,10 +977,16 @@ function CMudWrapper.installTrigger(name, spec)
     pcall(killTrigger, CMudWrapper.handles.triggers[name])
   end
 
+  -- Capture pattern-side @vars so we can recompile this trigger when those variables change.
+  CMudWrapper._patternDeps = CMudWrapper._patternDeps or {}
+  CMudWrapper._patternDeps[name] = collectPatternVars(spec.pattern)
+
   -- Translate CMUD wildcard patterns to PCRE when the spec was created with #WTRIGGER.
   local regex, varMapping = spec.pattern, {}
   if spec.cmud then
-    regex, varMapping = cmudPatternToRegex(spec.pattern)
+    regex, varMapping = cmudPatternToRegex(applyPatternVars(spec.pattern, false))
+  else
+    regex = applyPatternVars(regex, true)
   end
 
   local handle = tempRegexTrigger(regex, function()
@@ -971,6 +1046,9 @@ function CMudWrapper.removeTrigger(name)
     pcall(killTrigger, CMudWrapper.handles.triggers[name])
     CMudWrapper.handles.triggers[name] = nil
   end
+  if CMudWrapper._patternDeps then
+    CMudWrapper._patternDeps[name] = nil
+  end
     if CMudWrapper.state.triggers[name] ~= nil then
       CMudWrapper.state.triggers[name] = nil
       CMudWrapper.save()
@@ -999,6 +1077,7 @@ function CMudWrapper.unload()
   end
 
   CMudWrapper.handles = { aliases = {}, triggers = {} }
+  CMudWrapper._patternDeps = {}
   -- Clear any suspended #WAIT state so reloads do not resume stale bodies.
   if CMudWrapper._wait then
     for id in pairs(CMudWrapper._wait.timers or {}) do
@@ -1224,6 +1303,7 @@ function CMudWrapper.exec(line)
         CMudWrapper.state.varmeta = CMudWrapper.state.varmeta or {}
         CMudWrapper.state.varmeta[tname] = true
         CMudWrapper.save()
+        CMudWrapper.refreshPatternTriggersFor(tname)
         CMudWrapper.notify(DarkmistsTheme.goodTag .. ("variable enabled: %s"):format(tname))
         return true
       end
@@ -1256,6 +1336,7 @@ function CMudWrapper.exec(line)
         CMudWrapper.state.varmeta = CMudWrapper.state.varmeta or {}
         CMudWrapper.state.varmeta[tname] = false
         CMudWrapper.save()
+        CMudWrapper.refreshPatternTriggersFor(tname)
         CMudWrapper.notify(DarkmistsTheme.warnTag .. ("variable disabled: %s"):format(tname))
         return true
       end
@@ -1529,6 +1610,7 @@ function CMudWrapper.exec(line)
       CMudWrapper.state.vars[name] = nil
       CMudWrapper.state.defaults[name] = nil
       CMudWrapper.save()
+        CMudWrapper.refreshPatternTriggersFor(name)
       CMudWrapper.notify(DarkmistsTheme.goodTag .. ("variable removed: %s"):format(tostring(name)))
     else
       CMudWrapper.notify(DarkmistsTheme.warnTag .. ("variable not found: %s"):format(tostring(name)))
