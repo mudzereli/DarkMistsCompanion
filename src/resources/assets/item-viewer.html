@@ -424,6 +424,8 @@ th.grouped {
               <!-- Flags -->
               <div class="border rounded p-2">
                 <h6 class="small text-secondary mb-2">Flags</h6>
+                <label class="form-label small">Extra Flags</label>
+                <select id="extraFlags" class="form-select form-select-sm mb-2" multiple></select>
                 <label class="form-label small">Affect Flags</label>
                 <select id="affectFlags" class="form-select form-select-sm mb-2" multiple></select>
                 <label class="form-label small">Restrict Flags</label>
@@ -488,7 +490,7 @@ let items = [];
 let sortKey = null;
 let sortAsc = true;
 let areaStats = {};
-const SPECIAL_AREAS = new Set(['Quests', 'Fastolph\'s Shrine', 'Valhalla', 'Prizes', 'Shrine of Duality', 'Special Stuff', 'Thera Ball']);
+const SPECIAL_AREAS = new Set(['Quests', 'Fastolph\'s Shrine', 'Valhalla', 'Prizes', 'Shrine of Duality', 'Special Stuff', 'Thera Ball', "Tziensarith's God Room", "Melykurion's God Room", "Hope's Eternity","Room of Dreams","The Chamber of Eternal Agony","Palace of Prurience","The Halflings Den","The Shrine of Innovation","Shrine of Harmony","Shrine of the Silver Dragon","Cirdan's Shrine","Council of Elven Law","Luniin Forest","The Altar of Redemption","The House of Abasdarhon","Shrine of the Void","The Shrine of Merchants","Illunus Godroom","The Medicinal Garden","Shrine of the Jar God","Chamber of Horizons"]);
 
 const $ = (id) => document.getElementById(id);
 const tbody = document.querySelector('tbody');
@@ -535,12 +537,12 @@ const PRESETS = {
   caster: {
     hit: 0,
     dam: 0,
-    hp: 0.5,
-    ac: 0.3,
-    spell: 2,
+    hp: 1,
+    ac: 1,
+    spell: 20,
     holy: 0,
     avgDmg: 0,
-    mana: 1.5
+    mana: 0.5
   },
   healer: {
     hit: 0,
@@ -724,6 +726,7 @@ function clearAllFilters() {
   $('areaSort').value = 'alpha';
   
   [...$('weaponFlags').options].forEach(o => o.selected = false);
+  [...$('extraFlags').options].forEach(o => o.selected = false);
   [...$('affectFlags').options].forEach(o => o.selected = false);
   [...$('restrictFlags').options].forEach(o => o.selected = false);
   
@@ -825,6 +828,14 @@ function decodeHtmlEntities(text) {
     .replace(/&amp;/g, '&');
 }
 
+function parseFlagList(text) {
+  return (text || '')
+    .split(/\s+/)
+    .map(flag => flag.replace(/[.,!]+$/g, '').trim().toLowerCase())
+    .filter(Boolean)
+    .filter(flag => flag !== 'none');
+}
+
 function parseItem(rawText, sourceId) {
   rawText = decodeHtmlEntities(rawText);
   const id = sourceId || `item-${itemId++}`;
@@ -885,8 +896,9 @@ function parseItem(rawText, sourceId) {
     weight: weightMatch ? Number(weightMatch[1]) : null,
     value: Number(rawText.match(/value is (\d+)/i)?.[1] ?? 0),
     weaponType: rawText.match(/Weapon type is ([^\.\n]+)/)?.[1] ?? '',
-    weaponFlags: rawText.match(/Weapons flags: ([^\n]+)/)?.[1]?.split(/\s+/) ?? [],
-    restrictFlags: rawText.match(/restrict flags ([^\n]+)./)?.[1]?.split(/\s+/).filter(f => f.toLowerCase() !== 'none') ?? [],
+    weaponFlags: parseFlagList(rawText.match(/Weapons flags: ([^\n]+)/i)?.[1]),
+    extraFlags: parseFlagList(rawText.match(/extra flags\s+([^\n]+)/i)?.[1]),
+    restrictFlags: parseFlagList(rawText.match(/restrict flags ([^\n]+)/i)?.[1]),
     material: rawText.match(/Material is ([^\.\n]+)/)?.[1]?.toLowerCase() ?? '',
     affectFlags: [...affectSet],
     avgDamage: avgDice(dmg),
@@ -932,6 +944,7 @@ function populateFilters() {
   const areas = new Set();
   const slots = new Set();
   const wflags = new Set();
+  const xflags = new Set();
   const aflags = new Set();
   const rflags = new Set();
   const types = new Set();
@@ -946,6 +959,7 @@ function populateFilters() {
     if (item.material) materials.add(item.material);
     
     item.weaponFlags.forEach(f => wflags.add(f));
+    item.extraFlags.forEach(f => xflags.add(f));
     item.affectFlags.forEach(f => aflags.add(f));
     item.restrictFlags.forEach(f => rflags.add(f));
   });
@@ -985,6 +999,11 @@ function populateFilters() {
   // Populate weapon flags
   wflags.forEach(flag => {
     $('weaponFlags').append(new Option(flag, flag));
+  });
+
+  // Populate extra flags
+  [...xflags].sort().forEach(flag => {
+    $('extraFlags').append(new Option(flag, flag));
   });
   
   // Populate affect flags (sorted: regular affects first, immunities last)
@@ -1073,6 +1092,7 @@ function getItemsMatchingFiltersExceptArea() {
   const materialOptions = [...document.querySelectorAll('#materialOptions input:checked')].map(c => c.value);
   
   const wflags = [...$('weaponFlags').selectedOptions].map(o => o.value);
+  const xflags = [...$('extraFlags').selectedOptions].map(o => o.value);
   const aflags = [...$('affectFlags').selectedOptions].map(o => o.value);
   const rflags = [...$('restrictFlags').selectedOptions].map(o => o.value);
   
@@ -1099,6 +1119,7 @@ function getItemsMatchingFiltersExceptArea() {
     if (wear.length && !wear.includes(item.wearSlot)) return false;
     if (types.length && !types.includes(item.type)) return false;
     if (wflags.length && !wflags.every(f => item.weaponFlags.includes(f))) return false;
+    if (xflags.length && !xflags.every(f => item.extraFlags.includes(f))) return false;
     if (aflags.length && !aflags.every(f => item.affectFlags.includes(f))) return false;
     if (rflags.length && !rflags.every(f => item.restrictFlags.includes(f))) return false;
     if ((item.avgDamage ?? 0) < minAvg || (item.avgDamage ?? 0) > maxAvg) return false;
@@ -1178,22 +1199,35 @@ function updateTableHeaders() {
    ========================================================= */
 function buildBadgeHTML(item) {
   const parts = [];
+  const badgeClass = flag => {
+    if (flag === 'magic' || flag === 'pulsing') return 'text-bg-info text-dark';
+    if (flag === 'rotdeath') return 'text-bg-dark';
+    if (flag === 'noremove' || flag === 'nouncurse') return 'text-bg-danger';
+    if (flag.startsWith('anti_')) return 'text-bg-warning text-dark';
+    return 'text-bg-secondary';
+  };
   
   if (item.weaponFlags.length) {
     parts.push(
-      item.weaponFlags.map(f => `<span class="badge text-bg-secondary me-1">⚔ ${f}</span>`).join('')
+      item.weaponFlags.map(f => `<span class="badge ${badgeClass(f)} me-1">⚔ ${f}</span>`).join('')
+    );
+  }
+
+  if (item.extraFlags.length) {
+    parts.push(
+      item.extraFlags.map(f => `<span class="badge ${badgeClass(f)} me-1">✦ ${f}</span>`).join('')
     );
   }
   
   if (item.affectFlags.length) {
     parts.push(
-      item.affectFlags.map(f => `<span class="badge text-bg-secondary me-1">✨ ${f}</span>`).join('')
+      item.affectFlags.map(f => `<span class="badge ${badgeClass(f)} me-1">✨ ${f}</span>`).join('')
     );
   }
   
   if (item.restrictFlags.length) {
     parts.push(
-      item.restrictFlags.map(f => `<span class="badge text-bg-secondary me-1">✅ ${f}</span>`).join('')
+      item.restrictFlags.map(f => `<span class="badge ${badgeClass(f)} me-1">✅ ${f}</span>`).join('')
     );
   }
   
@@ -1213,6 +1247,7 @@ function render() {
   const materialOptions = [...document.querySelectorAll('#materialOptions input:checked')].map(c => c.value);
   
   const wflags = [...$('weaponFlags').selectedOptions].map(o => o.value);
+  const xflags = [...$('extraFlags').selectedOptions].map(o => o.value);
   const aflags = [...$('affectFlags').selectedOptions].map(o => o.value);
   const rflags = [...$('restrictFlags').selectedOptions].map(o => o.value);
   
@@ -1242,7 +1277,9 @@ function render() {
   if (materialOptions.length) chips.push(`Material: ${materialOptions.join(', ')}`);
   if (wear.length) chips.push(`Slot: ${wear.join(', ')}`);
   if (wflags.length) chips.push(`Weapon Flags: ${wflags.join(', ')}`);
+  if (xflags.length) chips.push(`Extra Flags: ${xflags.join(', ')}`);
   if (aflags.length) chips.push(`Affect Flags: ${aflags.join(', ')}`);
+  if (rflags.length) chips.push(`Restrict Flags: ${rflags.join(', ')}`);
   if (minHit) chips.push(`Min Hit: ${minHit}`);
   if (minDmg) chips.push(`Min Dam: ${minDmg}`);
   if (minHP) chips.push(`Min HP: ${minHP}`);
@@ -1272,6 +1309,7 @@ function render() {
     if (weaponTypes.length && !weaponTypes.includes(item.weaponType || '')) return false;
     if (materialOptions.length && !materialOptions.includes(item.material || '')) return false;
     if (wflags.length && !wflags.every(f => item.weaponFlags.includes(f))) return false;
+    if (xflags.length && !xflags.every(f => item.extraFlags.includes(f))) return false;
     if (aflags.length && !aflags.every(f => item.affectFlags.includes(f))) return false;
     if (rflags.length && !rflags.every(f => item.restrictFlags.includes(f))) return false;
     if ((item.avgDamage ?? 0) < minAvg || (item.avgDamage ?? 0) > maxAvg) return false;
