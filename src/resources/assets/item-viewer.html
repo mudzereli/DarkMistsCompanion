@@ -326,12 +326,20 @@ tr.item-row:hover {
   color: #ffe58c;
 }
 
-.table thead tr:first-child th:first-child {
-  border-top-left-radius: 18px;
+#itemTableShell {
+  position: relative;
+  border-width: 2px !important;
+  border-color: var(--dm-border-strong) !important;
+  border-radius: 17px !important;
+  box-shadow: 0 0 0 1px rgba(245, 203, 66, 0.16), 0 20px 30px rgba(0, 0, 0, 0.28);
+  clip-path: inset(0 round 17px);
+  -webkit-clip-path: inset(0 round 17px);
 }
 
-.table thead tr:first-child th:last-child {
-  border-top-right-radius: 18px;
+#itemTableShell.is-sticky-header .table thead tr:first-child th:first-child,
+#itemTableShell.is-sticky-header .table thead tr:first-child th:last-child {
+  border-top-left-radius: 0 !important;
+  border-top-right-radius: 0 !important;
 }
 
 .table thead th,
@@ -339,6 +347,27 @@ tr.item-row:hover {
   background-color: transparent;
 }
 
+
+.table thead tr:first-child th:first-child {
+  border-top-left-radius: 17px;
+}
+
+.table thead tr:first-child th:last-child {
+  border-top-right-radius: 17px;
+}
+
+#itemTableStickySentinel {
+  position: relative;
+  height: 1px;
+  margin: 0;
+  padding: 0;
+}
+
+#itemTableShell.is-sticky-header .table thead tr:first-child th:first-child,
+#itemTableShell.is-sticky-header .table thead tr:first-child th:last-child {
+  border-top-left-radius: 0 !important;
+  border-top-right-radius: 0 !important;
+}
 select[multiple] {
   background: var(--dm-select-bg) !important;
   color: var(--dm-select-text) !important;
@@ -534,11 +563,11 @@ th.grouped {
           <div class="card-body py-2">
             <h6 class="text-secondary mb-2">🔍 Text Search</h6>
             <input id="search" class="form-control form-control-sm" placeholder="Name, stats, flags, description, etc…">
+            <div class="form-text">Searches full item text</div>
             <div class="form-check mt-2">
               <input class="form-check-input" type="checkbox" id="excludeSpecialAreas" checked>
               <label class="form-check-label small" for="excludeSpecialAreas">Exclude special areas</label>
             </div>
-            <div class="form-text">Searches full item text</div>
           </div>
         </div>
       </div>
@@ -807,8 +836,10 @@ th.grouped {
       <span class="badge text-bg-secondary">Loading…</span>
     </div>
 
+    <div id="itemTableStickySentinel" aria-hidden="true"></div>
+
     <!-- Table -->
-    <div class="border rounded">
+    <div id="itemTableShell" class="border rounded">
       <table class="table table-hover table-striped table-sm mb-0">
         <thead>
           <tr id="groupedHeader">
@@ -855,6 +886,9 @@ const SPECIAL_AREAS = new Set(['Quests', 'Fastolph\'s Shrine', 'Valhalla', 'Priz
 const $ = (id) => document.getElementById(id);
 const tbody = document.querySelector('tbody');
 const stats = $('stats');
+const tableShell = $('itemTableShell');
+const tableStickySentinel = $('itemTableStickySentinel');
+let tableStickyObserver = null;
 
 function excludeSpecialAreasEnabled() {
   return $('excludeSpecialAreas')?.checked;
@@ -868,6 +902,23 @@ function syncStickyHeaderOffset() {
     '--sticky-main-header-top',
     `${groupedHeader.offsetHeight}px`
   );
+}
+
+function initTableStickyState() {
+  if (!tableShell || !tableStickySentinel || typeof IntersectionObserver === 'undefined') return;
+
+  if (tableStickyObserver) {
+    tableStickyObserver.disconnect();
+  }
+
+  tableStickyObserver = new IntersectionObserver(entries => {
+    const entry = entries[0];
+    tableShell.classList.toggle('is-sticky-header', !!entry && !entry.isIntersecting);
+  }, {
+    threshold: 0,
+  });
+
+  tableStickyObserver.observe(tableStickySentinel);
 }
 
 /* =========================================================
@@ -1821,8 +1872,14 @@ function render() {
 
 document.addEventListener('DOMContentLoaded', loadItemData);
 
-window.addEventListener('load', syncStickyHeaderOffset);
-window.addEventListener('resize', syncStickyHeaderOffset);
+window.addEventListener('load', () => {
+  syncStickyHeaderOffset();
+  initTableStickyState();
+});
+window.addEventListener('resize', () => {
+  syncStickyHeaderOffset();
+  initTableStickyState();
+});
 
 // Search with debounce
 let searchTimer;
