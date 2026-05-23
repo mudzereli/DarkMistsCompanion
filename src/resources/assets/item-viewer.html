@@ -2,9 +2,364 @@
 <html lang="en" data-bs-theme="dark">
 <head>
 <meta charset="UTF-8" />
-<title>Dark Mists Item Viewer - Optimized</title>
+<title>Dark Mists Item Search</title>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
 <style>
+:root {
+  --dm-bg: #050307;
+  --dm-panel: rgba(30, 18, 50, 0.96);
+  --dm-panel-2: rgba(22, 11, 35, 0.98);
+  --dm-panel-3: rgba(41, 25, 66, 0.98);
+  --dm-border: rgba(214, 176, 71, 0.28);
+  --dm-border-strong: rgba(214, 176, 71, 0.54);
+  --dm-accent: #f5cb42;
+  --dm-accent-soft: #ffe9a6;
+  --dm-text: #f6efe5;
+  --dm-muted: #b9aec8;
+  --dm-input-bg: #fbf7ef;
+  --dm-input-text: #1f1730;
+  --dm-button-text: #fff6c8;
+  --dm-button-text-hover: #fffbe2;
+  --dm-hover-text: #fff8d8;
+  --dm-table-hover-bg: rgba(245, 203, 66, 0.08);
+  --dm-select-bg: #29183d;
+  --dm-select-text: #f6efe5;
+}
+
+[data-bs-theme="light"] {
+  --dm-bg: #efe5cf;
+  --dm-panel: rgba(255, 249, 236, 0.96);
+  --dm-panel-2: rgba(244, 233, 210, 0.98);
+  --dm-panel-3: rgba(255, 251, 243, 0.98);
+  --dm-border: rgba(137, 108, 32, 0.28);
+  --dm-border-strong: rgba(137, 108, 32, 0.52);
+  --dm-accent: #8b6c19;
+  --dm-accent-soft: #5e4710;
+  --dm-text: #251b31;
+  --dm-muted: #675d72;
+  --dm-input-bg: #ffffff;
+  --dm-input-text: #241a33;
+  --dm-button-text: #fff8de;
+  --dm-button-text-hover: #fffdf4;
+  --dm-hover-text: #241935;
+  --dm-table-hover-bg: rgba(139, 108, 25, 0.14);
+  --dm-select-bg: #ffffff;
+  --dm-select-text: #241a33;
+}
+
+body {
+  min-height: 100vh;
+  color: var(--dm-text);
+  background:
+    radial-gradient(circle at 12% 0%, rgba(98, 61, 153, 0.28), transparent 28%),
+    radial-gradient(circle at 88% 4%, rgba(245, 203, 66, 0.10), transparent 22%),
+    linear-gradient(180deg, #070409 0%, #050307 42%, #030204 100%);
+  font-family: "Segoe UI", "Trebuchet MS", system-ui, sans-serif;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.012) 1px, transparent 1px),
+    linear-gradient(rgba(255, 255, 255, 0.012) 1px, transparent 1px);
+  background-size: 36px 36px;
+  opacity: 0.24;
+}
+
+.container-xl {
+  position: relative;
+  z-index: 1;
+  max-width: 1540px;
+}
+
+body > .container-xl {
+  padding-top: 1rem;
+  padding-bottom: 1.5rem;
+}
+
+body > .container-xl > .d-flex:first-child {
+  margin-bottom: 1rem;
+  padding: 0.95rem 1rem;
+  background: linear-gradient(180deg, var(--dm-panel-3), var(--dm-panel-2));
+  border: 1px solid var(--dm-border);
+  border-radius: 18px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+body > .container-xl > .d-flex:first-child h1 {
+  margin: 0;
+  color: var(--dm-accent);
+  font-weight: 800;
+  letter-spacing: 0.3px;
+  text-shadow: 0 0 18px rgba(245, 203, 66, 0.12);
+}
+
+#themeToggle {
+  background: linear-gradient(180deg, rgba(63, 44, 94, 0.96), rgba(34, 20, 55, 0.96));
+  border-color: var(--dm-border-strong);
+  color: var(--dm-accent);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+#themeToggle:hover {
+  color: var(--dm-accent-soft);
+  border-color: rgba(245, 203, 66, 0.75);
+}
+
+#loadSection,
+#activeFilters,
+#stats {
+  position: relative;
+  z-index: 1;
+}
+
+.card,
+.border.rounded {
+  background: linear-gradient(180deg, var(--dm-panel), var(--dm-panel-2));
+  border-color: var(--dm-border) !important;
+  border-radius: 18px !important;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.28);
+}
+
+.card-body {
+  color: var(--dm-text);
+}
+
+.card .text-secondary,
+.form-text,
+td.meta {
+  color: var(--dm-muted) !important;
+}
+
+.card h6,
+.card .form-label,
+.dropdown .form-label {
+  color: var(--dm-accent-soft);
+}
+
+input.form-control:not([type="file"]):not([type="checkbox"]):not([type="radio"]),
+textarea.form-control {
+  background: var(--dm-input-bg);
+  color: var(--dm-input-text);
+  border-color: var(--dm-border-strong);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.12);
+}
+
+input.form-control::placeholder,
+textarea.form-control::placeholder {
+  color: rgba(31, 23, 48, 0.56);
+}
+
+input[type="file"].form-control {
+  background: var(--dm-panel-3);
+  color: var(--dm-text);
+  border-color: var(--dm-border-strong);
+}
+
+input[type="file"].form-control::file-selector-button {
+  margin-right: 0.8rem;
+  background: linear-gradient(180deg, rgba(66, 47, 99, 0.96), rgba(28, 16, 44, 0.96));
+  color: var(--dm-accent-soft);
+  border: 0;
+}
+
+input[type="file"].form-control:hover::file-selector-button {
+  color: #fff4c8;
+}
+
+.form-select,
+select[multiple],
+.dropdown-menu {
+  background: linear-gradient(180deg, rgba(43, 27, 69, 0.98), rgba(23, 13, 37, 0.98));
+  color: var(--dm-text);
+  border-color: var(--dm-border-strong);
+}
+
+.form-select option {
+  background: #29183d;
+  color: var(--dm-text);
+}
+
+.dropdown-menu {
+  border-radius: 14px;
+  box-shadow: 0 16px 28px rgba(0, 0, 0, 0.38);
+}
+
+.dropdown-item,
+.form-check-label {
+  color: var(--dm-text);
+}
+
+.dropdown-item:hover {
+  background: rgba(245, 203, 66, 0.12);
+  color: #fff7cb;
+}
+
+.btn {
+  border-radius: 12px;
+  font-weight: 600;
+}
+
+.btn-outline-secondary,
+.btn-outline-primary,
+.btn-outline-success,
+.btn-outline-warning,
+.btn-outline-danger {
+  background: linear-gradient(180deg, rgba(63, 44, 94, 0.96), rgba(34, 20, 55, 0.96));
+  border-color: var(--dm-border-strong);
+  color: var(--dm-text);
+}
+
+.btn-outline-secondary:hover,
+.btn-outline-primary:hover,
+.btn-outline-success:hover,
+.btn-outline-warning:hover,
+.btn-outline-danger:hover {
+  background: linear-gradient(180deg, rgba(90, 66, 133, 0.98), rgba(47, 27, 72, 0.98));
+  border-color: rgba(245, 203, 66, 0.8);
+  color: #fff5be;
+}
+
+.btn-outline-danger {
+  background: linear-gradient(180deg, rgba(82, 31, 43, 0.96), rgba(52, 16, 24, 0.96));
+}
+
+.btn-link {
+  color: var(--dm-accent) !important;
+  text-decoration: none;
+}
+
+.btn-link:hover {
+  color: #fff3c3 !important;
+}
+
+.table {
+  color: var(--dm-text);
+  border-color: var(--dm-border);
+}
+
+.table > :not(caption) > * > * {
+  background-color: transparent;
+  color: inherit;
+  border-color: rgba(214, 176, 71, 0.12);
+}
+
+.table-striped > tbody > tr:nth-of-type(odd) > * {
+  --bs-table-accent-bg: rgba(95, 60, 140, 0.12);
+}
+
+.table-hover > tbody > tr:hover > * {
+  --bs-table-accent-bg: rgba(245, 203, 66, 0.08);
+  color: #fff8d8;
+}
+
+.table thead th {
+  background: linear-gradient(180deg, rgba(47, 29, 73, 0.98), rgba(22, 11, 37, 0.98)) !important;
+  color: #ffe58c;
+  border-color: rgba(214, 176, 71, 0.2);
+  box-shadow: inset 0 -1px 0 rgba(255, 255, 255, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+tr.item-row:hover {
+  outline: 1px solid rgba(245, 203, 66, 0.22);
+}
+
+.item-toggle {
+  color: #f7efd9;
+}
+
+.item-toggle:hover {
+  color: #fff5c5;
+}
+
+.mud-output {
+  background: #050406;
+  color: #fff;
+  border: 1px solid rgba(214, 176, 71, 0.24);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.02);
+}
+
+#stats .badge,
+#activeFilters .badge {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.pagination .page-link {
+  background: var(--dm-panel-3);
+  color: var(--dm-accent-soft);
+  border-color: var(--dm-border);
+}
+
+.pagination .page-item.active .page-link {
+  background: var(--dm-accent);
+  color: #241935;
+  border-color: rgba(245, 203, 66, 0.85);
+}
+
+/* Late overrides to beat the legacy defaults below. */
+.btn-outline-secondary,
+.btn-outline-primary,
+.btn-outline-success,
+.btn-outline-warning,
+.btn-outline-danger {
+  color: var(--dm-button-text);
+}
+
+.btn-outline-secondary:hover,
+.btn-outline-primary:hover,
+.btn-outline-success:hover,
+.btn-outline-warning:hover,
+.btn-outline-danger:hover {
+  color: var(--dm-button-text-hover);
+}
+
+.table-hover > tbody > tr:hover > * {
+  --bs-table-accent-bg: var(--dm-table-hover-bg);
+  color: var(--dm-hover-text);
+}
+
+.table thead th {
+  background: linear-gradient(180deg, rgba(47, 29, 73, 0.98), rgba(22, 11, 37, 0.98)) !important;
+  color: #ffe58c;
+}
+
+.table thead tr:first-child th:first-child {
+  border-top-left-radius: 18px;
+}
+
+.table thead tr:first-child th:last-child {
+  border-top-right-radius: 18px;
+}
+
+.table thead th,
+.table thead tr {
+  background-color: transparent;
+}
+
+select[multiple] {
+  background: var(--dm-select-bg) !important;
+  color: var(--dm-select-text) !important;
+  border-color: var(--dm-border-strong);
+}
+
+select[multiple] option {
+  background: var(--dm-select-bg);
+  color: var(--dm-select-text);
+}
+
+select[multiple] option:checked,
+select[multiple] option:hover {
+  background: rgba(245, 203, 66, 0.18);
+  color: var(--dm-select-text);
+}
+
+.form-select[multiple] {
+  color: var(--dm-select-text);
+}
+
 pre { 
   margin: 0; 
   white-space: pre-wrap; 
@@ -163,7 +518,7 @@ th.grouped {
 <body>
 <div class="container-xl py-3">
   <div class="d-flex justify-content-between align-items-center mb-2">
-    <h1 class="h4 mb-0">⚔ Dark Mists Item Viewer - Optimized</h1>
+    <h1 class="h4 mb-0">⚔ Dark Mists Item Search</h1>
     <button id="themeToggle" class="btn btn-sm btn-outline-secondary">🌙 Dark</button>
   </div>
   
@@ -172,61 +527,6 @@ th.grouped {
   </div>
   
   <div id="app" class="d-none">
-    <!-- Stat Weights Section -->
-    <div class="row mb-2">
-      <div class="col-12">
-        <div class="card border-start border-3 border-danger">
-          <div class="card-body py-2">
-            <div class="d-flex justify-content-between align-items-center mb-2">
-              <h6 class="text-secondary mb-0">⚖️ Stat Weights & Scoring</h6>
-              <div>
-                <button class="btn btn-sm btn-outline-primary preset-btn me-1" onclick="applyPreset('melee')">⚔️ Melee DPS</button>
-                <button class="btn btn-sm btn-outline-primary preset-btn me-1" onclick="applyPreset('tank')">🛡️ Tank</button>
-                <button class="btn btn-sm btn-outline-primary preset-btn me-1" onclick="applyPreset('caster')">🔮 Caster</button>
-                <button class="btn btn-sm btn-outline-primary preset-btn me-1" onclick="applyPreset('healer')">✨ Healer</button>
-                <button class="btn btn-sm btn-outline-secondary preset-btn" onclick="resetWeights()">Reset</button>
-              </div>
-            </div>
-            <div class="row g-2">
-              <div class="col-6 col-md-2">
-                <label class="form-label small mb-0">Hitroll Weight</label>
-                <input id="weightHit" type="number" class="form-control form-control-sm weight-input" value="0" step="0.1" min="0">
-              </div>
-              <div class="col-6 col-md-2">
-                <label class="form-label small mb-0">Damroll Weight</label>
-                <input id="weightDam" type="number" class="form-control form-control-sm weight-input" value="0" step="0.1" min="0">
-              </div>
-              <div class="col-6 col-md-2">
-                <label class="form-label small mb-0">HP Weight</label>
-                <input id="weightHP" type="number" class="form-control form-control-sm weight-input" value="0" step="0.1" min="0">
-              </div>
-              <div class="col-6 col-md-2">
-                <label class="form-label small mb-0">AC Weight</label>
-                <input id="weightAC" type="number" class="form-control form-control-sm weight-input" value="0" step="0.1" min="0">
-              </div>
-              <div class="col-6 col-md-2">
-                <label class="form-label small mb-0">Spell Weight</label>
-                <input id="weightSpell" type="number" class="form-control form-control-sm weight-input" value="0" step="0.1" min="0">
-              </div>
-              <div class="col-6 col-md-2">
-                <label class="form-label small mb-0">Holy Weight</label>
-                <input id="weightHoly" type="number" class="form-control form-control-sm weight-input" value="0" step="0.1" min="0">
-              </div>
-              <div class="col-6 col-md-2">
-                <label class="form-label small mb-0">Avg Dmg Weight</label>
-                <input id="weightAvgDmg" type="number" class="form-control form-control-sm weight-input" value="0" step="0.1" min="0">
-              </div>
-              <div class="col-6 col-md-2">
-                <label class="form-label small mb-0">Mana Weight</label>
-                <input id="weightMana" type="number" class="form-control form-control-sm weight-input" value="0" step="0.1" min="0">
-              </div>
-            </div>
-            <div class="form-text mt-2">Set weights above 0 to enable scoring. Score column appears when weights are set.</div>
-          </div>
-        </div>
-      </div>
-    </div>
-
     <!-- Text Search Section -->
     <div class="row mb-2">
       <div class="col-12">
@@ -438,10 +738,70 @@ th.grouped {
       </div>
     </div>
 
+    <!-- Stat Weights Section -->
+    <div id="statWeights" class="collapse mb-2">
+      <div class="row">
+        <div class="col-12">
+          <div class="card border-start border-3 border-danger">
+            <div class="card-body py-2">
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <h6 class="text-secondary mb-0">⚖️ Stat Weights & Scoring</h6>
+                <div>
+                  <button class="btn btn-sm btn-outline-primary preset-btn me-1" onclick="applyPreset('melee')">⚔️ Melee DPS</button>
+                  <button class="btn btn-sm btn-outline-primary preset-btn me-1" onclick="applyPreset('tank')">🛡️ Tank</button>
+                  <button class="btn btn-sm btn-outline-primary preset-btn me-1" onclick="applyPreset('caster')">🔮 Caster</button>
+                  <button class="btn btn-sm btn-outline-primary preset-btn me-1" onclick="applyPreset('healer')">✨ Healer</button>
+                  <button class="btn btn-sm btn-outline-secondary preset-btn" onclick="resetWeights()">Reset</button>
+                </div>
+              </div>
+              <div class="row g-2">
+                <div class="col-6 col-md-2">
+                  <label class="form-label small mb-0">Hitroll Weight</label>
+                  <input id="weightHit" type="number" class="form-control form-control-sm weight-input" value="0" step="0.1" min="0">
+                </div>
+                <div class="col-6 col-md-2">
+                  <label class="form-label small mb-0">Damroll Weight</label>
+                  <input id="weightDam" type="number" class="form-control form-control-sm weight-input" value="0" step="0.1" min="0">
+                </div>
+                <div class="col-6 col-md-2">
+                  <label class="form-label small mb-0">HP Weight</label>
+                  <input id="weightHP" type="number" class="form-control form-control-sm weight-input" value="0" step="0.1" min="0">
+                </div>
+                <div class="col-6 col-md-2">
+                  <label class="form-label small mb-0">AC Weight</label>
+                  <input id="weightAC" type="number" class="form-control form-control-sm weight-input" value="0" step="0.1" min="0">
+                </div>
+                <div class="col-6 col-md-2">
+                  <label class="form-label small mb-0">Spell Weight</label>
+                  <input id="weightSpell" type="number" class="form-control form-control-sm weight-input" value="0" step="0.1" min="0">
+                </div>
+                <div class="col-6 col-md-2">
+                  <label class="form-label small mb-0">Holy Weight</label>
+                  <input id="weightHoly" type="number" class="form-control form-control-sm weight-input" value="0" step="0.1" min="0">
+                </div>
+                <div class="col-6 col-md-2">
+                  <label class="form-label small mb-0">Avg Dmg Weight</label>
+                  <input id="weightAvgDmg" type="number" class="form-control form-control-sm weight-input" value="0" step="0.1" min="0">
+                </div>
+                <div class="col-6 col-md-2">
+                  <label class="form-label small mb-0">Mana Weight</label>
+                  <input id="weightMana" type="number" class="form-control form-control-sm weight-input" value="0" step="0.1" min="0">
+                </div>
+              </div>
+              <div class="form-text mt-2">Set weights above 0 to enable scoring. Score column appears when weights are set.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div id="activeFilters" class="mb-2 small"></div>
     
-    <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="collapse" data-bs-target="#advancedFilters">Advanced Filters</button>
-    <button type="button" class="btn btn-sm btn-outline-danger" onclick="clearAllFilters()">Clear All Filters</button>
+    <div class="d-flex flex-wrap gap-2 mb-2">
+      <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="collapse" data-bs-target="#advancedFilters">Advanced Filters</button>
+      <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="collapse" data-bs-target="#statWeights">Stat Weights</button>
+      <button type="button" class="btn btn-sm btn-outline-danger" onclick="clearAllFilters()">Clear All Filters</button>
+    </div>
     
     <div id="stats" class="small text-muted mb-2">
       <span class="badge text-bg-secondary">Loading…</span>
@@ -716,6 +1076,7 @@ function clearAllFilters() {
   document.querySelectorAll('input').forEach(i => {
     if (i.type === 'file') return;
     if (i.classList.contains('weight-input')) return; // Don't clear weights
+    if (i.id === 'excludeSpecialAreas') return;
     if (i.type === 'checkbox' || i.type === 'radio') {
       i.checked = false;
       return;
