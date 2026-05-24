@@ -740,21 +740,21 @@ end
 -- Line Handler
 -- ============================================================================
 function EnchanterAssist.on_line(ln)
-  for pattern, data in pairs(highlightMap) do
-    if ln:match(pattern) then
-      local color = data[1]
-      local tag   = data[2]
+  if EnchanterAssist.enabled and EnchanterAssist.state == "brewing" then
+    for pattern, data in pairs(highlightMap) do
+      if ln:match(pattern) then
+        local color = data[1]
+        local tag   = data[2]
 
-      selectCurrentLine()
-      fg(color)
-      replace(ln .. " " .. tag)
-      resetFormat()
+        selectCurrentLine()
+        fg(color)
+        replace(ln .. " " .. tag)
+        resetFormat()
 
-      -- mark that we saw a flare during this attempt
-      if EnchanterAssist.state == "brewing" then
+        -- mark that we saw a flare during this attempt
         EnchanterAssist.sawFlare = true
+        return
       end
-      return
     end
   end
 
