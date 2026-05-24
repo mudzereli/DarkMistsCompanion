@@ -1,5 +1,13 @@
+--================================--
+-- Mini Map
+--================================--
+
 DarkMistsMiniMap = {}
 DarkMistsMiniMap.dock = nil
+
+--================================--
+-- Configuration
+--================================--
 
 function DarkMistsMiniMap.configure()
   if Darkmists and Darkmists.getSmartDockGeometry then
@@ -12,9 +20,10 @@ function DarkMistsMiniMap.configure()
   end
 end
 
--- -------------------------------------------------------------------
+--================================--
 -- UI Creation
--- -------------------------------------------------------------------
+--================================--
+
 function DarkMistsMiniMap.create()
   if DarkMistsMiniMap.container then return end
 
@@ -38,7 +47,6 @@ function DarkMistsMiniMap.create()
     autoLoad = true,
   })
 
-  -- Header
   local header = Geyser.Label:new({
     name = "MiniMapHeader",
     x = "0%", y = "0%",
@@ -54,9 +62,9 @@ function DarkMistsMiniMap.create()
   header:setFont(Darkmists.GlobalSettings.fontName)
   header:setFontSize(Darkmists.GlobalSettings.fontSize)
 
-  DarkMistsMiniMap.header = header -- store reference for updates
+  -- Mutated in place during refresh; do not rebuild the label.
+  DarkMistsMiniMap.header = header
 
-  -- Mapper
   DarkMistsMiniMap.minimap = Geyser.Mapper:new({
     name = "MiniMap",
     x = "0%", y = "10%",
@@ -75,49 +83,40 @@ function DarkMistsMiniMap.destroy()
   DarkMistsMiniMap.header = nil
   DarkMistsMiniMap.minimap = nil
 end
--- -------------------------------------------------------------------
--- Update Display
--- -------------------------------------------------------------------
+
+--================================--
+-- Display Update
+--================================--
+
 function DarkMistsMiniMap.update()
-  if not map then return end -- defensive; should not occur if mapper data properly loaded
-  if not map.configs then return end  -- defensive; should not occur if mapper data properly loaded
-  local name, id, area
-
-  -- Prefer selected room
+  if not map then return end
+  if not map.configs then return end
   local selection = getMapSelection()
-  if selection then
-    id = selection.center
-    if id then
-      name = getRoomName(id)
-      if name then
-        -- Only resolve area if room name resolved successfully
-        area = getRoomAreaName(getRoomArea(id))
-      end
-    end
-  end
+  local id = selection and selection.center
+  local name = id and getRoomName(id)
+  local area = name and getRoomAreaName(getRoomArea(id))
 
-  -- Fallback to current room if any selection data missing
+  -- Prefer the selected room; fall back to the live room when selection is incomplete.
   if not (name and id and area) and map.currentRoom then
     name = map.currentName
     id = map.currentRoom
     area = getRoomAreaName(map.currentArea)
   end
 
-  -- Defaults ensure stable UI even if mapper data unavailable
   name = name or "unknown"
   id = id or "?"
   area = area or "unknown"
 
   local disp = ("%s / %s (%s)"):format(name, tostring(id), area)
 
-  -- Header may briefly be nil during reload race; assume exists as original did
   DarkMistsMiniMap.header:clear()
   DarkMistsMiniMap.header:echo(disp)
 end
 
--- -------------------------------------------------------------------
--- Event Management
--- -------------------------------------------------------------------
+--================================--
+-- Event Wiring
+--================================--
+
 function DarkMistsMiniMap.registerEvents()
   DMLogger.log(DarkmistsTheme.greenTag .. "MiniMapContainer","Registering Events with EventHandlerManager")
   DarkmistsEvents.add("MiniMapMousePress", "sysMapWindowMousePressEvent", DarkMistsMiniMap.update)
@@ -125,29 +124,25 @@ function DarkMistsMiniMap.registerEvents()
   DMLogger.log(DarkmistsTheme.greenTag .. "MiniMapContainer","Events Registered!")
 end
 
--- -------------------------------------------------------------------
+--================================--
 -- Initialization
--- -------------------------------------------------------------------
+--================================--
 
--- Install an override for the mapper's `sanitizeRoomName` function.
--- This replaces the original implementation with the project's preferred behavior
--- while keeping the override local to this module. If `map` is not yet present,
--- retry once shortly after load.
+-- Keep mapper-generated room titles stable so selected-room matching survives immortal suffix noise.
 local function install_sanitize_override()
   local function sanitizeRoomName(roomtitle)
     if type(roomtitle) ~= "string" then
       return roomtitle
     end
 
-    -- remove immortal VNUMs like [Room 12345] at end of room titles,
-    -- which disrupts the minimap's ability to match selected rooms to mapper data.
+    -- Strip the trailing immortal room marker before comparing names.
     roomtitle = roomtitle:gsub("%s*%[[Rr][Oo][Oo][Mm]%s+%d+%]%s*$", "")
 
-    -- original behavior (keep this)
     if not roomtitle:match("   ") then
       return roomtitle
     end
 
+    -- Preserve the readable room fragment when the mapper pads the title into chunks.
     local parts = roomtitle:split("  ")
     table.sort(parts, function(a,b) return #a < #b end)
     local longestpart = parts[#parts]
@@ -161,20 +156,15 @@ local function install_sanitize_override()
   end
 end
 
--- Initialize the minimap when connected (or immediately if already connected).
+-- Delay the visible show call so restore paths do not immediately hide the container again.
 local function initMiniMap()
   if DarkMistsMiniMap.container then return end
   DarkMistsMiniMap.create()
   DarkMistsMiniMap.registerEvents()
   DMLogger.log(DarkmistsTheme.greenTag .. "MiniMapContainer","MiniMap Created!")
-  -- update and show immediately
   DarkMistsMiniMap.update()
   install_sanitize_override()
   if DarkMistsMiniMap.container then
-    -- Delay showing briefly to avoid being overridden by any auto-load
-    -- or restore logic that may run immediately after creation (observed
-    -- behavior during package updates). A short timer ensures the final
-    -- visibility state is the visible one we expect.
     tempTimer(0.05, function()
       if DarkMistsMiniMap.container then
         DarkMistsMiniMap.container:show()
@@ -184,27 +174,24 @@ local function initMiniMap()
   end
 end
 
--- Public initializer: create now if connected, otherwise register a one-shot
--- sysConnectionEvent handler and unregister it after first successful connect.
+-- Register a one-shot connect handler when startup runs before the session is ready.
 function DarkMistsMiniMap.init()
   DarkMistsMiniMap.configure()
   local _, _, connected = getConnectionInfo()
-  if connected then
-    initMiniMap()
+  if not connected then
+    DarkmistsEvents.add("DarkMistsMiniMap.OnConnect", "sysConnectionEvent",
+      function()
+        local _,_,c = getConnectionInfo()
+        if c then
+          initMiniMap()
+        end
+      end,
+      true
+    )
     return true
   end
 
-  -- Register a one-shot connection handler via DarkmistsEvents so it will be
-  -- automatically removed after it fires once.
-  DarkmistsEvents.add("DarkMistsMiniMap.OnConnect", "sysConnectionEvent",
-    function()
-      local _,_,c = getConnectionInfo()
-      if c then
-        initMiniMap()
-      end
-    end,
-    true
-  )
+  initMiniMap()
 
   return true
 end

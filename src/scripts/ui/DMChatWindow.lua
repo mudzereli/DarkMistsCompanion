@@ -1,12 +1,12 @@
--- ===================================================================
--- Chat History Window (Geyser.UserWindow)
--- ===================================================================
+--================================--
+-- Chat History Window
+--================================--
 
 ChatHistory = {}
 
--- -------------------------------------------------------------------
+--================================--
 -- Configuration
--- -------------------------------------------------------------------
+--================================--
 
 ChatHistory.config = {
   maxMessages = 100,
@@ -14,14 +14,14 @@ ChatHistory.config = {
   fontName   = getFont(),
 }
 
--- Runtime state is rebuilt on every load so we never reuse stale Geyser refs.
+-- Rebuild state on load; Geyser handles are not stable across reloads.
 ChatHistory.messages = {}
 ChatHistory.window   = nil
 ChatHistory.console  = nil
 
--- ===================================================================
--- WINDOW CREATION
--- ===================================================================
+--================================--
+-- Window Creation
+--================================--
 
 function ChatHistory.create()
   if ChatHistory.window and ChatHistory.console then return end
@@ -37,22 +37,20 @@ function ChatHistory.create()
       color = Darkmists.getDefaultBackgroundColor()
     }, ChatHistory.window)
 
-  -- font settings
   ChatHistory.console:setFont(ChatHistory.config.fontName)
   ChatHistory.console:setFontSize(ChatHistory.config.fontSize)
   ChatHistory.console:enableAutoWrap()
   ChatHistory.console:enableScrollBar()
 
-  -- attach + show
   ChatHistory.window:show()
   ChatHistory.window:raiseAll()
 
   Darkmists.Log("ChatHistory","Container Created")
 end
 
--- ===================================================================
--- MESSAGE FORMATTING
--- ===================================================================
+--================================--
+-- Message Formatting
+--================================--
 
 local textTag   = "<ansi_white>"
 local mutedTag  = "<dim_gray>"
@@ -82,8 +80,7 @@ function ChatHistory.applyTheme()
   silverTag = theme.silverTag or silverTag
 end
 
--- All message formatting lives here.
--- Adding a new channel only requires adding one entry.
+-- Keep per-channel formatting isolated; message structure differs by protocol.
 local MESSAGE_FORMATTERS = {
   emotedsay = {
     sent = function(m)
@@ -215,9 +212,9 @@ local function formatMessage(m)
   return (m.sender == "You") and f.sent(m) or f.received(m)
 end
 
--- ===================================================================
--- MESSAGE MANAGEMENT
--- ===================================================================
+--================================--
+-- Message Management
+--================================--
 
 function ChatHistory.addMessage(msgType, sender, receiver, message, extra)
   local msg = {
@@ -246,19 +243,21 @@ function ChatHistory.refresh()
   if not ChatHistory.window then return end
   ChatHistory.console:clear()
 
+  -- Messages are stored newest-first; render oldest-to-newest to keep chronology stable.
   for i = #ChatHistory.messages, 1, -1 do
     ChatHistory.console:cecho(formatMessage(ChatHistory.messages[i]))
   end
 end
 
--- ===================================================================
--- EVENT HANDLERS
--- ===================================================================
+--================================--
+-- Event Handlers
+--================================--
 
 function ChatHistory.registerEvents()
 
   local function bind(key, event, msgType, sender, receiver)
     DarkmistsEvents.add(key, event, function(_, data)
+      -- Map payload differences into the shared message shape.
       ChatHistory.addMessage(
         msgType,
         sender or data.sender,
@@ -301,14 +300,15 @@ function ChatHistory.registerEvents()
   bind("ChatHistoryMentalBlastPanicReceived", "dmapi.communication.mentalblastpanicreceived", "mentalblastpanic")
   bind("ChatHistoryMentalBlastPanicSent",     "dmapi.communication.mentalblastpanicsent",     "mentalblastpanic", "You")
   
+  -- Persist window placement before profile save tears down UI objects.
   DarkmistsEvents.add("ChatHistoryProfileSave", "sysProfileSaveStarted", saveWindowLayout)
 
   Darkmists.Log("ChatHistory","Event Handlers Registered")
 end
 
--- ===================================================================
--- INIT
--- ===================================================================
+--================================--
+-- Initialization
+--================================--
 
 function ChatHistory.init()
   ChatHistory.applyTheme()

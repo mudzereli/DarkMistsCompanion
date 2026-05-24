@@ -5115,6 +5115,11 @@
     "details": "Area: Haon Dor\nObject 'some blackberries' is type food, extra flags none.\nWeight is 1.0 pounds, value is 0, level is 0.\nMaterial is berries.\nrestrict flags none."
   },
   {
+    "name": "a heap of silver coins",
+    "vnum": "6007",
+    "details": "Area: Haon Dor\nObject 'a heap of silver coins' is type money, extra flags none.\nWeight is 0.8 pounds, value is 189, level is 100.\nMaterial is silver.\nrestrict flags none."
+  },
+  {
     "name": "a small brass key",
     "vnum": "6006",
     "details": "Area: Haon Dor\nObject 'a small brass key' is type key, extra flags none.\nWeight is 1.0 pounds, value is 0, level is 0.\nMaterial is brass.\nrestrict flags none."
@@ -13500,6 +13505,11 @@
     "details": "Area: Shrine of Darkness and Delusion v2.1\nObject 'the longsword, 'Firestorm'' is type weapon, extra flags glowing humming dark evil magic anti_good anti_neutral_align noremove nopurge burnproof.\nWeight is 10.0 pounds, value is 0, level is 60.\nMaterial is fire.\nrestrict flags none.\nWeapon type is sword.\nDamage is 15d20 (average 157).\nWeapons flags: flaming vampiric sharp vorpal\nAffects dexterity by 3.\nAffects saves by -50.\nAffects damage roll by 150.\nAffects hit roll by 150."
   },
   {
+    "name": "The Doctrine of Julive: Faith of the Night Angel",
+    "vnum": "15301",
+    "details": "Area: The Shrine of Silence\nObject 'The Doctrine of Julive: Faith of the Night Angel' is type book, extra flags none.\nWeight is 1.0 pounds, value is 400, level is 1.\nMaterial is leather and vellum.\nrestrict flags none."
+  },
+  {
     "name": "the brand of a dead parrot",
     "vnum": "15300",
     "details": "Area: The Shrine of Silence\nObject 'the brand of a dead parrot' is type armor, extra flags glowing nodrop bless noremove nolocate burnproof nouncurse brand pulsing.\nWeight is 0.0 pounds, value is 0, level is 60.\nMaterial is flesh and energy.\nrestrict flags none.\nArmor class is 8 pierce, 8 bash, 8 slash, and 8 vs. magic.\nAffects hp by 20.\nAffects dexterity by 2.\nAffects strength by 2."
@@ -19255,9 +19265,24 @@
     "details": "Area: The Plains of Sh'Goloth\nObject 'a skeleton' is type npc_corpse, extra flags dark.\nWeight is 1.0 pounds, value is 0, level is 1000.\nMaterial is bone.\nrestrict flags none."
   },
   {
+    "name": "encased in the lakes muck",
+    "vnum": "17029",
+    "details": "Area: The Plains of Sh'Goloth\nObject 'encased in the lakes muck' is type container, extra flags dark.\nWeight is 100.0 pounds, value is 0, level is 1000.\nMaterial is water.\nrestrict flags none.\nCapacity: 10#  Maximum weight: 0#  flags: closable closed"
+  },
+  {
     "name": "an engraved staff",
     "vnum": "17028",
     "details": "Area: The Plains of Sh'Goloth\nObject 'an engraved staff' is type staff, extra flags none.\nWeight is 0.8 pounds, value is 5000, level is 35.\nMaterial is wood.\nrestrict flags none.\nHas 3 charges of level 35 'haste'."
+  },
+  {
+    "name": "the small alcove",
+    "vnum": "17027",
+    "details": "Area: The Plains of Sh'Goloth\nObject 'the small alcove' is type container, extra flags none.\nWeight is 2.0 pounds, value is 0, level is 1000.\nMaterial is paper.\nrestrict flags none.\nCapacity: 10#  Maximum weight: 0#  flags: closable closed"
+  },
+  {
+    "name": "the spring",
+    "vnum": "17026",
+    "details": "Area: The Plains of Sh'Goloth\nObject 'the spring' is type fountain, extra flags nopurge.\nWeight is 300.0 pounds, value is 1000, level is 500.\nMaterial is water.\nrestrict flags none."
   },
   {
     "name": "a strange ward",
@@ -19300,9 +19325,19 @@
     "details": "Area: The Plains of Sh'Goloth\nObject 'the lord's key' is type key, extra flags none.\nWeight is 0.1 pounds, value is 0, level is 1.\nMaterial is steel.\nrestrict flags none."
   },
   {
+    "name": "a great golden chest",
+    "vnum": "17017",
+    "details": "Area: The Plains of Sh'Goloth\nObject 'a great golden chest' is type container, extra flags glowing magic.\nWeight is 50000.0 pounds, value is 5000000, level is 5000.\nMaterial is gold.\nrestrict flags none.\nCapacity: 2000#  Maximum weight: 0#  flags: closable pickproof closed locked"
+  },
+  {
     "name": "the lord's key",
     "vnum": "17016",
     "details": "Area: The Plains of Sh'Goloth\nObject 'the lord's key' is type key, extra flags none.\nWeight is 0.1 pounds, value is 0, level is 1.\nMaterial is steel.\nrestrict flags none."
+  },
+  {
+    "name": "a great golden chest",
+    "vnum": "17015",
+    "details": "Area: The Plains of Sh'Goloth\nObject 'a great golden chest' is type container, extra flags glowing magic.\nWeight is 50000.0 pounds, value is 5000000, level is 5000.\nMaterial is gold.\nrestrict flags none.\nCapacity: 2000#  Maximum weight: 0#  flags: closable pickproof closed locked"
   },
   {
     "name": "a shiny golden key",
@@ -20833,6 +20868,11 @@
     "name": "a ring of necromancy",
     "vnum": "72735",
     "details": "Area: Nightfall Keep\nObject 'a ring of necromancy' is type armor, extra flags glowing dark evil anti_good anti_neutral_align.\nWeight is 1.4 pounds, value is 189862, level is 59.\nMaterial is black dragonscale.\nrestrict flags necromancer_allowed.\nArmor class is 8 pierce, 9 bash, 7 slash, and 12 vs. magic.\nAffects spell power by 2.\nAffects save vs transport by -7.\nAffects constitution by 3.\nAffects save vs spell by -7.\nAffects intelligence by 2.\nAffects mana by 60."
+  },
+  {
+    "name": "a symbol of servitude",
+    "vnum": "72734",
+    "details": "Area: Nightfall Keep\nObject 'a symbol of servitude' is type armor, extra flags glowing evil magic nodrop noremove nouncurse pulsing.\nWeight is 14.7 pounds, value is 250468, level is 70.\nMaterial is stone.\nrestrict flags none.\nArmor class is 3 pierce, 3 bash, 3 slash, and 3 vs. magic.\nAdds vulnerability to summon.\nAdds vulnerability to charm."
   },
   {
     "name": "a burnt corpse",
@@ -36085,6 +36125,11 @@
     "details": "Area: Forest Cave\nObject 'a large boulder' is type treasure, extra flags none.\nWeight is 1.0 pounds, value is 0, level is 0.\nMaterial is granite.\nrestrict flags none."
   },
   {
+    "name": "a mossy boulder",
+    "vnum": "17804",
+    "details": "Area: Forest Cave\nObject 'a mossy boulder' is type furniture, extra flags nolocate sellextract burnproof.\nWeight is 1.0 pounds, value is 5, level is 200.\nMaterial is granite.\nrestrict flags none."
+  },
+  {
     "name": "a marble statue",
     "vnum": "17803",
     "details": "Area: Forest Cave\nObject 'a marble statue' is type furniture, extra flags glowing nolocate sellextract nouncurse pulsing.\nWeight is 0.5 pounds, value is 0, level is 0.\nMaterial is marble.\nrestrict flags none."
@@ -42517,12 +42562,12 @@
   {
     "name": "a string of pearls",
     "vnum": "82160",
-    "details": "Area: The City of Sudharma\nObject 'a string of pearls' is type jewelry, extra flags none.\nWeight is 1.1 pounds, value is 65000, level is 50.\nMaterial is pearl.\nrestrict flags none.\nAffects holy power by 2.\nAffects mana by 51."
+    "details": "Area: The City of Sudharma\nObject 'a string of pearls' is type jewelry, extra flags none.\nWeight is 1.1 pounds, value is 65000, level is 50.\nMaterial is pearl.\nrestrict flags none.\nAffects holy power by 1.\nAffects mana by 51."
   },
   {
     "name": "a chain of bone",
     "vnum": "82159",
-    "details": "Area: The City of Sudharma\nObject 'a chain of bone' is type jewelry, extra flags none.\nWeight is 1.1 pounds, value is 32603, level is 50.\nMaterial is bone.\nrestrict flags none.\nAffects spell power by 5.\nAffects mana by 30."
+    "details": "Area: The City of Sudharma\nObject 'a chain of bone' is type jewelry, extra flags none.\nWeight is 1.1 pounds, value is 32603, level is 50.\nMaterial is bone.\nrestrict flags none.\nAffects spell power by 2.\nAffects mana by 30."
   },
   {
     "name": "a gold box chain bracelet",
@@ -42597,7 +42642,7 @@
   {
     "name": "a gold dragon earring",
     "vnum": "82144",
-    "details": "Area: The City of Sudharma\nObject 'a gold dragon earring' is type jewelry, extra flags glowing.\nWeight is 1.3 pounds, value is 33000, level is 40.\nMaterial is golddragonscale and dragonscale and gold.\nrestrict flags none.\nAffects holy power by 2.\nAffects armor class by -3."
+    "details": "Area: The City of Sudharma\nObject 'a gold dragon earring' is type jewelry, extra flags glowing.\nWeight is 1.3 pounds, value is 33000, level is 40.\nMaterial is golddragonscale and dragonscale and gold.\nrestrict flags none.\nAffects holy power by 1.\nAffects armor class by -3."
   },
   {
     "name": "a silver dragon earring",
@@ -42752,7 +42797,7 @@
   {
     "name": "a blessed dark grey silk lace bandeau",
     "vnum": "82113",
-    "details": "Area: The City of Sudharma\nObject 'a blessed dark grey silk lace bandeau' is type clothing, extra flags bless female_only.\nWeight is 4.0 pounds, value is 4500, level is 40.\nMaterial is lace silk.\nrestrict flags none.\nAffects holy power by 2.\nAffects mana by 14."
+    "details": "Area: The City of Sudharma\nObject 'a blessed dark grey silk lace bandeau' is type clothing, extra flags bless female_only.\nWeight is 4.0 pounds, value is 4500, level is 40.\nMaterial is lace silk.\nrestrict flags none.\nAffects holy power by 1.\nAffects mana by 14."
   },
   {
     "name": "a mystical grey silk lace bandeau",
@@ -45117,7 +45162,7 @@
   {
     "name": "Umma's Butcher Knife",
     "vnum": "10226",
-    "details": "Area: Temple of the Faceless\nObject 'Umma's Butcher Knife' is type weapon, extra flags humming noremove nolocate.\nWeight is 25.0 pounds, value is 560000, level is 60.\nMaterial is steel bone.\nrestrict flags none.\nWeapon type is dagger.\nDamage is 5d10 (average 27).\nWeapons flags: sharp armor-piercing poison\nAffects hp by 35.\nAffects damage roll by 6.\nAffects hit roll by 6.\nAffects dexterity by 4.\nAffects strength by 3."
+    "details": "Area: Temple of the Faceless\nObject 'Umma's Butcher Knife' is type weapon, extra flags humming noremove nolocate.\nWeight is 2.5 pounds, value is 560000, level is 60.\nMaterial is steel bone.\nrestrict flags none.\nWeapon type is dagger.\nDamage is 5d10 (average 27).\nWeapons flags: sharp armor-piercing poison\nAffects hp by 35.\nAffects damage roll by 6.\nAffects hit roll by 6.\nAffects dexterity by 4.\nAffects strength by 3."
   },
   {
     "name": "a knarled double-bladed bearded Halberd",
@@ -45718,5 +45763,270 @@
     "name": "a handler's longsword",
     "vnum": "33300",
     "details": "Area: The Landshark Breeding Grounds\nObject 'a handler's longsword' is type weapon, extra flags magic.\nWeight is 0.8 pounds, value is 100, level is 10.\nMaterial is iron.\nrestrict flags none.\nWeapon type is sword.\nDamage is 5d8 (average 22).\nWeapons flags: flaming\nAffects hp by 15.\nAffects damage roll by 3.\nAffects hit roll by 3."
+  },
+  {
+    "name": "a gallon jug of Dwarf Disaster",
+    "vnum": "34124",
+    "details": "Area: The Mane Event\nObject 'a gallon jug of Dwarf Disaster' is type drink, extra flags magic inventory.\nWeight is 10.0 pounds, value is 300, level is 1.\nMaterial is clay.\nrestrict flags none.\nIt holds honey-colored mead."
+  },
+  {
+    "name": "a tab of Minderaser",
+    "vnum": "34123",
+    "details": "Area: The Mane Event\nObject 'a tab of Minderaser' is type pill, extra flags magic inventory.\nWeight is 0.1 pounds, value is 70, level is 1.\nMaterial is plant.\nrestrict flags none.\nLevel 30 spells of: 'forget'."
+  },
+  {
+    "name": "an infrasight berry",
+    "vnum": "34122",
+    "details": "Area: The Mane Event\nObject 'an infrasight berry' is type pill, extra flags magic inventory.\nWeight is 0.1 pounds, value is 55, level is 1.\nMaterial is plant.\nrestrict flags none.\nLevel 30 spells of: 'infravision'."
+  },
+  {
+    "name": "a tab of Detect-I",
+    "vnum": "34121",
+    "details": "Area: The Mane Event\nObject 'a tab of Detect-I' is type pill, extra flags magic inventory.\nWeight is 0.1 pounds, value is 60, level is 1.\nMaterial is plant.\nrestrict flags none.\nLevel 30 spells of: 'detect invis'."
+  },
+  {
+    "name": "a gallon jug of Troll's Reserve",
+    "vnum": "34120",
+    "details": "Area: The Mane Event\nObject 'a gallon jug of Troll's Reserve' is type drink, extra flags magic inventory.\nWeight is 10.0 pounds, value is 320, level is 1.\nMaterial is glass.\nrestrict flags none.\nIt holds amber-colored rum."
+  },
+  {
+    "name": "a gallon jug of Midnight Moss",
+    "vnum": "34119",
+    "details": "Area: The Mane Event\nObject 'a gallon jug of Midnight Moss' is type drink, extra flags magic inventory.\nWeight is 10.0 pounds, value is 350, level is 1.\nMaterial is glass.\nrestrict flags none.\nIt holds green-colored absinthe."
+  },
+  {
+    "name": "a gallon jug of Krull Kooler",
+    "vnum": "34118",
+    "details": "Area: The Mane Event\nObject 'a gallon jug of Krull Kooler' is type drink, extra flags magic inventory.\nWeight is 10.0 pounds, value is 280, level is 1.\nMaterial is glass.\nrestrict flags none.\nIt holds green-colored elvish wine."
+  },
+  {
+    "name": "a gallon jug of Pixie Stomp",
+    "vnum": "34117",
+    "details": "Area: The Mane Event\nObject 'a gallon jug of Pixie Stomp' is type drink, extra flags magic inventory.\nWeight is 10.0 pounds, value is 300, level is 1.\nMaterial is glass.\nrestrict flags none.\nIt holds golden-colored champagne."
+  },
+  {
+    "name": "a gallon jug of Berry Blast",
+    "vnum": "34116",
+    "details": "Area: The Mane Event\nObject 'a gallon jug of Berry Blast' is type drink, extra flags magic inventory.\nWeight is 10.0 pounds, value is 250, level is 1.\nMaterial is glass.\nrestrict flags none.\nIt holds clear-colored vodka."
+  },
+  {
+    "name": "a dried Duskbloom",
+    "vnum": "34115",
+    "details": "Area: The Mane Event\nObject 'a dried Duskbloom' is type pill, extra flags magic inventory.\nWeight is 0.1 pounds, value is 55, level is 1.\nMaterial is plant.\nrestrict flags none.\nLevel 5 spells of: 'cure disease'."
+  },
+  {
+    "name": "a pinch of Clearroot",
+    "vnum": "34114",
+    "details": "Area: The Mane Event\nObject 'a pinch of Clearroot' is type pill, extra flags magic inventory.\nWeight is 0.1 pounds, value is 45, level is 1.\nMaterial is plant.\nrestrict flags none.\nLevel 5 spells of: 'cure poison'."
+  },
+  {
+    "name": "a tab of Healwave",
+    "vnum": "34113",
+    "details": "Area: The Mane Event\nObject 'a tab of Healwave' is type pill, extra flags magic inventory.\nWeight is 0.1 pounds, value is 40, level is 1.\nMaterial is plant.\nrestrict flags none.\nLevel 5 spells of: 'cure light'."
+  },
+  {
+    "name": "a tab of Flashblind",
+    "vnum": "34112",
+    "details": "Area: The Mane Event\nObject 'a tab of Flashblind' is type pill, extra flags magic inventory.\nWeight is 0.1 pounds, value is 50, level is 1.\nMaterial is plant.\nrestrict flags none.\nLevel 5 spells of: 'cure blindness'."
+  },
+  {
+    "name": "a troll-sized wristband",
+    "vnum": "34111",
+    "details": "Area: The Mane Event\nObject 'a troll-sized wristband' is type armor, extra flags glowing magic purified.\nWeight is 1.0 pounds, value is 20, level is 1.\nMaterial is rubber.\nrestrict flags none.\nArmor class is 1 pierce, 1 bash, 1 slash, and 0 vs. magic.\nAffects strength by 1."
+  },
+  {
+    "name": "a forest rave tunic",
+    "vnum": "34110",
+    "details": "Area: The Mane Event\nObject 'a forest rave tunic' is type armor, extra flags glowing magic purified.\nWeight is 2.0 pounds, value is 80, level is 1.\nMaterial is cloth.\nrestrict flags none.\nArmor class is 2 pierce, 2 bash, 2 slash, and 0 vs. magic.\nAffects constitution by 1."
+  },
+  {
+    "name": "a packet of herbal remedy",
+    "vnum": "34109",
+    "details": "Area: The Mane Event\nObject 'a packet of herbal remedy' is type food, extra flags none.\nWeight is 0.1 pounds, value is 15, level is 1.\nMaterial is paper.\nrestrict flags none."
+  },
+  {
+    "name": "a pink crystal necklace",
+    "vnum": "34108",
+    "details": "Area: The Mane Event\nObject 'a pink crystal necklace' is type treasure, extra flags glowing magic purified.\nWeight is 0.1 pounds, value is 75, level is 1.\nMaterial is crystal.\nrestrict flags none.\nAffects hp by 5."
+  },
+  {
+    "name": "a Mane Event flyer",
+    "vnum": "34107",
+    "details": "Area: The Mane Event\nObject 'a Mane Event flyer' is type book, extra flags none.\nWeight is 0.1 pounds, value is 1, level is 1.\nMaterial is parchment.\nrestrict flags none."
+  },
+  {
+    "name": "a VIP lantern",
+    "vnum": "34106",
+    "details": "Area: The Mane Event\nObject 'a VIP lantern' is type light, extra flags glowing.\nWeight is 0.2 pounds, value is 50, level is 1.\nMaterial is crystal.\nrestrict flags none."
+  },
+  {
+    "name": "a glowshroom",
+    "vnum": "34105",
+    "details": "Area: The Mane Event\nObject 'a glowshroom' is type food, extra flags glowing.\nWeight is 0.1 pounds, value is 10, level is 1.\nMaterial is plant.\nrestrict flags none."
+  },
+  {
+    "name": "DJ Deathblow's setlist",
+    "vnum": "34104",
+    "details": "Area: The Mane Event\nObject 'DJ Deathblow's setlist' is type book, extra flags none.\nWeight is 0.1 pounds, value is 5, level is 1.\nMaterial is paper.\nrestrict flags none."
+  },
+  {
+    "name": "a drink token",
+    "vnum": "34103",
+    "details": "Area: The Mane Event\nObject 'a drink token' is type treasure, extra flags none.\nWeight is 0.1 pounds, value is 5, level is 1.\nMaterial is wood.\nrestrict flags none."
+  },
+  {
+    "name": "a Krull leaf",
+    "vnum": "34102",
+    "details": "Area: The Mane Event\nObject 'a Krull leaf' is type treasure, extra flags glowing magic.\nWeight is 0.1 pounds, value is 100, level is 1.\nMaterial is plant.\nrestrict flags none."
+  },
+  {
+    "name": "a rave bracelet",
+    "vnum": "34101",
+    "details": "Area: The Mane Event\nObject 'a rave bracelet' is type armor, extra flags glowing magic purified.\nWeight is 0.1 pounds, value is 30, level is 1.\nMaterial is cord.\nrestrict flags none.\nArmor class is 1 pierce, 1 bash, 1 slash, and 0 vs. magic.\nAffects dexterity by 1."
+  },
+  {
+    "name": "a glow crystal",
+    "vnum": "34100",
+    "details": "Area: The Mane Event\nObject 'a glow crystal' is type light, extra flags glowing.\nWeight is 0.1 pounds, value is 25, level is 1.\nMaterial is crystal.\nrestrict flags none."
+  },
+  {
+    "name": "rough leather leg wrappings",
+    "vnum": "34227",
+    "details": "Area: Ironshackle Prison Camp\nObject 'rough leather leg wrappings' is type armor, extra flags none.\nWeight is 1.2 pounds, value is 0, level is 35.\nMaterial is leather.\nrestrict flags none.\nArmor class is 5 pierce, 5 bash, 5 slash, and 3 vs. magic.\nAffects saves by -3.\nAffects hp by 20.\nAffects damage roll by 3.\nAffects hit roll by 2."
+  },
+  {
+    "name": "a torn leather work cap",
+    "vnum": "34226",
+    "details": "Area: Ironshackle Prison Camp\nObject 'a torn leather work cap' is type armor, extra flags none.\nWeight is 0.4 pounds, value is 0, level is 35.\nMaterial is leather.\nrestrict flags none.\nArmor class is 4 pierce, 4 bash, 4 slash, and 2 vs. magic.\nAffects hp by 20.\nAffects damage roll by 2.\nAffects hit roll by 2."
+  },
+  {
+    "name": "crude leather bracers",
+    "vnum": "34225",
+    "details": "Area: Ironshackle Prison Camp\nObject 'crude leather bracers' is type armor, extra flags none.\nWeight is 0.5 pounds, value is 0, level is 35.\nMaterial is leather.\nrestrict flags none.\nArmor class is 3 pierce, 3 bash, 3 slash, and 2 vs. magic.\nAffects saves by -2.\nAffects hp by 15.\nAffects hit roll by 2."
+  },
+  {
+    "name": "a rough leather work belt",
+    "vnum": "34224",
+    "details": "Area: Ironshackle Prison Camp\nObject 'a rough leather work belt' is type armor, extra flags none.\nWeight is 0.8 pounds, value is 0, level is 35.\nMaterial is leather.\nrestrict flags none.\nArmor class is 4 pierce, 4 bash, 4 slash, and 2 vs. magic.\nAffects saves by -3.\nAffects damage roll by 2.\nAffects hit roll by 2."
+  },
+  {
+    "name": "a tattered leather vest",
+    "vnum": "34223",
+    "details": "Area: Ironshackle Prison Camp\nObject 'a tattered leather vest' is type armor, extra flags none.\nWeight is 1.5 pounds, value is 0, level is 35.\nMaterial is leather.\nrestrict flags none.\nArmor class is 5 pierce, 5 bash, 5 slash, and 3 vs. magic.\nAffects hp by 25.\nAffects damage roll by 2.\nAffects hit roll by 2."
+  },
+  {
+    "name": "an improvised spiked club",
+    "vnum": "34222",
+    "details": "Area: Ironshackle Prison Camp\nObject 'an improvised spiked club' is type weapon, extra flags none.\nWeight is 2.0 pounds, value is 0, level is 35.\nMaterial is iron.\nrestrict flags none.\nWeapon type is mace/club.\nDamage is 3d15 (average 24).\nWeapons flags: sharp resonating\nAffects damage roll by 4.\nAffects hit roll by 3."
+  },
+  {
+    "name": "a length of iron chain",
+    "vnum": "34221",
+    "details": "Area: Ironshackle Prison Camp\nObject 'a length of iron chain' is type weapon, extra flags none.\nWeight is 1.5 pounds, value is 0, level is 35.\nMaterial is iron.\nrestrict flags none.\nWeapon type is whip.\nDamage is 3d15 (average 24).\nWeapons flags: vampiric\nAffects damage roll by 5.\nAffects hit roll by 3."
+  },
+  {
+    "name": "a sharpened iron shank",
+    "vnum": "34220",
+    "details": "Area: Ironshackle Prison Camp\nObject 'a sharpened iron shank' is type weapon, extra flags none.\nWeight is 0.5 pounds, value is 0, level is 35.\nMaterial is iron.\nrestrict flags none.\nWeapon type is dagger.\nDamage is 3d15 (average 24).\nWeapons flags: sharp poison\nAffects damage roll by 4.\nAffects hit roll by 4."
+  },
+  {
+    "name": "an iron-plate chest guard",
+    "vnum": "34219",
+    "details": "Area: Ironshackle Prison Camp\nObject 'an iron-plate chest guard' is type armor, extra flags evil anti_good.\nWeight is 25.0 pounds, value is 210000, level is 60.\nMaterial is iron.\nrestrict flags none.\nArmor class is 8 pierce, 8 bash, 8 slash, and 8 vs. magic.\nAffects spell power by 2.\nAffects damage roll by 5.\nAffects hit roll by 5."
+  },
+  {
+    "name": "iron-riveted arm sleeves",
+    "vnum": "34218",
+    "details": "Area: Ironshackle Prison Camp\nObject 'iron-riveted arm sleeves' is type armor, extra flags evil anti_good.\nWeight is 6.0 pounds, value is 130000, level is 60.\nMaterial is iron.\nrestrict flags none.\nArmor class is 8 pierce, 8 bash, 8 slash, and 8 vs. magic.\nAffects hp by 40.\nAffects damage roll by 5.\nAffects hit roll by 5."
+  },
+  {
+    "name": "iron-reinforced leggings",
+    "vnum": "34217",
+    "details": "Area: Ironshackle Prison Camp\nObject 'iron-reinforced leggings' is type armor, extra flags evil anti_good.\nWeight is 9.0 pounds, value is 150000, level is 60.\nMaterial is iron.\nrestrict flags none.\nArmor class is 8 pierce, 8 bash, 8 slash, and 8 vs. magic.\nAffects save vs breath by -7.\nAffects save vs transport by -7.\nAffects saves by -7.\nAffects damage roll by 6.\nAffects hit roll by 6."
+  },
+  {
+    "name": "a studded iron belt",
+    "vnum": "34216",
+    "details": "Area: Ironshackle Prison Camp\nObject 'a studded iron belt' is type armor, extra flags evil anti_good.\nWeight is 2.5 pounds, value is 88000, level is 60.\nMaterial is iron.\nrestrict flags none.\nArmor class is 8 pierce, 8 bash, 8 slash, and 8 vs. magic.\nAffects spell power by 4.\nAffects damage roll by 4.\nAffects hit roll by 4."
+  },
+  {
+    "name": "an iron spear named, 'Obedience'",
+    "vnum": "34215",
+    "details": "Area: Ironshackle Prison Camp\nObject 'an iron spear named, 'Obedience'' is type weapon, extra flags evil anti_good noremove.\nWeight is 11.0 pounds, value is 190000, level is 60.\nMaterial is iron.\nrestrict flags none.\nWeapon type is spear.\nDamage is 6d9 (average 30).\nWeapons flags: sharp armor-piercing vorpal poison\nAffects damage roll by 8.\nAffects hit roll by 8."
+  },
+  {
+    "name": "an iron chain necklace",
+    "vnum": "34214",
+    "details": "Area: Ironshackle Prison Camp\nObject 'an iron chain necklace' is type armor, extra flags evil anti_good.\nWeight is 2.0 pounds, value is 95000, level is 60.\nMaterial is iron.\nrestrict flags none.\nArmor class is 7 pierce, 7 bash, 7 slash, and 7 vs. magic.\nAffects spell power by 4.\nAffects hp by 25.\nAffects saves by -5."
+  },
+  {
+    "name": "an iron jailer's authority earring",
+    "vnum": "34213",
+    "details": "Area: Ironshackle Prison Camp\nObject 'an iron jailer's authority earring' is type armor, extra flags evil anti_good.\nWeight is 0.5 pounds, value is 80000, level is 60.\nMaterial is iron.\nrestrict flags none.\nArmor class is 5 pierce, 5 bash, 5 slash, and 5 vs. magic.\nAffects spell power by 4.\nAffects hp by 15."
+  },
+  {
+    "name": "an iron prisoner's-mark earring",
+    "vnum": "34212",
+    "details": "Area: Ironshackle Prison Camp\nObject 'an iron prisoner's-mark earring' is type armor, extra flags evil anti_good.\nWeight is 0.5 pounds, value is 80000, level is 60.\nMaterial is iron.\nrestrict flags none.\nArmor class is 5 pierce, 5 bash, 5 slash, and 5 vs. magic.\nAffects spell power by 4.\nAffects hp by 15."
+  },
+  {
+    "name": "the Leash",
+    "vnum": "34211",
+    "details": "Area: Ironshackle Prison Camp\nObject 'the Leash' is type weapon, extra flags evil anti_good noremove.\nWeight is 6.0 pounds, value is 160000, level is 60.\nMaterial is iron.\nrestrict flags none.\nWeapon type is whip.\nDamage is 6d9 (average 30).\nWeapons flags: vampiric poison\nAffects spell power by 5."
+  },
+  {
+    "name": "an iron-reinforced breastplate",
+    "vnum": "34210",
+    "details": "Area: Ironshackle Prison Camp\nObject 'an iron-reinforced breastplate' is type armor, extra flags evil anti_good.\nWeight is 28.0 pounds, value is 220000, level is 60.\nMaterial is iron.\nrestrict flags none.\nArmor class is 20 pierce, 20 bash, 20 slash, and 20 vs. magic.\nAffects save vs spell by -6.\nAffects save vs breath by -6.\nAffects save vs transport by -6.\nAffects saves by -8.\nAffects damage roll by 7.\nAffects hit roll by 6."
+  },
+  {
+    "name": "a pair of iron-framed spectacles",
+    "vnum": "34209",
+    "details": "Area: Ironshackle Prison Camp\nObject 'a pair of iron-framed spectacles' is type armor, extra flags evil anti_good.\nWeight is 0.5 pounds, value is 90000, level is 60.\nMaterial is iron.\nrestrict flags none.\nArmor class is 6 pierce, 6 bash, 6 slash, and 6 vs. magic.\nAffects save vs spell by -5.\nAffects save vs maledictions by -5.\nAffects save vs transport by -5.\nAffects saves by -5."
+  },
+  {
+    "name": "an iron hatchet named 'Severance'",
+    "vnum": "34208",
+    "details": "Area: Ironshackle Prison Camp\nObject 'an iron hatchet named 'Severance'' is type weapon, extra flags evil anti_good noremove.\nWeight is 10.0 pounds, value is 180000, level is 60.\nMaterial is iron.\nrestrict flags none.\nWeapon type is axe.\nDamage is 5d10 (average 27).\nWeapons flags: sharp poison fatiguing\nAffects damage roll by 8.\nAffects hit roll by 8."
+  },
+  {
+    "name": "an iron warden's bracelet",
+    "vnum": "34207",
+    "details": "Area: Ironshackle Prison Camp\nObject 'an iron warden's bracelet' is type armor, extra flags evil anti_good.\nWeight is 2.5 pounds, value is 100000, level is 60.\nMaterial is iron.\nrestrict flags none.\nArmor class is 8 pierce, 8 bash, 8 slash, and 6 vs. magic.\nAffects save vs transport by -5.\nAffects save vs maledictions by -5.\nAffects saves by -5."
+  },
+  {
+    "name": "an iron warden's ring",
+    "vnum": "34206",
+    "details": "Area: Ironshackle Prison Camp\nObject 'an iron warden's ring' is type armor, extra flags evil anti_good.\nWeight is 3.0 pounds, value is 120000, level is 60.\nMaterial is iron.\nrestrict flags none.\nArmor class is 7 pierce, 7 bash, 7 slash, and 5 vs. magic.\nAffects holy power by 2.\nAffects damage roll by 3.\nAffects hit roll by 3."
+  },
+  {
+    "name": "an iron spiked flail named, 'The Warden's lesson'",
+    "vnum": "34205",
+    "details": "Area: Ironshackle Prison Camp\nObject 'an iron spiked flail named, 'The Warden's lesson'' is type weapon, extra flags evil anti_good noremove.\nWeight is 12.0 pounds, value is 200000, level is 60.\nMaterial is iron.\nrestrict flags none.\nWeapon type is flail.\nDamage is 6d9 (average 30).\nWeapons flags: sharp poison\nAffects holy power by 2.\nAffects damage roll by 8.\nAffects hit roll by 8."
+  },
+  {
+    "name": "a stolen signet ring",
+    "vnum": "34204",
+    "details": "Area: Ironshackle Prison Camp\nObject 'a stolen signet ring' is type trash, extra flags visdeath.\nWeight is 0.5 pounds, value is 0, level is 35.\nMaterial is quartz.\nrestrict flags none."
+  },
+  {
+    "name": "a stolen iron key",
+    "vnum": "34203",
+    "details": "Area: Ironshackle Prison Camp\nObject 'a stolen iron key' is type trash, extra flags visdeath.\nWeight is 0.3 pounds, value is 0, level is 33.\nMaterial is iron.\nrestrict flags none."
+  },
+  {
+    "name": "a stolen ledger page",
+    "vnum": "34202",
+    "details": "Area: Ironshackle Prison Camp\nObject 'a stolen ledger page' is type trash, extra flags visdeath.\nWeight is 0.1 pounds, value is 0, level is 29.\nMaterial is parchment.\nrestrict flags none."
+  },
+  {
+    "name": "a stolen iron chisel",
+    "vnum": "34201",
+    "details": "Area: Ironshackle Prison Camp\nObject 'a stolen iron chisel' is type trash, extra flags visdeath.\nWeight is 0.2 pounds, value is 0, level is 27.\nMaterial is iron.\nrestrict flags none."
+  },
+  {
+    "name": "a stolen loaf of bread",
+    "vnum": "34200",
+    "details": "Area: Ironshackle Prison Camp\nObject 'a stolen loaf of bread' is type trash, extra flags visdeath.\nWeight is 0.1 pounds, value is 0, level is 25.\nMaterial is food.\nrestrict flags none."
   }
 ]
