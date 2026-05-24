@@ -1140,13 +1140,32 @@ function CMudWrapper.exec(line)
       CMudWrapper.save()
       CMudWrapper.notify(DarkmistsTheme.goodTag .. ("word-color trigger created: %s → %s"):format(pattern, colorStr))
     elseif args[1] then
-      -- 1-arg form: #CW {fg bg} → color the trigger match on the current line
+      -- 1-arg form: #CW {fg bg} → color every captured trigger match on the current line
       local m = CMudWrapper._currentMatches
-      local captured = (m and m[2] ~= nil and m[2] ~= "") and m[2] or (m and m[1])
-      if captured and captured ~= "" then
-        colorWord(captured, cleanColor(args[1]))
-      else
+      local colorArg = cleanColor(args[1])
+      local seen = {}
+      local didColor = false
+
+      if m then
+        for i = 2, #m do
+          local captured = m[i]
+          if captured and captured ~= "" and not seen[captured] then
+            seen[captured] = true
+            colorWord(captured, colorArg)
+            didColor = true
+          end
+        end
+      end
+
+      if not didColor and m and m[1] and m[1] ~= "" then
+        colorWord(m[1], colorArg)
+        didColor = true
+      end
+
+      if not didColor then
         CMudWrapper.notify(DarkmistsTheme.warnTag .. "#CW: not inside a trigger context — use #CW {pattern} {color} to create a persistent trigger")
+      else
+        resetFormat()
       end
     end
     return true
