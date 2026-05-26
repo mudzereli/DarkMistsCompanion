@@ -31,6 +31,8 @@ EnchanterAssist.sleepType    = 1   -- 1 = sleep, 0 = consumables
 EnchanterAssist.drainItem    = "potion"
 
 EnchanterAssist._lastVitalsCheck = 0
+EnchanterAssist._lastPotionRecovery = 0
+EnchanterAssist.potionRecoveryTimer = nil
 EnchanterAssist._comboIndices = nil
 EnchanterAssist._wakePending = false
 EnchanterAssist._wrapped     = false
@@ -337,6 +339,83 @@ function EnchanterAssist._wakeThenResumeRun(message)
   return true
 end
 
+function EnchanterAssist._getPotionVitals()
+  if not (dmapi and dmapi.player and dmapi.player.vitals) then
+    return nil
+  end
+
+  return dmapi.player.vitals
+end
+
+function EnchanterAssist._continuePotionRecovery()
+  local v = EnchanterAssist._getPotionVitals()
+  if not v then
+    return true
+  end
+
+  local now = getEpoch()
+  if now - EnchanterAssist._lastPotionRecovery < 10 then
+    return true
+  end
+
+  EnchanterAssist._lastPotionRecovery = now
+  local manaPct = v.mnPct or 0
+  local movePct = v.mvPct or 0
+
+  if manaPct < 90 then
+    dmapi.core.send("get", EnchanterAssist.drainItem, EnchanterAssist.container)
+    dmapi.core.send("c drain", EnchanterAssist.drainItem)
+  end
+
+  if movePct < 90 then
+    dmapi.core.send("get", "refreshment", EnchanterAssist.container)
+    dmapi.core.send("recite", "refreshment", "self")
+  end
+
+  return true
+end
+
+function EnchanterAssist._stopPotionRecoveryTimer()
+  if EnchanterAssist.potionRecoveryTimer then
+    DarkmistsTimer.remove("EnchanterAssist.PotionRecovery")
+    EnchanterAssist.potionRecoveryTimer = nil
+  end
+end
+
+function EnchanterAssist._ensurePotionRecoveryTimer()
+  if EnchanterAssist.sleepType ~= 0 then
+    return
+  end
+
+  if EnchanterAssist.potionRecoveryTimer then
+    return
+  end
+
+  EnchanterAssist.potionRecoveryTimer = DarkmistsTimer.add("EnchanterAssist.PotionRecovery", 10, function()
+    if EnchanterAssist.sleepType ~= 0
+      or EnchanterAssist.state ~= "resting"
+      or not EnchanterAssist.autoRun then
+      EnchanterAssist._stopPotionRecoveryTimer()
+      return
+    end
+
+    local v = EnchanterAssist._getPotionVitals()
+    if v then
+      local manaPct = v.mnPct or 0
+      local movePct = v.mvPct or 0
+
+      if manaPct > 90 and movePct > 90 then
+        EnchanterAssist.state = "idle"
+        EnchanterAssist._stopPotionRecoveryTimer()
+        EnchanterAssist.run()
+        return
+      end
+    end
+
+    EnchanterAssist._continuePotionRecovery()
+  end, true)
+end
+
 function EnchanterAssist._startRestCycle(message)
   if EnchanterAssist.state == "resting" then
     return true
@@ -351,6 +430,7 @@ function EnchanterAssist._startRestCycle(message)
   end
 
   EnchanterAssist.state = "resting"
+  EnchanterAssist._lastPotionRecovery = 0
 
   if message and message ~= "" then
     DMLogger.notify(ea_plugin, message)
@@ -366,15 +446,8 @@ function EnchanterAssist._startRestCycle(message)
     dmapi.core.send("sleep", EnchanterAssist.sleeper)
     tempTimer(3, EnchanterAssist._ensureSleepTimer)
   else
-    if manaPct < 90 then
-      dmapi.core.send("get", EnchanterAssist.drainItem, EnchanterAssist.container)
-      dmapi.core.send("quaff", EnchanterAssist.drainItem)
-    end
-
-    if movePct < 90 then
-      dmapi.core.send("get", "refreshment", EnchanterAssist.container)
-      dmapi.core.send("recite", "refreshment", "self")
-    end
+    EnchanterAssist._ensurePotionRecoveryTimer()
+    return EnchanterAssist._continuePotionRecovery()
   end
 
   return true
@@ -400,6 +473,7 @@ end
 function EnchanterAssist.hardStop()
   EnchanterAssist.autoRun = false
   EnchanterAssist._wakePending = false
+  EnchanterAssist._stopPotionRecoveryTimer()
 
   if EnchanterAssist.state == "brewing" then
     EnchanterAssist._hardStopRequested = true
@@ -709,6 +783,8 @@ function EnchanterAssist.reset()
   EnchanterAssist.missing = {}
   EnchanterAssist.sessionTrials     = 0
   EnchanterAssist.sessionFormulas = {}
+  EnchanterAssist._lastPotionRecovery = 0
+  EnchanterAssist._stopPotionRecoveryTimer()
 
   math.randomseed(math.floor(((getEpoch and getEpoch()) or os.time()) * 1000))  -- millisecond precision
   EnchanterAssist._shuffleMaterials()
@@ -886,6 +962,7 @@ function EnchanterAssist.init()
     EnchanterAssist._lastVitalsCheck = now
     -- Exit resting (potion mode support)
     if high and EnchanterAssist.state == "resting" and not dmapi.player.status.sleeping then
+      EnchanterAssist._stopPotionRecoveryTimer()
       EnchanterAssist.state = "idle"
       tempTimer(0.2, function()
         if EnchanterAssist.autoRun then

@@ -1144,7 +1144,8 @@ function DarkMistsMeta.init()
         "  "..c.."es set container <name>         "..dm_muted.."Set container holding enchantment items.\n"..
         "  "..c.."es set sleeper <name>           "..dm_muted.."Set sleeper target.\n"..
         "  "..c.."es set sleepmode <sleep|potion> "..dm_muted.."Choose restoration behavior type.\n"..
-        "  "..c.."es set potion <item>            "..dm_muted.."Set item used for quaffing.\n"..
+        "    "..dm_muted.."Potion mode needs a drain potion and Scrolls of Refreshment from Drow City.\n"..
+        "  "..c.."es set potion <item>            "..dm_muted.."Set potion used for draining.\n"..
         "  "..c.."es set order <seq|rand>         "..dm_muted.."Set trial selection order mode.\n"..
         "  "..c.."es sound                        "..dm_muted.."Toggle formula discovery sound\n\n"..
         dm_header_color.."Control:\n"..
@@ -1201,7 +1202,14 @@ function DarkMistsMeta.init()
       EnchanterAssist.sleepType = 0
     end
     EnchanterAssist.save()
-    DMLogger.notify(EnchanterAssist.color.."EnchanterAssist","Sleep mode set to: " .. matches[2])
+    if matches[2] == "potion" then
+      DMLogger.notify(
+        EnchanterAssist.color.."EnchanterAssist",
+        "Sleep mode set to: potion. Set a drain potion with es set potion <item>, and keep Scrolls of Refreshment from Drow City available."
+      )
+    else
+      DMLogger.notify(EnchanterAssist.color.."EnchanterAssist","Sleep mode set to: " .. matches[2])
+    end
   end)
 
   -- es set potion <item>
