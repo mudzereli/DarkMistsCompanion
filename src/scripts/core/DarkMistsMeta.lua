@@ -205,14 +205,14 @@ Prefix every command with # (e.g. #alias, #trigger).
   #unalias {name}                – remove an alias
 
   Names may be multi-word by wrapping in braces: #alias {dr f} {drink flask}
-  #unalias also accepts bare multi-word names without braces.
+  The #unalias command also accepts bare multi-word names without braces.
 
   Body syntax:
-    %1 %2 …     positional args from the alias invocation
-    %-1 %-2 …   rest-of-args from position N onward
-    %%1 %%2 …   delayed expansion (survive inner alias calls)
-    @VarName    expands a stored variable
-    | or ;      command separator (configurable)
+    %1 %2 …     – positional args from the alias invocation
+    %-1 %-2 …   – rest-of-args from position N onward
+    %%1 %%2 …   – delayed expansion (survive inner alias calls)
+    @VarName    – expands a stored variable
+    | or ;      – command separator (configurable)
 
 ──── TRIGGERS ───────────────────────────────────────────────────
   #trigger {name} {pattern} {body}          – CMUD wildcard pattern
@@ -226,25 +226,25 @@ Prefix every command with # (e.g. #alias, #trigger).
   (#action and #rxaction are synonyms for #trigger / #rxtrigger)
 
   Wildcard tokens (for #trigger / #action):
-    *         any sequence of characters
-    ?         any single character
-    %d        one or more digits (0-9)
-    %n        signed number (+ or -)
-    %w        one or more alpha characters
-    %a        one or more alphanumeric characters
-    %s        one or more whitespace characters
-    %x        one or more non-whitespace characters
-    %p        punctuation
-    %t        a direction command (north, south, …)
-    [abc]     any characters in range
-    (pat)     capture group → %1 … %99 in body
-    {a|b|c}   alternation (match any listed value)
-    {^str}    negation (do NOT match str)
-    &nn       exactly nn characters
-    &VarName  capture into @VarName variable
-    ~x        literal x  (escape next character)
-    ~~        literal ~
-    ^ $       line anchors
+    *         – any sequence of characters
+    ?         – any single character
+    %d        – one or more digits (0-9)
+    %n        – signed number (+ or -)
+    %w        – one or more alpha characters
+    %a        – one or more alphanumeric characters
+    %s        – one or more whitespace characters
+    %x        – one or more non-whitespace characters
+    %p        – punctuation
+    %t        – a direction command (north, south, …)
+    [abc]     – any characters in range
+    (pat)     – capture group → %1 … %99 in body
+    {a|b|c}   – alternation (match any listed value)
+    {^str}    – negation (do NOT match str)
+    &nn       – exactly nn characters
+    &VarName  – capture into @VarName variable
+    ~x        – literal x  (escape next character)
+    ~~        – literal ~
+    ^ $       – line anchors
 
 ──── VARIABLES ──────────────────────────────────────────────────
   #var {name} {value}               – set a variable
@@ -277,25 +277,25 @@ Prefix every command with # (e.g. #alias, #trigger).
   Disabled classes have all their handles killed until re-enabled.
 
 ──── ENABLE / DISABLE ───────────────────────────────────────────
-  #T+ {name}               – enable alias / trigger / variable
-  #T- {name}               – disable alias / trigger / variable
+  #t+ {name}               – enable alias / trigger / variable
+  #t- {name}               – disable alias / trigger / variable
 
   Disabled items remain defined but inactive until re-enabled.
   Listings show enabled names in green and disabled names in yellow.
 
 ──── ASYNC DELAY ────────────────────────────────────────────────
-  #WAIT {ms}               – pause N milliseconds then continue
-  #WAIT                    – wait for the next MUD line then continue
+  #wait {ms}               – pause N milliseconds then continue
+  #wait                    – wait for the next MUD line then continue
 
-  Shorthand prefixes are accepted (e.g. #WA 5000).
+  Shorthand prefixes are accepted (e.g. #wa 5000).
   Use inside alias bodies to sequence timed or event-driven commands.
 
 ──── COLORING ───────────────────────────────────────────────────
-  #CW {color}                – (inside trigger body) color the trigger match
-  #CW {pattern} {fg bg}      – create a persistent trigger that colors every
+  #cw {color}                – (inside trigger body) color the trigger match
+  #cw {pattern} {fg bg}      – create a persistent trigger that colors every
                                occurrence of {pattern} on matching lines
-  #COLOR {color}             – (inside trigger body) color the entire current line
-  #COLOR {pattern} {fg bg}   – create a persistent trigger that colors the entire
+  #color {color}             – (inside trigger body) color the entire current line
+  #color {pattern} {fg bg}   – create a persistent trigger that colors the entire
                                line whenever {pattern} is matched
 
   The color argument may contain a single color name (e.g. {blue}) or two
@@ -305,13 +305,6 @@ Prefix every command with # (e.g. #alias, #trigger).
 
   Colors are any Mudlet color name (e.g. red, green, DodgerBlue).
   Use lua showColors() in Mudlet to list all available names.
-
-  Examples:
-    #CW sleeping blue                    – always highlight "sleeping" in blue
-    #CW sleeping {white black}           – highlight "sleeping" white on black
-    #COLOR {You are hit} red             – color entire line matching "You are hit" red
-    #COLOR {You are hit} {yellow black}  – same, yellow text on black background
-    #CW {You are hit} orange {combat}    – only color "You are hit", assigned to class combat
 
 ──── UTILITY ────────────────────────────────────────────────────
   #show {text}             – echo text (variable expansion applies)
@@ -361,16 +354,43 @@ Prefix every command with # (e.g. #alias, #trigger).
   #rxtrigger hpline {^HP:\s*(\d+)/(\d+)} {#var hp %1|#var hpmax %2}
   #trigger getitem {* drops &ItemName} {#show Dropped: @ItemName}
 
+  -- coloring
+  #cw sleeping blue                    – always highlight "sleeping" in blue
+  #cw sleeping {white black}           – highlight "sleeping" white on black
+  #color {You are hit} red             – color entire line matching "You are hit" red
+  #color {You are hit} {yellow black}  – same, yellow text on black background
+  #cw {You are hit} orange {combat}    – only color "You are hit", assigned to class combat
+  
   -- wait 5 s then look
-  #alias j {#WA 5000|l}
+  #alias j {#wa 5000|l}
 
   -- loot, wait for next MUD line, then look
-  #alias loot {get all corpse|#WA|l}
+  #alias loot {get all corpse|#wa|l}
 
   -- disable a trigger without removing it
-  #T- hitme
-  #T+ hitme
+  #t- hitme
+  #t+ hitme
     ]],
+    render = function()
+      local info = DarkMistsMeta.helpIndex.cmud.info
+      for line in (info .. "\n"):gmatch("([^\n]*)\n") do
+        if line:match("^%s*─") then
+          -- Section divider (─ box-drawing character)
+          cecho(dm_header_color .. line .. "\n")
+        else
+          local pos = line:find(" – ", 1, true)
+          if pos then
+            -- Command – description: colorize each half
+            cecho(dm_text .. line:sub(1, pos - 1) .. dm_muted .. line:sub(pos) .. "\n")
+          elseif line:match("^%s+#") then-- or line:match("^%s+%-%- ") then
+            -- Code example lines
+            cecho(dm_text .. line .. "\n")
+          else
+            cecho(dm_muted .. line .. "\n")
+          end
+        end
+      end
+    end,
   },
 }
 
@@ -539,7 +559,11 @@ function DarkMistsMeta.init()
 
     -- Otherwise, show informational help
     dm_header(entry.title)
-    cecho(dm_muted .. (entry.info or "No additional information available.") .. "\n")
+    if entry.render then
+      entry.render()
+    else
+      cecho(dm_muted .. (entry.info or "No additional information available.") .. "\n")
+    end
   end)
 
   DarkmistsAlias.add("^dmc(?:\\s+help)?$", function()
