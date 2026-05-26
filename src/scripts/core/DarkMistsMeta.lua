@@ -1125,6 +1125,14 @@ function DarkMistsMeta.init()
   DarkmistsAlias.add("^es(?:\\s+(.*))?$", function()
     local c = dm_text
     local arg = matches[2] and matches[2]:trim() or ""
+    local sleepMode = (EnchanterAssist and EnchanterAssist.sleepType == 1) and "sleep" or "potion"
+    local enabled = EnchanterAssist and tostring(EnchanterAssist.enabled) or "unknown"
+    local autoRun = EnchanterAssist and tostring(EnchanterAssist.autoRun) or "unknown"
+    local partCount = EnchanterAssist and tostring(EnchanterAssist.partCount) or "unknown"
+    local container = EnchanterAssist and (EnchanterAssist.container or "(unset)") or "(unset)"
+    local sleeper = EnchanterAssist and (EnchanterAssist.sleeper or "(unset)") or "(unset)"
+    local potion = EnchanterAssist and (EnchanterAssist.drainItem or "(unset)") or "(unset)"
+    local orderMode = EnchanterAssist and (EnchanterAssist.deterministicOrder and "seq" or "rand") or "unknown"
 
     -- HELP (compact)
     if arg == "" or arg == "help" then
@@ -1133,23 +1141,23 @@ function DarkMistsMeta.init()
         dm_muted.."Automation helper for enchantment workflow management.\n"..
                   "Controls resting, part counts, and execution flow.\n\n"..
         dm_header_color.."EA Module Commands:\n"..
-        "  "..c.."es auto    "..dm_muted.."Toggle automatic running mode.\n"..
-        "  "..c.."es <1-5>   "..dm_muted.."Set part count (1–5), save configuration, and run.\n"..
+        "  "..c.."es auto    "..dm_muted.."Toggle automatic running mode. "..dm_muted.."["..dm_text.."AutoRun: "..dm_good..autoRun..dm_muted.."]\n"..
+        "  "..c.."es <1-5>   "..dm_muted.."Set part count (1–5), save configuration, and run. "..dm_muted.."["..dm_text.."Part: "..dm_good..partCount..dm_muted.."]\n"..
         "  "..c.."es run     "..dm_muted.."Execute a single enchantment cycle.\n"..
         "  "..c.."es stop    "..dm_muted.."Stop after current attempt (or immediately if idle).\n"..
         "  "..c.."es stats   "..dm_muted.."Display session statistics.\n"..
         "  "..c.."es missing "..dm_muted.."Display missing material statistics.\n"..
         "  "..c.."es reset   "..dm_muted.."Reset session statistics.\n\n"..
         dm_header_color.."Configuration Commands:\n"..
-        "  "..c.."es set container <name>         "..dm_muted.."Set container holding enchantment items.\n"..
-        "  "..c.."es set sleeper <name>           "..dm_muted.."Set sleeper target.\n"..
-        "  "..c.."es set sleepmode <sleep|potion> "..dm_muted.."Choose restoration behavior type.\n"..
-        "    "..dm_muted.."Potion mode needs a drain potion and Scrolls of Refreshment from Drow City.\n"..
-        "  "..c.."es set potion <item>            "..dm_muted.."Set potion used for draining.\n"..
-        "  "..c.."es set order <seq|rand>         "..dm_muted.."Set trial selection order mode.\n"..
-        "  "..c.."es sound                        "..dm_muted.."Toggle formula discovery sound\n\n"..
+        "  "..c.."es set container <name>         "..dm_muted.."Set container holding enchantment items. "..dm_muted.."["..dm_text.."Container: "..dm_good..container..dm_muted.."]\n"..
+        "  "..c.."es set sleeper <name>           "..dm_muted.."Set sleeper target. "..dm_muted.."["..dm_text.."Sleeper: "..dm_good..sleeper..dm_muted.."]\n"..
+        "  "..c.."es set sleepmode <sleep|potion> "..dm_muted.."Choose restoration behavior type. "..dm_muted.."["..dm_text.."Mode: "..dm_good..sleepMode..dm_muted.."]\n"..
+        --"    "..dm_muted.."Potion mode needs a drain potion and Scrolls of Refreshment from Drow City.\n"..
+        "  "..c.."es set potion <item>            "..dm_muted.."Set potion used for draining. "..dm_muted.."["..dm_text.."Potion: "..dm_good..potion..dm_muted.."]\n"..
+        "  "..c.."es set order <seq|rand>         "..dm_muted.."Set trial selection order mode. "..dm_muted.."["..dm_text.."Order: "..dm_good..orderMode..dm_muted.."]\n"..
+        "  "..c.."es sound                        "..dm_muted.."Toggle formula discovery sound "..dm_muted.."["..dm_text.."Sound: "..dm_good..tostring(EnchanterAssist and EnchanterAssist.playSoundOnDiscover or "unknown")..dm_muted.."]\n\n"..
         dm_header_color.."Control:\n"..
-        "  "..c.."es enable / es disable          "..dm_muted.."Enable or disable EnchanterAssist entirely.\n"
+        "  "..c.."es enable / es disable          "..dm_muted.."Enable or disable EnchanterAssist entirely. "..dm_muted.."["..dm_text.."Enabled: "..dm_good..enabled..dm_muted.."]\n"
       )
       return
     end
@@ -1205,7 +1213,7 @@ function DarkMistsMeta.init()
     if matches[2] == "potion" then
       DMLogger.notify(
         EnchanterAssist.color.."EnchanterAssist",
-        "Sleep mode set to: potion. Set a drain potion with es set potion <item>, and keep Scrolls of Refreshment from Drow City available."
+        "Sleep mode set to: potion. \n  "..dm_warn.."Set a drain potion with es set potion <item>, and keep Scrolls of Refreshment from Drow City available."
       )
     else
       DMLogger.notify(EnchanterAssist.color.."EnchanterAssist","Sleep mode set to: " .. matches[2])
