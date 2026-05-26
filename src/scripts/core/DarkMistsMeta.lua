@@ -1179,7 +1179,7 @@ function DarkMistsMeta.init()
         --"    "..dm_muted.."Potion mode needs a drain potion and Scrolls of Refreshment from Drow City.\n"..
         "  "..c.."es set potion <item>            "..dm_muted.."Set potion used for draining. "..dm_muted.."["..dm_text.."Potion: "..dm_good..potion..dm_muted.."]\n"..
         "  "..c.."es set order <seq|rand>         "..dm_muted.."Set trial selection order mode. "..dm_muted.."["..dm_text.."Order: "..dm_good..orderMode..dm_muted.."]\n"..
-        "  "..c.."es sound                        "..dm_muted.."Toggle formula discovery sound "..dm_muted.."["..dm_text.."Sound: "..dm_good..tostring(EnchanterAssist and EnchanterAssist.playSoundOnDiscover or "unknown")..dm_muted.."]\n\n"..
+        "  "..c.."es sound                        "..dm_muted.."Toggle formula discovery sound "..dm_muted.."["..dm_text.."Sound: "..dm_good..tostring(EnchanterAssist and EnchanterAssist.playSoundOnDiscover or "false")..dm_muted.."]\n\n"..
         dm_header_color.."Control:\n"..
         "  "..c.."es enable / es disable          "..dm_muted.."Enable or disable EnchanterAssist entirely. "..dm_muted.."["..dm_text.."Enabled: "..dm_good..enabled..dm_muted.."]\n"
       )
