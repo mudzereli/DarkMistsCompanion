@@ -54,7 +54,6 @@ dmapi.core = {
     initialized = false,
     combatMissedPrompts = 0,
     lastCombatRoundFired = getEpoch(),
-    lastRegenPulseAt = 0,
     lastCommand = nil,
     capturingRoom = false,
     exitLineMarker = 0,
@@ -880,39 +879,35 @@ function dmapi.core.raiseEvent(eventName, ...)
   end
   
   raiseEvent(eventName, ...)
+
+  -- Also fire the catch-all dmapi.communication event for any sub-event,
+  -- so listeners can subscribe to a single event instead of all 27 variants.
+  local commPrefix = "dmapi.communication."
+  if eventName:sub(1, #commPrefix) == commPrefix then
+    local commType = eventName:sub(#commPrefix + 1)
+    local args = {...}
+    local payload
+    if type(args[1]) == "table" then
+      payload = {}
+      for k, v in pairs(args[1]) do payload[k] = v end
+      payload.type = commType
+    else
+      payload = { type = commType }
+    end
+    local catchAllName = "dmapi.communication"
+    if dmapi.settings.debugLevel > 1 then
+      dmapi.core.debug(string.format("%s : %s", catchAllName, yajl.to_string(payload)))
+    elseif dmapi.settings.debugLevel > 0 then
+      dmapi.core.debug(catchAllName)
+    end
+    raiseEvent(catchAllName, payload)
+  end
 end
 
 --- Get the last command sent
 -- @return string|nil The last command
 function dmapi.core.getLastCommand()
   return dmapi.core.state.lastCommand
-end
-
---- Fire a regen pulse event when the prompt reports passive recovery
--- @param vitals table Prompt vitals data
-local function maybeFireRegenPulse(vitals)
-  local hpRegen = tonumber(vitals and vitals.hpRegen) or 0
-  local mnRegen = tonumber(vitals and vitals.mnRegen) or 0
-  local mvRegen = tonumber(vitals and vitals.mvRegen) or 0
-
-  if hpRegen <= 0 and mnRegen <= 0 and mvRegen <= 0 then
-    return
-  end
-
-  local now = vitals.timestamp or getEpoch()
-  dmapi.core.state.lastRegenPulseAt = now
-
-  dmapi.core.raiseEvent("dmapi.player.regen.pulse", {
-    hp = vitals.hp,
-    mn = vitals.mn,
-    mv = vitals.mv,
-    hpRegen = hpRegen,
-    mnRegen = mnRegen,
-    mvRegen = mvRegen,
-    totalRegen = hpRegen + mnRegen + mvRegen,
-    line = vitals.line,
-    timestamp = now
-  })
 end
 
 --- Fire periodic damage events for known tick-like afflictions
@@ -1002,6 +997,14 @@ local function maybeFireAlchemyOutcome(line)
 
   if line:match("^Your alchemy process results in a gooey mess") then
     dmapi.core.raiseEvent("dmapi.player.alchemy.nomatch", {
+      line = line,
+      timestamp = getEpoch()
+    })
+    return true
+  end
+
+  if line:match("^The brew reacted strangely%.") then
+    dmapi.core.raiseEvent("dmapi.player.alchemy.weapononly", {
       line = line,
       timestamp = getEpoch()
     })
@@ -1733,7 +1736,6 @@ function dmapi.core.LineTrigger(line)
     end
     
     dmapi.core.raiseEvent("dmapi.player.vitals.updated", vitals)
-    maybeFireRegenPulse(vitals)
     dmapi.core.raiseEvent("dmapi.world.prompt", vitals)
     return
   end
