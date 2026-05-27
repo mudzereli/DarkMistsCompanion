@@ -1054,6 +1054,33 @@ function EnchanterAssist.init()
     EnchanterAssist._attemptResolved = true
   end)
 
+  DarkmistsEvents.add("EnchanterAssist.AlchemyWeaponOnly", "dmapi.player.alchemy.weapononly", function(_, data)
+    if EnchanterAssist.state ~= "brewing" then
+      return
+    end
+
+    -- Always record — nomatch (gooey mess) fires first and marks the key attempted,
+    -- but the session formula entry is still needed.
+    table.insert(EnchanterAssist.sessionFormulas, "[weapon] " .. EnchanterAssist.pendingKey)
+
+    -- Only save if nomatch didn't already mark the key
+    if not EnchanterAssist._contains(EnchanterAssist.attempted, EnchanterAssist.pendingKey) then
+      EnchanterAssist._add(EnchanterAssist.attempted, EnchanterAssist.pendingKey)
+      EnchanterAssist.save()
+    end
+
+    DMLogger.notify(ea_plugin,
+      ea_gold .. "Weapon Formula Found! " .. ea_text .. EnchanterAssist.pendingKey .. "\n"
+      .. ea_warn .. "AutoRun stopped - apply this formula to a weapon."
+    )
+    EnchanterAssist._playDiscoverSound()
+    EnchanterAssist._raiseTrialEvent("ea.trial.weapononly", { key = EnchanterAssist.pendingKey, line = data and data.line })
+    EnchanterAssist.hardStop()
+    -- Ensure the Total: line in on_line can call finishAttempt (nomatch already sets this,
+    -- but guard against the case where weapononly arrives without a prior nomatch).
+    EnchanterAssist._attemptResolved = true
+  end)
+
   DarkmistsEvents.add("EnchanterAssist.AlchemyDiscovered", "dmapi.player.alchemy.discovered", function(_, data)
     if EnchanterAssist.state ~= "brewing" then
       return
