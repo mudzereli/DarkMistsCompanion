@@ -1583,10 +1583,13 @@ function CMudWrapper.exec(line)
       inlineClass = (args[3] ~= "") and args[3] or nil
     end
     CMudWrapper.setVariable(name, value, default)
-    -- Stamp class on the variable if provided.
+    -- Always sync the class metadata so the active class context is reflected.
+    -- If assignedClass is nil (e.g. after #CLASS 0), any existing class is cleared.
+    -- This matches CMUD behaviour: #VARIABLE always belongs to the current class.
+    CMudWrapper.state.varmeta = CMudWrapper.state.varmeta or {}
     local assignedClass = inlineClass or CMudWrapper.defaultClass
-    if assignedClass then
-      CMudWrapper.state.varmeta = CMudWrapper.state.varmeta or {}
+    local existingClass = CMudWrapper.state.varmeta["__class__" .. name]
+    if existingClass ~= assignedClass then
       CMudWrapper.state.varmeta["__class__" .. name] = assignedClass
       CMudWrapper.save()
     end
