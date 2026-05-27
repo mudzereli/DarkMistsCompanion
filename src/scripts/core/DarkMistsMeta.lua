@@ -83,6 +83,18 @@ This is informational only and safe to change any time.
     ]],
   },
 
+  showdmg = {
+    title = "Damage Messages",
+    desc  = "Toggle inline average-damage estimates appended to combat lines.",
+    info  = [[
+Toggles inline average-damage estimates on combat hit messages.
+
+• dmc showdmg       – toggle on/off
+• dmc showdmg on    – enable
+• dmc showdmg off   – disable
+    ]],
+  },
+
   map = {
     title = "World Map",
     desc = "Fully interactable Mudlet world map with ~15,000 rooms.",
@@ -397,11 +409,11 @@ Prefix every command with # (e.g. #alias, #trigger).
 local helpSections = {
   {
     title = "Misc",
-    keys  = { "dmc", "spam", "infobox" },
+    keys  = { "dmc", "spam", "infobox", "showdmg" },
   },
   {
     title = "Interface",
-    keys  = {"ui", "ch", "sb", "dmid", "who", "affects" },
+    keys  = {"ui", "ch", "sb", "dmid", "who", "affects"},
   },
   {
     title = "Travel & Map",
@@ -434,6 +446,9 @@ local function dm_link(label, command)
     true
   )
 end
+
+-- Reload-safe: preserve false across Lua reloads; default true on first load.
+DarkMistsMeta.showdmgEnabled = DarkMistsMeta.showdmgEnabled ~= false
 
 function DarkMistsMeta.init()
   -- Resolve package identity at init time so module load order is safe.
@@ -536,6 +551,38 @@ function DarkMistsMeta.init()
 
     setInfo(args)
     cecho("\n"..dm_muted.."[InfoBox] "..dm_text.."Profile information updated: "..dm_good..args.."\n")
+  end)
+
+  -- =============================================================================
+  -- DAMAGE MESSAGES TOGGLE
+  -- =============================================================================
+
+  DarkmistsAlias.add([[^dmc\s+showdmg(?:\s+(on|off))?$]], function()
+    local arg = matches[2]
+    local enable
+
+    if arg == "on" then
+      enable = true
+    elseif arg == "off" then
+      enable = false
+    else
+      enable = not DarkMistsMeta.showdmgEnabled
+    end
+
+    if enable == DarkMistsMeta.showdmgEnabled then
+      local state = enable and (dm_good .. "enabled") or (dm_bad .. "disabled")
+      cecho("\n" .. dm_muted .. "[ShowDMG] " .. dm_text .. "Already " .. state .. ".\n")
+      return
+    end
+
+    DarkMistsMeta.showdmgEnabled = enable
+    if enable then
+      enableTrigger("DamageMessages")
+      cecho("\n" .. dm_muted .. "[ShowDMG] " .. dm_good .. "Enabled.\n")
+    else
+      disableTrigger("DamageMessages")
+      cecho("\n" .. dm_muted .. "[ShowDMG] " .. dm_bad .. "Disabled.\n")
+    end
   end)
 
   -- =============================================================================
