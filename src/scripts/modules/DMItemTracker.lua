@@ -521,21 +521,37 @@ function ItemTracker.findFirstItemInLine(line)
   local lower = trimmed:lower()
 
   -- Handle special case: "You get <item> from ..."
-  local phrase, offset = lower:match("^you get (.+) from ")
+  local phrase, offset = lower:match("^you get (.-) from ")
   if phrase then
     offset = 8  -- Length of "you get "
   else
-    phrase = lower
-    offset = 0
+    -- Handle common sentence wrappers around the item name.
+    phrase, offset = lower:match("^you stop using (.-)%.?$")
+    if phrase then
+      offset = 15  -- Length of "you stop using "
+    else
+      phrase, offset = lower:match("^you hold (.-) in your hands%.?$")
+      if phrase then
+        offset = 9  -- Length of "you hold "
+      else
+        phrase, offset = lower:match("^you put (.-) in .+%.?$")
+        if phrase then
+          offset = 8  -- Length of "you put "
+        else
+          phrase = lower
+          offset = 0
 
-    -- Additional special-case: lines like "<thing> is carried by <mob>" or
-    -- "<thing> is in <location>". When present, trim to the left-side phrase
-    -- so item names at the start of the line will be matched correctly.
-    local cpos = lower:find(" is carried by ")
-    if not cpos then cpos = lower:find(" is in ") end
-    if cpos then
-      phrase = trim(lower:sub(1, cpos - 1))
-      offset = 0
+          -- Additional special-case: lines like "<thing> is carried by <mob>" or
+          -- "<thing> is in <location>". When present, trim to the left-side phrase
+          -- so item names at the start of the line will be matched correctly.
+          local cpos = lower:find(" is carried by ")
+          if not cpos then cpos = lower:find(" is in ") end
+          if cpos then
+            phrase = trim(lower:sub(1, cpos - 1))
+            offset = 0
+          end
+        end
+      end
     end
   end
 

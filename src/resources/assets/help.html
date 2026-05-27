@@ -219,7 +219,8 @@
         <code>ch</code> &nbsp;·&nbsp; <code>who</code> &nbsp;·&nbsp;
         <code>affects</code> &nbsp;·&nbsp; <code>infobox</code> &nbsp;·&nbsp;
         <code>spam</code> &nbsp;·&nbsp; <code>dmid</code> &nbsp;·&nbsp;
-        <code>map</code> &nbsp;·&nbsp; <code>statroll</code> &nbsp;·&nbsp; <code>cmud</code>
+        <code>map</code> &nbsp;·&nbsp; <code>statroll</code> &nbsp;·&nbsp;
+        <code>showdmg</code> &nbsp;·&nbsp; <code>cmud</code>
       </div>
 
       <table>
@@ -232,6 +233,9 @@
           <tr><td><code>dmc ui off</code></td><td>Switch to minimal UI mode</td></tr>
           <tr><td><code>dmc infobox</code></td><td>Show, set, or clear the profile info box</td></tr>
           <tr><td><code>dmc spam</code></td><td>View or configure spam prevention settings</td></tr>
+          <tr><td><code>dmc showdmg</code></td><td>Toggle inline damage estimates on combat messages</td></tr>
+          <tr><td><code>dmc showdmg on</code></td><td>Enable damage estimates</td></tr>
+          <tr><td><code>dmc showdmg off</code></td><td>Disable damage estimates</td></tr>
         </tbody>
       </table>
     </section>
@@ -323,6 +327,25 @@
           <tr><td><code>sb toggle</code></td><td>Toggle bar visibility on/off</td></tr>
           <tr><td><code>sb info</code></td><td>Print current vitals to the chat area</td></tr>
           <tr><td><code>sb recreate</code></td><td>Recreate the bars (useful after layout changes)</td></tr>
+        </tbody>
+      </table>
+
+      <!-- Damage Messages -->
+      <h2 id="ui-showdmg">Damage Messages</h2>
+      <p>
+        Appends a small inline average-damage estimate to every combat hit line, color-coded
+        in dim gray with the number highlighted in red. The estimate is derived from the
+        damage verb (e.g. <em>wounds</em>, <em>mauls</em>, <em>PULVERIZES</em>) and shows
+        the midpoint of that verb's damage range.
+      </p>
+      <p>Enabled by default. Toggle at any time without reloading.</p>
+
+      <table>
+        <thead><tr><th>Command</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>dmc showdmg</code></td><td>Toggle damage estimates on/off</td></tr>
+          <tr><td><code>dmc showdmg on</code></td><td>Enable damage estimates</td></tr>
+          <tr><td><code>dmc showdmg off</code></td><td>Disable damage estimates</td></tr>
         </tbody>
       </table>
 
@@ -577,7 +600,7 @@
           <tr><td><code>es reset</code></td><td>Reset session statistics — attempted combinations and missing materials are preserved</td></tr>
           <tr><td><code>es set container &lt;name&gt;</code></td><td>Set the container to pull items from (default: <code>bag</code>)</td></tr>
           <tr><td><code>es set sleeper &lt;name&gt;</code></td><td>Set the sleep item name for bedroll rest mode (default: <code>bedroll</code>)</td></tr>
-          <tr><td><code>es set sleepmode sleep|potion</code></td><td>Use a bedroll to sleep (<code>sleep</code>), or drink potions to restore (<code>potion</code>) — default: <code>sleep</code></td></tr>
+          <tr><td><code>es set sleepmode sleep|potion</code></td><td>Use a bedroll to sleep (<code>sleep</code>), or drain potions to restore (<code>potion</code>) — default: <code>sleep</code></td></tr>
           <tr><td><code>es set potion &lt;name&gt;</code></td><td>Set the mana potion item name for potion mode (default: <code>potion</code>)</td></tr>
           <tr><td><code>es set order seq|rand</code></td><td>Test combinations in deterministic sequential order (<code>seq</code>) or randomly (<code>rand</code>) — default: <code>rand</code></td></tr>
           <tr><td><code>es sound</code></td><td>Toggle the audio alert played when a formula is discovered</td></tr>
@@ -1131,6 +1154,7 @@
           <tr><td><code>dmc help &lt;topic&gt;</code></td><td>In-depth help for a module</td><td>Core</td></tr>
           <tr><td><code>dmc ui [on|off]</code></td><td>Toggle or set full / minimal UI mode</td><td>Core</td></tr>
           <tr><td><code>dmc infobox [text|clear]</code></td><td>Set or clear the Mudlet profile info box</td><td>Core</td></tr>
+          <tr><td><code>dmc showdmg [on|off]</code></td><td>Toggle or set inline damage estimates on combat messages</td><td>Core</td></tr>
           <!-- Status Bars -->
           <tr><td><code>sb</code></td><td>Status bar help</td><td>Status Bars</td></tr>
           <tr><td><code>sb show</code> / <code>sb hide</code></td><td>Show or hide the gauge bars</td><td>Status Bars</td></tr>

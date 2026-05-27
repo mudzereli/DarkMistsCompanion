@@ -232,9 +232,6 @@ local MODULE_MENU = {
   }},
 
   {label = "🔎 Item Tracker", children = {
-    {label = "🏷️ Item Tracker", action = function()
-      expandAlias("dmc help dmid")
-    end},
     {label = "🔮 Offline Item Browser", action = function() Darkmists.OpenItemViewer() end},
     {label = "❓ Item Tracker", action = function()
       expandAlias("dmc help dmid")
@@ -248,11 +245,11 @@ local MODULE_MENU = {
       {label = "❸ ES Try 3", action = function() expandAlias("es 3") end},
       {label = "❹ ES Try 4", action = function() expandAlias("es 4") end},
       {label = "❺ ES Try 5", action = function() expandAlias("es 5") end},
+      {label = "⚡ Run", action = function() expandAlias("es run") end},
+      {label = "♾️ Auto", action = function() expandAlias("es auto") end},
+      {label = "🛑 Stop", action = function() EnchanterAssist.hardStop() end},
     }},
     {label = "📊 Show Stats", action = function() expandAlias("es stats") end},
-    {label = "⚡ Run", action = function() expandAlias("es run") end},
-    {label = "♾️ Auto", action = function() expandAlias("es auto") end},
-    {label = "🛑 Stop", action = function() EnchanterAssist.hardStop() end},
     {label = "⚠ Missing Essences", action = function() expandAlias("es missing") end},
     {label = "🧹 Reset Session", action = function() expandAlias("es reset") end},
     {label = "🛠 EA Tools", children = {
@@ -288,20 +285,19 @@ local SETTINGS_MENU = {
     Darkmists.PromptLoadMap()
   end},
 
-  {label = "📜 Log Console", action = function()
-    pcall(DMLogger.toggle)
-  end},
-
   {label = "📊 Status Bars", children = {
     {label = "👁️ Show", action = function() StatusBar.enable() end},
     {label = "❌ Hide", action = function() StatusBar.disable() end},
     {label = "🔄 Reload", action = function() StatusBar.recreate() end},
-    {label = "↔️ Moveable Bar Toggle", action = function()
-      StatusBar.toggleMoveable()
-    end},
+    --{label = "↔️ Moveable Bar Toggle", action = function()
+    --  StatusBar.toggleMoveable()
+    --end},
   }},
 
   {label = "📝 Advanced", children = {
+    {label = "📜 Log Console", action = function()
+      pcall(DMLogger.toggle)
+    end},
     {label = "🧼 Reset All Settings", action = function()
       -- Remove persisted state before reloading defaults.
       cecho(("Removing: %s (exists=%s)\n"):format(tostring(Darkmists.saveFilePath), tostring(io.exists(Darkmists.saveFilePath))))
@@ -312,29 +308,29 @@ local SETTINGS_MENU = {
       Darkmists.ResetUILayoutCache()
       Darkmists.PromptSafeReload()
     end},
-    {label = "💾 Save Settings", action = function()
-      -- Layout must be captured before settings are written.
-      saveWindowLayout()
-      Darkmists.SaveSettings()
-    end},
-    {label = "📤 Load Settings", action = function()
-      -- Restore layout before rehydrating UI state.
-      loadWindowLayout()
-      Darkmists.LoadSettings()
-      Darkmists.PromptSafeReload()
-    end},
-    {label = "📝 Edit Settings File", action = function() Darkmists.OpenSettingsFile() end},
-    {label = "📡 Updates", children = {
-      {label = "🟢 Use Stable Channel", action = function()
-        Darkmists.SetUpdateChannel("stable")
-      end},
-      {label = "🟡 Use Beta Channel", action = function()
-        Darkmists.SetUpdateChannel("beta")
-      end},
-      {label = "📥 Update", action = function()
-        Darkmists.UpdateFromGitHub()
-      end},
-    }},
+    --{label = "💾 Save Settings", action = function()
+    --  -- Layout must be captured before settings are written.
+    --  saveWindowLayout()
+    --  Darkmists.SaveSettings()
+    --end},
+    --{label = "📤 Load Settings", action = function()
+    --  -- Restore layout before rehydrating UI state.
+    --  loadWindowLayout()
+    --  Darkmists.LoadSettings()
+    --  Darkmists.PromptSafeReload()
+    --end},
+    --{label = "📝 Edit Settings File", action = function() Darkmists.OpenSettingsFile() end},
+    --{label = "📡 Updates", children = {
+    --  {label = "🟢 Use Stable Channel", action = function()
+    --    Darkmists.SetUpdateChannel("stable")
+    --  end},
+    --  {label = "🟡 Use Beta Channel", action = function()
+    --    Darkmists.SetUpdateChannel("beta")
+    --  end},
+    --  {label = "📥 Update", action = function()
+    --    Darkmists.UpdateFromGitHub()
+    --  end},
+    --}},
     {label = "🔩 Dev Tools", children = {
       {label = "🎨 Re-Color Map", action = function()
         MapColors.ResetAllRooms()

@@ -40,5 +40,33 @@
                             "script": ""
                      }
               ]
+       },
+       {
+              "name": "DamageMessages",
+              "isActive": "yes",
+              "isFolder": "no",
+              "multiline": "no",
+              "multilineDelta": "0",
+              "matchall": "no",
+              "filter": "no",
+              "fireLength": "0",
+              "highlight": "no",
+              "highlightFG": "#ff0000",
+              "highlightBG": "#ffff00",
+              "patterns": [
+                     {
+                            "pattern": "^.* (misses|nicks|scratches|grazes|hits|injures|wounds|thrashes|mauls|decimates|devastates|maims|MUTILATES|DISEMBOWELS|DISMEMBERS|GORES|PULVERIZES|RAZES|MASSACRES|MANGLES) .*(\\.|\\!)$",
+                            "type": "regex"
+                     },
+                     {
+                            "pattern": "^.* (\\*\\*\\* DEMOLISHES \\*\\*\\*|\\*\\*\\* DEVASTATES \\*\\*\\*|\\*\\*\\* SLAUGHTERS \\*\\*\\*|=== OBLITERATES ===|=== EVISCERATES ===|\\>\\>\\> ANNIHILATES \\<\\<\\<|\\>\\>\\> EXTERMINATES \\<\\<\\<) .*(\\.|\\!)$",
+                            "type": "regex"
+                     },
+                     {
+                            "pattern": "^.* (\\<\\<\\< RAVAGES \\>\\>\\>|\\<\\<\\< ERADICATES \\>\\>\\>|does UNSPEAKABLE things to|does UNGODLY things to|DOES UNSPEAKABLE THINGS TO) .*(\\.|\\!)$",
+                            "type": "regex"
+                     }
+              ],
+              "script": ""
        }
 ]

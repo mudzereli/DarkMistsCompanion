@@ -83,6 +83,18 @@ This is informational only and safe to change any time.
     ]],
   },
 
+  showdmg = {
+    title = "Damage Messages",
+    desc  = "Toggle inline average-damage estimates appended to combat lines.",
+    info  = [[
+Toggles inline average-damage estimates on combat hit messages.
+
+• dmc showdmg       – toggle on/off
+• dmc showdmg on    – enable
+• dmc showdmg off   – disable
+    ]],
+  },
+
   map = {
     title = "World Map",
     desc = "Fully interactable Mudlet world map with ~15,000 rooms.",
@@ -205,14 +217,14 @@ Prefix every command with # (e.g. #alias, #trigger).
   #unalias {name}                – remove an alias
 
   Names may be multi-word by wrapping in braces: #alias {dr f} {drink flask}
-  #unalias also accepts bare multi-word names without braces.
+  The #unalias command also accepts bare multi-word names without braces.
 
   Body syntax:
-    %1 %2 …     positional args from the alias invocation
-    %-1 %-2 …   rest-of-args from position N onward
-    %%1 %%2 …   delayed expansion (survive inner alias calls)
-    @VarName    expands a stored variable
-    | or ;      command separator (configurable)
+    %1 %2 …     – positional args from the alias invocation
+    %-1 %-2 …   – rest-of-args from position N onward
+    %%1 %%2 …   – delayed expansion (survive inner alias calls)
+    @VarName    – expands a stored variable
+    | or ;      – command separator (configurable)
 
 ──── TRIGGERS ───────────────────────────────────────────────────
   #trigger {name} {pattern} {body}          – CMUD wildcard pattern
@@ -226,25 +238,25 @@ Prefix every command with # (e.g. #alias, #trigger).
   (#action and #rxaction are synonyms for #trigger / #rxtrigger)
 
   Wildcard tokens (for #trigger / #action):
-    *         any sequence of characters
-    ?         any single character
-    %d        one or more digits (0-9)
-    %n        signed number (+ or -)
-    %w        one or more alpha characters
-    %a        one or more alphanumeric characters
-    %s        one or more whitespace characters
-    %x        one or more non-whitespace characters
-    %p        punctuation
-    %t        a direction command (north, south, …)
-    [abc]     any characters in range
-    (pat)     capture group → %1 … %99 in body
-    {a|b|c}   alternation (match any listed value)
-    {^str}    negation (do NOT match str)
-    &nn       exactly nn characters
-    &VarName  capture into @VarName variable
-    ~x        literal x  (escape next character)
-    ~~        literal ~
-    ^ $       line anchors
+    *         – any sequence of characters
+    ?         – any single character
+    %d        – one or more digits (0-9)
+    %n        – signed number (+ or -)
+    %w        – one or more alpha characters
+    %a        – one or more alphanumeric characters
+    %s        – one or more whitespace characters
+    %x        – one or more non-whitespace characters
+    %p        – punctuation
+    %t        – a direction command (north, south, …)
+    [abc]     – any characters in range
+    (pat)     – capture group → %1 … %99 in body
+    {a|b|c}   – alternation (match any listed value)
+    {^str}    – negation (do NOT match str)
+    &nn       – exactly nn characters
+    &VarName  – capture into @VarName variable
+    ~x        – literal x  (escape next character)
+    ~~        – literal ~
+    ^ $       – line anchors
 
 ──── VARIABLES ──────────────────────────────────────────────────
   #var {name} {value}               – set a variable
@@ -277,25 +289,25 @@ Prefix every command with # (e.g. #alias, #trigger).
   Disabled classes have all their handles killed until re-enabled.
 
 ──── ENABLE / DISABLE ───────────────────────────────────────────
-  #T+ {name}               – enable alias / trigger / variable
-  #T- {name}               – disable alias / trigger / variable
+  #t+ {name}               – enable alias / trigger / variable
+  #t- {name}               – disable alias / trigger / variable
 
   Disabled items remain defined but inactive until re-enabled.
   Listings show enabled names in green and disabled names in yellow.
 
 ──── ASYNC DELAY ────────────────────────────────────────────────
-  #WAIT {ms}               – pause N milliseconds then continue
-  #WAIT                    – wait for the next MUD line then continue
+  #wait {ms}               – pause N milliseconds then continue
+  #wait                    – wait for the next MUD line then continue
 
-  Shorthand prefixes are accepted (e.g. #WA 5000).
+  Shorthand prefixes are accepted (e.g. #wa 5000).
   Use inside alias bodies to sequence timed or event-driven commands.
 
 ──── COLORING ───────────────────────────────────────────────────
-  #CW {color}                – (inside trigger body) color the trigger match
-  #CW {pattern} {fg bg}      – create a persistent trigger that colors every
+  #cw {color}                – (inside trigger body) color the trigger match
+  #cw {pattern} {fg bg}      – create a persistent trigger that colors every
                                occurrence of {pattern} on matching lines
-  #COLOR {color}             – (inside trigger body) color the entire current line
-  #COLOR {pattern} {fg bg}   – create a persistent trigger that colors the entire
+  #color {color}             – (inside trigger body) color the entire current line
+  #color {pattern} {fg bg}   – create a persistent trigger that colors the entire
                                line whenever {pattern} is matched
 
   The color argument may contain a single color name (e.g. {blue}) or two
@@ -305,13 +317,6 @@ Prefix every command with # (e.g. #alias, #trigger).
 
   Colors are any Mudlet color name (e.g. red, green, DodgerBlue).
   Use lua showColors() in Mudlet to list all available names.
-
-  Examples:
-    #CW sleeping blue                    – always highlight "sleeping" in blue
-    #CW sleeping {white black}           – highlight "sleeping" white on black
-    #COLOR {You are hit} red             – color entire line matching "You are hit" red
-    #COLOR {You are hit} {yellow black}  – same, yellow text on black background
-    #CW {You are hit} orange {combat}    – only color "You are hit", assigned to class combat
 
 ──── UTILITY ────────────────────────────────────────────────────
   #show {text}             – echo text (variable expansion applies)
@@ -361,27 +366,54 @@ Prefix every command with # (e.g. #alias, #trigger).
   #rxtrigger hpline {^HP:\s*(\d+)/(\d+)} {#var hp %1|#var hpmax %2}
   #trigger getitem {* drops &ItemName} {#show Dropped: @ItemName}
 
+  -- coloring
+  #cw sleeping blue                    – always highlight "sleeping" in blue
+  #cw sleeping {white black}           – highlight "sleeping" white on black
+  #color {You are hit} red             – color entire line matching "You are hit" red
+  #color {You are hit} {yellow black}  – same, yellow text on black background
+  #cw {You are hit} orange {combat}    – only color "You are hit", assigned to class combat
+  
   -- wait 5 s then look
-  #alias j {#WA 5000|l}
+  #alias j {#wa 5000|l}
 
   -- loot, wait for next MUD line, then look
-  #alias loot {get all corpse|#WA|l}
+  #alias loot {get all corpse|#wa|l}
 
   -- disable a trigger without removing it
-  #T- hitme
-  #T+ hitme
+  #t- hitme
+  #t+ hitme
     ]],
+    render = function()
+      local info = DarkMistsMeta.helpIndex.cmud.info
+      for line in (info .. "\n"):gmatch("([^\n]*)\n") do
+        if line:match("^%s*─") then
+          -- Section divider (─ box-drawing character)
+          cecho(dm_header_color .. line .. "\n")
+        else
+          local pos = line:find(" – ", 1, true)
+          if pos then
+            -- Command – description: colorize each half
+            cecho(dm_text .. line:sub(1, pos - 1) .. dm_muted .. line:sub(pos) .. "\n")
+          elseif line:match("^%s+#") then-- or line:match("^%s+%-%- ") then
+            -- Code example lines
+            cecho(dm_text .. line .. "\n")
+          else
+            cecho(dm_muted .. line .. "\n")
+          end
+        end
+      end
+    end,
   },
 }
 
 local helpSections = {
   {
     title = "Misc",
-    keys  = { "dmc", "spam", "infobox" },
+    keys  = { "dmc", "spam", "infobox", "showdmg" },
   },
   {
     title = "Interface",
-    keys  = {"ui", "ch", "sb", "dmid", "who", "affects" },
+    keys  = {"ui", "ch", "sb", "dmid", "who", "affects"},
   },
   {
     title = "Travel & Map",
@@ -414,6 +446,9 @@ local function dm_link(label, command)
     true
   )
 end
+
+-- Reload-safe: preserve false across Lua reloads; default true on first load.
+DarkMistsMeta.showdmgEnabled = DarkMistsMeta.showdmgEnabled ~= false
 
 function DarkMistsMeta.init()
   -- Resolve package identity at init time so module load order is safe.
@@ -519,6 +554,38 @@ function DarkMistsMeta.init()
   end)
 
   -- =============================================================================
+  -- DAMAGE MESSAGES TOGGLE
+  -- =============================================================================
+
+  DarkmistsAlias.add([[^dmc\s+showdmg(?:\s+(on|off))?$]], function()
+    local arg = matches[2]
+    local enable
+
+    if arg == "on" then
+      enable = true
+    elseif arg == "off" then
+      enable = false
+    else
+      enable = not DarkMistsMeta.showdmgEnabled
+    end
+
+    if enable == DarkMistsMeta.showdmgEnabled then
+      local state = enable and (dm_good .. "enabled") or (dm_bad .. "disabled")
+      cecho("\n" .. dm_muted .. "[ShowDMG] " .. dm_text .. "Already " .. state .. ".\n")
+      return
+    end
+
+    DarkMistsMeta.showdmgEnabled = enable
+    if enable then
+      enableTrigger("DamageMessages")
+      cecho("\n" .. dm_muted .. "[ShowDMG] " .. dm_good .. "Enabled.\n")
+    else
+      disableTrigger("DamageMessages")
+      cecho("\n" .. dm_muted .. "[ShowDMG] " .. dm_bad .. "Disabled.\n")
+    end
+  end)
+
+  -- =============================================================================
   -- dm help
   -- =============================================================================
 
@@ -539,7 +606,11 @@ function DarkMistsMeta.init()
 
     -- Otherwise, show informational help
     dm_header(entry.title)
-    cecho(dm_muted .. (entry.info or "No additional information available.") .. "\n")
+    if entry.render then
+      entry.render()
+    else
+      cecho(dm_muted .. (entry.info or "No additional information available.") .. "\n")
+    end
   end)
 
   DarkmistsAlias.add("^dmc(?:\\s+help)?$", function()
@@ -1125,6 +1196,14 @@ function DarkMistsMeta.init()
   DarkmistsAlias.add("^es(?:\\s+(.*))?$", function()
     local c = dm_text
     local arg = matches[2] and matches[2]:trim() or ""
+    local sleepMode = (EnchanterAssist and EnchanterAssist.sleepType == 1) and "sleep" or "potion"
+    local enabled = EnchanterAssist and tostring(EnchanterAssist.enabled) or "unknown"
+    local autoRun = EnchanterAssist and tostring(EnchanterAssist.autoRun) or "unknown"
+    local partCount = EnchanterAssist and tostring(EnchanterAssist.partCount) or "unknown"
+    local container = EnchanterAssist and (EnchanterAssist.container or "(unset)") or "(unset)"
+    local sleeper = EnchanterAssist and (EnchanterAssist.sleeper or "(unset)") or "(unset)"
+    local potion = EnchanterAssist and (EnchanterAssist.drainItem or "(unset)") or "(unset)"
+    local orderMode = EnchanterAssist and (EnchanterAssist.deterministicOrder and "seq" or "rand") or "unknown"
 
     -- HELP (compact)
     if arg == "" or arg == "help" then
@@ -1133,22 +1212,23 @@ function DarkMistsMeta.init()
         dm_muted.."Automation helper for enchantment workflow management.\n"..
                   "Controls resting, part counts, and execution flow.\n\n"..
         dm_header_color.."EA Module Commands:\n"..
-        "  "..c.."es auto    "..dm_muted.."Toggle automatic running mode.\n"..
-        "  "..c.."es <1-5>   "..dm_muted.."Set part count (1–5), save configuration, and run.\n"..
+        "  "..c.."es auto    "..dm_muted.."Toggle automatic running mode. "..dm_muted.."["..dm_text.."AutoRun: "..dm_good..autoRun..dm_muted.."]\n"..
+        "  "..c.."es <1-5>   "..dm_muted.."Set part count (1–5), save configuration, and run. "..dm_muted.."["..dm_text.."Part: "..dm_good..partCount..dm_muted.."]\n"..
         "  "..c.."es run     "..dm_muted.."Execute a single enchantment cycle.\n"..
         "  "..c.."es stop    "..dm_muted.."Stop after current attempt (or immediately if idle).\n"..
         "  "..c.."es stats   "..dm_muted.."Display session statistics.\n"..
         "  "..c.."es missing "..dm_muted.."Display missing material statistics.\n"..
         "  "..c.."es reset   "..dm_muted.."Reset session statistics.\n\n"..
         dm_header_color.."Configuration Commands:\n"..
-        "  "..c.."es set container <name>         "..dm_muted.."Set container holding enchantment items.\n"..
-        "  "..c.."es set sleeper <name>           "..dm_muted.."Set sleeper target.\n"..
-        "  "..c.."es set sleepmode <sleep|potion> "..dm_muted.."Choose restoration behavior type.\n"..
-        "  "..c.."es set potion <item>            "..dm_muted.."Set item used for quaffing.\n"..
-        "  "..c.."es set order <seq|rand>         "..dm_muted.."Set trial selection order mode.\n"..
-        "  "..c.."es sound                        "..dm_muted.."Toggle formula discovery sound\n\n"..
+        "  "..c.."es set container <name>         "..dm_muted.."Set container holding enchantment items. "..dm_muted.."["..dm_text.."Container: "..dm_good..container..dm_muted.."]\n"..
+        "  "..c.."es set sleeper <name>           "..dm_muted.."Set sleeper target. "..dm_muted.."["..dm_text.."Sleeper: "..dm_good..sleeper..dm_muted.."]\n"..
+        "  "..c.."es set sleepmode <sleep|potion> "..dm_muted.."Choose restoration behavior type. "..dm_muted.."["..dm_text.."Mode: "..dm_good..sleepMode..dm_muted.."]\n"..
+        --"    "..dm_muted.."Potion mode needs a drain potion and Scrolls of Refreshment from Drow City.\n"..
+        "  "..c.."es set potion <item>            "..dm_muted.."Set potion used for draining. "..dm_muted.."["..dm_text.."Potion: "..dm_good..potion..dm_muted.."]\n"..
+        "  "..c.."es set order <seq|rand>         "..dm_muted.."Set trial selection order mode. "..dm_muted.."["..dm_text.."Order: "..dm_good..orderMode..dm_muted.."]\n"..
+        "  "..c.."es sound                        "..dm_muted.."Toggle formula discovery sound "..dm_muted.."["..dm_text.."Sound: "..dm_good..tostring(EnchanterAssist and EnchanterAssist.playSoundOnDiscover or "false")..dm_muted.."]\n\n"..
         dm_header_color.."Control:\n"..
-        "  "..c.."es enable / es disable          "..dm_muted.."Enable or disable EnchanterAssist entirely.\n"
+        "  "..c.."es enable / es disable          "..dm_muted.."Enable or disable EnchanterAssist entirely. "..dm_muted.."["..dm_text.."Enabled: "..dm_good..enabled..dm_muted.."]\n"
       )
       return
     end
@@ -1201,7 +1281,14 @@ function DarkMistsMeta.init()
       EnchanterAssist.sleepType = 0
     end
     EnchanterAssist.save()
-    DMLogger.notify(EnchanterAssist.color.."EnchanterAssist","Sleep mode set to: " .. matches[2])
+    if matches[2] == "potion" then
+      DMLogger.notify(
+        EnchanterAssist.color.."EnchanterAssist",
+        "Sleep mode set to: potion. \n  "..dm_warn.."Set a drain potion with es set potion <item>, and keep Scrolls of Refreshment from Drow City available."
+      )
+    else
+      DMLogger.notify(EnchanterAssist.color.."EnchanterAssist","Sleep mode set to: " .. matches[2])
+    end
   end)
 
   -- es set potion <item>
