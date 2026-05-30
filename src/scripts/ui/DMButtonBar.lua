@@ -2,6 +2,12 @@
 -- Button Bar
 --================================--
 
+-- Manages the top toolbar (buttons & dropdowns) used by the UI.
+-- Uses Geyser Labels and the Adjustable container to place controls.
+-- Designed to be reload-safe: callers destroy/recreate this module
+-- during reloads so the implementation keeps minimal persistent state.
+-- `ButtonBar.nextX` tracks the horizontal offset used while laying out
+-- top-level controls left-to-right.
 ButtonBar = {}
 
 ButtonBar.bg = "#000000"
@@ -14,6 +20,9 @@ ButtonBar.fontWidth = nil
 ButtonBar.fontHeight = nil
 ButtonBar.height = nil
 
+-- Qt-style CSS used by Geyser `QLabel` instances. Keep separate
+-- styles for top-level buttons (compact, horizontal) and menu
+-- labels (padded, bordered) so hover and spacing can differ.
 ButtonBar.buttonStyleSheet = [[
   QLabel {
     background-color: #000000;
@@ -33,6 +42,9 @@ ButtonBar.menuStyleSheet = [[
   QLabel::hover { background-color: #1a1a1a; }
 ]]
 
+-- Resolve font sizing and compute measured font metrics used by layout.
+-- Falls back to a sensible default, and keeps calculations idempotent
+-- so reloads produce the same dimensions.
 function ButtonBar.configure()
   local globalFontSize = 12
   if Darkmists and Darkmists.GlobalSettings and Darkmists.GlobalSettings.fontSize then
@@ -47,6 +59,9 @@ end
 --================================--
 -- Lifecycle
 --================================--
+-- Safely destroy the existing container during reloads.
+-- Use `pcall` to avoid runtime errors if the container was already
+-- partially torn down by a previous reload; leave no lingering refs.
 function ButtonBar.destroy()
   local container = ButtonBar.container
   if container and container.delete then
@@ -59,6 +74,10 @@ end
 --================================--
 -- Initialization
 --================================--
+-- Create and attach the Adjustable container used as the bar.
+-- The bar is locked and not persisted (`autoSave=false`) because
+-- layout is programmatically managed; callers may choose to persist
+-- elsewhere. `attachToBorder('top')` pins the bar to the top edge.
 function ButtonBar:create()
   ButtonBar.configure()
   ButtonBar.destroy()
@@ -100,6 +119,9 @@ function ButtonBar:_menuWidth()
   return ButtonBar.fontWidth * ButtonBar.dropDownMaxCharacters
 end
 
+-- Execute a menu/button action in a protected call.
+-- Actions are arbitrary functions; isolating failures prevents a broken
+-- action from taking down the UI. Errors are routed to `DMLogger`.
 function ButtonBar:_runAction(action)
   if type(action) ~= "function" then
     return false
@@ -117,6 +139,8 @@ function ButtonBar:_style(btn, isMenu)
   btn:setStyleSheet(isMenu and ButtonBar.menuStyleSheet or ButtonBar.buttonStyleSheet)
 end
 
+-- Produce the formatted label for a menu entry. Adds a small caret
+-- for entries that contain children so the user sees it's a submenu.
 function ButtonBar:_menuLabel(item)
   local caret = item.children and "   ▸" or ""
   return "<left>  " .. tostring(item.label or "") .. caret
@@ -133,8 +157,13 @@ function ButtonBar:_addMenuChildren(parent, items, depth)
     return
   end
 
+  -- Recursively build children. The `layoutDir` choice is important:
+  --  - "BV" keeps the first-level menu vertical so top-level items stack
+  --    cleanly under the parent.
+  --  - "RV" is used for deeper levels to avoid overlapping flyouts.
+  -- Click callbacks are deferred via `tempTimer(0, ...)` so the menu
+  -- UI can close/settle before the action runs (avoids focus/order races).
   for _, item in ipairs(items) do
-    -- BV keeps the first level vertical; RV avoids overlapping nested flyouts.
     local dir = depth == 1 and "BV" or "RV"
 
     local child = parent:addChild({
@@ -162,6 +191,9 @@ end
 --================================--
 -- Top-Level Buttons
 --================================--
+-- Create a compact top-level clickable button.
+-- Buttons are simple `Geyser.Label` elements; `ButtonBar.nextX` is
+-- incremented to place subsequent controls to the right.
 function ButtonBar:addButton(text, action)
   if not ButtonBar.container then return end
 
@@ -189,6 +221,9 @@ end
 --================================--
 -- Top-Level Dropdowns
 --================================--
+-- Create a nestable dropdown header which will host a flyout menu.
+-- `nestable=true` allows the label to spawn child menus built by
+-- `_addMenuChildren` using the descriptor table supplied in `items`.
 function ButtonBar:addDropdown(text, items)
   if not ButtonBar.container then return end
 
@@ -211,6 +246,9 @@ end
 --================================--
 -- Menu Data
 --================================--
+-- Menu descriptor tables. Each entry is a table with `label` and
+-- either `action` (a function) or `children` (an array of entries).
+-- Actions frequently call `expandAlias` to route commands into Mudlet.
 local MODULE_MENU = {
   {label = "🎓 Skillups", children = {
     {label = "📜 Skillups", action = function() SkillUps.display() end},
@@ -263,6 +301,9 @@ local MODULE_MENU = {
   }}
 }
 
+-- Settings menu: mutates `Darkmists.GlobalSettings` and may prompt a
+-- UI reload. Keep actions minimal; destructive operations request
+-- user confirmation via other helpers when necessary.
 local SETTINGS_MENU = {
   {label = "🔄 Reload UI", action = function() Darkmists.PromptSafeReload() end},
   {label = "📊 Toggle UI", action = function() Darkmists.ShowUIIntroMessage(true) end},
@@ -343,10 +384,16 @@ local SETTINGS_MENU = {
   }}
 }
 
+-- Help menu entries should correspond to keys in `DarkMistsMeta.helpIndex`.
+-- They call `expandAlias("dmc help <topic>")` to render help in-client.
 local HELP_MENU = {
-  {label = "❔ General", action = function()
-    expandAlias("dmc help")
-  end},
+  {label = "❔ General", children = {
+    {label = "📘 Main Help", action = function() expandAlias("dmc help") end},
+    {label = "🌞 UI Mode", action = function() expandAlias("dmc help ui") end},
+    {label = "📝 Info Box", action = function() expandAlias("dmc help infobox") end},
+    {label = "💥 Damage Messages", action = function() expandAlias("dmc help showdmg") end},
+    {label = "🚫 Spam Prevention", action = function() expandAlias("dmc help spam") end},
+  }},
 
   {label = "🧭 World", children = {
     {label = "🗺️ Area Maps", action = function()
@@ -397,6 +444,9 @@ local HELP_MENU = {
 -- -----------------------------------------------------------------------------
 -- BUILD
 -- -----------------------------------------------------------------------------
+-- Build the bar and populate top-level controls. Returns `true` on
+-- success. This is intentionally idempotent: callers may call `build`
+-- again after a reload to re-create UI state.
 function ButtonBar.build()
   ButtonBar:create()
 
