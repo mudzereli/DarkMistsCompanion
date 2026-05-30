@@ -7,7 +7,10 @@ AffectsWindow = {}
 -- ---------------------------------------------------------------------------
 -- Configuration
 -- ---------------------------------------------------------------------------
-
+-- Tunable settings for the affects snapshot view.
+-- `timeRatio` maps real seconds to in-game seconds (used for expiry math).
+-- `deleteOriginalLines` controls whether source AFF output is removed
+-- after capture (useful for keeping scrollback tidy).
 AffectsWindow.config = {
   fontSize       = 10,
   fontName       = getFont(),
@@ -43,6 +46,10 @@ AffectsWindow.ageTimer       = nil
 AffectsWindow.hasFullFormat  = false
 
 AffectsWindow.affectsList    = {}   -- Canonical affect records (active + expired)
+-- `affectsList` stores canonical affect records; entries may be marked
+-- `expired` and remain until explicitly cleared. `currentKeys` is a
+-- transient set of keys observed during the current snapshot capture
+-- used to detect disappeared affects at snapshot end.
 AffectsWindow.currentKeys    = {}   -- Snapshot keys for current capture
 
 AffectsWindow.keys = {
@@ -53,6 +60,8 @@ AffectsWindow.keys = {
 }
 
 local function shouldDeleteOriginalLines()
+  -- Helper wrapper so callers don't reference config directly.
+  -- Returning true causes source AFF lines to be removed after capture.
   return AffectsWindow.config.deleteOriginalLines
 end
 
@@ -88,6 +97,9 @@ end
 -- ============================================================================
 
 -- Start a new snapshot capture
+-- Begin a snapshot capture. The capture window records successive AFF
+-- output lines until the prompt is seen. `lastUpdateTime` is used to
+-- compute age and for display; `currentKeys` is reset for this snapshot.
 function AffectsWindow.startCapture()
   AffectsWindow.hasFullFormat = false
   AffectsWindow.capturing = true
@@ -105,6 +117,11 @@ function AffectsWindow.startCapture()
 end
 
 -- End capture and expire missing affects
+-- Stop the current snapshot and mark any affect not seen in this
+-- snapshot as expired. We track `expiredByName` so multiple entries
+-- for the same spell name are collapsed: the first missing entry is
+-- marked expired and subsequent duplicates are removed to avoid
+-- duplicate expired lines in the listing.
 function AffectsWindow.stopCaptureAndDisplay()
   if not AffectsWindow.capturing then return end
   if shouldDeleteOriginalLines() then
@@ -201,6 +218,8 @@ function AffectsWindow.displayHeader()
 end
 
 function AffectsWindow.parseDuration(text)
+  -- Parse human-readable duration strings into minutes.
+  -- Special tokens map to sentinels: PERMANENT -> math.huge, UNKNOWN -> -math.huge
   if text == "PERMANENT" then return math.huge end
   if text == "UNKNOWN" then return -math.huge end
 
@@ -211,6 +230,9 @@ function AffectsWindow.parseDuration(text)
 end
 
 function AffectsWindow.formatDuration(minutes, expired)
+  -- Render duration strings with theme tags. `expired` forces an
+  -- EXPIRED label regardless of numeric minutes. Minutes <= 0 are
+  -- shown as EXPIRING (imminent) to draw attention.
   if minutes == math.huge then return DarkmistsTheme.goodTag .. "PERMANENT" end
   if minutes == -math.huge then return DarkmistsTheme.goodTag .. "UNKNOWN" end
 
@@ -233,6 +255,11 @@ end
 
 local lastSpellName = ""
 
+-- Parse the current AFF output line and record/update an affect entry.
+-- This function accepts multiple variants of AFF output (full format,
+-- edge-case phrases like "no time at all", permanent, and a simple
+-- fallback of just the spell name). It also guards against capturing
+-- prompts or combat condition lines.
 function AffectsWindow.copyCurrentLine()
   if not AffectsWindow.capturing or not AffectsWindow.window then return end
 
@@ -240,19 +267,18 @@ function AffectsWindow.copyCurrentLine()
 
   if line == "You are affected by the following:" then return end
 
-  -- Exit if we get a condition line
-  -- This happens when you type AFF during combat.
+  -- Exit early for condition lines (e.g. typing AFF while in combat).
   for _, v in ipairs(dmapi.core.state.COMBAT_CONDITIONS) do
     if line:match(v) then return end
   end
 
-  -- Attempt to parse affect variants
+  -- Attempt to parse affect variants (full-text formats first)
 
-  -- Normal Line
+  -- Normal Line: "Name : modifies X by Y for about Z"
   local name, mod, val, dur =
     line:match("^(.-)%s+:%s+modifies%s+(.-)%s+by%s+(.-)%s+for%s+about%s+(.+)$")
 
-  -- Expiring Next Tick
+  -- Expiring Next Tick: maps to duration 0
   if not name then
     name, mod, val = line:match(
       "^(.-)%s+:%s+modifies%s+(.-)%s+by%s+(.-)%s+for no time at all$"
@@ -260,7 +286,7 @@ function AffectsWindow.copyCurrentLine()
     dur = "0"
   end
 
-  -- Permanent Buff
+  -- Permanent Buff: map to a sentinel token
   if not name then
     name, mod, val = line:match(
       "^(.-)%s+:%s+modifies%s+(.-)%s+by%s+(.-)%s+permanently$"
@@ -272,14 +298,13 @@ function AffectsWindow.copyCurrentLine()
     AffectsWindow.hasFullFormat = true
   end
   
-  -- Low-level fallback: only accept simple spell-name lines
+  -- Low-level fallback: accept plain spell-name lines only when we
+  -- haven't yet observed the full format. Reject lines containing
+  -- ":" or the word "modifies" so we don't mis-parse partial text.
   if not name and not AffectsWindow.hasFullFormat then
-    -- Must NOT contain ":" or "modifies"
     if line:find(":") or line:find("modifies") then
       return
     end
-
-    -- Must contain letters (not empty/whitespace)
     if not line:match("%a") then
       return
     end
@@ -290,7 +315,7 @@ function AffectsWindow.copyCurrentLine()
     dur  = "UNKNOWN"
   end
 
-  -- Not an affect line
+  -- Not an affect line: optionally delete source and bail out.
   if not name then
     if shouldDeleteOriginalLines() then
       deleteLine()
@@ -302,18 +327,21 @@ function AffectsWindow.copyCurrentLine()
     deleteLine()
   end
 
-  -- Handle wrapped spell names
+  -- Handle wrapped/continued spell names: use the last seen non-empty name
   if name:find("%S") == nil then
     name = lastSpellName
   end
   lastSpellName = name
 
   local duration = AffectsWindow.parseDuration(dur)
+  -- Compose a stable key including name/mod/value so reapplications
+  -- of the same effect refresh the existing entry instead of creating
+  -- duplicates.
   local key = name .. "|" .. mod .. "|" .. val
 
   AffectsWindow.currentKeys[key] = true
 
-  -- Refresh existing active entry
+  -- Refresh existing active entry (by exact key match)
   for _, affect in ipairs(AffectsWindow.affectsList) do
     if not affect.expired and affect.key == key then
       affect.captureTime  = os.time()
@@ -322,7 +350,8 @@ function AffectsWindow.copyCurrentLine()
     end
   end
 
-  -- Replace expired entry of same spell, else insert
+  -- If an expired entry with the same spell name exists, replace it
+  -- (preserves ordering and avoids duplicate expired records).
   for i, affect in ipairs(AffectsWindow.affectsList) do
     if affect.expired and affect.name == name then
       AffectsWindow.affectsList[i] = {
@@ -338,6 +367,7 @@ function AffectsWindow.copyCurrentLine()
     end
   end
 
+  -- Insert new active affect
   table.insert(AffectsWindow.affectsList, {
     name = name,
     modifier = mod,
@@ -353,6 +383,10 @@ end
 -- DISPLAY
 -- ============================================================================
 
+-- Rebuild the console display from the canonical affect list.
+-- Computes remaining minutes using `timeRatio`, sorts active affects
+-- by soonest to expire, then renders active followed by expired
+-- affects (expired entries get a clickable [X] to remove them).
 function AffectsWindow.refreshDisplay()
   if not AffectsWindow.window or not AffectsWindow.lastUpdateTime then return end
 
@@ -416,6 +450,9 @@ function AffectsWindow.refreshDisplay()
   end
 
   -- Render expired affects with clickable X
+  -- Expired affects are shown with a clickable [X] that removes the
+  -- expired record. We render them after active affects so the active
+  -- list remains prominent.
   for _, item in ipairs(expiredAffects) do
     local affect = item.affect
     local dur = AffectsWindow.formatDuration(0, true)
@@ -449,6 +486,9 @@ end
 -- ============================================================================
 
 function AffectsWindow.getAge()
+  -- Compute a human-friendly age label by converting elapsed real
+  -- seconds to in-game minutes using `timeRatio` and formatting the
+  -- result for display in the header.
   if not AffectsWindow.lastUpdateTime then return "Unknown" end
 
   local mins = math.floor(((os.time() - AffectsWindow.lastUpdateTime)
@@ -463,6 +503,8 @@ function AffectsWindow.getAge()
 end
 
 function AffectsWindow.startAgeTimer()
+  -- Ensure only one repeating age timer exists; replace any previous
+  -- timer to avoid duplicate callbacks after reloads.
   if AffectsWindow.ageTimer then
     DarkmistsTimer.remove("AffectsWindow.AgeTimer")
   end
@@ -485,9 +527,9 @@ local function registerHandlers()
       AffectsWindow.refreshDisplay()
     end
   end
-
-  -- If we have no effects, just capture an empty affect list
-  -- If we DONT do this, then EXPIRED effects will just show EXPIRING forever
+  -- If we have no effects, capture an empty list. Without this explicit
+  -- trigger, previously-expired affects could linger as EXPIRING forever
+  -- because no snapshot would mark them expired.
   DarkmistsTrigger.addKeyed(
     AffectsWindow.keys.triggerNoAffects,
     "substring",
@@ -498,7 +540,7 @@ local function registerHandlers()
     end
   )
 
-  -- Start Capturing Normally when we see the header
+  -- Start capturing when the AFF header appears
   DarkmistsTrigger.addKeyed(
     AffectsWindow.keys.triggerHeader,
     "substring",
@@ -508,7 +550,8 @@ local function registerHandlers()
     end
   )
 
-  -- If we saw the header, capture/copy all incoming lines
+  -- Capture any following lines while capturing is active. We use a
+  -- catch-all regex here but only process lines if `capturing` is true.
   DarkmistsTrigger.addKeyed(
     AffectsWindow.keys.triggerLine,
     "regex",
@@ -520,7 +563,7 @@ local function registerHandlers()
     end
   )
 
-  -- Stop capturing once we hit a prompt.
+  -- Stop capturing once we hit a prompt event (AFF output finished)
   DarkmistsEvents.add(
     AffectsWindow.keys.eventPrompt,
     "dmapi.world.prompt",
@@ -539,6 +582,7 @@ function AffectsWindow.init()
 end
 
 function AffectsWindow.destroy()
+  -- Remove timers and unregister triggers/events to keep reloads clean.
   if AffectsWindow.ageTimer then
     DarkmistsTimer.remove("AffectsWindow.AgeTimer")
     AffectsWindow.ageTimer = nil
