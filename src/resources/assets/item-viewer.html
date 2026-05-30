@@ -173,14 +173,14 @@ input[type="file"].form-control:hover::file-selector-button {
 .form-select,
 select[multiple],
 .dropdown-menu {
-  background: linear-gradient(180deg, rgba(43, 27, 69, 0.98), rgba(23, 13, 37, 0.98));
-  color: var(--dm-text);
+  background: var(--dm-select-bg);
+  color: var(--dm-select-text);
   border-color: var(--dm-border-strong);
 }
 
 .form-select option {
-  background: #29183d;
-  color: var(--dm-text);
+  background: var(--dm-select-bg);
+  color: var(--dm-select-text);
 }
 
 .dropdown-menu {
@@ -190,12 +190,32 @@ select[multiple],
 
 .dropdown-item,
 .form-check-label {
-  color: var(--dm-text);
+  color: var(--dm-select-text);
+}
+
+.form-check-input {
+  background-color: var(--dm-select-bg);
+  border-color: var(--dm-border-strong);
+  box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.08);
+}
+
+.form-check-input:hover {
+  border-color: var(--dm-accent);
+}
+
+.form-check-input:focus {
+  border-color: var(--dm-accent);
+  box-shadow: 0 0 0 0.2rem rgba(245, 203, 66, 0.22);
+}
+
+.form-check-input:checked {
+  background-color: var(--dm-accent);
+  border-color: var(--dm-accent);
 }
 
 .dropdown-item:hover {
   background: rgba(245, 203, 66, 0.12);
-  color: #fff7cb;
+  color: var(--dm-hover-text);
 }
 
 .btn {
