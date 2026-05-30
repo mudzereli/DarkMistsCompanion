@@ -99,8 +99,15 @@ elseif verb == "DOES UNSPEAKABLE THINGS TO" then
   maxDMG = 999
 end
 local avgDMG = math.ceil((minDMG + maxDMG)/2)
---damageMessage = (" <dim_gray>(<red>%d<dim_gray>-<red>%d<dim_gray> [<red>%d<dim_gray>])"):format(minDMG,maxDMG,avgDMG)
-local damageMessage = (" <dim_gray>(<red>%d<dim_gray>)"):format(avgDMG)
+local settings = Darkmists and Darkmists.GlobalSettings or {}
+local color = settings.damageMessageColor or "red"
+local mode  = settings.damageMessageMode  or "avg"
+local damageMessage
+if mode == "range" then
+  damageMessage = (" <dim_gray>(<%s>%d<dim_gray>-<%s>%d<dim_gray>)"):format(color,minDMG,color,maxDMG,color,avgDMG)
+else
+  damageMessage = (" <dim_gray>(<%s>%d<dim_gray>)"):format(color, avgDMG)
+end
 if avgDMG > 0 then
   cecho(damageMessage)
 end

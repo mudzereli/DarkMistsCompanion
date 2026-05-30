@@ -84,6 +84,12 @@ Darkmists.DefaultSettings = {
   hasSeenMapPrompt = false,
   -- Update channel for GitHub installs: "stable" or "beta"
   updateChannel = "stable",
+  -- Damage Message Color (any Mudlet color name; use lua showColors() to list options)
+  damageMessageColor = "red",
+  -- Damage Message Mode: "avg" = average only, "range" = min-max range with average
+  damageMessageMode = "avg",
+  -- Damage Message Enabled: whether inline damage estimates are shown (persisted)
+  damageMessageEnabled = true,
   -- Cached UI Version (changing this will invalidate settings)
   layoutCacheVersion = Darkmists.LAYOUT_CACHE_VERSION,
 }
