@@ -45,6 +45,9 @@ AffectsWindow.lastUpdateTime = nil
 AffectsWindow.ageTimer       = nil
 AffectsWindow.hasFullFormat  = false
 
+AffectsWindow.ignoreSet      = {}   -- Spell names that auto-remove on expiry
+AffectsWindow.showIgnored    = false -- Toggle for inline ignored-list display
+
 AffectsWindow.affectsList    = {}   -- Canonical affect records (active + expired)
 -- `affectsList` stores canonical affect records; entries may be marked
 -- `expired` and remain until explicitly cleared. `currentKeys` is a
@@ -130,16 +133,21 @@ function AffectsWindow.stopCaptureAndDisplay()
   end
   AffectsWindow.capturing = false
 
-  -- Expire any active affect whose key did not appear this snapshot
+  -- Expire any active affect whose key did not appear this snapshot.
+  -- Affects whose name is in the ignoreSet are removed immediately
+  -- instead of being marked expired.
   local affectsList = AffectsWindow.affectsList
   local currentKeys = AffectsWindow.currentKeys
+  local ignoreSet = AffectsWindow.ignoreSet
   local expiredByName = {}
 
   for i = #affectsList, 1, -1 do
     local affect = affectsList[i]
 
     if not affect.expired and not currentKeys[affect.key] then
-      if expiredByName[affect.name] then
+      if ignoreSet[affect.name] then
+        table.remove(affectsList, i)
+      elseif expiredByName[affect.name] then
         table.remove(affectsList, i)
       else
         affect.expired = true
@@ -177,6 +185,59 @@ function AffectsWindow.clearExpiredAffects()
   end
 end
 
+-- Sync the ignoreSet hashmap into Darkmists.GlobalSettings and persist.
+-- Called after every ignore/unignore to survive reloads.
+local function saveIgnoreSet()
+  local gs = Darkmists and Darkmists.GlobalSettings
+  if not gs then return end
+  gs.affectsWindowIgnoredSpells = {}
+  for name in pairs(AffectsWindow.ignoreSet) do
+    table.insert(gs.affectsWindowIgnoredSpells, name)
+  end
+  Darkmists.SaveSettings()
+end
+
+-- Add a spell name to the auto-remove set and purge any currently
+-- expired entries for that name from the display.
+function AffectsWindow.ignoreAffect(affectName)
+  AffectsWindow.ignoreSet[affectName] = true
+  -- Remove any current expired entries for this name
+  for i = #AffectsWindow.affectsList, 1, -1 do
+    local a = AffectsWindow.affectsList[i]
+    if a.expired and a.name == affectName then
+      table.remove(AffectsWindow.affectsList, i)
+    end
+  end
+  saveIgnoreSet()
+  AffectsWindow.refreshDisplay()
+end
+
+-- Remove a spell name from the auto-remove set so future expirations
+-- will appear in the expired list again. If the set becomes empty,
+-- auto-collapse the management section so it doesn't get stuck open
+-- with no way to dismiss it.
+function AffectsWindow.unignoreAffect(affectName)
+  AffectsWindow.ignoreSet[affectName] = nil
+  if AffectsWindow.countIgnored() == 0 then
+    AffectsWindow.showIgnored = false
+  end
+  saveIgnoreSet()
+  AffectsWindow.refreshDisplay()
+end
+
+-- Toggle visibility of the inline ignored-list section.
+function AffectsWindow.toggleShowIgnored()
+  AffectsWindow.showIgnored = not AffectsWindow.showIgnored
+  AffectsWindow.refreshDisplay()
+end
+
+-- Count ignored spell names.
+function AffectsWindow.countIgnored()
+  local n = 0
+  for _ in pairs(AffectsWindow.ignoreSet) do n = n + 1 end
+  return n
+end
+
 function AffectsWindow.displayHeader()
   if not AffectsWindow.window or not AffectsWindow.lastUpdateTime then return end
 
@@ -201,18 +262,32 @@ function AffectsWindow.displayHeader()
   local clearLinkColor = DarkmistsTheme.redTag
 
   console:cechoLink(
-    textLinkColor .. "<u>[Refresh]" .. DarkmistsTheme.textTag,
+    textLinkColor .. "<u>[Refresh]</u>" .. DarkmistsTheme.textTag,
     function() send("affects") end,
     "Refresh affects list",
     true
   )
   console:cecho(" ")
   console:cechoLink(
-    clearLinkColor .. "<u>[Clear Expired]" .. DarkmistsTheme.textTag,
+    clearLinkColor .. "<u>[Clear]" .. DarkmistsTheme.textTag,
     function() AffectsWindow.clearExpiredAffects() end,
     "Remove all expired affects",
     true
   )
+
+  -- Ignored-list toggle: show count and link to expand/collapse the
+  -- inline ignored-spell management section.
+  local ignoredCount = AffectsWindow.countIgnored()
+  if ignoredCount > 0 then
+    console:cecho(" ")
+    console:cechoLink(
+      DarkmistsTheme.mutedTag .. "<u>[»:" .. tostring(ignoredCount) .. "]",
+      function() AffectsWindow.toggleShowIgnored() end,
+      "Toggle ignored affects list",
+      true
+    )
+    console:cecho(DarkmistsTheme.textTag)
+  end
 
   console:cecho("\n\n")
 end
@@ -384,9 +459,9 @@ end
 -- ============================================================================
 
 -- Rebuild the console display from the canonical affect list.
--- Computes remaining minutes using `timeRatio`, sorts active affects
--- by soonest to expire, then renders active followed by expired
--- affects (expired entries get a clickable [X] to remove them).
+-- When `showIgnored` is active, only the ignored-spell management
+-- view is rendered (the main affects list is hidden). Otherwise the
+-- full active + expired list is shown.
 function AffectsWindow.refreshDisplay()
   if not AffectsWindow.window or not AffectsWindow.lastUpdateTime then return end
 
@@ -395,6 +470,37 @@ function AffectsWindow.refreshDisplay()
 
   console:clear()
   AffectsWindow.displayHeader()
+
+  -- Ignored-management mode: replace the affects list entirely
+  if AffectsWindow.showIgnored then
+    local names = {}
+    for name in pairs(AffectsWindow.ignoreSet) do
+      table.insert(names, name)
+    end
+    table.sort(names)
+
+    console:cecho("\n" .. DarkmistsTheme.mutedTag .. "── Auto-Removed on Expiry ──\n")
+    if #names == 0 then
+      console:cecho(DarkmistsTheme.mutedTag .. "  (none)\n")
+    else
+      for _, name in ipairs(names) do
+        console:cecho(string.format(
+          DarkmistsTheme.mutedTag .. "  %-" .. tostring(cfg.textLengthAffectName) .. "s ",
+          name:sub(1, cfg.textLengthAffectName)
+        ))
+        console:cechoLink(
+          DarkmistsTheme.goodTag .. "<u>[Track Again]" .. DarkmistsTheme.textTag,
+          [[AffectsWindow.unignoreAffect("]] .. name .. [[")]],
+          "Resume tracking this affect after expiry",
+          true
+        )
+        console:cecho("\n")
+      end
+    end
+    return
+  end
+
+  -- Normal mode: active + expired affects
   console:cecho(DarkmistsTheme.blueTag .. "You are affected by the following:\n")
 
   local now = os.time()
@@ -449,10 +555,11 @@ function AffectsWindow.refreshDisplay()
     ))
   end
 
-  -- Render expired affects with clickable X
-  -- Expired affects are shown with a clickable [X] that removes the
-  -- expired record. We render them after active affects so the active
-  -- list remains prominent.
+  -- Render expired affects with clickable X and Ignore
+  -- Expired affects show [X] to remove once and [Ignore] to add the
+  -- spell name to the auto-remove set so future expirations disappear
+  -- silently. We render them after active affects so the active list
+  -- remains prominent.
   for _, item in ipairs(expiredAffects) do
     local affect = item.affect
     local dur = AffectsWindow.formatDuration(0, true)
@@ -470,6 +577,14 @@ function AffectsWindow.refreshDisplay()
       DarkmistsTheme.badTag .. "<u>[X]" .. DarkmistsTheme.textTag,
       [[AffectsWindow.removeExpiredAffect("]] .. name .. [[")]],
       "Remove expired affect",
+      true
+    )
+
+    console:cecho(" ")
+    console:cechoLink(
+      DarkmistsTheme.mutedTag .. "<u>[»]" .. DarkmistsTheme.textTag,
+      [[AffectsWindow.ignoreAffect("]] .. name .. [[")]],
+      "Always auto-remove this affect on expiry",
       true
     )
 
@@ -574,6 +689,16 @@ end
 
 function AffectsWindow.init()
   AffectsWindow.refreshConfig()
+
+  -- Restore persisted ignore list from settings
+  local gs = Darkmists and Darkmists.GlobalSettings
+  local saved = gs and gs.affectsWindowIgnoredSpells
+  if type(saved) == "table" then
+    for _, name in ipairs(saved) do
+      AffectsWindow.ignoreSet[name] = true
+    end
+  end
+
   AffectsWindow.create()
   registerHandlers()
 
