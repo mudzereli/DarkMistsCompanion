@@ -29,6 +29,7 @@ SpamPrevention = {
 -- -----------------------------------------------------------------------------
 function SpamPrevention._onSend(_, data)
   if not SpamPrevention.enabled then return end
+  -- rawget avoids __index metamethod interference on Mudlet's global table
   local denyCurrentSendFn = rawget(_G, "denyCurrentSend")
 
   if data == SpamPrevention.lastCommand then
@@ -38,8 +39,11 @@ function SpamPrevention._onSend(_, data)
   end
   SpamPrevention.lastCommand = data
 
+  -- Skip very short commands (e.g. single-char directions) to avoid
+  -- blocking movement spam from speedwalks / path aliases.
   if #data < SpamPrevention.minLength then return end
-  
+
+  -- Warn at 75% of threshold before actual denial kicks in
   local warningThreshold = math.max(1, math.floor(SpamPrevention.threshold * 0.75))
   if SpamPrevention.spamCount >= warningThreshold and SpamPrevention.spamCount < SpamPrevention.threshold then
     DMLogger.notify("SpamPrevention", string.format(
@@ -56,6 +60,7 @@ function SpamPrevention._onSend(_, data)
 
   if SpamPrevention.spamCount >= SpamPrevention.threshold then
     if SpamPrevention.fallbackCommand then
+      -- Reset count after falling back so the original command can be retried
       SpamPrevention.spamCount = 0
       send(SpamPrevention.fallbackCommand, false)
       return
