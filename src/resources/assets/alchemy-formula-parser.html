@@ -6,212 +6,246 @@
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='0.9em' font-size='90'%3E⚗️%3C/text%3E%3C/svg%3E">
 
 <style>
+:root {
+  --is-bg: #07060c;
+  --is-panel: #110d1d;
+  --is-panel-2: #1a1429;
+  --is-panel-3: #221a33;
+  --is-line: rgba(255, 215, 0, 0.14);
+  --is-line-strong: rgba(255, 215, 0, 0.35);
+  --is-text: #f3f0e6;
+  --is-muted: #948ea1;
+  --is-muted-dim: #6c6678;
+  --is-accent: #FFD700;
+  --is-accent-soft: #D4AF37;
+}
 
 body {
-    font-family: "Segoe UI", Arial, sans-serif;
-    background: linear-gradient(180deg,#1b1b1b,#121212);
-    color: #ddd;
-    padding: 24px;
+  min-height: 100vh;
+  color: var(--is-text);
+  background: var(--is-bg);
+  font-family: "Segoe UI", "Trebuchet MS", system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  padding: 24px 32px;
+  margin: 0;
 }
 
-/* ---------- title ---------- */
+/* ---------- headings ---------- */
 
-h2 {
-    color: #7fd4ff;
-    margin-bottom: 10px;
-    letter-spacing: .5px;
-}
-
-/* ---------- textarea ---------- */
-
-textarea {
-    width: 100%;
-    height: 120px;
-    resize: vertical;
-    background: #0e0e0e;
-    color: #8cffb5;
-    font-family: monospace;
-    padding: 10px;
-    border: 1px solid #333;
-    border-radius: 6px;
-}
-
-/* ---------- buttons ---------- */
-
-button {
-    padding: 8px 16px;
-    margin: 5px 6px 5px 0;
-    cursor: pointer;
-    background: #2b2b2b;
-    color: #eee;
-    border: 1px solid #444;
-    border-radius: 6px;
-    transition: all .15s ease;
-}
-
-button:hover {
-    background: #3a3a3a;
-    border-color: #6aa8ff;
-}
-
-/* ---------- filters ---------- */
-
-input {
-    background: #111;
-    border: 1px solid #333;
-    color: #ddd;
-    border-radius: 6px;
-    outline: none;
-}
-
-input:focus {
-    border-color: #6aa8ff;
-    box-shadow: 0 0 6px #1f4aff55;
+h2, h3 {
+  color: var(--is-accent);
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  margin-bottom: 14px;
 }
 
 /* ---------- instructions ---------- */
 
 #instructions {
-    font-size: 13px;
-    color: #9aa;
-    margin-bottom: 10px;
+  font-size: 13px;
+  color: var(--is-muted);
+  margin-bottom: 18px;
+  padding: 10px 14px;
+  background: var(--is-panel);
+  border: 1px solid var(--is-line);
+  border-radius: 8px;
+}
+
+/* ---------- textarea ---------- */
+
+textarea {
+  width: 100%;
+  height: 120px;
+  resize: vertical;
+  background: var(--is-panel-2);
+  color: var(--is-text);
+  font-family: "JetBrains Mono", "Cascadia Code", "Fira Code", monospace;
+  font-size: 13px;
+  padding: 10px;
+  border: 1px solid var(--is-line);
+  border-radius: 6px;
+  outline: 0;
+  transition: border-color 0.15s;
+}
+
+textarea:focus {
+  border-color: var(--is-line-strong);
+}
+
+/* ---------- buttons ---------- */
+
+button {
+  padding: 8px 18px;
+  margin: 5px 6px 5px 0;
+  cursor: pointer;
+  background: rgba(255, 215, 0, 0.08);
+  color: var(--is-accent);
+  border: 1px solid var(--is-line);
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 13px;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+button:hover {
+  background: rgba(255, 215, 0, 0.14);
+  border-color: var(--is-line-strong);
+}
+
+/* ---------- inputs / filters ---------- */
+
+input[type="text"] {
+  background: var(--is-panel-2);
+  color: var(--is-text);
+  border: 1px solid var(--is-line);
+  border-radius: 6px;
+  padding: 8px 12px;
+  outline: 0;
+  font-size: 13px;
+  transition: border-color 0.15s;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+input[type="text"]:focus {
+  border-color: var(--is-line-strong);
+}
+
+input[type="file"] {
+  display: none;
 }
 
 /* ---------- summary ---------- */
 
 #summary {
-    margin-top: 15px;
-    font-weight: bold;
-    color: #7fc8ff;
+  margin-top: 16px;
+  font-weight: 700;
+  color: var(--is-accent);
+  padding: 8px 14px;
+  background: var(--is-panel);
+  border: 1px solid var(--is-line);
+  border-radius: 8px;
+  display: inline-block;
+  font-size: 13px;
 }
 
 /* ---------- table ---------- */
 
 table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 20px;
-    font-size: 14px;
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 18px;
+  font-size: 13px;
+  color: var(--is-text);
 }
 
-/* header */
-
-th {
-    cursor: pointer;
-    background: #232323;
-    color: #7fd4ff;
-    border-bottom: 2px solid #444;
-    padding: 7px;
+thead th {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  cursor: pointer;
+  background: var(--is-panel-2);
+  color: var(--is-accent);
+  border-bottom: 1px solid var(--is-line-strong);
+  padding: 8px 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-size: 0.75rem;
 }
-
-/* cells */
 
 th, td {
-    border-right: 1px solid #222;
+  border-right: 1px solid var(--is-line);
+  padding: 7px 10px;
 }
 
-tbody tr:hover td {
-    border-right: 1px solid #333;
-}
-
-th:last-child,
-td:last-child {
-    border-right: none;
+th:last-child, td:last-child {
+  border-right: none;
 }
 
 /* Right-align numeric stat columns */
 td:nth-child(n+5):not(:last-child) {
-    text-align: right;
-    font-family: monospace;
+  text-align: right;
+  font-family: "JetBrains Mono", "Cascadia Code", monospace;
 }
 
 /* Center FLAGS column */
-td:last-child,
-th:last-child {
-    text-align: center;
-}
-
-thead th {
-    position: sticky;
-    top: 0;
-    z-index: 5;
+td:last-child, th:last-child {
+  text-align: center;
 }
 
 /* row striping */
-
 tbody tr:nth-child(even) {
-    background: #181818;
+  background: rgba(255, 215, 0, 0.03);
 }
-
 tbody tr:nth-child(odd) {
-    background: #141414;
+  background: transparent;
 }
 
 /* hover */
-
 tbody tr:hover {
-    background: #222;
+  background: rgba(255, 215, 0, 0.06);
 }
 
 /* ---------- stat colors ---------- */
 
-/* HP */
-td:nth-child(5) {
-    color: #7cff7c;
-}
-
-/* MANA */
-td:nth-child(6) {
-    color: #7caeff;
-}
-
-/* HITROLL / DAMROLL */
+td:nth-child(5)  { color: #7ee87e; }  /* HP */
+td:nth-child(6)  { color: #7eb8ff; }  /* MANA */
 td:nth-child(7),
-td:nth-child(8) {
-    color: #ffc36e;
-}
-
-/* SPELL / HOLY */
+td:nth-child(8)  { color: #ffce78; }  /* HITROLL / DAMROLL */
 td:nth-child(9),
-td:nth-child(10) {
-    color: #c58cff;
-}
+td:nth-child(10) { color: #cc96ff; }  /* SPELL / HOLY */
+td:nth-child(11) { color: #ff9e9e; }  /* AC */
+td:nth-child(12) { color: #7ad8ff; }  /* SAVES */
+td:last-child    { color: var(--is-muted-dim); font-style: italic; }
 
-/* AC */
-td:nth-child(11) {
-    color: #ff9c9c;
-}
-
-/* SAVES */
-td:nth-child(12) {
-    color: #6ed9ff;
-}
-
-/* FLAGS */
-td:last-child {
-    color: #aaa;
-    font-style: italic;
-}
+/* ---------- heatmap ---------- */
 
 #heatmap {
-    display: none;
-    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
-    gap: 6px;
-    margin-top: 12px;
+  display: none;
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  gap: 6px;
+  margin-top: 16px;
+}
+
+#heatmap h3 {
+  grid-column: 1 / -1;
+  margin: 0 0 6px;
+  font-size: 1rem;
 }
 
 .heatcell {
-    padding: 6px;
-    border-radius: 6px;
-    text-align: center;
-    font-size: 12px;
-    border: 1px solid #222;
-    transition: transform .1s;
+  padding: 8px 6px;
+  border-radius: 6px;
+  text-align: center;
+  font-size: 12px;
+  border: 1px solid #222;
+  transition: transform 0.12s, border-color 0.12s;
 }
 
 .heatcell:hover {
-    transform: scale(1.08);
-    border-color: #aaa;
+  transform: scale(1.08);
+  border-color: #aaa;
+}
+
+/* ---------- filter helper text ---------- */
+
+#summary + input + input + div {
+  font-size: 12px;
+  color: var(--is-muted-dim);
+  margin-top: 4px;
+}
+
+/* ---------- scrollbar ---------- */
+
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 215, 0, 0.16);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 215, 0, 0.28);
 }
 
 </style>
@@ -440,7 +474,7 @@ function buildFormulaRowElement(formula) {
     const flags = formula.parsedFlags || []
     const materials = String(formula.materials || "")
     const materialArray = materials
-        .split(",")
+        .split(/[,\s]+/)
         .map(m => m.trim())
         .filter(Boolean)
 
