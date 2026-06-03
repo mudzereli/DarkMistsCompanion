@@ -59,5 +59,11 @@
               "isActive": "yes",
               "script": "",
               "isFolder": "no"
+       },
+       {
+              "name": "DMSessionTime",
+              "isActive": "yes",
+              "script": "",
+              "isFolder": "no"
        }
 ]

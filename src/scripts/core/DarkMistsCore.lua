@@ -813,6 +813,7 @@ function Darkmists.Init()
   SkillUps.init()
   DMClickables.init()
   ButtonBar.init()
+  SessionTime.init()
 
   -- CMud compatibility wrapper: persistent aliases/triggers/vars
   if CMudWrapper and CMudWrapper.load then

@@ -15,10 +15,12 @@ ButtonBar.padding = 2
 ButtonBar.topLevelMaxCharacters = 16
 ButtonBar.dropDownMaxCharacters = 20
 ButtonBar.buttonMaxCharacters = 20
+ButtonBar.timeMaxCharacters = 11
 ButtonBar.fontSize = nil
 ButtonBar.fontWidth = nil
 ButtonBar.fontHeight = nil
 ButtonBar.height = nil
+ButtonBar.timeLabel = nil
 
 -- Qt-style CSS used by Geyser `QLabel` instances. Keep separate
 -- styles for top-level buttons (compact, horizontal) and menu
@@ -67,8 +69,11 @@ function ButtonBar.destroy()
   if container and container.delete then
     pcall(container.delete, container)
   end
+  -- Time display label is a child of the container and gets torn down
+  -- with the container; clear our handle to avoid stale references.
   ButtonBar.container = nil
   ButtonBar.nextX = nil
+  ButtonBar.timeLabel = nil
 end
 
 --================================--
@@ -117,6 +122,14 @@ end
 
 function ButtonBar:_menuWidth()
   return ButtonBar.fontWidth * ButtonBar.dropDownMaxCharacters
+end
+
+-- Update the right-aligned session time display label.
+-- Called externally by SessionTime on each tick.
+-- Silently no-ops if the label hasn't been created yet (e.g., minimal mode).
+function ButtonBar.setTimeDisplay(text)
+  if not ButtonBar.timeLabel then return end
+  ButtonBar.timeLabel:echo("<center>" .. (text or "") .. "</center>")
 end
 
 -- Execute a menu/button action in a protected call.
@@ -458,6 +471,25 @@ function ButtonBar.build()
   ButtonBar:addDropdown("🧰 Modules", MODULE_MENU)
   ButtonBar:addDropdown("⚙️ Settings", SETTINGS_MENU)
   ButtonBar:addDropdown("❓ Help", HELP_MENU)
+
+  -- Session time display, positioned after the last menu item so it
+  -- sits at the end of the main window area (not under the map).
+  ButtonBar.nextX = ButtonBar.nextX + ButtonBar.padding * 2
+  ButtonBar.timeLabel = Geyser.Label:new({
+    x = ButtonBar.nextX,
+    y = 0,
+    width = ButtonBar.fontWidth * ButtonBar.timeMaxCharacters,
+    height = "100%",
+    message = "",
+  }, ButtonBar.container)
+  ButtonBar.timeLabel:setFontSize(ButtonBar.fontSize)
+  ButtonBar.timeLabel:setStyleSheet([[
+    QLabel {
+      background-color: #000000;
+      color: #999999;
+    }
+  ]])
+  ButtonBar.timeLabel:setToolTip("Session timer")
 
   return true
 end
