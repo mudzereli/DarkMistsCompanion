@@ -11,3 +11,9 @@
 
 ### Changed
 - Button bar now places the session timer label after the last menu item (instead of right-anchored) so it stays visible and isn't hidden behind the map window.
+- **Alchemy Formula Parser** — re-themed to match the item search page color scheme (gold-on-deep-purple palette, dark panel inputs, translucent gold buttons, gold-tinted scrollbar).
+- **Item Viewer** — re-themed to match the alchemy-formula-parser color scheme (gold-on-deep-purple palette, dark panel inputs, translucent gold buttons, gold-tinted scrollbar).
+- **Map Update** — removed exit into Light Mists from Basilica Road.
+
+### Fixed
+- **Alchemy Formula Parser heatmap** — material split now handles both comma-separated and space-separated formats, so individual materials are counted correctly instead of full combinations appearing as single entries.
