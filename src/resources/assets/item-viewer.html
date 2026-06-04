@@ -651,7 +651,16 @@ th.grouped {
               <div class="form-text mb-2">Dice average (e.g. 2d6 → 7)</div>
               
               <label class="form-label small">Weapon Flags</label>
-              <select id="weaponFlags" class="form-select form-select-sm" multiple></select>
+              <div class="dropdown mb-2">
+                <button class="btn btn-sm btn-outline-secondary dropdown-toggle w-100 text-start" data-bs-toggle="dropdown" id="weaponFlagBtn">Weapon Flags</button>
+                <div class="dropdown-menu p-2" style="max-height:200px;overflow:auto">
+                  <input type="text" class="form-control form-control-sm mb-2" placeholder="Filter flags…" id="weaponFlagFilterText" oninput="filterWeaponFlagList(this.value)">
+                  <div id="weaponFlagOptions"></div>
+                  <div class="dropdown-divider"></div>
+                  <button type="button" class="btn btn-sm btn-link text-primary w-100" onclick="checkAllWeaponFlags()">All</button>
+                  <button type="button" class="btn btn-sm btn-link text-danger w-100" onclick="clearWeaponFlags()">None</button>
+                </div>
+              </div>
               <div class="form-text">Item must match all selected flags</div>
             </div>
           </div>
@@ -776,11 +785,38 @@ th.grouped {
               <div class="border rounded p-2">
                 <h6 class="small text-secondary mb-2">Flags</h6>
                 <label class="form-label small">Extra Flags</label>
-                <select id="extraFlags" class="form-select form-select-sm mb-2" multiple></select>
+                <div class="dropdown mb-2">
+                  <button class="btn btn-sm btn-outline-secondary dropdown-toggle w-100 text-start" data-bs-toggle="dropdown" id="extraFlagBtn">Extra Flags</button>
+                  <div class="dropdown-menu p-2" style="max-height:200px;overflow:auto">
+                    <input type="text" class="form-control form-control-sm mb-2" placeholder="Filter flags…" id="extraFlagFilterText" oninput="filterExtraFlagList(this.value)">
+                    <div id="extraFlagOptions"></div>
+                    <div class="dropdown-divider"></div>
+                    <button type="button" class="btn btn-sm btn-link text-primary w-100" onclick="checkAllExtraFlags()">All</button>
+                    <button type="button" class="btn btn-sm btn-link text-danger w-100" onclick="clearExtraFlags()">None</button>
+                  </div>
+                </div>
                 <label class="form-label small">Affect Flags</label>
-                <select id="affectFlags" class="form-select form-select-sm mb-2" multiple></select>
+                <div class="dropdown mb-2">
+                  <button class="btn btn-sm btn-outline-secondary dropdown-toggle w-100 text-start" data-bs-toggle="dropdown" id="affectFlagBtn">Affect Flags</button>
+                  <div class="dropdown-menu p-2" style="max-height:200px;overflow:auto">
+                    <input type="text" class="form-control form-control-sm mb-2" placeholder="Filter flags…" id="affectFlagFilterText" oninput="filterAffectFlagList(this.value)">
+                    <div id="affectFlagOptions"></div>
+                    <div class="dropdown-divider"></div>
+                    <button type="button" class="btn btn-sm btn-link text-primary w-100" onclick="checkAllAffectFlags()">All</button>
+                    <button type="button" class="btn btn-sm btn-link text-danger w-100" onclick="clearAffectFlags()">None</button>
+                  </div>
+                </div>
                 <label class="form-label small">Restrict Flags</label>
-                <select id="restrictFlags" class="form-select form-select-sm" multiple></select>
+                <div class="dropdown mb-2">
+                  <button class="btn btn-sm btn-outline-secondary dropdown-toggle w-100 text-start" data-bs-toggle="dropdown" id="restrictFlagBtn">Restrict Flags</button>
+                  <div class="dropdown-menu p-2" style="max-height:200px;overflow:auto">
+                    <input type="text" class="form-control form-control-sm mb-2" placeholder="Filter flags…" id="restrictFlagFilterText" oninput="filterRestrictFlagList(this.value)">
+                    <div id="restrictFlagOptions"></div>
+                    <div class="dropdown-divider"></div>
+                    <button type="button" class="btn btn-sm btn-link text-primary w-100" onclick="checkAllRestrictFlags()">All</button>
+                    <button type="button" class="btn btn-sm btn-link text-danger w-100" onclick="clearRestrictFlags()">None</button>
+                  </div>
+                </div>
                 <div class="form-text">Item must match all selected flags</div>
               </div>
             </div>
@@ -1144,6 +1180,105 @@ function filterAreaList(query) {
   populateAreaFilter();
 }
 
+/* =========================================================
+   Flag UI Helpers (checkbox dropdowns)
+   ========================================================= */
+function updateWeaponFlagButton() {
+  const count = document.querySelectorAll('#weaponFlagOptions input:checked').length;
+  $('weaponFlagBtn').textContent = count ? `Weapon Flags (${count})` : 'Weapon Flags';
+}
+
+function checkAllWeaponFlags() {
+  document.querySelectorAll('#weaponFlagOptions input').forEach(cb => cb.checked = true);
+  updateWeaponFlagButton();
+  render();
+}
+
+function clearWeaponFlags() {
+  document.querySelectorAll('#weaponFlagOptions input').forEach(cb => cb.checked = false);
+  updateWeaponFlagButton();
+  render();
+}
+
+function filterWeaponFlagList(query) {
+  const q = query.toLowerCase();
+  document.querySelectorAll('#weaponFlagOptions .form-check').forEach(el => {
+    el.style.display = el.textContent.toLowerCase().includes(q) ? '' : 'none';
+  });
+}
+
+function updateExtraFlagButton() {
+  const count = document.querySelectorAll('#extraFlagOptions input:checked').length;
+  $('extraFlagBtn').textContent = count ? `Extra Flags (${count})` : 'Extra Flags';
+}
+
+function checkAllExtraFlags() {
+  document.querySelectorAll('#extraFlagOptions input').forEach(cb => cb.checked = true);
+  updateExtraFlagButton();
+  render();
+}
+
+function clearExtraFlags() {
+  document.querySelectorAll('#extraFlagOptions input').forEach(cb => cb.checked = false);
+  updateExtraFlagButton();
+  render();
+}
+
+function filterExtraFlagList(query) {
+  const q = query.toLowerCase();
+  document.querySelectorAll('#extraFlagOptions .form-check').forEach(el => {
+    el.style.display = el.textContent.toLowerCase().includes(q) ? '' : 'none';
+  });
+}
+
+function updateAffectFlagButton() {
+  const count = document.querySelectorAll('#affectFlagOptions input:checked').length;
+  $('affectFlagBtn').textContent = count ? `Affect Flags (${count})` : 'Affect Flags';
+}
+
+function checkAllAffectFlags() {
+  document.querySelectorAll('#affectFlagOptions input').forEach(cb => cb.checked = true);
+  updateAffectFlagButton();
+  render();
+}
+
+function clearAffectFlags() {
+  document.querySelectorAll('#affectFlagOptions input').forEach(cb => cb.checked = false);
+  updateAffectFlagButton();
+  render();
+}
+
+function filterAffectFlagList(query) {
+  const q = query.toLowerCase();
+  document.querySelectorAll('#affectFlagOptions .form-check').forEach(el => {
+    el.style.display = el.textContent.toLowerCase().includes(q) ? '' : 'none';
+  });
+}
+
+function updateRestrictFlagButton() {
+  const count = document.querySelectorAll('#restrictFlagOptions input:checked').length;
+  $('restrictFlagBtn').textContent = count ? `Restrict Flags (${count})` : 'Restrict Flags';
+}
+
+function checkAllRestrictFlags() {
+  document.querySelectorAll('#restrictFlagOptions input').forEach(cb => cb.checked = true);
+  updateRestrictFlagButton();
+  render();
+}
+
+function clearRestrictFlags() {
+  document.querySelectorAll('#restrictFlagOptions input').forEach(cb => cb.checked = false);
+  updateRestrictFlagButton();
+  render();
+}
+
+function filterRestrictFlagList(query) {
+  const q = query.toLowerCase();
+  document.querySelectorAll('#restrictFlagOptions .form-check').forEach(el => {
+    el.style.display = el.textContent.toLowerCase().includes(q) ? '' : 'none';
+  });
+}
+
 function clearAllFilters() {
   // Clear text/number inputs (NOT file, NOT checkboxes/radios)
   document.querySelectorAll('input').forEach(i => {
@@ -1159,10 +1294,10 @@ function clearAllFilters() {
 
   $('areaSort').value = 'alpha';
   
-  [...$('weaponFlags').options].forEach(o => o.selected = false);
-  [...$('extraFlags').options].forEach(o => o.selected = false);
-  [...$('affectFlags').options].forEach(o => o.selected = false);
-  [...$('restrictFlags').options].forEach(o => o.selected = false);
+  document.querySelectorAll('#weaponFlagOptions input').forEach(cb => cb.checked = false);
+  document.querySelectorAll('#extraFlagOptions input').forEach(cb => cb.checked = false);
+  document.querySelectorAll('#affectFlagOptions input').forEach(cb => cb.checked = false);
+  document.querySelectorAll('#restrictFlagOptions input').forEach(cb => cb.checked = false);
   
   document.querySelectorAll('#wearSlotOptions input').forEach(cb => cb.checked = false);
   document.querySelectorAll('#typeOptions input').forEach(cb => cb.checked = false);
@@ -1170,6 +1305,10 @@ function clearAllFilters() {
   document.querySelectorAll('#materialOptions input').forEach(cb => cb.checked = false);
   document.querySelectorAll('#areaOptions input').forEach(cb => cb.checked = false);
   
+  updateWeaponFlagButton();
+  updateExtraFlagButton();
+  updateAffectFlagButton();
+  updateRestrictFlagButton();
   updateWearSlotButton();
   updateTypeButton();
   updateWeaponTypeButton();
@@ -1431,31 +1570,47 @@ function populateFilters() {
   `).join('');
   
   // Populate weapon flags
-  wflags.forEach(flag => {
-    $('weaponFlags').append(new Option(flag, flag));
-  });
+  $('weaponFlagOptions').innerHTML = [...wflags].sort().map(flag => `
+    <div class="form-check">
+      <input class="form-check-input" type="checkbox" value="${flag}" onchange="updateWeaponFlagButton();render()">
+      <label class="form-check-label small">${flag}</label>
+    </div>
+  `).join('');
 
   // Populate extra flags
-  [...xflags].sort().forEach(flag => {
-    $('extraFlags').append(new Option(flag, flag));
-  });
+  $('extraFlagOptions').innerHTML = [...xflags].sort().map(flag => `
+    <div class="form-check">
+      <input class="form-check-input" type="checkbox" value="${flag}" onchange="updateExtraFlagButton();render()">
+      <label class="form-check-label small">${flag}</label>
+    </div>
+  `).join('');
   
   // Populate affect flags (sorted: regular affects first, immunities last)
-  [...aflags].sort((a, b) => {
+  $('affectFlagOptions').innerHTML = [...aflags].sort((a, b) => {
     const aImmune = a.startsWith('immune_');
     const bImmune = b.startsWith('immune_');
     
     if (aImmune !== bImmune) return aImmune ? 1 : -1;
     return a.localeCompare(b);
-  }).forEach(flag => {
-    $('affectFlags').append(new Option(flag, flag));
-  });
+  }).map(flag => `
+    <div class="form-check">
+      <input class="form-check-input" type="checkbox" value="${flag}" onchange="updateAffectFlagButton();render()">
+      <label class="form-check-label small">${flag}</label>
+    </div>
+  `).join('');
   
   // Populate restrict flags
-  rflags.forEach(flag => {
-    $('restrictFlags').append(new Option(flag, flag));
-  });
+  $('restrictFlagOptions').innerHTML = [...rflags].sort().map(flag => `
+    <div class="form-check">
+      <input class="form-check-input" type="checkbox" value="${flag}" onchange="updateRestrictFlagButton();render()">
+      <label class="form-check-label small">${flag}</label>
+    </div>
+  `).join('');
   
+  updateWeaponFlagButton();
+  updateExtraFlagButton();
+  updateAffectFlagButton();
+  updateRestrictFlagButton();
   updateWearSlotButton();
   updateTypeButton();
   updateWeaponTypeButton();
@@ -1525,10 +1680,10 @@ function getItemsMatchingFiltersExceptArea() {
   const weaponTypes = [...document.querySelectorAll('#weaponTypeOptions input:checked')].map(c => c.value);
   const materialOptions = [...document.querySelectorAll('#materialOptions input:checked')].map(c => c.value);
   
-  const wflags = [...$('weaponFlags').selectedOptions].map(o => o.value);
-  const xflags = [...$('extraFlags').selectedOptions].map(o => o.value);
-  const aflags = [...$('affectFlags').selectedOptions].map(o => o.value);
-  const rflags = [...$('restrictFlags').selectedOptions].map(o => o.value);
+  const wflags = [...document.querySelectorAll('#weaponFlagOptions input:checked')].map(c => c.value);
+  const xflags = [...document.querySelectorAll('#extraFlagOptions input:checked')].map(c => c.value);
+  const aflags = [...document.querySelectorAll('#affectFlagOptions input:checked')].map(c => c.value);
+  const rflags = [...document.querySelectorAll('#restrictFlagOptions input:checked')].map(c => c.value);
   
   const minAvg = Number($('minAvgDmg').value || 0);
   const maxAvg = Number($('maxAvgDmg').value || Infinity);
@@ -1680,10 +1835,10 @@ function render() {
   const weaponTypes = [...document.querySelectorAll('#weaponTypeOptions input:checked')].map(c => c.value);
   const materialOptions = [...document.querySelectorAll('#materialOptions input:checked')].map(c => c.value);
   
-  const wflags = [...$('weaponFlags').selectedOptions].map(o => o.value);
-  const xflags = [...$('extraFlags').selectedOptions].map(o => o.value);
-  const aflags = [...$('affectFlags').selectedOptions].map(o => o.value);
-  const rflags = [...$('restrictFlags').selectedOptions].map(o => o.value);
+  const wflags = [...document.querySelectorAll('#weaponFlagOptions input:checked')].map(c => c.value);
+  const xflags = [...document.querySelectorAll('#extraFlagOptions input:checked')].map(c => c.value);
+  const aflags = [...document.querySelectorAll('#affectFlagOptions input:checked')].map(c => c.value);
+  const rflags = [...document.querySelectorAll('#restrictFlagOptions input:checked')].map(c => c.value);
   
   const minAvg = Number($('minAvgDmg').value || 0);
   const maxAvg = Number($('maxAvgDmg').value || Infinity);
