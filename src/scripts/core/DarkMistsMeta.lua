@@ -27,6 +27,8 @@ DarkMistsMeta.meta = {
   version = "unknown",
 }
 
+-- Theme tag placeholders for colored output. These are safe defaults
+-- and will be overwritten during init if `DarkmistsTheme` is present.
 local dm_text = (DarkmistsTheme and DarkmistsTheme.textTag) or ""
 local dm_header_color = (DarkmistsTheme and DarkmistsTheme.infoTag) or ""
 local dm_link_color = (DarkmistsTheme and DarkmistsTheme.accentTag) or ""
@@ -35,6 +37,7 @@ local dm_good = (DarkmistsTheme and DarkmistsTheme.goodTag) or ""
 local dm_warn = (DarkmistsTheme and DarkmistsTheme.warnTag) or ""
 local dm_bad = (DarkmistsTheme and DarkmistsTheme.badTag) or ""
 
+-- Help index registry: maps feature keys to metadata used by `dmc help`
 DarkMistsMeta.helpIndex = {
   dmc = {
     title = "Dark Mists Companion",
@@ -85,13 +88,20 @@ This is informational only and safe to change any time.
 
   showdmg = {
     title = "Damage Messages",
-    desc  = "Toggle inline average-damage estimates appended to combat lines.",
+    desc  = "Toggle inline damage estimates appended to combat lines.",
     info  = [[
-Toggles inline average-damage estimates on combat hit messages.
+Toggles inline damage estimates on combat hit messages.
 
-• dmc showdmg       – toggle on/off
-• dmc showdmg on    – enable
-• dmc showdmg off   – disable
+• dmc showdmg              – toggle on/off
+• dmc showdmg on           – enable
+• dmc showdmg off          – disable
+• dmc showdmg color <name> – set damage number color (any Mudlet color)
+• dmc showdmg mode avg     – show average damage only (default)
+• dmc showdmg mode range   – show min-max range with average
+• dmc showdmg status       – show current settings
+
+Color and mode settings are saved and persist across sessions.
+Use lua showColors() in Mudlet to list all available color names.
     ]],
   },
 
@@ -406,6 +416,7 @@ Prefix every command with # (e.g. #alias, #trigger).
   },
 }
 
+-- Layout for the main `dmc help` listing (groups of help keys)
 local helpSections = {
   {
     title = "Misc",
@@ -434,10 +445,12 @@ local helpSections = {
 -- =============================================================================
 
 -- Section header
+-- Print a colored section header for help pages
 local function dm_header(title)
   cecho("\n"..dm_header_color.."[" .. title .. "]"..dm_text.."\n")
 end
 
+-- Create a clickable help link that expands the associated alias
 local function dm_link(label, command)
   cechoLink(
     string.format(dm_link_color.."%-10s"..dm_text, label),
@@ -447,8 +460,8 @@ local function dm_link(label, command)
   )
 end
 
--- Reload-safe: preserve false across Lua reloads; default true on first load.
-DarkMistsMeta.showdmgEnabled = DarkMistsMeta.showdmgEnabled ~= false
+-- Use persisted setting in Darkmists.GlobalSettings.damageMessageEnabled
+-- (module-local `showdmgEnabled` removed; code should reference GlobalSettings)
 
 function DarkMistsMeta.init()
   -- Resolve package identity at init time so module load order is safe.
@@ -469,6 +482,16 @@ function DarkMistsMeta.init()
     DarkMistsMeta.helpIndex.dmid.command = ItemTracker.settings.alias
   end
 
+  -- Helper to resolve the effective damage-message enabled state with sensible fallbacks.
+  local function getDamageMessageEnabled()
+    if Darkmists and Darkmists.GlobalSettings and Darkmists.GlobalSettings.damageMessageEnabled ~= nil then
+      return Darkmists.GlobalSettings.damageMessageEnabled
+    end
+    if Darkmists and Darkmists.DefaultSettings and Darkmists.DefaultSettings.damageMessageEnabled ~= nil then
+      return Darkmists.DefaultSettings.damageMessageEnabled
+    end
+    return true
+  end
   -- ===================================================================
   -- UI MODE COMMANDS
   -- ===================================================================
@@ -557,25 +580,66 @@ function DarkMistsMeta.init()
   -- DAMAGE MESSAGES TOGGLE
   -- =============================================================================
 
-  DarkmistsAlias.add([[^dmc\s+showdmg(?:\s+(on|off))?$]], function()
-    local arg = matches[2]
+  DarkmistsAlias.add([[^dmc\s+showdmg(?:\s+(.*))?$]], function()
+    local arg = ((matches[2] or "")):gsub("^%s*(.-)%s*$", "%1")
+
+    -- COLOR subcommand
+    local colorArg = arg:match("^color%s+(%S+)$")
+    if colorArg then
+      Darkmists.GlobalSettings.damageMessageColor = colorArg
+      Darkmists.SaveSettings()
+      cecho("\n" .. dm_muted .. "[ShowDMG] " .. dm_text .. "Color set to: <" .. colorArg .. ">" .. colorArg .. "<r>\n")
+      return
+    end
+
+    -- MODE subcommand
+    local modeArg = arg:match("^mode%s+(%S+)$")
+    if modeArg then
+      if modeArg ~= "avg" and modeArg ~= "range" then
+        cecho("\n" .. dm_muted .. "[ShowDMG] " .. dm_bad .. "Unknown mode: " .. dm_text .. modeArg .. dm_muted .. " (use avg or range)\n")
+        return
+      end
+      Darkmists.GlobalSettings.damageMessageMode = modeArg
+      Darkmists.SaveSettings()
+      cecho("\n" .. dm_muted .. "[ShowDMG] " .. dm_text .. "Mode set to: " .. dm_good .. modeArg .. "\n")
+      return
+    end
+
+    -- STATUS subcommand
+    if arg == "status" then
+      local enabledState = getDamageMessageEnabled() and (dm_good .. "enabled") or (dm_bad .. "disabled")
+      local color = (Darkmists.GlobalSettings and Darkmists.GlobalSettings.damageMessageColor) or "red"
+      local mode  = (Darkmists.GlobalSettings and Darkmists.GlobalSettings.damageMessageMode)  or "avg"
+      cecho("\n" .. dm_muted .. "[ShowDMG] " .. dm_text .. "Status: " .. enabledState .. "\n")
+      cecho(dm_muted .. "[ShowDMG] " .. dm_text .. "Color:  <" .. color .. ">" .. color .. "<r>\n")
+      cecho(dm_muted .. "[ShowDMG] " .. dm_text .. "Mode:   " .. dm_good .. mode .. "\n")
+      return
+    end
+
+    -- ON / OFF / TOGGLE
     local enable
 
     if arg == "on" then
       enable = true
     elseif arg == "off" then
       enable = false
+    elseif arg == "" then
+      local current = getDamageMessageEnabled()
+      enable = not current
     else
-      enable = not DarkMistsMeta.showdmgEnabled
+      cecho("\n" .. dm_muted .. "[ShowDMG] " .. dm_bad .. "Unknown argument: " .. dm_text .. arg .. "\n")
+      return
     end
-
-    if enable == DarkMistsMeta.showdmgEnabled then
+    -- Avoid redundant toggles: compare with the resolved enabled state
+    if enable == getDamageMessageEnabled() then
       local state = enable and (dm_good .. "enabled") or (dm_bad .. "disabled")
       cecho("\n" .. dm_muted .. "[ShowDMG] " .. dm_text .. "Already " .. state .. ".\n")
       return
     end
 
-    DarkMistsMeta.showdmgEnabled = enable
+    -- Persist the chosen state and toggle the trigger.
+    Darkmists.GlobalSettings.damageMessageEnabled = enable
+    Darkmists.SaveSettings()
     if enable then
       enableTrigger("DamageMessages")
       cecho("\n" .. dm_muted .. "[ShowDMG] " .. dm_good .. "Enabled.\n")
