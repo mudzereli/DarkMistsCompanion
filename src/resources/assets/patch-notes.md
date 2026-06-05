@@ -1,19 +1,8 @@
-# DarkMistsCompanion Patch Notes
+**DMC Patch Notes — 2026-06-05**
 
----
-
-## 2026-06-03
-
-### Added
-- **Session Timer** — a `⏱ M:SS` / `⏱ H:MM:SS` display on the button bar that tracks time logged in to the current world session. Resets on login/reconnect and clears on disconnect. Hover for "Session timer" tooltip.
-- **Affects Ignore List** — expired affects in the Affects window now show an `[»]` Ignore link. Clicking it adds the spell name to an auto-remove set so future expirations of that affect disappear silently without cluttering the list.
-- **Inline Damage Messages** — damage verb matching with estimated damage ranges appended to combat output. Configurable color (`damageMessageColor`) and mode: `avg` (average only) or `range` (min–max range with average). Verb table covers all damage tiers from misses up to UNGODLY.
-
-### Changed
-- Button bar now places the session timer label after the last menu item (instead of right-anchored) so it stays visible and isn't hidden behind the map window.
-- **Alchemy Formula Parser** — re-themed to match the item search page color scheme (gold-on-deep-purple palette, dark panel inputs, translucent gold buttons, gold-tinted scrollbar).
-- **Item Viewer** — re-themed to match the alchemy-formula-parser color scheme (gold-on-deep-purple palette, dark panel inputs, translucent gold buttons, gold-tinted scrollbar).
-- **Map Update** — removed exit into Light Mists from Basilica Road.
-
-### Fixed
-- **Alchemy Formula Parser heatmap** — material split now handles both comma-separated and space-separated formats, so individual materials are counted correctly instead of full combinations appearing as single entries.
+**Session Timer** — button bar shows session time (M:SS / H:MM:SS), resets on login.
+**Affects Ignore List** — click `[»]` on expired affects to auto-hide future expirations.
+**Inline Damage Messages** — damage verbs now show estimated damage ranges in combat output.
+**Alchemy Formula Parser & Item Viewer** — re-themed (gold-on-deep-purple palette).
+**Map** — removed Light Mists exit from Basilica Road; added auction houses in Ofcol, New Ethshar, Elvenhame, Guldoran, Wistolk, and DDA.
+**Alchemy Formula Parser heatmap** — fixed material counting for comma/space-separated formats.
