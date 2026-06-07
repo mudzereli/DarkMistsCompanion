@@ -12,6 +12,6 @@
 **ItemTracker**: now detects items in "You wear … on/around/about your …" and "You cannot remove …" messages.
 
 **Future Versions**
-
+- snails yelling in yellow sometimes break item detection
 - update items from website again (now includes damage nouns)
 - look into bug with status bar not staying disabled
