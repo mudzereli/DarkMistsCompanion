@@ -1,11 +1,17 @@
-**DMC Patch Notes — 2026-06-05**
+**DMC Patch Notes: 1.5.6**
 
-**Session Timer** — button bar shows session time (M:SS / H:MM:SS), resets on login.
-**Affects Ignore List** — click `[»]` on expired affects to auto-hide future expirations.
-**Inline Damage Messages** — damage verbs now show estimated damage ranges in combat output.
-**Alchemy Formula Parser & Item Viewer** — re-themed (gold-on-deep-purple palette).
-**Map** — removed Light Mists exit from Basilica Road; added auction houses in Ofcol, New Ethshar, Elvenhame, Guldoran, Wistolk, and DDA.
-**Alchemy Formula Parser heatmap** — fixed material counting for comma/space-separated formats.
-**ItemTracker** — now detects items in "You wear … on/around/about your …" and "You cannot remove …" messages.
-**ItemTracker** — processes the "You are using:" equipment listing (mass-capture until prompt) so equipped items become clickable.
-**ItemTracker** — loaded all items from the website (now includes damage nouns).
+**Session Timer**: button bar shows session time (M:SS / H:MM:SS), resets on login.
+**Affects Ignore List**: click `[»]` on expired affects to auto-hide future expirations.
+**Inline Damage Messages**: `showdmg` command with options for color, range or avg toggle.
+**Alchemy Formula Parser & Item Viewer**: re-themed (gold-on-deep-purple palette).
+**Alchemy Formula Parser heatmap**: fixed material counting for comma/space-separated formats.
+**Map**: removed Light Mists exit from Basilica Road; added auction houses in Ofcol, New Ethshar, Elvenhame, Guldoran, Wistolk, and DDA.
+
+**DMC Patch Notes: 1.5.7**
+
+**ItemTracker**: now detects items in "You wear … on/around/about your …" and "You cannot remove …" messages.
+**ItemTracker**: loaded all items from the website (now includes damage nouns).
+
+**Future Versions**
+- snails yelling in yellow sometimes break item detection
+- look into bug with status bar not staying disabled
