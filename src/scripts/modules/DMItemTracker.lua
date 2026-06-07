@@ -520,38 +520,41 @@ function ItemTracker.findFirstItemInLine(line)
   local trimmed = line:gsub("%s+$", "")
   local lower = trimmed:lower()
 
-  -- Handle special case: "You get <item> from ..."
-  local phrase, offset = lower:match("^you get (.-) from ")
-  if phrase then
-    offset = 8  -- Length of "you get "
-  else
-    -- Handle common sentence wrappers around the item name.
-    phrase, offset = lower:match("^you stop using (.-)%.?$")
-    if phrase then
-      offset = 15  -- Length of "you stop using "
-    else
-      phrase, offset = lower:match("^you hold (.-) in your hands%.?$")
-      if phrase then
-        offset = 9  -- Length of "you hold "
-      else
-        phrase, offset = lower:match("^you put (.-) in .+%.?$")
-        if phrase then
-          offset = 8  -- Length of "you put "
-        else
-          phrase = lower
-          offset = 0
+  -- Patterns table: {pattern, offset}
+  -- Each captures the item-phrase from a sentence wrapper; end-of-phrase
+  -- matching is then applied to extract the actual item name.
+  local patterns = {
+    {"^you get (.-) from ", 8},
+    {"^you stop using (.-)%.?$", 15},
+    {"^you cannot remove (.-)%.?$", 19},
+    {"^you hold (.-) in your hands%.?$", 9},
+    {"^you put (.-) in .+%.?$", 8},
+    {"^you wear (.-) on your .+%.?$", 9},
+    {"^you wear (.-) over your .+%.?$", 9},
+    {"^you wear (.-) around your .+%.?$", 9},
+    {"^you wear (.-) about your .+%.?$", 9},
+  }
 
-          -- Additional special-case: lines like "<thing> is carried by <mob>" or
-          -- "<thing> is in <location>". When present, trim to the left-side phrase
-          -- so item names at the start of the line will be matched correctly.
-          local cpos = lower:find(" is carried by ")
-          if not cpos then cpos = lower:find(" is in ") end
-          if cpos then
-            phrase = trim(lower:sub(1, cpos - 1))
-            offset = 0
-          end
-        end
-      end
+  local phrase, offset = nil, 0
+  for _, pat in ipairs(patterns) do
+    phrase = lower:match(pat[1])
+    if phrase then
+      offset = pat[2]
+      break
+    end
+  end
+
+  if not phrase then
+    phrase = lower
+    offset = 0
+
+    -- Additional special-case: lines like "<thing> is carried by <mob>" or
+    -- "<thing> is in <location>". When present, trim to the left-side phrase
+    -- so item names at the start of the line will be matched correctly.
+    local cpos = lower:find(" is carried by ")
+    if not cpos then cpos = lower:find(" is in ") end
+    if cpos then
+      phrase = trim(lower:sub(1, cpos - 1))
     end
   end
 

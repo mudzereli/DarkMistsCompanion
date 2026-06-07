@@ -6,3 +6,12 @@
 **Alchemy Formula Parser & Item Viewer**: re-themed (gold-on-deep-purple palette).
 **Alchemy Formula Parser heatmap**: fixed material counting for comma/space-separated formats.
 **Map**: removed Light Mists exit from Basilica Road; added auction houses in Ofcol, New Ethshar, Elvenhame, Guldoran, Wistolk, and DDA.
+
+**DMC Patch Notes: 1.5.7**
+
+**ItemTracker**: now detects items in "You wear … on/around/about your …" and "You cannot remove …" messages.
+
+**Future Versions**
+
+- update items from website again (now includes damage nouns)
+- look into bug with status bar not staying disabled
