@@ -15,3 +15,4 @@
 **Future Versions**
 - snails yelling in yellow sometimes break item detection
 - look into bug with status bar not staying disabled
+- add damage nouns to offline item browser
