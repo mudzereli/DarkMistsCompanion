@@ -6,6 +6,12 @@
               "isFolder": "no"
        },
        {
+              "name": "DMConstants",
+              "isActive": "yes",
+              "script": "",
+              "isFolder": "no"
+       },
+       {
               "name": "DMLogger",
               "isActive": "yes",
               "script": "",
