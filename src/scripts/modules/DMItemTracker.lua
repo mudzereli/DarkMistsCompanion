@@ -10,6 +10,10 @@
 --   • Longest names tried first (prevents partial shadowing)
 --   • Click → tooltip | Shift+Click → full output | Any click → hide tooltip
 --   • Tooltip avoids covering status bars at bottom
+--   • Mass-capture modes for equipment ("... is using:"), inventory
+--     ("You are carrying:"), container ("... holds:"), shop
+--     ("[Lv Price Qty]"), and vault ("=== VAULT ... ===") listings
+--     — active until prompt.
 -- ============================================================================
 
 local WHO_HEADER_PATTERN = "^%[[^%]]*[A-Za-z][^%]]*%]"
@@ -87,6 +91,9 @@ ItemTracker = {
 
   -- Per-item-name click handler cache (one closure per unique name, reused by cinsertLink)
   _handlerCache = {},
+
+  -- Equipment listing capture: set when "You are using:" is seen, cleared at prompt.
+  _capturingList = false,
 
   -- Tooltip state (internal use only)
   tooltip = {
@@ -579,8 +586,55 @@ end
 -- Line Rendering
 -- ============================================================================
 
--- Convert item names in line to clickable links
+-- Convert item names in line to clickable links.
+-- Detects "You are using:" equipment listing and processes subsequent
+-- lines in mass-capture mode until the prompt terminates the block.
+-- Individual sentence patterns (you wear, you get, etc.) continue working.
 function ItemTracker.renderLineWithLinks(line)
+  -- -------------------------------------------------------------------------
+  -- Listing capture mode (equipment "You are using:" / shop "[Lv Price Qty]")
+  -- -------------------------------------------------------------------------
+
+  -- Equipment listing header ("You are using:" / "<name> is using:")
+  if line:find("are using:%s*$") or line:find("is using:%s*$") then
+    ItemTracker._capturingList = true
+    return false
+  end
+
+  -- Inventory listing header
+  if line:find("^You are carrying:%s*$") then
+    ItemTracker._capturingList = true
+    return false
+  end
+
+  -- Container contents header (e.g. "A leather backpack holds:")
+  if line:find("holds:%s*$") then
+    ItemTracker._capturingList = true
+    return false
+  end
+
+  -- Shop listing header
+  if line:find("^%[Lv%s+Price%s+Qty%]%s+Item%s*$") then
+    ItemTracker._capturingList = true
+    return false
+  end
+
+  -- Vault contents header ("=== VAULT CONTENTS ... ===")
+  if line:find("^=== VAULT") then
+    ItemTracker._capturingList = true
+    return false
+  end
+
+  if ItemTracker._capturingList then
+    -- Route into the same rendering pipeline. Capture is cleared
+    -- by the dmapi.world.prompt event handler in init().
+    return ItemTracker._renderItemOnLine(line)
+  end
+
+  -- -------------------------------------------------------------------------
+  -- Non-equipment lines: existing skip checks
+  -- -------------------------------------------------------------------------
+
   -- Skip prompt, exits, and WHO-list lines
   if line:match("^<%d")
   or line:find("^%[Exits:")
@@ -598,6 +652,13 @@ function ItemTracker.renderLineWithLinks(line)
     end
   end
 
+  return ItemTracker._renderItemOnLine(line)
+end
+
+-- Render item names found on a single line as clickable links.
+-- Shared by equipment listing capture and individual line matching.
+-- Returns true if a link was inserted, false if no item was found.
+function ItemTracker._renderItemOnLine(line)
   local _, s, e = ItemTracker.findFirstItemInLine(line)
   if not s then return false end
 
@@ -693,6 +754,11 @@ end
 -- ============================================================================
 
 function ItemTracker.init()
+  -- Clear listing capture mode on any prompt (more reliable than pattern-matching)
+  DarkmistsEvents.add("ItemTracker.PromptClear", "dmapi.world.prompt", function()
+    ItemTracker._capturingList = false
+  end)
+
   apply_theme_colors(ItemTracker.settings)
   ItemTracker.loadFiles {
     getMudletHomeDir() .. "/DarkMistsCompanion/assets/darkmists_items.json",
