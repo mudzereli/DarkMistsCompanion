@@ -12,6 +12,7 @@
 **ItemTracker**: now uses event-driven and mass-capture detection (triggered by dmapi prompts and listing headers) instead of scanning every line. If you notice any items not being linked where they should, let me know.
 **ItemTracker**: loaded all items from the website (now includes damage nouns).
 **Line Formatter**: standalone HTML tool for wrapping text and prepending line prefixes.
+**Vault**: vault item numbers in `=== VAULT CONTENTS ===` listings are now clickable — click to `get <number> vault`.
 
 **Future Versions**
 - look into bug with status bar not staying disabled
