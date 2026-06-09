@@ -521,9 +521,11 @@ function ItemTracker.listByArea(areaQuery)
   return results
 end
 
--- Detect item name at END of line only
+-- Detect item name at END of line only.
+-- When allowFallback is true (listing capture mode), falls back to
+-- full end-of-line matching if no sentence pattern matches.
 -- Returns: normalized name, start index, end index (in trimmed-lower string)
-function ItemTracker.findFirstItemInLine(line)
+function ItemTracker.findFirstItemInLine(line, allowFallback)
   local trimmed = line:gsub("%s+$", "")
   local lower = trimmed:lower()
 
@@ -536,6 +538,7 @@ function ItemTracker.findFirstItemInLine(line)
     {"^you cannot remove (.-)%.?$", 19},
     {"^you hold (.-) in your hands%.?$", 9},
     {"^you put (.-) in .+%.?$", 8},
+    {"^you wield (.-)%.?$", 10},
     {"^you wear (.-) on your .+%.?$", 9},
     {"^you wear (.-) over your .+%.?$", 9},
     {"^you wear (.-) around your .+%.?$", 9},
@@ -552,16 +555,19 @@ function ItemTracker.findFirstItemInLine(line)
   end
 
   if not phrase then
-    phrase = lower
-    offset = 0
-
-    -- Additional special-case: lines like "<thing> is carried by <mob>" or
-    -- "<thing> is in <location>". When present, trim to the left-side phrase
-    -- so item names at the start of the line will be matched correctly.
+    -- Lines like "<thing> is carried by <mob>" or "<thing> is in <location>".
+    -- Extract the left-side phrase and match item names at its end.
     local cpos = lower:find(" is carried by ")
     if not cpos then cpos = lower:find(" is in ") end
     if cpos then
       phrase = trim(lower:sub(1, cpos - 1))
+      offset = 0
+    elseif allowFallback then
+      -- In listing capture mode, fall back to full end-of-line matching
+      phrase = lower
+      offset = 0
+    else
+      return nil
     end
   end
 
@@ -634,27 +640,6 @@ function ItemTracker.renderLineWithLinks(line)
     return ItemTracker._renderItemOnLine(line)
   end
 
-  -- -------------------------------------------------------------------------
-  -- Non-equipment lines: existing skip checks
-  -- -------------------------------------------------------------------------
-
-  -- Skip prompt, exits, and WHO-list lines
-  if line:match("^<%d")
-  or line:find("^%[Exits:")
-  or line:match(WHO_HEADER_PATTERN) then
-    return false
-  end
-
-  -- Skip while DMAPI room capture is active (room parsing in progress)
-  if dmapi and dmapi.core and dmapi.core.state then
-    if dmapi.core.state.capturingRoom then
-      return false
-    end
-    if dmapi.player and not dmapi.player.online then
-      return false
-    end
-  end
-
   return ItemTracker._renderItemOnLine(line)
 end
 
@@ -662,7 +647,7 @@ end
 -- Shared by equipment listing capture and individual line matching.
 -- Returns true if a link was inserted, false if no item was found.
 function ItemTracker._renderItemOnLine(line)
-  local _, s, e = ItemTracker.findFirstItemInLine(line)
+  local _, s, e = ItemTracker.findFirstItemInLine(line, ItemTracker._capturingList)
   if not s then return false end
 
   local pos0 = s - 1
