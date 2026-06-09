@@ -387,6 +387,43 @@ function DMClickables.ClickableEssences()
   cecho("   " .. table.concat(output, "      "))
 end
 
+DMClickables.vault = {
+  active = false,
+}
+
+function DMClickables.ClickableVaultNumbers()
+  local raw = getCurrentLine()
+  if not raw or raw == "" then return end
+
+  -- Header activates vault capture
+  if raw:find("^=== VAULT") then
+    DMClickables.vault.active = true
+    return
+  end
+
+  if not DMClickables.vault.active then return end
+
+  -- Extract [number] from vault listing lines
+  -- Format: [+ ]    [12345] item name
+  local num = raw:match("^%s*%+?%s*%[([%d]+)%]")
+  if not num then return end
+
+  local s, e = raw:find("%[" .. num .. "%]")
+  if not s then return end
+
+  selectCurrentLine()
+
+  if selectSection(s, e - s - 1) then
+    setLink(function()
+      send(("get %s vault"):format(num))
+    end, string.format("Click: get %s vault", num))
+    setFgColor(0, 100, 0)
+    setUnderline(true)
+  end
+  resetFormat()
+  moveCursorEnd()
+end
+
 function DMClickables.init()
   DarkmistsEvents.add("DMClickables.AuctionPromptReset", "dmapi.world.prompt", function()
     DMClickables.auctions.active = false
@@ -396,6 +433,10 @@ function DMClickables.init()
   DarkmistsEvents.add("DMClickables.QuestPromptReset", "dmapi.world.prompt", function()
     DMClickables.quests.active = false
     DMClickables.quests.linesLeft = 0
+  end)
+
+  DarkmistsEvents.add("DMClickables.VaultPromptReset", "dmapi.world.prompt", function()
+    DMClickables.vault.active = false
   end)
 
   DarkmistsEvents.add("DMClickables.Auctions", "dmapi.core.line", function()
@@ -412,5 +453,9 @@ function DMClickables.init()
 
   DarkmistsEvents.add("DMClickables.Quests", "dmapi.core.line", function()
     DMClickables.ClickableQuests()
+  end)
+
+  DarkmistsEvents.add("DMClickables.VaultNumbers", "dmapi.core.line", function()
+    DMClickables.ClickableVaultNumbers()
   end)
 end
