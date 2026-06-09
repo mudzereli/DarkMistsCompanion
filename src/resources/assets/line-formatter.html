@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Line Formatter</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='0.9em' font-size='90'%3E📐%3C/text%3E%3C/svg%3E">
+
+<style>
+:root {
+  --is-bg: #07060c;
+  --is-panel: #110d1d;
+  --is-panel-2: #1a1429;
+  --is-panel-3: #221a33;
+  --is-line: rgba(255, 215, 0, 0.14);
+  --is-line-strong: rgba(255, 215, 0, 0.35);
+  --is-text: #f3f0e6;
+  --is-muted: #948ea1;
+  --is-muted-dim: #6c6678;
+  --is-accent: #FFD700;
+  --is-accent-soft: #D4AF37;
+}
+
+body {
+  min-height: 100vh;
+  color: var(--is-text);
+  background: var(--is-bg);
+  font-family: "Segoe UI", "Trebuchet MS", system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  padding: 24px 32px;
+  margin: 0;
+}
+
+h2, h3 {
+  color: var(--is-accent);
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  margin-bottom: 14px;
+}
+
+p {
+  font-size: 13px;
+  color: var(--is-muted);
+  margin-bottom: 18px;
+  padding: 10px 14px;
+  background: var(--is-panel);
+  border: 1px solid var(--is-line);
+  border-radius: 8px;
+}
+
+textarea {
+  width: 100%;
+  resize: vertical;
+  background: var(--is-panel-2);
+  color: var(--is-text);
+  font-family: "JetBrains Mono", "Cascadia Code", "Fira Code", monospace;
+  font-size: 13px;
+  padding: 10px;
+  border: 1px solid var(--is-line);
+  border-radius: 6px;
+  outline: 0;
+  transition: border-color 0.15s;
+  box-sizing: border-box;
+}
+
+textarea:focus {
+  border-color: var(--is-line-strong);
+}
+
+#inputText {
+  height: 150px;
+}
+
+#outputText {
+  height: 300px;
+}
+
+button {
+  padding: 8px 18px;
+  margin: 5px 6px 5px 0;
+  cursor: pointer;
+  background: rgba(255, 215, 0, 0.08);
+  color: var(--is-accent);
+  border: 1px solid var(--is-line);
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 13px;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+button:hover {
+  background: rgba(255, 215, 0, 0.14);
+  border-color: var(--is-line-strong);
+}
+
+button:active {
+  background: rgba(255, 215, 0, 0.20);
+}
+
+input[type="number"],
+input[type="text"] {
+  background: var(--is-panel-2);
+  color: var(--is-text);
+  border: 1px solid var(--is-line);
+  border-radius: 6px;
+  padding: 8px 12px;
+  outline: 0;
+  font-size: 13px;
+  transition: border-color 0.15s;
+  box-sizing: border-box;
+}
+
+input[type="number"]:focus,
+input[type="text"]:focus {
+  border-color: var(--is-line-strong);
+}
+
+.controls {
+  display: flex;
+  gap: 16px;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  margin: 14px 0;
+}
+
+.control-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.control-group label {
+  font-size: 12px;
+  color: var(--is-muted);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.control-group input {
+  width: 120px;
+}
+
+.control-group input.wide {
+  width: 220px;
+}
+
+.stats {
+  font-size: 12px;
+  color: var(--is-muted-dim);
+  margin: 6px 0 0 0;
+}
+
+.copy-feedback {
+  color: #4ade80;
+  font-size: 12px;
+  margin-left: 8px;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.copy-feedback.show {
+  opacity: 1;
+}
+</style>
+</head>
+<body>
+
+<h2>📐 Line Formatter</h2>
+
+<p>
+  Wraps each line of input text to a maximum character length and prepends
+  an optional prefix to every line. Useful for formatting MUD output,
+  code comments, or any text that needs uniform line lengths.
+</p>
+
+<div class="controls">
+  <div class="control-group">
+    <label for="wrapLength">Wrap length</label>
+    <input type="number" id="wrapLength" value="76" min="10" max="999">
+  </div>
+  <div class="control-group">
+    <label for="linePrefix">Line prefix</label>
+    <input type="text" id="linePrefix" class="wide" placeholder="e.g. desc + ">
+  </div>
+  <button id="formatBtn">Format</button>
+  <button id="copyBtn">Copy to clipboard</button>
+  <span id="copyFeedback" class="copy-feedback">✓ Copied</span>
+</div>
+
+<h3>Input</h3>
+<textarea id="inputText" placeholder="Paste your text here..."></textarea>
+
+<div class="stats" id="inputStats">0 lines, 0 characters</div>
+
+<h3>Output</h3>
+<textarea id="outputText" readonly></textarea>
+
+<div class="stats" id="outputStats">0 lines, 0 characters</div>
+
+<script>
+const inputEl   = document.getElementById('inputText');
+const outputEl  = document.getElementById('outputText');
+const wrapEl    = document.getElementById('wrapLength');
+const prefixEl  = document.getElementById('linePrefix');
+const formatBtn = document.getElementById('formatBtn');
+const copyBtn   = document.getElementById('copyBtn');
+const copyFb    = document.getElementById('copyFeedback');
+const inStats   = document.getElementById('inputStats');
+const outStats  = document.getElementById('outputStats');
+
+function formatText() {
+  const text    = inputEl.value;
+  const wrap    = parseInt(wrapEl.value, 10) || 80;
+  const prefix  = prefixEl.value || '';
+  const lines   = text.split('\n');
+  const result  = [];
+
+  for (const line of lines) {
+    if (line.length === 0) {
+      result.push(prefix);
+      continue;
+    }
+
+    // Wrap the line
+    let remaining = line;
+    while (remaining.length > 0) {
+      if (remaining.length <= wrap) {
+        result.push(prefix + remaining);
+        break;
+      }
+
+      // Try to break at a space within the limit
+      let breakAt = remaining.lastIndexOf(' ', wrap);
+      if (breakAt <= 0) {
+        // No space found — hard-break at wrap position
+        breakAt = wrap;
+      }
+
+      result.push(prefix + remaining.substring(0, breakAt));
+      remaining = remaining.substring(breakAt + 1); // skip the space
+    }
+  }
+
+  outputEl.value = result.join('\n');
+
+  // Update stats
+  const inLineCount  = lines.length;
+  const inCharCount  = text.length;
+  const outLines     = result.length;
+  const outChars     = outputEl.value.length;
+
+  inStats.textContent  = `${inLineCount} line${inLineCount !== 1 ? 's' : ''}, ${inCharCount} character${inCharCount !== 1 ? 's' : ''}`;
+  outStats.textContent = `${outLines} line${outLines !== 1 ? 's' : ''}, ${outChars} character${outChars !== 1 ? 's' : ''}`;
+}
+
+function copyOutput() {
+  outputEl.select();
+  navigator.clipboard.writeText(outputEl.value).then(() => {
+    copyFb.classList.add('show');
+    setTimeout(() => copyFb.classList.remove('show'), 1500);
+  }).catch(() => {
+    // Fallback
+    document.execCommand('copy');
+  });
+}
+
+// Auto-format on input change
+inputEl.addEventListener('input', formatText);
+wrapEl.addEventListener('input', formatText);
+prefixEl.addEventListener('input', formatText);
+formatBtn.addEventListener('click', formatText);
+copyBtn.addEventListener('click', copyOutput);
+
+// Initial format
+formatText();
+</script>
+</body>
+</html>

@@ -15,12 +15,13 @@
 --   - Explicit > clever
 -- =============================================================================
 
-local saveFilePath     = getMudletHomeDir() .. "/darkmists_global_settings.lua"
-local itemViewerPath   = getMudletHomeDir() .. "/DarkMistsCompanion/assets/item-viewer.html"
-local dmapiDocPath     = getMudletHomeDir() .. "/DarkMistsCompanion/assets/dmapi.html"
-local mapDatPath       = getMudletHomeDir() .. "/DarkMistsCompanion/assets/map.dat"
-local eaConverterPath  = getMudletHomeDir() .. "/DarkMistsCompanion/assets/ea-save-converter.html"
-local eaFormulaParser  = getMudletHomeDir() .. "/DarkMistsCompanion/assets/alchemy-formula-parser.html"
+local saveFilePath      = getMudletHomeDir() .. "/darkmists_global_settings.lua"
+local itemViewerPath    = getMudletHomeDir() .. "/DarkMistsCompanion/assets/item-viewer.html"
+local dmapiDocPath      = getMudletHomeDir() .. "/DarkMistsCompanion/assets/dmapi.html"
+local mapDatPath        = getMudletHomeDir() .. "/DarkMistsCompanion/assets/map.dat"
+local eaConverterPath   = getMudletHomeDir() .. "/DarkMistsCompanion/assets/ea-save-converter.html"
+local eaFormulaParser   = getMudletHomeDir() .. "/DarkMistsCompanion/assets/alchemy-formula-parser.html"
+local lineFormatterPath = getMudletHomeDir() .. "/DarkMistsCompanion/assets/line-formatter.html"
 
 Darkmists = {}
 Darkmists.NAME = "DarkMistsCompanion"
@@ -193,6 +194,10 @@ end
 
 function Darkmists.OpenDMAPIDocs()
   DMUtil.openLocalFile(dmapiDocPath)
+end
+
+function Darkmists.OpenLineFormatter()
+  DMUtil.openLocalFile(lineFormatterPath)
 end
 
 function Darkmists.OpenSettingsFile()
