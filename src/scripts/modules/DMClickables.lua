@@ -36,7 +36,7 @@ function DMClickables.ClickablePractices()
 
     -- strip it only for parsing
     if levelPrefix then
-    raw = raw:gsub("^%s*Level%s+%d+:%s*", "")
+        raw = raw:gsub("^%s*Level%s+%d+:%s*", "")
     end
 
     -- strip continuation indentation
@@ -48,18 +48,18 @@ function DMClickables.ClickablePractices()
     
     -- collect skills first - UPDATED to include dash
     for skill, pct in raw:gmatch("([%a%-][%a%s'%-]-)%s+(%d+)%%") do
-    found = true
-    table.insert(output, { skill = skill, pct = pct, suffix = "%" })
+        found = true
+        table.insert(output, { skill = skill, pct = pct, suffix = "%" })
     end
 
     for skill, pct in raw:gmatch("([%a%-][%a%s'%-]-)%s+(%d+) mana") do
-    found = true
-    table.insert(output, { skill = skill, pct = pct, suffix = " mana" })
+        found = true
+        table.insert(output, { skill = skill, pct = pct, suffix = " mana" })
     end
 
     for skill, pct in raw:gmatch("([%a%-][%a%s'%-]-)%s+n/a") do
-    found = true
-    table.insert(output, { skill = skill, pct = " n/a", suffix = "" })
+        found = true
+        table.insert(output, { skill = skill, pct = " n/a", suffix = "" })
     end
 
     if not found then return end
@@ -74,55 +74,55 @@ function DMClickables.ClickablePractices()
     end
 
     for _, entry in ipairs(output) do
-    local skill = entry.skill
-    local pct   = entry.pct
-    local skillDisplay = skill
-    if #skillDisplay > 19 then
-        skillDisplay = skillDisplay:sub(1,19)
-    end
-    
-    local c = "<steel_blue>"
-    local trimmed = skill:match("^%s*(.-)%s*$")
+        local skill = entry.skill
+        local pct   = entry.pct
+        local skillDisplay = skill
+        if #skillDisplay > 19 then
+            skillDisplay = skillDisplay:sub(1,19)
+        end
 
-    if SkillUps and SkillUps.history then
-        for _, v in ipairs(SkillUps.history) do
-            if v.skill == trimmed then
-                c = "<dark_khaki>"
-                break
+        local c = "<steel_blue>"
+        local trimmed = skill:match("^%s*(.-)%s*$")
+
+        if SkillUps and SkillUps.history then
+            for _, v in ipairs(SkillUps.history) do
+                if v.skill == trimmed then
+                    c = "<dark_khaki>"
+                    break
+                end
             end
         end
-    end
-    
-    cechoLink(
-        string.format("%s%-20s", c, skillDisplay),
-        function()
-        if holdingModifiers(mudlet.keymodifier.Shift) then
-            send("prac " .. skill)
-            send("practice")
-        else
-            send("help " .. skill)
+
+        cechoLink(
+            string.format("%s%-20s", c, skillDisplay),
+            function()
+                if holdingModifiers(mudlet.keymodifier.Shift) then
+                    send("prac " .. skill)
+                    send("practice")
+                else
+                    send("help " .. skill)
+                end
+            end,
+            "Click: help " .. skill .. "\nShift+Click: practice " .. skill,
+            true
+        )
+
+        -- Color code the percentage
+        local color = txtColor
+        if pct ~= " n/a" and entry.suffix == "%" then
+            local numPct = tonumber(pct)
+            if numPct == 100 then
+                color = "<dark_green>"
+            elseif numPct >= 90 then
+                color = "<dark_khaki>"
+            elseif numPct >= 50 then
+                color = "<coral>"
+            else
+                color = "<red>"
+            end
         end
-        end,
-        "Click: help " .. skill .. "\nShift+Click: practice " .. skill,
-        true
-    )
-    
-    -- Color code the percentage
-    local color = txtColor
-    if pct ~= " n/a" and entry.suffix == "%" then
-        local numPct = tonumber(pct)
-        if numPct == 100 then
-        color = "<dark_green>"
-        elseif numPct >= 90 then
-        color = "<dark_khaki>"
-        elseif numPct >= 50 then
-        color = "<coral>"
-        else
-        color = "<red>"
-        end
-    end
-    
-    cecho(string.format("%s%3s%s  ", color, pct, entry.suffix))
+
+        cecho(string.format("%s%3s%s  ", color, pct, entry.suffix))
     end
 end
 
@@ -352,7 +352,7 @@ function DMClickables.ClickableEssences()
   -- skip pager
   if raw:match("^%[Hit Return to continue%]") then return end
 
-    -- if line doesn't contain essence pairs, block was interrupted
+  -- if line doesn't contain essence pairs, block was interrupted
   if not raw:match("([%a]+)%s+(%d+)") then
     DMClickables.essence.active = false
     return
@@ -403,9 +403,11 @@ function DMClickables.ClickableVaultNumbers()
 
   if not DMClickables.vault.active then return end
 
-  -- Extract [number] from vault listing lines
-  -- Format: [+ ]    [12345] item name
-  local num = raw:match("^%s*%+?%s*%[([%d]+)%]")
+  -- Extract [number] from vault listing lines.
+  -- Lines start with + or space, with an optional (count) in parens,
+  -- then the item [id]. The first bracketed number is always the item id.
+  --   e.g. [12345] item | + [29900] item | + (2) [22662] item
+  local num = raw:match("%[([%d]+)%]")
   if not num then return end
 
   local s, e = raw:find("%[" .. num .. "%]")
