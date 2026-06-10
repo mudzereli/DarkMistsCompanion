@@ -75,7 +75,7 @@ Darkmists.DefaultSettings = {
   affectsWindowDeleteOriginalLines = false,
   -- Delete original Who lines when running Who command
   whoWindowDeleteOriginalLines = false,
-  -- Stat Roller Leniancy (0 = Roll must be Max, 1 = Roll can be 1 lower than Max, etc)
+  -- Stat Roller Leniency (0 = Roll must be Max, 1 = Roll can be 1 lower than Max, etc)
   statRollerLeniency = 1,
   -- First Run Flag (for Setting up default settings)
   hasInitializedUILayout = false,
@@ -355,9 +355,8 @@ function Darkmists.ShowUIIntroMessage(force)
       end
     })
 
-    -- Persisting the "seen" flag is deferred until the user explicitly clicks
-    -- the Enable/Disable action in the panel so closing the panel does NOT
-    -- mark the intro as seen.
+    -- Mark the intro as seen on close or on explicit Enable/Disable click so it
+    -- doesn't re-prompt on every reconnect.
 
   end)
 end
