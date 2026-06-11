@@ -729,12 +729,12 @@ function DarkMistsMeta.init()
     local cmd = matches[2]
 
     if cmd == "show" then
-      StatusBar.showAll()
+      StatusBar.enable()
       return
     end
 
     if cmd == "hide" then
-      StatusBar.hideAll()
+      StatusBar.disable()
       return
     end
 
