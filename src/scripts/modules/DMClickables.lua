@@ -128,7 +128,6 @@ end
 
 DMClickables.auctions = {
   active = false,
-  linesLeft = 0,
 }
 
 function DMClickables.RenderAuctionPager(raw)
@@ -190,19 +189,18 @@ function DMClickables.ClickableAuctions()
     return
   end
 
-  if raw:match("^Item ID%s+Name%s+Buyout%s+Time Left%s+Current Bid") then
-    state.active = true
-    state.linesLeft = 21
-    return
-  end
-
-  if not state.active then return end
-  if state.linesLeft <= 0 then
+  -- Stop on prompt (line starting with <)
+  if raw:sub(1,1) == "<" then
     state.active = false
     return
   end
 
-  state.linesLeft = state.linesLeft - 1
+  if raw:match("^Item ID%s+Name%s+Buyout%s+Time Left%s+Current Bid") then
+    state.active = true
+    return
+  end
+
+  if not state.active then return end
 
   if raw:match("^%-%-%-%-%-.*") then
     return
@@ -275,7 +273,6 @@ end
 
 DMClickables.quests = {
   active = false,
-  linesLeft = 0,
 }
 
 function DMClickables.ClickableQuests()
@@ -284,19 +281,19 @@ function DMClickables.ClickableQuests()
 
   local state = DMClickables.quests
 
+  -- Stop on prompt (line starting with <)
+  if raw:sub(1,1) == "<" then
+    state.active = false
+    return
+  end
+
   -- Header line activates the state machine
   if raw:match("^Quest%s+Title%s+Summary") then
     state.active = true
-    state.linesLeft = 30
     return
   end
 
   if not state.active then return end
-  if state.linesLeft <= 0 then
-    state.active = false
-    return
-  end
-  state.linesLeft = state.linesLeft - 1
 
   -- Quest line: number + description
   local questNum, rest = raw:match("^%s*(%d+)%s%s+(.+)$")
@@ -427,17 +424,9 @@ function DMClickables.ClickableVaultNumbers()
 end
 
 function DMClickables.init()
-  DarkmistsEvents.add("DMClickables.AuctionPromptReset", "dmapi.world.prompt", function()
+  DarkmistsEvents.add("DMClickables.PromptReset", "dmapi.world.prompt", function()
     DMClickables.auctions.active = false
-    DMClickables.auctions.linesLeft = 0
-  end)
-
-  DarkmistsEvents.add("DMClickables.QuestPromptReset", "dmapi.world.prompt", function()
     DMClickables.quests.active = false
-    DMClickables.quests.linesLeft = 0
-  end)
-
-  DarkmistsEvents.add("DMClickables.VaultPromptReset", "dmapi.world.prompt", function()
     DMClickables.vault.active = false
   end)
 
