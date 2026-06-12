@@ -9,11 +9,14 @@
 
 **DMC Patch Notes: 1.5.7**
 
+### New Stuff
+**Line Formatter**: standalone HTML tool for wrapping text and prepending line prefixes. Under `modules` on the Button Bar.
+**Clickables**: vault item numbers in `=== VAULT CONTENTS ===` listings are now clickable — click to `get <number> vault`.
+
+### Updates / Fixes
 **Status Bars**: `sb hide`/`sb show`/`sb toggle` now persist properly (no longer auto-reveal on vitals updates).
 **ItemTracker**: now uses event-driven and mass-capture detection (triggered by dmapi prompts and listing headers) instead of scanning every line. If you notice any items not being linked where they should, let me know.
 **ItemTracker**: loaded all items from the website (now includes damage nouns).
-**Line Formatter**: standalone HTML tool for wrapping text and prepending line prefixes.
-**Clickables**: vault item numbers in `=== VAULT CONTENTS ===` listings are now clickable — click to `get <number> vault`.
 **Clickables**: auctions, quests, and practices now stop rendering on prompt instead of relying on line counters.
 **Map**: added wall street around Sudharma and some missing doors.
 
