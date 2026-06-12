@@ -311,7 +311,8 @@ local MODULE_MENU = {
       {label = "🔄 EA Save Converter", action = function() Darkmists.OpenEAConverter() end},
     }},
     {label = "❓ Enchant Assist", action = function() expandAlias("dmc help es") end}
-  }}
+  }},
+  {label = "📐 Line Formatter", action = function() Darkmists.OpenLineFormatter() end},
 }
 
 -- Settings menu: mutates `Darkmists.GlobalSettings` and may prompt a

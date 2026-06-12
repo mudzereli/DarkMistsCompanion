@@ -566,11 +566,11 @@ function StatusBar.hideEnemy()
 end
 
 function StatusBar.toggle()
-  if StatusBar.container then
-    if StatusBar.container.hidden then
-      StatusBar.showAll()
+  if StatusBar.config then
+    if StatusBar.config.enabled then
+      StatusBar.disable()
     else
-      StatusBar.hideAll()
+      StatusBar.enable()
     end
   end
 end
@@ -604,6 +604,15 @@ function StatusBar.enable()
   Darkmists.GlobalSettings.statusBarsEnabled = true
   Darkmists.SaveSettings()
 
+  -- If never initialized (e.g. disabled at startup), create everything now
+  if not StatusBar.container then
+    StatusBar.create()
+    StatusBar.registerEvents()
+    if StatusBar.config.moveable then
+      StatusBar.setMoveable(true)
+    end
+  end
+
   StatusBar.showAll()
   StatusBar.reflow()
 
@@ -615,7 +624,9 @@ function StatusBar.disable()
   Darkmists.GlobalSettings.statusBarsEnabled = false
   Darkmists.SaveSettings()
 
-  StatusBar.container:attachToBorder("none")
+  if StatusBar.container then
+    StatusBar.container:attachToBorder("none")
+  end
   StatusBar.hideAll()
 
   Darkmists.Log(DarkmistsTheme.redTag.. "StatusBars", "<red>Status bars disabled")
@@ -693,7 +704,7 @@ function StatusBar.init()
     containerHeightPct = Darkmists.GlobalSettings.statusBarTotalHeightPercent,
     fontColor = Darkmists.GlobalSettings.statusBarFontColor,
     moveable = Darkmists.GlobalSettings.statusBarsMoveable,
-    enabled = true,
+    enabled = Darkmists.GlobalSettings.statusBarsEnabled ~= false, -- default true if nil
     maxLevel = 51,
   }
 

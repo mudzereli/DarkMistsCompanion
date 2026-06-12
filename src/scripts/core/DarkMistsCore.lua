@@ -15,12 +15,13 @@
 --   - Explicit > clever
 -- =============================================================================
 
-local saveFilePath     = getMudletHomeDir() .. "/darkmists_global_settings.lua"
-local itemViewerPath   = getMudletHomeDir() .. "/DarkMistsCompanion/assets/item-viewer.html"
-local dmapiDocPath     = getMudletHomeDir() .. "/DarkMistsCompanion/assets/dmapi.html"
-local mapDatPath       = getMudletHomeDir() .. "/DarkMistsCompanion/assets/map.dat"
-local eaConverterPath  = getMudletHomeDir() .. "/DarkMistsCompanion/assets/ea-save-converter.html"
-local eaFormulaParser  = getMudletHomeDir() .. "/DarkMistsCompanion/assets/alchemy-formula-parser.html"
+local saveFilePath      = getMudletHomeDir() .. "/darkmists_global_settings.lua"
+local itemViewerPath    = getMudletHomeDir() .. "/DarkMistsCompanion/assets/item-viewer.html"
+local dmapiDocPath      = getMudletHomeDir() .. "/DarkMistsCompanion/assets/dmapi.html"
+local mapDatPath        = getMudletHomeDir() .. "/DarkMistsCompanion/assets/map.dat"
+local eaConverterPath   = getMudletHomeDir() .. "/DarkMistsCompanion/assets/ea-save-converter.html"
+local eaFormulaParser   = getMudletHomeDir() .. "/DarkMistsCompanion/assets/alchemy-formula-parser.html"
+local lineFormatterPath = getMudletHomeDir() .. "/DarkMistsCompanion/assets/line-formatter.html"
 
 Darkmists = {}
 Darkmists.NAME = "DarkMistsCompanion"
@@ -74,7 +75,7 @@ Darkmists.DefaultSettings = {
   affectsWindowDeleteOriginalLines = false,
   -- Delete original Who lines when running Who command
   whoWindowDeleteOriginalLines = false,
-  -- Stat Roller Leniancy (0 = Roll must be Max, 1 = Roll can be 1 lower than Max, etc)
+  -- Stat Roller Leniency (0 = Roll must be Max, 1 = Roll can be 1 lower than Max, etc)
   statRollerLeniency = 1,
   -- First Run Flag (for Setting up default settings)
   hasInitializedUILayout = false,
@@ -193,6 +194,10 @@ end
 
 function Darkmists.OpenDMAPIDocs()
   DMUtil.openLocalFile(dmapiDocPath)
+end
+
+function Darkmists.OpenLineFormatter()
+  DMUtil.openLocalFile(lineFormatterPath)
 end
 
 function Darkmists.OpenSettingsFile()
@@ -350,9 +355,8 @@ function Darkmists.ShowUIIntroMessage(force)
       end
     })
 
-    -- Persisting the "seen" flag is deferred until the user explicitly clicks
-    -- the Enable/Disable action in the panel so closing the panel does NOT
-    -- mark the intro as seen.
+    -- Mark the intro as seen on close or on explicit Enable/Disable click so it
+    -- doesn't re-prompt on every reconnect.
 
   end)
 end

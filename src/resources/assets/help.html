@@ -236,6 +236,8 @@
           <tr><td><code>dmc showdmg</code></td><td>Toggle inline damage estimates on combat messages</td></tr>
           <tr><td><code>dmc showdmg on</code></td><td>Enable damage estimates</td></tr>
           <tr><td><code>dmc showdmg off</code></td><td>Disable damage estimates</td></tr>
+          <tr><td><code>dmc showdmg color &lt;color&gt;</code></td><td>Set the damage message highlight color</td></tr>
+          <tr><td><code>dmc showdmg mode &lt;avg|range&gt;</code></td><td>Set display to average only or min–max range</td></tr>
         </tbody>
       </table>
     </section>
@@ -333,12 +335,11 @@
       <!-- Damage Messages -->
       <h2 id="ui-showdmg">Damage Messages</h2>
       <p>
-        Appends a small inline average-damage estimate to every combat hit line, color-coded
-        in dim gray with the number highlighted in red. The estimate is derived from the
+        Appends an inline damage estimate to every combat hit line. The estimate is derived from the
         damage verb (e.g. <em>wounds</em>, <em>mauls</em>, <em>PULVERIZES</em>) and shows
-        the midpoint of that verb's damage range.
+        either the average of that verb's range or the full min–max range depending on your mode.
       </p>
-      <p>Enabled by default. Toggle at any time without reloading.</p>
+      <p>Enabled by default. All options take effect immediately without reloading.</p>
 
       <table>
         <thead><tr><th>Command</th><th>Description</th></tr></thead>
@@ -346,6 +347,9 @@
           <tr><td><code>dmc showdmg</code></td><td>Toggle damage estimates on/off</td></tr>
           <tr><td><code>dmc showdmg on</code></td><td>Enable damage estimates</td></tr>
           <tr><td><code>dmc showdmg off</code></td><td>Disable damage estimates</td></tr>
+          <tr><td><code>dmc showdmg color &lt;color&gt;</code></td><td>Set the damage message highlight color</td></tr>
+          <tr><td><code>dmc showdmg mode avg</code></td><td>Show only the average damage value</td></tr>
+          <tr><td><code>dmc showdmg mode range</code></td><td>Show min–max damage range with average</td></tr>
         </tbody>
       </table>
 
@@ -489,6 +493,14 @@
           </tr>
         </tbody>
       </table>
+
+      <!-- Session Timer -->
+      <h2 id="ui-sessiontimer">Session Timer</h2>
+      <p>
+        A small <code>⏱ M:SS</code> (or <code>⏱ H:MM:SS</code>) display on the button bar that
+        tracks how long you've been logged in to the current world session. Resets automatically
+        on login or reconnect and stops on disconnect. Hover for a "Session timer" tooltip.
+      </p>
     </section>
 
 
@@ -681,6 +693,18 @@
         </tbody>
       </table>
 
+      <h3>Vault clickables</h3>
+      <p>Vault item numbers in <code>=== VAULT CONTENTS ===</code> listings are clickable.</p>
+      <table>
+        <thead><tr><th>Interaction</th><th>Action</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>Click a vault number</td>
+            <td>Sends <code>get &lt;number&gt; vault</code></td>
+          </tr>
+        </tbody>
+      </table>
+
       <h3>Practice / Skills / Spells output</h3>
       <table>
         <thead><tr><th>Interaction</th><th>Action</th></tr></thead>
@@ -738,7 +762,7 @@
 
       <div class="tip">
         <strong>Tip:</strong> Partial names work — <code>dmid silver ring</code> will match
-        any item containing those words. Hover over any result to see the full stat block in
+        any item containing those words. Click on any result to see the full stat block in
         a tooltip.
       </div>
 
@@ -1114,6 +1138,14 @@
         Searchable and sortable material source reference for alchemy. Includes material name,
         item examples, source locations, and notes so you can quickly find where to farm each
         material.
+      </p>
+
+      <h3>Line Formatter — <code>line-formatter.html</code></h3>
+      <p>
+        Wraps lines of text to a set character length and optionally prepends a prefix
+        (e.g. <code>desc + </code>) to every line. Supports word-wrap
+        with space-aware breaking and includes real-time line/character stats. Useful for
+        formatting notes, descriptions, journals, etc.
       </p>
 
       <h3>EA Save Converter — <code>ea-save-converter.html</code></h3>
