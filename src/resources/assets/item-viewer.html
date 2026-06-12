@@ -535,6 +535,11 @@ th.grouped {
   --stat-spell: #c084fc; 
   --stat-holy: #fde68a; 
   --stat-score: #fb923c; 
+  --stat-str: #ff8a65; 
+  --stat-int: #64b5f6; 
+  --stat-wis: #4dd0e1; 
+  --stat-dex: #81c784; 
+  --stat-con: #ffd54f; 
 }
 
 [data-bs-theme="light"] { 
@@ -545,6 +550,11 @@ th.grouped {
   --stat-spell: #6d28d9; 
   --stat-holy: #a16207; 
   --stat-score: #ea580c; 
+  --stat-str: #d84315; 
+  --stat-int: #1565c0; 
+  --stat-wis: #00838f; 
+  --stat-dex: #2e7d32; 
+  --stat-con: #f9a825; 
 }
 
 .stat.hit { color: var(--stat-hit); }
@@ -554,6 +564,11 @@ th.grouped {
 .stat.spell { color: var(--stat-spell); }
 .stat.holy { color: var(--stat-holy); }
 .stat.score { color: var(--stat-score); font-weight: 700; }
+.stat.str { color: var(--stat-str); }
+.stat.int { color: var(--stat-int); }
+.stat.wis { color: var(--stat-wis); }
+.stat.dex { color: var(--stat-dex); }
+.stat.con { color: var(--stat-con); }
 
 .weight-input { 
   width: 60px; 
@@ -562,6 +577,123 @@ th.grouped {
 .preset-btn { 
   font-size: 0.75rem; 
   padding: 0.25rem 0.5rem; 
+}
+
+/* ---------- Loadout styles ---------- */
+.loadout-slot-label {
+  font-size: 0.7rem;
+  color: var(--dm-muted);
+  display: block;
+  margin-bottom: 2px;
+}
+
+.loadout-select {
+  font-size: 0.8rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.loadout-dropdown-options {
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.loadout-dd-item.active {
+  background: rgba(255, 215, 0, 0.14);
+  color: var(--dm-accent);
+}
+
+.loadout-dd-item:hover {
+  background: rgba(255, 215, 0, 0.10);
+}
+
+.loadout-total-card {
+  background: var(--dm-panel-2);
+  border: 1px solid var(--dm-border);
+  border-radius: 10px;
+  padding: 0.4rem 0.6rem;
+  text-align: center;
+}
+
+.loadout-total-label {
+  font-size: 0.65rem;
+  color: var(--dm-muted);
+  display: block;
+}
+
+.loadout-total-value {
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+#loadoutEquippedList {
+  margin: 0;
+  white-space: pre-wrap;
+  font-size: 12px;
+  background: var(--dm-panel-2);
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--dm-border);
+  color: var(--dm-text);
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.loadout-equipped-line {
+  cursor: pointer;
+  border-radius: 3px;
+  transition: background 0.12s;
+  display: inline;
+}
+
+.loadout-equipped-line:hover {
+  background: rgba(255, 215, 0, 0.10);
+  outline: 1px solid rgba(255, 215, 0, 0.18);
+}
+
+/* ---------- Hover stat card ---------- */
+#loadoutItemCard {
+  position: fixed;
+  z-index: 9999;
+  background: var(--dm-panel);
+  border: 1px solid var(--dm-border-strong);
+  border-radius: 12px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+  padding: 10px 14px;
+  min-width: 240px;
+  pointer-events: none;
+  font-size: 12px;
+}
+
+.loadout-item-card-header {
+  font-weight: 700;
+  color: var(--dm-accent);
+  border-bottom: 1px solid var(--dm-border);
+  padding-bottom: 5px;
+  margin-bottom: 6px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.loadout-item-card-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.loadout-item-card-table td {
+  padding: 1px 6px;
+  white-space: nowrap;
+}
+
+.loadout-item-card-table td:last-child {
+  text-align: right;
+  font-weight: 600;
+}
+
+.loadout-item-card-table tr:nth-child(even) {
+  background: rgba(255, 215, 0, 0.03);
 }
 </style>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔮</text></svg>">
@@ -882,11 +1014,43 @@ th.grouped {
       </div>
     </div>
 
+    <!-- Gear Loadout Section -->
+    <div id="gearLoadout" class="collapse mb-2">
+      <div class="row">
+        <div class="col-12">
+          <div class="card" style="border-left: 4px solid #a855f7;">
+            <div class="card-body py-2">
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <h6 class="text-secondary mb-0">👤 Gear Loadout</h6>
+                <div>
+                  <button class="btn btn-sm btn-outline-secondary me-1" onclick="exportLoadout()">📋 Export</button>
+                  <button class="btn btn-sm btn-outline-secondary me-1" onclick="importLoadout()">📥 Import</button>
+                  <button class="btn btn-sm btn-outline-danger" onclick="clearLoadout()">Clear All</button>
+                </div>
+              </div>
+              <div class="row g-2" id="loadoutSlotContainer">
+                <!-- Slot dropdowns populated by JS -->
+              </div>
+              <hr>
+              <h6 class="text-secondary mb-2">📊 Total Stats</h6>
+              <div class="row g-2" id="loadoutTotals">
+                <!-- Totals populated by JS -->
+              </div>
+              <hr>
+              <h6 class="text-secondary mb-2">📋 Equipped List</h6>
+              <div id="loadoutEquippedList"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div id="activeFilters" class="mb-2 small"></div>
     
     <div class="d-flex flex-wrap gap-2 mb-2">
       <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="collapse" data-bs-target="#advancedFilters">Advanced Filters</button>
       <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="collapse" data-bs-target="#statWeights">Stat Weights</button>
+      <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="collapse" data-bs-target="#gearLoadout">Gear Loadout</button>
       <button type="button" class="btn btn-sm btn-outline-danger" onclick="clearAllFilters()">Clear All Filters</button>
     </div>
     
@@ -1481,7 +1645,12 @@ function parseItem(rawText, sourceId) {
     spellPower: rawText.match(/Affects spell power by (-?\d+)/) ? Number(RegExp.$1) : null,
     holyPower: rawText.match(/Affects holy power by (-?\d+)/) ? Number(RegExp.$1) : null,
     mana: rawText.match(/Affects mana by (-?\d+)/) ? Number(RegExp.$1) : null,
-    hp: rawText.match(/Affects hp by (-?\d+)/) ? Number(RegExp.$1) : null
+    hp: rawText.match(/Affects hp by (-?\d+)/) ? Number(RegExp.$1) : null,
+    str: rawText.match(/Affects strength by (-?\d+)/) ? Number(RegExp.$1) : null,
+    int: rawText.match(/Affects intelligence by (-?\d+)/) ? Number(RegExp.$1) : null,
+    wis: rawText.match(/Affects wisdom by (-?\d+)/) ? Number(RegExp.$1) : null,
+    dex: rawText.match(/Affects dexterity by (-?\d+)/) ? Number(RegExp.$1) : null,
+    con: rawText.match(/Affects constitution by (-?\d+)/) ? Number(RegExp.$1) : null
   };
   
   item.wearSlot = inferWearSlot(item);
@@ -1505,6 +1674,7 @@ function loadItemData() {
   populateFilters();
   populateAreaFilter();
   render();
+  populateLoadoutSlots();
 
   $('loadSection').classList.add('d-none');
   $('app').classList.remove('d-none');
@@ -2129,6 +2299,7 @@ $('fileInput').onchange = e => {
     populateFilters();
     populateAreaFilter();
     render();
+    populateLoadoutSlots();
     
     $('loadSection').classList.add('d-none');
     $('app').classList.remove('d-none');
@@ -2153,6 +2324,515 @@ window.addEventListener('scroll', () => {
 scrollTopBtn.addEventListener('click', () => {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 });
+
+/* =========================================================
+   Gear Loadout
+   ========================================================= */
+const LOADOUT_SLOTS = [
+  { id: 'light', label: 'Used as light' },
+  { id: 'finger1', label: 'Worn on finger' },
+  { id: 'finger2', label: 'Worn on finger' },
+  { id: 'neck1', label: 'Worn around neck' },
+  { id: 'neck2', label: 'Worn around neck' },
+  { id: 'torso', label: 'Worn on torso' },
+  { id: 'head', label: 'Worn on head' },
+  { id: 'eyes', label: 'Worn over eyes' },
+  { id: 'ear1', label: 'Worn on ear' },
+  { id: 'ear2', label: 'Worn on ear' },
+  { id: 'nosering', label: 'Worn on nose' },
+  { id: 'legs', label: 'Worn on legs' },
+  { id: 'feet', label: 'Worn on feet' },
+  { id: 'hands', label: 'Worn on hands' },
+  { id: 'arms', label: 'Worn on arms' },
+  { id: 'shield', label: 'Worn as shield' },
+  { id: 'body', label: 'Worn about body' },
+  { id: 'waist', label: 'Worn on waist' },
+  { id: 'wrist1', label: 'Worn around wrist' },
+  { id: 'wrist2', label: 'Worn around wrist' },
+  { id: 'wielded', label: 'Wielded' },
+  { id: 'held', label: 'Held' },
+];
+
+/** Map slot IDs to their matching wearSlot value from inferWearSlot(). */
+function slotIdToWearKey(slotId) {
+  // Strip trailing number for multi-slots like finger1, finger2, etc.
+  return slotId.replace(/\d+$/, '');
+}
+
+/** Get the display name for an item with flag prefixes. */
+function formatItemWithFlags(item) {
+  const parts = [];
+  
+  // Extract quality rank from raw text
+  const qMatch = item.raw.match(/\b(Legendary|Epic|Mythical|Unique|Artifact|Heroic|Rare)\b/i);
+  if (qMatch) {
+    const q = qMatch[1];
+    parts.push('(' + q.charAt(0).toUpperCase() + q.slice(1) + ')');
+  }
+  
+  // Add extra flags (capitalized) as parenthesized prefixes
+  item.extraFlags.forEach(f => {
+    parts.push('(' + f.charAt(0).toUpperCase() + f.slice(1) + ')');
+  });
+  
+  // Add weapon flags that are display-worthy
+  item.weaponFlags.forEach(f => {
+    parts.push('(' + f.charAt(0).toUpperCase() + f.slice(1) + ')');
+  });
+  
+  // Add the item name
+  parts.push(item.name);
+  
+  return parts.join(' ');
+}
+
+/** Get items matching a given wear slot. */
+function getItemsForSlot(slotId) {
+  const wearKey = slotIdToWearKey(slotId);
+  return items.filter(item => item.wearSlot === wearKey);
+}
+
+let loadoutSelections = {}; // slotId -> item (reference)
+
+function populateLoadoutSlots() {
+  const container = $('loadoutSlotContainer');
+  
+  container.innerHTML = LOADOUT_SLOTS.map(slot => {
+    const slotItems = getItemsForSlot(slot.id);
+    const selected = loadoutSelections[slot.id];
+    const btnText = selected ? formatItemWithFlags(selected) : '&lt;empty&gt;';
+    
+    let itemsHtml = '<button type="button" class="dropdown-item loadout-dd-item" onclick="selectLoadoutItem(\'' + slot.id + '\', \'\')">&lt;empty&gt;</button>';
+    if (slotItems.length) itemsHtml += '<div class="dropdown-divider"></div>';
+    
+    slotItems.forEach(item => {
+      const active = selected && selected.id === item.id ? ' active' : '';
+      const flagStr = formatItemWithFlags(item).replace(/'/g, '&#39;');
+      itemsHtml += '<button type="button" class="dropdown-item loadout-dd-item' + active + '" onclick="selectLoadoutItem(\'' + slot.id + '\', \'' + item.id.replace(/'/g, '\\\'') + '\')">' + flagStr + '</button>';
+    });
+    
+    return `
+      <div class="col-6 col-md-4 col-lg-3 mb-1">
+        <span class="loadout-slot-label">${slot.label}</span>
+        <div class="dropdown">
+          <button class="btn btn-sm btn-outline-secondary dropdown-toggle w-100 text-start loadout-select" data-bs-toggle="dropdown" data-slot="${slot.id}" id="loadoutBtn_${slot.id}">
+            ${btnText}
+          </button>
+          <div class="dropdown-menu p-2" style="min-width:300px;" aria-labelledby="loadoutBtn_${slot.id}">
+            <input type="text" class="form-control form-control-sm mb-2" placeholder="Search items…" oninput="filterLoadoutDropdown(this)">
+            <div class="loadout-dropdown-options" data-slot="${slot.id}">
+              ${itemsHtml}
+            </div>
+            <div class="dropdown-divider"></div>
+            <button type="button" class="btn btn-sm btn-link text-danger w-100" onclick="selectLoadoutItem('${slot.id}', '')">Clear</button>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+  
+  updateLoadoutDisplay();
+}
+
+function selectLoadoutItem(slotId, itemId) {
+  if (itemId) {
+    const item = items.find(i => i.id === itemId);
+    loadoutSelections[slotId] = item || null;
+  } else {
+    delete loadoutSelections[slotId];
+  }
+  
+  // Update the button text
+  const btn = document.querySelector('#loadoutBtn_' + slotId);
+  if (btn) {
+    const selected = loadoutSelections[slotId];
+    btn.innerHTML = selected ? formatItemWithFlags(selected) : '&lt;empty&gt;';
+    
+    // Update active state in dropdown items
+    const dd = btn.closest('.dropdown');
+    if (dd) {
+      dd.querySelectorAll('.loadout-dd-item').forEach(el => el.classList.remove('active'));
+      if (selected) {
+        dd.querySelectorAll('.loadout-dd-item').forEach(el => {
+          const match = el.getAttribute('onclick');
+          if (match && match.includes("'" + selected.id + "'")) {
+            el.classList.add('active');
+          }
+        });
+      }
+    }
+  }
+  
+  updateLoadoutDisplay();
+}
+
+function clearLoadout() {
+  loadoutSelections = {};
+  document.querySelectorAll('#loadoutSlotContainer .loadout-select').forEach(btn => {
+    btn.innerHTML = '&lt;empty&gt;';
+    const dd = btn.closest('.dropdown');
+    if (dd) {
+      dd.querySelectorAll('.loadout-dd-item').forEach(el => el.classList.remove('active'));
+      // Reset search
+      const searchInput = dd.querySelector('.dropdown-menu input[type="text"]');
+      if (searchInput) {
+        searchInput.value = '';
+        filterLoadoutDropdown(searchInput);
+      }
+    }
+  });
+  updateLoadoutDisplay();
+}
+
+function filterLoadoutDropdown(inputEl) {
+  const q = inputEl.value.toLowerCase();
+  const menu = inputEl.closest('.dropdown-menu');
+  if (!menu) return;
+  const optionsContainer = menu.querySelector('.loadout-dropdown-options');
+  if (!optionsContainer) return;
+  
+  optionsContainer.querySelectorAll('.loadout-dd-item').forEach(el => {
+    el.style.display = el.textContent.toLowerCase().includes(q) ? '' : 'none';
+  });
+  
+  const divider = optionsContainer.querySelector('.dropdown-divider');
+  if (divider) {
+    const hasVisible = [...optionsContainer.querySelectorAll('.loadout-dd-item')].some(el => el.style.display !== 'none');
+    divider.style.display = hasVisible ? '' : 'none';
+  }
+}
+
+function updateLoadoutDisplay() {
+  updateLoadoutTotals();
+  updateLoadoutEquippedList();
+}
+
+function updateLoadoutTotals() {
+  const equipped = Object.values(loadoutSelections).filter(Boolean);
+  
+  const totals = {
+    hitRoll: equipped.reduce((s, i) => s + (i.hitRoll || 0), 0),
+    dmgRoll: equipped.reduce((s, i) => s + (i.dmgRoll || 0), 0),
+    hp: equipped.reduce((s, i) => s + (i.hp || 0), 0),
+    avgArmorClass: equipped.reduce((s, i) => s + (i.avgArmorClass || 0), 0),
+    spellPower: equipped.reduce((s, i) => s + (i.spellPower || 0), 0),
+    holyPower: equipped.reduce((s, i) => s + (i.holyPower || 0), 0),
+    avgDamage: equipped.reduce((s, i) => s + (i.avgDamage || 0), 0),
+    mana: equipped.reduce((s, i) => s + (i.mana || 0), 0),
+    weight: equipped.reduce((s, i) => s + (i.weight || 0), 0),
+    value: equipped.reduce((s, i) => s + (i.value || 0), 0),
+    str: equipped.reduce((s, i) => s + (i.str || 0), 0),
+    int: equipped.reduce((s, i) => s + (i.int || 0), 0),
+    wis: equipped.reduce((s, i) => s + (i.wis || 0), 0),
+    dex: equipped.reduce((s, i) => s + (i.dex || 0), 0),
+    con: equipped.reduce((s, i) => s + (i.con || 0), 0),
+    count: equipped.length,
+  };
+  
+  $('loadoutTotals').innerHTML = `
+    <div class="col-4 col-md-2">
+      <div class="loadout-total-card">
+        <span class="loadout-total-label stat hit">Hit</span>
+        <span class="loadout-total-value stat hit">${totals.hitRoll > 0 ? '+' : ''}${totals.hitRoll || 0}</span>
+      </div>
+    </div>
+    <div class="col-4 col-md-2">
+      <div class="loadout-total-card">
+        <span class="loadout-total-label stat dam">Dam</span>
+        <span class="loadout-total-value stat dam">${totals.dmgRoll > 0 ? '+' : ''}${totals.dmgRoll || 0}</span>
+      </div>
+    </div>
+    <div class="col-4 col-md-2">
+      <div class="loadout-total-card">
+        <span class="loadout-total-label stat hp">HP</span>
+        <span class="loadout-total-value stat hp">${totals.hp > 0 ? '+' : ''}${totals.hp || 0}</span>
+      </div>
+    </div>
+    <div class="col-4 col-md-2">
+      <div class="loadout-total-card">
+        <span class="loadout-total-label stat ac">Avg AC</span>
+        <span class="loadout-total-value stat ac">${totals.avgArmorClass || 0}</span>
+      </div>
+    </div>
+    <div class="col-4 col-md-2">
+      <div class="loadout-total-card">
+        <span class="loadout-total-label stat str">Str</span>
+        <span class="loadout-total-value stat str">${totals.str > 0 ? '+' : ''}${totals.str || 0}</span>
+      </div>
+    </div>
+    <div class="col-4 col-md-2">
+      <div class="loadout-total-card">
+        <span class="loadout-total-label stat int">Int</span>
+        <span class="loadout-total-value stat int">${totals.int > 0 ? '+' : ''}${totals.int || 0}</span>
+      </div>
+    </div>
+    <div class="col-4 col-md-2">
+      <div class="loadout-total-card">
+        <span class="loadout-total-label stat wis">Wis</span>
+        <span class="loadout-total-value stat wis">${totals.wis > 0 ? '+' : ''}${totals.wis || 0}</span>
+      </div>
+    </div>
+    <div class="col-4 col-md-2">
+      <div class="loadout-total-card">
+        <span class="loadout-total-label stat dex">Dex</span>
+        <span class="loadout-total-value stat dex">${totals.dex > 0 ? '+' : ''}${totals.dex || 0}</span>
+      </div>
+    </div>
+    <div class="col-4 col-md-2">
+      <div class="loadout-total-card">
+        <span class="loadout-total-label stat con">Con</span>
+        <span class="loadout-total-value stat con">${totals.con > 0 ? '+' : ''}${totals.con || 0}</span>
+      </div>
+    </div>
+    <div class="col-4 col-md-2">
+      <div class="loadout-total-card">
+        <span class="loadout-total-label stat spell">Spell</span>
+        <span class="loadout-total-value stat spell">${totals.spellPower > 0 ? '+' : ''}${totals.spellPower || 0}</span>
+      </div>
+    </div>
+    <div class="col-4 col-md-2">
+      <div class="loadout-total-card">
+        <span class="loadout-total-label stat holy">Holy</span>
+        <span class="loadout-total-value stat holy">${totals.holyPower > 0 ? '+' : ''}${totals.holyPower || 0}</span>
+      </div>
+    </div>
+    <div class="col-4 col-md-2">
+      <div class="loadout-total-card">
+        <span class="loadout-total-label stat score">Avg Dmg</span>
+        <span class="loadout-total-value stat score">${totals.avgDamage || 0}</span>
+      </div>
+    </div>
+    <div class="col-4 col-md-2">
+      <div class="loadout-total-card">
+        <span class="loadout-total-label" style="color:var(--dm-muted);">Mana</span>
+        <span class="loadout-total-value" style="color:var(--dm-muted);">${totals.mana > 0 ? '+' : ''}${totals.mana || 0}</span>
+      </div>
+    </div>
+    <div class="col-4 col-md-2">
+      <div class="loadout-total-card">
+        <span class="loadout-total-label" style="color:var(--dm-muted);">Weight</span>
+        <span class="loadout-total-value" style="color:var(--dm-muted);">${totals.weight || 0}</span>
+      </div>
+    </div>
+    <div class="col-4 col-md-2">
+      <div class="loadout-total-card">
+        <span class="loadout-total-label" style="color:var(--dm-muted);">Items</span>
+        <span class="loadout-total-value" style="color:var(--dm-muted);">${totals.count}</span>
+      </div>
+    </div>
+  `;
+}
+
+function updateLoadoutEquippedList() {
+  const lines = LOADOUT_SLOTS.map(slot => {
+    const item = loadoutSelections[slot.id];
+    const paddedLabel = slot.label.padEnd(25);
+    
+    if (item) {
+      const flagStr = formatItemWithFlags(item);
+      return `<span class="loadout-equipped-line" data-item-id="${item.id}">${paddedLabel} ${flagStr}</span>`;
+    } else {
+      return `${paddedLabel} &lt;empty&gt;`;
+    }
+  });
+  
+  $('loadoutEquippedList').innerHTML = lines.join('\n');
+}
+
+/* =========================================================
+   Loadout Hover Stat Card
+   ========================================================= */
+let loadoutCardTimer = null;
+
+$('loadoutEquippedList').addEventListener('mouseenter', e => {
+  const line = e.target.closest('.loadout-equipped-line');
+  if (!line) return;
+  
+  const itemId = line.dataset.itemId;
+  const item = items.find(i => i.id === itemId);
+  if (!item) return;
+  
+  clearTimeout(loadoutCardTimer);
+  loadoutCardTimer = setTimeout(() => showLoadoutItemCard(line, item), 200);
+}, true);
+
+$('loadoutEquippedList').addEventListener('mouseleave', e => {
+  const related = e.relatedTarget;
+  if (related && related.closest('#loadoutItemCard')) return;
+  
+  clearTimeout(loadoutCardTimer);
+  hideLoadoutItemCard();
+}, true);
+
+function showLoadoutItemCard(anchor, item) {
+  hideLoadoutItemCard();
+  
+  const card = document.createElement('div');
+  card.id = 'loadoutItemCard';
+  
+  function val(v) { return v != null ? (v > 0 ? '+' + v : v) : '-'; }
+  
+  const rows = [
+    ['Level', item.level, 'Hit', val(item.hitRoll)],
+    ['Dam', val(item.dmgRoll), 'HP', val(item.hp)],
+    ['Mana', val(item.mana), 'Spell', val(item.spellPower)],
+    ['Holy', val(item.holyPower), 'Avg AC', item.avgArmorClass ?? '-'],
+    ['Avg Dmg', item.avgDamage ?? '-', 'Weight', item.weight ?? '-'],
+    ['Value', item.value ?? '-', item.weaponType ? 'Weapon' : null, item.weaponType || null],
+    ['Str', val(item.str), 'Int', val(item.int)],
+    ['Wis', val(item.wis), 'Dex', val(item.dex)],
+    ['Con', val(item.con), null, null],
+  ].filter(r => r[2] !== null && r[3] !== null);
+  
+  card.innerHTML = `
+    <div class="loadout-item-card-header">${item.name}</div>
+    <table class="loadout-item-card-table">
+      ${rows.map(r => `<tr><td class="stat ${r[0].toLowerCase().replace(/ /g,'')}">${r[0]}</td><td>${r[1]}</td><td class="stat ${r[2].toLowerCase().replace(/ /g,'')}">${r[2]}</td><td>${r[3]}</td></tr>`).join('')}
+    </table>
+  `;
+  
+  document.body.appendChild(card);
+  positionLoadoutItemCard(anchor);
+}
+
+function hideLoadoutItemCard() {
+  const card = document.getElementById('loadoutItemCard');
+  if (card) card.remove();
+}
+
+function positionLoadoutItemCard(anchor) {
+  const card = document.getElementById('loadoutItemCard');
+  if (!card) return;
+  
+  const anchorRect = anchor.getBoundingClientRect();
+  const cardRect = card.getBoundingClientRect();
+  
+  let left = anchorRect.left;
+  let top = anchorRect.bottom + 4;
+  
+  // Keep within viewport
+  if (left + cardRect.width > window.innerWidth - 10) {
+    left = window.innerWidth - cardRect.width - 10;
+  }
+  if (top + cardRect.height > window.innerHeight - 10) {
+    top = anchorRect.top - cardRect.height - 4;
+  }
+  if (left < 10) left = 10;
+  if (top < 10) top = 10;
+  
+  card.style.left = left + 'px';
+  card.style.top = top + 'px';
+}
+
+function exportLoadout() {
+  const lines = LOADOUT_SLOTS.map(slot => {
+    const item = loadoutSelections[slot.id];
+    const paddedLabel = '<' + slot.label + '>'.padEnd(30);
+    
+    if (item) {
+      const flagStr = formatItemWithFlags(item);
+      return `${paddedLabel} ${flagStr}`;
+    } else {
+      return `${paddedLabel} <empty>`;
+    }
+  });
+  
+  const text = lines.join('\n');
+  
+  // Copy to clipboard
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.querySelector('button[onclick*="exportLoadout"]');
+    if (btn) {
+      const orig = btn.textContent;
+      btn.textContent = '✅ Copied!';
+      btn.disabled = true;
+      setTimeout(() => { btn.textContent = orig; btn.disabled = false; }, 2000);
+    }
+  }).catch(() => {
+    // Fallback: show in a prompt
+    prompt('Copy this loadout config:', text);
+  });
+}
+
+function importLoadout() {
+  const input = prompt('Paste your loadout config (the exported text):');
+  if (!input) return;
+  
+  clearLoadout();
+  
+  const lines = input.split('\n');
+  const usedSlots = new Set(); // Track which duplicate-label slots are already assigned
+  
+  lines.forEach(line => {
+    const trimmedLine = line.trim();
+    if (!trimmedLine || trimmedLine.endsWith('<empty>')) return;
+    
+    // Extract the slot label from <...>
+    const slotMatch = trimmedLine.match(/^<(.+?)>/);
+    if (!slotMatch) return;
+    
+    const labelText = slotMatch[0]; // e.g. <Worn on finger     >
+    const rest = trimmedLine.slice(labelText.length).trim();
+    
+    if (!rest || rest === '<empty>') return;
+    
+    // Try to match the item by name (the text after all parenthesized flags)
+    // Remove all (word) prefixes to find the item name
+    const namePart = rest.replace(/\([^)]+\)\s*/g, '').trim();
+    
+    // Find the slot — skip already-used slots to handle duplicate labels correctly
+    const cleanLabel = labelText.replace(/^<|>$/g, '').trim();
+    const slotDef = LOADOUT_SLOTS.find(s => s.label === cleanLabel && !usedSlots.has(s.id));
+    if (!slotDef) return;
+    usedSlots.add(slotDef.id);
+    
+    // Find matching item by name
+    const item = items.find(i => i.name.trim().toLowerCase() === namePart.toLowerCase());
+    if (!item) {
+      // Try partial match
+      const partial = items.find(i => namePart.toLowerCase().includes(i.name.toLowerCase()) || i.name.toLowerCase().includes(namePart.toLowerCase()));
+      if (partial) {
+        loadoutSelections[slotDef.id] = partial;
+      }
+      return;
+    }
+    
+    loadoutSelections[slotDef.id] = item;
+  });
+  
+  // Sync dropdown buttons
+  Object.keys(loadoutSelections).forEach(slotId => {
+    const btn = document.querySelector('#loadoutBtn_' + slotId);
+    if (btn) {
+      const item = loadoutSelections[slotId];
+      btn.innerHTML = item ? formatItemWithFlags(item) : '&lt;empty&gt;';
+      const dd = btn.closest('.dropdown');
+      if (dd) {
+        dd.querySelectorAll('.loadout-dd-item').forEach(el => el.classList.remove('active'));
+        if (item) {
+          dd.querySelectorAll('.loadout-dd-item').forEach(el => {
+            const match = el.getAttribute('onclick');
+            if (match && match.includes("'" + item.id + "'")) {
+              el.classList.add('active');
+            }
+          });
+        }
+      }
+    }
+  });
+  
+  updateLoadoutDisplay();
+  
+  // Show feedback
+  const count = Object.keys(loadoutSelections).length;
+  const btn = document.querySelector('button[onclick*="importLoadout"]');
+  if (btn) {
+    const orig = btn.textContent;
+    btn.textContent = `✅ Imported ${count} items`;
+    btn.disabled = true;
+    setTimeout(() => { btn.textContent = orig; btn.disabled = false; }, 2000);
+  }
+}
 </script>
 <script src="darkmists_items.js"></script>
 <script src="custom_items.js"></script>
