@@ -949,7 +949,7 @@
       <table>
         <thead><tr><th>Command</th><th>Description</th></tr></thead>
         <tbody>
-          <tr><td><code>#show {text}</code></td><td>Echo text to screen (variable expansion applies)</td></tr>
+          <tr><td><code>#show {text}</code></td><td>Echo text inline (use <code>%cr</code> for newlines; variables expand)</td></tr>
           <tr><td><code>#send {text}</code></td><td>Send text to the server</td></tr>
           <tr><td><code>#repeat {n} {cmd}</code></td><td>Run command <em>n</em> times</td></tr>
           <tr><td><code>#{n} {cmd}</code></td><td>Shorthand for <code>#repeat</code></td></tr>
@@ -1255,7 +1255,7 @@
           <tr><td><code>#COLOR {fg bg}</code></td><td>(Inside trigger) Color the entire current line</td><td>CMud</td></tr>
           <tr><td><code>#WAIT {ms}</code></td><td>Pause N ms then continue alias body</td><td>CMud</td></tr>
           <tr><td><code>#WAIT</code></td><td>Wait for next MUD line then continue alias body</td><td>CMud</td></tr>
-          <tr><td><code>#show {text}</code></td><td>Echo text (expands variables)</td><td>CMud</td></tr>
+          <tr><td><code>#show {text}</code></td><td>Echo text inline (<code>%cr</code> = newline; variables expand)</td><td>CMud</td></tr>
           <tr><td><code>#send {text}</code></td><td>Send text to server</td><td>CMud</td></tr>
           <tr><td><code>#repeat {n} {cmd}</code></td><td>Run command n times</td><td>CMud</td></tr>
           <tr><td><code>#sep [char]</code></td><td>Get or set command separator</td><td>CMud</td></tr>

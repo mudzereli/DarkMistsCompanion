@@ -329,7 +329,7 @@ Prefix every command with # (e.g. #alias, #trigger).
   Use lua showColors() in Mudlet to list all available names.
 
 ──── UTILITY ────────────────────────────────────────────────────
-  #show {text}             – echo text (variable expansion applies)
+  #show {text}             – echo text inline (%cr = newline; variables expand)
   #send {text}             – send text to server
   #repeat {n} {command}    – run command n times
   #{n} {command}           – shorthand for #repeat

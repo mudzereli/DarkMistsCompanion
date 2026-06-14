@@ -20,5 +20,10 @@
 **Clickables**: auctions, quests, and practices now stop rendering on prompt instead of relying on line counters.
 **Map**: added wall street around Sudharma and some missing doors.
 
+**DMC Patch Notes: 1.5.8**
+
+**ItemTracker**: fixed pattern offsets (off-by-one in sentence-pattern matching). Added `"you get"` and `"you drop"` patterns.
+**CMudWrapper `#SHOW`/`#SAY`**: now inline by default. Use `%cr` for newlines, leading spaces preserved.
+
 **Future Versions**
 - potential way to disable "prac" command or detect lag
