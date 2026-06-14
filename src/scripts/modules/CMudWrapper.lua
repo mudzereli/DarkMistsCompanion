@@ -1639,7 +1639,11 @@ function CMudWrapper.exec(line)
     end
 
   elseif isPrefix(verb, "SHOW") or isPrefix(verb, "SAY") then
-    cecho("\n" .. DarkmistsTheme.textTag .. applyVars(table.concat(args, " ")))
+    -- Take raw text after the verb (preserves leading spaces that parseArgs strips)
+    local text = line:sub(2):match("^%a+(.*)$") or ""
+    text = applyVars(text)
+    text = text:gsub("%%cr", "\n")
+    cecho(DarkmistsTheme.textTag .. text)
 
   elseif isPrefix(verb, "SEND") then
     send(applyVars(table.concat(args, " ")))
