@@ -532,10 +532,13 @@ function ItemTracker.findFirstItemInLine(line, allowFallback)
   -- Patterns table: {pattern, offset}
   -- Each captures the item-phrase from a sentence wrapper; end-of-phrase
   -- matching is then applied to extract the actual item name.
+  -- Offset = length of prefix text before the (.-) capture group.
   local patterns = {
     {"^you get (.-) from ", 8},
+    {"^you get (.-)%.?$", 8},
+    {"^you drop (.-)%.?$", 9},
     {"^you stop using (.-)%.?$", 15},
-    {"^you cannot remove (.-)%.?$", 19},
+    {"^you cannot remove (.-)%.?$", 18},
     {"^you hold (.-) in your hands%.?$", 9},
     {"^you put (.-) in .+%.?$", 8},
     {"^you wield (.-)%.?$", 10},
