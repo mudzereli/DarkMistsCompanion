@@ -22,7 +22,8 @@
 
 **DMC Patch Notes: 1.5.8**
 
-**ItemTracker**: fixed pattern offsets (off-by-one in sentence-pattern matching). Added `"you get"` and `"you drop"` patterns.
+**ItemTracker**: fixed pattern offsets. Added `"you get"` and `"you drop"` patterns.
+**Item Viewer**: added Damage Noun filter and column.
 **CMudWrapper `#SHOW`/`#SAY`**: now inline by default. Use `%cr` for newlines, leading spaces preserved.
 
 **Future Versions**

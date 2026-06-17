@@ -662,6 +662,19 @@ th.grouped {
                 </div>
               </div>
               <div class="form-text">Item must match all selected flags</div>
+
+              <label class="form-label small">Damage Noun</label>
+              <div class="dropdown mb-2">
+                <button class="btn btn-sm btn-outline-secondary dropdown-toggle w-100 text-start" data-bs-toggle="dropdown" id="damageNounBtn">Damage Noun</button>
+                <div class="dropdown-menu p-2" style="max-height:200px;overflow:auto">
+                  <input type="text" class="form-control form-control-sm mb-2" placeholder="Filter nouns…" id="damageNounFilterText" oninput="filterDamageNounList(this.value)">
+                  <div id="damageNounOptions"></div>
+                  <div class="dropdown-divider"></div>
+                  <button type="button" class="btn btn-sm btn-link text-primary w-100" onclick="checkAllDamageNouns()">All</button>
+                  <button type="button" class="btn btn-sm btn-link text-danger w-100" onclick="clearDamageNouns()">None</button>
+                </div>
+              </div>
+              <div class="form-text">Damage verb/noun (e.g. &quot;flaming arrow&quot;, &quot;piercing&quot;)</div>
             </div>
           </div>
         </div>
@@ -902,7 +915,7 @@ th.grouped {
         <thead>
           <tr id="groupedHeader">
             <th colspan="7" class="grouped">General</th>
-            <th colspan="3" class="grouped">Combat</th>
+            <th colspan="4" class="grouped">Combat</th>
             <th colspan="6" class="grouped">Character</th>
           </tr>
           <tr id="mainHeader">
@@ -914,6 +927,7 @@ th.grouped {
             <th data-key="material">Material<span class="sort"></span></th>
             <th data-key="wearSlot">Slot<span class="sort"></span></th>
             <th data-key="weaponType">Type<span class="sort"></span></th>
+            <th data-key="damageNoun">Noun<span class="sort"></span></th>
             <th data-key="avgDamage" class="text-end">AvgDam<span class="sort"></span></th>
             <th data-key="weaponFlags">Flags<span class="sort"></span></th>
             <th data-key="hitRoll" class="text-end">Hit<span class="sort"></span></th>
@@ -1279,6 +1293,31 @@ function filterRestrictFlagList(query) {
   });
 }
 
+/* Damage Noun helpers */
+function updateDamageNounButton() {
+  const count = document.querySelectorAll('#damageNounOptions input:checked').length;
+  $('damageNounBtn').textContent = count ? `Damage Noun (${count})` : 'Damage Noun';
+}
+
+function checkAllDamageNouns() {
+  document.querySelectorAll('#damageNounOptions input').forEach(cb => cb.checked = true);
+  updateDamageNounButton();
+  render();
+}
+
+function clearDamageNouns() {
+  document.querySelectorAll('#damageNounOptions input').forEach(cb => cb.checked = false);
+  updateDamageNounButton();
+  render();
+}
+
+function filterDamageNounList(query) {
+  const q = query.toLowerCase();
+  document.querySelectorAll('#damageNounOptions .form-check').forEach(el => {
+    el.style.display = el.textContent.toLowerCase().includes(q) ? '' : 'none';
+  });
+}
+
 function clearAllFilters() {
   // Clear text/number inputs (NOT file, NOT checkboxes/radios)
   document.querySelectorAll('input').forEach(i => {
@@ -1298,6 +1337,7 @@ function clearAllFilters() {
   document.querySelectorAll('#extraFlagOptions input').forEach(cb => cb.checked = false);
   document.querySelectorAll('#affectFlagOptions input').forEach(cb => cb.checked = false);
   document.querySelectorAll('#restrictFlagOptions input').forEach(cb => cb.checked = false);
+  document.querySelectorAll('#damageNounOptions input').forEach(cb => cb.checked = false);
   
   document.querySelectorAll('#wearSlotOptions input').forEach(cb => cb.checked = false);
   document.querySelectorAll('#typeOptions input').forEach(cb => cb.checked = false);
@@ -1481,7 +1521,8 @@ function parseItem(rawText, sourceId) {
     spellPower: rawText.match(/Affects spell power by (-?\d+)/) ? Number(RegExp.$1) : null,
     holyPower: rawText.match(/Affects holy power by (-?\d+)/) ? Number(RegExp.$1) : null,
     mana: rawText.match(/Affects mana by (-?\d+)/) ? Number(RegExp.$1) : null,
-    hp: rawText.match(/Affects hp by (-?\d+)/) ? Number(RegExp.$1) : null
+    hp: rawText.match(/Affects hp by (-?\d+)/) ? Number(RegExp.$1) : null,
+    damageNoun: rawText.match(/Damage noun is (.+?)\.?$/im)?.[1]?.trim() ?? ''
   };
   
   item.wearSlot = inferWearSlot(item);
@@ -1523,6 +1564,7 @@ function populateFilters() {
   const types = new Set();
   const weaponTypes = new Set();
   const materials = new Set();
+  const damageNouns = new Set();
   
   items.forEach(item => {
     if (item.area) areas.add(item.area);
@@ -1530,6 +1572,7 @@ function populateFilters() {
     if (item.type) types.add(item.type);
     if (item.weaponType) weaponTypes.add(item.weaponType);
     if (item.material) materials.add(item.material);
+    if (item.damageNoun) damageNouns.add(item.damageNoun);
     
     item.weaponFlags.forEach(f => wflags.add(f));
     item.extraFlags.forEach(f => xflags.add(f));
@@ -1607,10 +1650,19 @@ function populateFilters() {
     </div>
   `).join('');
   
+  // Populate damage nouns
+  $('damageNounOptions').innerHTML = [...damageNouns].sort().map(noun => `
+    <div class="form-check">
+      <input class="form-check-input" type="checkbox" value="${noun.replace(/"/g, '&quot;')}" onchange="updateDamageNounButton();render()">
+      <label class="form-check-label small">${noun}</label>
+    </div>
+  `).join('');
+
   updateWeaponFlagButton();
   updateExtraFlagButton();
   updateAffectFlagButton();
   updateRestrictFlagButton();
+  updateDamageNounButton();
   updateWearSlotButton();
   updateTypeButton();
   updateWeaponTypeButton();
@@ -1684,6 +1736,7 @@ function getItemsMatchingFiltersExceptArea() {
   const xflags = [...document.querySelectorAll('#extraFlagOptions input:checked')].map(c => c.value);
   const aflags = [...document.querySelectorAll('#affectFlagOptions input:checked')].map(c => c.value);
   const rflags = [...document.querySelectorAll('#restrictFlagOptions input:checked')].map(c => c.value);
+  const damageNouns = [...document.querySelectorAll('#damageNounOptions input:checked')].map(c => c.value);
   
   const minAvg = Number($('minAvgDmg').value || 0);
   const maxAvg = Number($('maxAvgDmg').value || Infinity);
@@ -1711,6 +1764,7 @@ function getItemsMatchingFiltersExceptArea() {
     if (xflags.length && !xflags.every(f => item.extraFlags.includes(f))) return false;
     if (aflags.length && !aflags.every(f => item.affectFlags.includes(f))) return false;
     if (rflags.length && !rflags.every(f => item.restrictFlags.includes(f))) return false;
+    if (damageNouns.length && !damageNouns.includes(item.damageNoun || '')) return false;
     if ((item.avgDamage ?? 0) < minAvg || (item.avgDamage ?? 0) > maxAvg) return false;
     if (item.level < minLvl || item.level > maxLvl) return false;
     if (minHit > 0 && (item.hitRoll ?? 0) < minHit) return false;
@@ -1753,7 +1807,7 @@ function updateTableHeaders() {
       groupedHeader.innerHTML = `
         <th colspan="1" class="grouped">Score</th>
         <th colspan="7" class="grouped">General</th>
-        <th colspan="3" class="grouped">Combat</th>
+        <th colspan="4" class="grouped">Combat</th>
         <th colspan="6" class="grouped">Character</th>
       `;
       
@@ -1775,8 +1829,8 @@ function updateTableHeaders() {
     if (scoreHeader) {
       scoreHeader.remove();
       groupedHeader.innerHTML = `
-        <th colspan="6" class="grouped">General</th>
-        <th colspan="3" class="grouped">Combat</th>
+        <th colspan="7" class="grouped">General</th>
+        <th colspan="4" class="grouped">Combat</th>
         <th colspan="6" class="grouped">Character</th>
       `;
     }
@@ -1839,6 +1893,7 @@ function render() {
   const xflags = [...document.querySelectorAll('#extraFlagOptions input:checked')].map(c => c.value);
   const aflags = [...document.querySelectorAll('#affectFlagOptions input:checked')].map(c => c.value);
   const rflags = [...document.querySelectorAll('#restrictFlagOptions input:checked')].map(c => c.value);
+  const damageNouns = [...document.querySelectorAll('#damageNounOptions input:checked')].map(c => c.value);
   
   const minAvg = Number($('minAvgDmg').value || 0);
   const maxAvg = Number($('maxAvgDmg').value || Infinity);
@@ -1869,6 +1924,7 @@ function render() {
   if (xflags.length) chips.push(`Extra Flags: ${xflags.join(', ')}`);
   if (aflags.length) chips.push(`Affect Flags: ${aflags.join(', ')}`);
   if (rflags.length) chips.push(`Restrict Flags: ${rflags.join(', ')}`);
+  if (damageNouns.length) chips.push(`Damage Noun: ${damageNouns.join(', ')}`);
   if (minHit) chips.push(`Min Hit: ${minHit}`);
   if (minDmg) chips.push(`Min Dam: ${minDmg}`);
   if (minHP) chips.push(`Min HP: ${minHP}`);
@@ -1901,6 +1957,7 @@ function render() {
     if (xflags.length && !xflags.every(f => item.extraFlags.includes(f))) return false;
     if (aflags.length && !aflags.every(f => item.affectFlags.includes(f))) return false;
     if (rflags.length && !rflags.every(f => item.restrictFlags.includes(f))) return false;
+    if (damageNouns.length && !damageNouns.includes(item.damageNoun || '')) return false;
     if ((item.avgDamage ?? 0) < minAvg || (item.avgDamage ?? 0) > maxAvg) return false;
     if (item.level < minLvl || item.level > maxLvl) return false;
 
@@ -1973,7 +2030,7 @@ function render() {
   
   // Build table rows (only for current page)
   const rows = [];
-  const colSpan = showScore ? 15 : 14;
+  const colSpan = showScore ? 16 : 15;
   
   for (let idx = startIdx; idx < endIdx; idx++) {
     const item = filtered[idx];
@@ -1990,6 +2047,7 @@ function render() {
       `<td class="meta">${item.material}</td>`,
       `<td class="meta">${item.wearSlot}</td>`,
       `<td>${item.weaponType}</td>`,
+      `<td class="meta">${item.damageNoun || ''}</td>`,
       `<td class="text-end stat">${item.avgDamage ?? ''}</td>`,
       `<td>${badgesHTML}</td>`,
       `<td class="text-end stat hit">${item.hitRoll ?? ''}</td>`,
