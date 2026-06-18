@@ -124,6 +124,12 @@ Fully interactable Mudlet world map with ~15,000 rooms.
     desc = "Track and complete Alchemy trial combinations."
   },
   
+  makearmor = {
+    title   = "Make Armor",
+    command = "makearmor",
+    desc    = "Automated make armor casting with quality checking"
+  },
+  
   ch = {
     title   = "Chat History",
     command = "ch",
@@ -432,7 +438,7 @@ local helpSections = {
   },
   {
     title = "Character",
-    keys  = { "skillups", "statroll", "es" },
+    keys  = { "skillups", "statroll", "es", "makearmor" },
   },
   {
     title = "Scripting",
@@ -1394,6 +1400,73 @@ function DarkMistsMeta.init()
       "Play sound on discover: " ..
         tostring(EnchanterAssist.playSoundOnDiscover)
     )
+  end)
+
+  -- =============================================================================
+  -- MAKE ARMOR (MAKERARMOR) COMMAND
+  -- =============================================================================
+  DarkmistsAlias.add("^makearmor(?:\\s+(.*))?$", function()
+    local c = dm_text
+    local arg = matches[2] and matches[2]:trim() or ""
+
+    if arg == "" or arg == "help" then
+      local sleeper = MakeArmor and MakeArmor.sleeper or "bedroll"
+      local container = MakeArmor and MakeArmor.container or "bag"
+      local threshold = MakeArmor and tostring(MakeArmor.defaultMinimumTotal) or "15"
+      cecho(
+        dm_header_color.."MakeArmor Module:\n\n"..
+        dm_muted.."Automated make armor casting with quality checking.\n"..
+                  "Casts make armor, identifies the result, and fades if below target.\n\n"..
+        dm_header_color.."Commands:\n"..
+        "  "..c.."makearmor <item> [5-20]     "..dm_muted.."Start making armor on <item> with optional min total. "..dm_muted.."["..dm_text.."Threshold: "..dm_good..threshold..dm_muted.."]\n"..
+        "  "..c.."makearmor status            "..dm_muted.."Show current status.\n"..
+        "  "..c.."makearmor stop              "..dm_muted.."Stop the current operation.\n"..
+        "  "..c.."makearmor sleeper <item>    "..dm_muted.."Set sleeper item. "..dm_muted.."["..dm_text.."Sleeper: "..dm_good..sleeper..dm_muted.."]\n"..
+        "  "..c.."makearmor container <item>  "..dm_muted.."Set container item. "..dm_muted.."["..dm_text.."Container: "..dm_good..container..dm_muted.."]\n"
+      )
+      return
+    end
+
+    local command, rest = arg:match("^(%S+)%s*(.*)$")
+    local cmd = (command or ""):lower()
+    rest = (rest or ""):trim()
+
+    if cmd == "status" and rest == "" then
+      if MakeArmor and MakeArmor.status then MakeArmor.status() end
+      return
+    end
+
+    if cmd == "stop" and rest == "" then
+      if MakeArmor and MakeArmor.stop then MakeArmor.stop() end
+      return
+    end
+
+    if cmd == "sleeper" then
+      if rest == "" then
+        if MakeArmor and MakeArmor._showSleeper then MakeArmor._showSleeper() end
+      else
+        if MakeArmor and MakeArmor._setSleeper then MakeArmor._setSleeper(rest) end
+      end
+      return
+    end
+
+    if cmd == "container" then
+      if rest == "" then
+        if MakeArmor and MakeArmor._showContainer then MakeArmor._showContainer() end
+      else
+        if MakeArmor and MakeArmor._setContainer then MakeArmor._setContainer(rest) end
+      end
+      return
+    end
+
+    -- Fall through: treat as make armor start
+    local target, minimumTotal
+    if MakeArmor and MakeArmor._parseStartArgs then
+      target, minimumTotal = MakeArmor._parseStartArgs(arg)
+    end
+    if MakeArmor and MakeArmor.start then
+      MakeArmor.start(target, minimumTotal)
+    end
   end)
 
 end

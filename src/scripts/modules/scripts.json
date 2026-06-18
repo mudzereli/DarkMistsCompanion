@@ -65,5 +65,11 @@
               "isActive": "yes",
               "script": "",
               "isFolder": "no"
+       },
+       {
+              "name": "DMMakeArmor",
+              "isActive": "yes",
+              "script": "",
+              "isFolder": "no"
        }
 ]

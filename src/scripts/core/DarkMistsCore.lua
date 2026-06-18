@@ -818,6 +818,7 @@ function Darkmists.Init()
   DMClickables.init()
   ButtonBar.init()
   SessionTime.init()
+  MakeArmor.init()
 
   -- CMud compatibility wrapper: persistent aliases/triggers/vars
   if CMudWrapper and CMudWrapper.load then
