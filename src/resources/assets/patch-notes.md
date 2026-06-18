@@ -24,6 +24,7 @@
 
 **ItemTracker**: fixed pattern offsets. Added `"you get"` and `"you drop"` patterns.
 **Item Viewer**: added Damage Noun filter and column.
+**Player Window**: vitals now show percentage values when estimated (% prompts), numeric values otherwise.
 **CMudWrapper `#SHOW`/`#SAY`**: now inline by default. Use `%cr` for newlines, leading spaces preserved.
 
 **Future Versions**
