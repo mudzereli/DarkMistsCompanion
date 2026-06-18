@@ -26,6 +26,7 @@
 **Item Viewer**: added Damage Noun filter and column.
 **Player Window**: vitals now show percentage values when estimated (% prompts), numeric values otherwise.
 **CMudWrapper `#SHOW`/`#SAY`**: now inline by default. Use `%cr` for newlines, leading spaces preserved.
+**MakeArmor Module**: new `makearmor` command with automated casting, quality checking, rest/recovery, and configurable threshold/sleeper/container.
 
 **Future Versions**
 - potential way to disable "prac" command or detect lag
