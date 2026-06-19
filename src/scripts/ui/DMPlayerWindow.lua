@@ -168,11 +168,19 @@ ScorePanel.refresh = function()
   )
 
   section("Vitals")
-  line("%sHP %s%-7s %s(+%d)  %sMN %s%-7s %s(+%d)  %sMV %s%-7s %s(+%d)\n",
-    bad,   value, P.vitals.hp.."/"..P.vitals.hpMax, label, P.vitals.hpRegen or 0,
-    accent,value, P.vitals.mn.."/"..P.vitals.mnMax, label, P.vitals.mnRegen or 0,
-    warn,  value, P.vitals.mv.."/"..P.vitals.mvMax, label, P.vitals.mvRegen or 0
-  )
+  if P.vitals.estimated then
+    line("%sHP %s%d%%%s  %sMN %s%d%%%s  %sMV %s%d%%\n",
+      bad,   value, P.vitals.hpPct, label,
+      accent,value, P.vitals.mnPct, label,
+      warn,  value, P.vitals.mvPct
+    )
+  else
+    line("%sHP %s%-7s %s(+%d)  %sMN %s%-7s %s(+%d)  %sMV %s%-7s %s(+%d)\n",
+      bad,   value, P.vitals.hp.."/"..P.vitals.hpMax, label, P.vitals.hpRegen or 0,
+      accent,value, P.vitals.mn.."/"..P.vitals.mnMax, label, P.vitals.mnRegen or 0,
+      warn,  value, P.vitals.mv.."/"..P.vitals.mvMax, label, P.vitals.mvRegen or 0
+    )
+  end
 
   section("Condition")
   -- Ensure format string has one placeholder per argument (8 total)

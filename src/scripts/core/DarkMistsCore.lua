@@ -91,6 +91,10 @@ Darkmists.DefaultSettings = {
   damageMessageMode = "avg",
   -- Damage Message Enabled: whether inline damage estimates are shown (persisted)
   damageMessageEnabled = true,
+  -- MakeArmor defaults
+  makearmorSleeper = "bedroll",
+  makearmorContainer = "bag",
+  makearmorDefaultMinimumTotal = 15,
   -- Cached UI Version (changing this will invalidate settings)
   layoutCacheVersion = Darkmists.LAYOUT_CACHE_VERSION,
 }
@@ -818,6 +822,7 @@ function Darkmists.Init()
   DMClickables.init()
   ButtonBar.init()
   SessionTime.init()
+  MakeArmor.init()
 
   -- CMud compatibility wrapper: persistent aliases/triggers/vars
   if CMudWrapper and CMudWrapper.load then

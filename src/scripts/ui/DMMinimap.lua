@@ -89,6 +89,7 @@ end
 --================================--
 
 function DarkMistsMiniMap.update()
+  if not DarkMistsMiniMap.header then return end
   if not map then return end
   if not map.configs then return end
   local selection = getMapSelection()

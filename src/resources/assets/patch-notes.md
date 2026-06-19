@@ -20,5 +20,13 @@
 **Clickables**: auctions, quests, and practices now stop rendering on prompt instead of relying on line counters.
 **Map**: added wall street around Sudharma and some missing doors.
 
+**DMC Patch Notes: 1.5.8**
+
+**MakeArmor Module**: new `makearmor` command with automated casting, quality checking, rest/recovery, and configurable threshold/sleeper/container. for more info see `dmc help makearmor`
+**CMudWrapper `#SHOW`/`#SAY`**: now inline by default. Use `%cr` for newlines. this is to allow more control over echoed output and match CMud functionality.
+**Player Window**: vitals now show percentage values when estimated (% prompts), numeric values otherwise. fixes a bug where unknown stat values would keep stacking higher and higher
+**Alchemy Formula Parser**: part numbers in the summary bar (1-Part through 5-Part) are now clickable links that filter both the formula table and the material heatmap to show only formulas with that many materials.
+**Clickable Items**: fixed pattern offsets and added some additional patterns for clickable items.
+
 **Future Versions**
 - potential way to disable "prac" command or detect lag

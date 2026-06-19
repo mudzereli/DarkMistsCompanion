@@ -214,7 +214,7 @@
       <div class="tip">
         <strong>Quick Start:</strong> Type <code>dmc</code> in-game at any time to see the main
         help index. Use <code>dmc help &lt;topic&gt;</code> for in-depth help on any module.<br>
-        Available topics: <code>es</code> &nbsp;·&nbsp; <code>walk</code> &nbsp;·&nbsp;
+        Available topics: <code>es</code> &nbsp;·&nbsp; <code>makearmor</code> &nbsp;·&nbsp; <code>walk</code> &nbsp;·&nbsp;
         <code>skillups</code> &nbsp;·&nbsp; <code>sb</code> &nbsp;·&nbsp;
         <code>ch</code> &nbsp;·&nbsp; <code>who</code> &nbsp;·&nbsp;
         <code>affects</code> &nbsp;·&nbsp; <code>infobox</code> &nbsp;·&nbsp;
@@ -481,7 +481,7 @@
         <tbody>
           <tr>
             <td>Modules</td>
-            <td>Walk, Enchant Assist, Skill Ups, Item Tracker</td>
+            <td>Walk, Enchant Assist, Make Armor, Skill Ups, Item Tracker</td>
           </tr>
           <tr>
             <td>Settings</td>
@@ -617,6 +617,29 @@
           <tr><td><code>es set order seq|rand</code></td><td>Test combinations in deterministic sequential order (<code>seq</code>) or randomly (<code>rand</code>) — default: <code>rand</code></td></tr>
           <tr><td><code>es sound</code></td><td>Toggle the audio alert played when a formula is discovered</td></tr>
           <tr><td><code>es enable</code> / <code>es disable</code></td><td>Enable or disable the module entirely</td></tr>
+        </tbody>
+      </table>
+
+
+      <!-- ·· Make Armor ································ -->
+      <h2 id="util-makearmor">Make Armor</h2>
+
+      <p>
+        Automated make armor casting with quality checking. Casts make armor on an item,
+        identifies the result, and fades if the total AC is below a configurable threshold.
+        Manages resting automatically when mana is low.
+      </p>
+
+      <h3 id="util-makearmor-commands">Commands</h3>
+      <table>
+        <thead><tr><th>Command</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>makearmor</code></td><td>Show MakeArmor help</td></tr>
+          <tr><td><code>makearmor &lt;item&gt; [5-20]</code></td><td>Start making armor on &lt;item&gt; with optional minimum total AC</td></tr>
+          <tr><td><code>makearmor status</code></td><td>Show current status and step</td></tr>
+          <tr><td><code>makearmor stop</code></td><td>Stop the current operation</td></tr>
+          <tr><td><code>makearmor sleeper &lt;item&gt;</code></td><td>Set which sleeping item to use (default: <code>bedroll</code>)</td></tr>
+          <tr><td><code>makearmor container &lt;item&gt;</code></td><td>Set container that holds the sleeper (default: <code>bag</code>)</td></tr>
         </tbody>
       </table>
 
@@ -949,7 +972,7 @@
       <table>
         <thead><tr><th>Command</th><th>Description</th></tr></thead>
         <tbody>
-          <tr><td><code>#show {text}</code></td><td>Echo text to screen (variable expansion applies)</td></tr>
+          <tr><td><code>#show {text}</code></td><td>Echo text inline (use <code>%cr</code> for newlines; variables expand)</td></tr>
           <tr><td><code>#send {text}</code></td><td>Send text to the server</td></tr>
           <tr><td><code>#repeat {n} {cmd}</code></td><td>Run command <em>n</em> times</td></tr>
           <tr><td><code>#{n} {cmd}</code></td><td>Shorthand for <code>#repeat</code></td></tr>
@@ -1222,6 +1245,13 @@
           <tr><td><code>skillups reset</code></td><td>Clear history</td><td>Skill Ups</td></tr>
           <!-- Item Tracker -->
           <tr><td><code>dmid &lt;item name&gt;</code></td><td>Search item database</td><td>Item Tracker</td></tr>
+          <!-- Make Armor -->
+          <tr><td><code>makearmor</code></td><td>MakeArmor help</td><td>Make Armor</td></tr>
+          <tr><td><code>makearmor &lt;item&gt; [5-20]</code></td><td>Start making armor on target item</td><td>Make Armor</td></tr>
+          <tr><td><code>makearmor status</code></td><td>Show current status</td><td>Make Armor</td></tr>
+          <tr><td><code>makearmor stop</code></td><td>Stop current operation</td><td>Make Armor</td></tr>
+          <tr><td><code>makearmor sleeper &lt;item&gt;</code></td><td>Set sleep item</td><td>Make Armor</td></tr>
+          <tr><td><code>makearmor container &lt;item&gt;</code></td><td>Set container for sleeper</td><td>Make Armor</td></tr>
           <!-- CMud Wrapper -->
           <tr><td><code>#alias {name} {body}</code></td><td>Define a persistent alias</td><td>CMud</td></tr>
           <tr><td><code>#alias {name} {body} {class}</code></td><td>Define alias with inline class</td><td>CMud</td></tr>
@@ -1255,7 +1285,7 @@
           <tr><td><code>#COLOR {fg bg}</code></td><td>(Inside trigger) Color the entire current line</td><td>CMud</td></tr>
           <tr><td><code>#WAIT {ms}</code></td><td>Pause N ms then continue alias body</td><td>CMud</td></tr>
           <tr><td><code>#WAIT</code></td><td>Wait for next MUD line then continue alias body</td><td>CMud</td></tr>
-          <tr><td><code>#show {text}</code></td><td>Echo text (expands variables)</td><td>CMud</td></tr>
+          <tr><td><code>#show {text}</code></td><td>Echo text inline (<code>%cr</code> = newline; variables expand)</td><td>CMud</td></tr>
           <tr><td><code>#send {text}</code></td><td>Send text to server</td><td>CMud</td></tr>
           <tr><td><code>#repeat {n} {cmd}</code></td><td>Run command n times</td><td>CMud</td></tr>
           <tr><td><code>#sep [char]</code></td><td>Get or set command separator</td><td>CMud</td></tr>

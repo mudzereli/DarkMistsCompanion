@@ -129,6 +129,21 @@ input[type="file"] {
   font-size: 13px;
 }
 
+.part-link {
+  cursor: pointer;
+  color: var(--is-accent);
+  text-decoration: none;
+  transition: color 0.15s;
+}
+.part-link:hover {
+  color: #fff;
+  text-decoration: underline;
+}
+.part-link.active {
+  color: #fff;
+  text-decoration: underline;
+}
+
 /* ---------- table ---------- */
 
 table {
@@ -296,11 +311,6 @@ td:last-child    { color: var(--is-muted-dim); font-style: italic; }
 </div>
 
 <div id="summary" style="margin-top:15px; font-weight:bold;">
-    1-Part: 0 |
-    2-Part: 0 |
-    3-Part: 0 |
-    4-Part: 0 |
-    5-Part: 0
 </div>
 
 <table id="table">
@@ -325,6 +335,7 @@ const STAT_COLUMNS = [
 let materialCounts = {}
 let allStats = new Set()
 let filterTimer = null
+let partFilter = null
 
 async function exportSQLite() {
     const SQL = await initSqlJs({
@@ -563,12 +574,12 @@ function updateSummaryFromTable() {
         if (n >= 1 && n <= 5) partCounts[n]++
     })
 
-    document.getElementById("summary").innerText =
-        `1-Part: ${partCounts[1]} | ` +
-        `2-Part: ${partCounts[2]} | ` +
-        `3-Part: ${partCounts[3]} | ` +
-        `4-Part: ${partCounts[4]} | ` +
-        `5-Part: ${partCounts[5]}`
+    const parts = [1,2,3,4,5].map(n => {
+        const active = partFilter === n ? " active" : ""
+        return `<a class="part-link${active}" onclick="setPartFilter(${n})">${n}-Part: ${partCounts[n]}</a>`
+    })
+
+    document.getElementById("summary").innerHTML = parts.join(" | ")
 }
 
 function openSQLiteImport() {
@@ -785,6 +796,10 @@ function filterTable() {
 
             }
 
+        }
+
+        if (show && partFilter !== null) {
+          show = (row._materialCount || 0) === partFilter
         }
 
         row.style.display = show ? "" : "none"
@@ -1008,10 +1023,34 @@ function sortTable(columnIndex) {
 }
 
 
+function setPartFilter(n) {
+    partFilter = partFilter === n ? null : n
+    filterTable()
+    updateSummaryFromTable()
+    rebuildMaterialCounts()
+    renderHeatmap()
+}
+
+function rebuildMaterialCounts() {
+    materialCounts = {}
+    document.querySelectorAll("#table tbody tr").forEach(row => {
+        if (row.style.display === "none") return
+        const materials = (row.cells[1].innerText || "")
+            .split(/[,\s]+/)
+            .map(m => m.trim())
+            .filter(Boolean)
+        materials.forEach(mat => {
+            const key = mat.toLowerCase()
+            materialCounts[key] = (materialCounts[key] || 0) + 1
+        })
+    })
+}
+
 function clearAll() {
+    partFilter = null
     document.querySelector("#table tbody").innerHTML = "";
     document.getElementById("input").value = "";
-    document.getElementById("summary").innerText =
+    document.getElementById("summary").innerHTML =
         "1-Part: 0 | 2-Part: 0 | 3-Part: 0 | 4-Part: 0 | 5-Part: 0";
     materialCounts = {}
     document.getElementById("heatmap").innerHTML = ""
