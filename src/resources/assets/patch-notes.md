@@ -27,6 +27,7 @@
 **Player Window**: vitals now show percentage values when estimated (% prompts), numeric values otherwise.
 **CMudWrapper `#SHOW`/`#SAY`**: now inline by default. Use `%cr` for newlines, leading spaces preserved.
 **MakeArmor Module**: new `makearmor` command with automated casting, quality checking, rest/recovery, and configurable threshold/sleeper/container.
+**Alchemy Formula Parser**: part numbers in the summary bar (1-Part through 5-Part) are now clickable links that filter both the formula table and the material heatmap to show only formulas with that many materials.
 
 **Future Versions**
 - potential way to disable "prac" command or detect lag

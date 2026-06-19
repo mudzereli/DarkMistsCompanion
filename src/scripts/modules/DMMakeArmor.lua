@@ -197,6 +197,8 @@ function MakeArmor._setSleeper(item)
   end
 
   MakeArmor.sleeper = item
+  Darkmists.GlobalSettings.makearmorSleeper = item
+  Darkmists.SaveSettings()
   ma_log(ma_good .. "Sleeper set to " .. ma_text .. item)
 end
 
@@ -212,10 +214,17 @@ function MakeArmor._setContainer(item)
   end
 
   MakeArmor.container = item
+  Darkmists.GlobalSettings.makearmorContainer = item
+  Darkmists.SaveSettings()
   ma_log(ma_good .. "Container set to " .. ma_text .. item)
 end
 
 function MakeArmor.init()
+  -- Load persisted settings with fallbacks to current defaults
+  MakeArmor.sleeper = Darkmists.GlobalSettings.makearmorSleeper or MakeArmor.sleeper
+  MakeArmor.container = Darkmists.GlobalSettings.makearmorContainer or MakeArmor.container
+  MakeArmor.defaultMinimumTotal = Darkmists.GlobalSettings.makearmorDefaultMinimumTotal or MakeArmor.defaultMinimumTotal
+
   DarkmistsEvents.add("MakeArmor.NewLine", "dmapi.core.line", function(_, data)
     if not MakeArmor.active then
       return
