@@ -29,4 +29,7 @@
 **Clickable Items**: fixed pattern offsets and added some additional patterns for clickable items.
 
 **Future Versions**
+- dont update affects window if we're on the "skipped affects" page
+- ensure all modules log on load/important events
+- export from alchemy-formula-parser as ea_data.lua
 - potential way to disable "prac" command or detect lag
