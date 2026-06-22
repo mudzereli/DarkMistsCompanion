@@ -28,8 +28,12 @@
 **Alchemy Formula Parser**: part numbers in the summary bar (1-Part through 5-Part) are now clickable links that filter both the formula table and the material heatmap to show only formulas with that many materials.
 **Clickable Items**: fixed pattern offsets and added some additional patterns for clickable items.
 
+**DMC Patch Notes: 1.5.9**
+
+**CMudWrapper**: fixed color bleeding to subsequent lines on Mudlet 4.21 when using `#COLOR`
+**Logger**: all framework modules now log on load (DarkMistsMeta, DMAlertWindow, DMClickables, DMSessionTime, DMStatRoller, DMWalker)
+
 **Future Versions**
 - dont update affects window if we're on the "skipped affects" page
-- ensure all modules log on load/important events
 - export from alchemy-formula-parser as ea_data.lua
 - potential way to disable "prac" command or detect lag
