@@ -72,6 +72,17 @@ textarea:focus {
   border-color: var(--is-line-strong);
 }
 
+/* ---------- inline code (Discord-style) ---------- */
+
+code {
+  background: rgba(255, 255, 255, 0.06);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: Consolas, "Courier New", monospace;
+  font-size: 0.92em;
+  color: #d4a0ff;
+}
+
 /* ---------- buttons ---------- */
 
 button {
@@ -287,11 +298,37 @@ td:last-child    { color: var(--is-muted-dim); font-style: italic; }
     <button onclick="clearAll()">Clear</button>
     <button onclick="openSQLiteImport()">Import SQLite</button>
     <button onclick="exportSQLite()">Export SQLite</button>
+    <button onclick="exportEAData()">Export ea_data.lua</button>
+    <button onclick="document.getElementById('eaDataImportInput').click()">Import ea_data.lua</button>
+    <a href="#" onclick="toggleHelp();return false" style="color:var(--is-muted);font-size:12px;margin-left:8px;text-decoration:underline;text-decoration-style:dotted;text-underline-offset:3px" onmouseover="this.style.color='var(--is-accent)'" onmouseout="this.style.color='var(--is-muted)'">usage help</a>
+    <input id="eaDataImportInput"
+           type="file"
+           accept=".lua,text/plain"
+           style="display:none"
+           onchange="handleEADataImport(event)">
     <input id="sqliteImportInput"
            type="file"
            accept=".sqlite,.sqlite3,.db,application/octet-stream"
            style="display:none"
            onchange="handleSQLiteImport(event)">
+</div>
+
+<div id="helpPanel" style="display:none;margin:10px 0 18px 0;padding:14px 18px;background:var(--is-panel-2);border:1px solid var(--is-line-strong);border-radius:8px;font-size:13px;line-height:1.6">
+  <b style="color:var(--is-accent)">ea_data.lua — How to use</b><br><br>
+
+  <b style="color:#7fd4ff">Finding your Mudlet home directory</b><br>
+  In Mudlet, run: <code>lua getMudletHomeDir()</code> &rarr; it prints the folder path. That's where <code>ea_data.lua</code> needs to live.<br><br>
+
+  <b style="color:#7fd4ff">New character, inherited alchemy — no trials yet</b><br>
+  1. Paste <code>alchemy list 1</code> – <code>alchemy list 5</code> output above, click <b>Parse</b><br>
+  2. Click <b>Export ea_data.lua</b> &rarr; save the file as <code>ea_data.lua</code> in your Mudlet home dir<br><br>
+
+  <b style="color:#7fd4ff">New character, inherited alchemy — already did some trials</b><br>
+  1. Click <b>Import ea_data.lua</b> &rarr; browse to your Mudlet home dir and load your existing <code>ea_data.lua</code><br>
+  2. Paste <code>alchemy list</code> output above, click <b>Parse</b> (new formulas merge in)<br>
+  3. Click <b>Export ea_data.lua</b> &rarr; save back to your Mudlet home dir, overwriting the old file<br><br>
+
+  <span style="color:var(--is-muted)">The exported file goes to your Mudlet home directory so DMEnchanterAssist can find it.</span>
 </div>
 
 <div id="heatmap">
@@ -310,8 +347,10 @@ td:last-child    { color: var(--is-muted-dim); font-style: italic; }
     Examples: hp, hp>=12, str>=2, fly, hp>=5 str>=2
 </div>
 
-<div id="summary" style="margin-top:15px; font-weight:bold;">
+<div id="summary" style="margin-top:15px; font-weight:bold; display:none;">
 </div>
+
+<div id="status" style="font-size:13px; color:var(--is-muted); margin-top:6px; min-height:1.2em;"></div>
 
 <table id="table">
 <thead>
@@ -336,6 +375,7 @@ let materialCounts = {}
 let allStats = new Set()
 let filterTimer = null
 let partFilter = null
+let existingEAData = null
 
 async function exportSQLite() {
     const SQL = await initSqlJs({
@@ -420,6 +460,11 @@ function toggleHeatmap() {
         heatmap.style.display = "none"
         button.innerText = "Show Heatmap"
     }
+}
+
+function toggleHelp() {
+    const panel = document.getElementById("helpPanel")
+    panel.style.display = panel.style.display === "none" ? "block" : "none"
 }
 
 function buildStatColumns() {
@@ -566,6 +611,14 @@ function insertFormulaRow(formula, existingNames) {
 
 function updateSummaryFromTable() {
     const rows = document.querySelectorAll("#table tbody tr")
+    const el = document.getElementById("summary")
+
+    if (rows.length === 0) {
+      el.style.display = "none"
+      return
+    }
+    el.style.display = "inline-block"
+
     const partCounts = {1:0,2:0,3:0,4:0,5:0}
 
     rows.forEach(row => {
@@ -579,7 +632,7 @@ function updateSummaryFromTable() {
         return `<a class="part-link${active}" onclick="setPartFilter(${n})">${n}-Part: ${partCounts[n]}</a>`
     })
 
-    document.getElementById("summary").innerHTML = parts.join(" | ")
+    el.innerHTML = parts.join(" | ")
 }
 
 function openSQLiteImport() {
@@ -1046,12 +1099,98 @@ function rebuildMaterialCounts() {
     })
 }
 
+function handleEADataImport(event) {
+    const file = event?.target?.files?.[0]
+    if (!file) return
+
+    const reader = new FileReader()
+    reader.onload = function(evt) {
+        const content = evt.target.result
+        existingEAData = new Set()
+
+        // Parse attempted keys from the existing file format:
+        // [ [[5:adamantite|bone|...]] ] = true,
+        const regex = /\[ \[\[([^\]]+)\]\] \] = true,/g
+        let match
+        while ((match = regex.exec(content)) !== null) {
+            existingEAData.add(match[1])
+        }
+
+        const status = document.getElementById("status")
+        if (status) {
+            status.className = "ok"
+            status.innerText = "Imported " + existingEAData.size + " existing attempted combinations from " + file.name
+        }
+    }
+    reader.readAsText(file)
+
+    // Reset the input so the same file can be re-imported
+    event.target.value = ""
+}
+
+function exportEAData() {
+    const rows = document.querySelectorAll("#table tbody tr")
+    const attempted = new Set()
+
+    // Collect from parsed formulas
+    const parserCount = rows.length
+    rows.forEach(row => {
+        const mats = (row.cells[1].innerText || "")
+            .split(/[,\s]+/)
+            .map(m => m.trim())
+            .filter(Boolean)
+            .sort()
+
+        if (mats.length < 1 || mats.length > 5) return
+
+        const key = mats.length + ":" + mats.join("|")
+        attempted.add(key)
+    })
+
+    // Merge with existing imported data
+    if (existingEAData) {
+        existingEAData.forEach(key => attempted.add(key))
+    }
+
+    const keys = Array.from(attempted).sort()
+
+    let attemptedBlock = "{"
+    for (const key of keys) {
+      attemptedBlock += '[ [[' + key + ']] ] = true,'
+    }
+    attemptedBlock += "}"
+
+    const luaLines = []
+    luaLines.push("return {")
+    luaLines.push('  { [ [[missing]] ] = {2}, [ [[config]] ] = {3}, [ [[attempted]] ] = {4} },')
+    luaLines.push("  {},")
+    luaLines.push('  { [ [[sleeper]] ] = [[bedroll]], [ [[sleepType]] ] = 1, [ [[partCount]] ] = 4, [ [[drainItem]] ] = [[potion]], [ [[container]] ] = [[backpack]] },')
+    luaLines.push("  " + attemptedBlock + ",")
+    luaLines.push("}")
+
+    const output = luaLines.join("\n")
+
+    const blob = new Blob([output], {type: "text/plain"})
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement("a")
+    a.href = url
+    a.download = "ea_data.lua"
+    a.click()
+    URL.revokeObjectURL(url)
+
+    const status = document.getElementById("status")
+    if (status) {
+        status.className = "ok"
+        status.innerText = "Exported " + keys.length + " total attempted combinations to ea_data.lua"
+    }
+}
+
 function clearAll() {
     partFilter = null
     document.querySelector("#table tbody").innerHTML = "";
     document.getElementById("input").value = "";
-    document.getElementById("summary").innerHTML =
-        "1-Part: 0 | 2-Part: 0 | 3-Part: 0 | 4-Part: 0 | 5-Part: 0";
+    document.getElementById("summary").style.display = "none";
+    document.getElementById("summary").innerHTML = "";
     materialCounts = {}
     document.getElementById("heatmap").innerHTML = ""
 }
