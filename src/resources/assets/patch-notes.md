@@ -34,6 +34,7 @@
 **Logger**: all framework modules now log on load (DarkMistsMeta, DMAlertWindow, DMClickables, DMSessionTime, DMStatRoller, DMWalker)
 **Alchemy Formula Parser**: <code>ea_data.lua</code> import, export, and merge: inherited characters can import their existing trial data, paste new <code>alchemy list</code> output, and export the merged result to their Mudlet home dir for Enchanter Assist to use
 **Affects Window**: when browsing ignored affects, display refresh is paused to allow easier scrolling/viewing.
+**Clickable Items**: fixed pattern offsets and added some additional patterns for clickable items.
 
 **Future Versions**
 - potential way to disable "prac" command or detect lag
