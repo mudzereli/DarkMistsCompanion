@@ -32,8 +32,8 @@
 
 **CMudWrapper**: fixed color bleeding to subsequent lines on Mudlet 4.21 when using `#COLOR`
 **Logger**: all framework modules now log on load (DarkMistsMeta, DMAlertWindow, DMClickables, DMSessionTime, DMStatRoller, DMWalker)
+**Alchemy Formula Parser**: <code>ea_data.lua</code> import, export, and merge: inherited characters can import their existing trial data, paste new <code>alchemy list</code> output, and export the merged result to their Mudlet home dir for Enchanter Assist to use
+**Affects Window**: when browsing ignored affects, display refresh is paused to allow easier scrolling/viewing.
 
 **Future Versions**
-- dont update affects window if we're on the "skipped affects" page
-- export from alchemy-formula-parser as ea_data.lua
 - potential way to disable "prac" command or detect lag

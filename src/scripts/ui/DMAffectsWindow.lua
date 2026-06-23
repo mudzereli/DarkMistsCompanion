@@ -471,7 +471,7 @@ function AffectsWindow.refreshDisplay()
   console:clear()
   AffectsWindow.displayHeader()
 
-  -- Ignored-management mode: replace the affects list entirely
+  -- Ignored-management mode: render once when toggled
   if AffectsWindow.showIgnored then
     local names = {}
     for name in pairs(AffectsWindow.ignoreSet) do
@@ -626,7 +626,13 @@ function AffectsWindow.startAgeTimer()
   AffectsWindow.ageTimer = DarkmistsTimer.add(
     "AffectsWindow.AgeTimer",
     AffectsWindow.config.updateInterval,
-    AffectsWindow.refreshDisplay,
+    function()
+      -- Don't clear/redraw while viewing the ignored-affects page,
+      -- so the user can scroll freely. Ages still tick in the background.
+      if not AffectsWindow.showIgnored then
+        AffectsWindow.refreshDisplay()
+      end
+    end,
     true
   )
 end
