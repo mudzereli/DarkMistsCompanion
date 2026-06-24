@@ -263,13 +263,15 @@ const dmapi = {
     combat: {
       title: "Combat Events",
       events: [
-        { name: "dmapi.player.combat.start",    desc: "Combat started",         dir: "in"  },
-        { name: "dmapi.player.combat.mobstate", desc: "Mob condition updated",  dir: "in"  },
-        { name: "dmapi.player.combat.round",    desc: "Timed combat round",     dir: "in"  },
-        { name: "dmapi.player.combat.end",      desc: "Combat ended",           dir: "in"  },
-        { name: "dmapi.player.combat.kill",     desc: "Mob killed",             dir: "in"  },
-        { name: "dmapi.player.combat.disarmed", desc: "Player disarmed",        dir: "in"  },
-        { name: "dmapi.player.combat.flee",     desc: "Player fled combat",     dir: "in"  },
+        { name: "dmapi.player.combat.start",           desc: "Combat started",         dir: "in"  },
+        { name: "dmapi.player.combat.mobstate",        desc: "Mob condition updated",  dir: "in"  },
+        { name: "dmapi.player.combat.round",           desc: "Timed combat round",     dir: "in"  },
+        { name: "dmapi.player.combat.end",             desc: "Combat ended",           dir: "in"  },
+        { name: "dmapi.player.combat.kill",            desc: "Mob killed",             dir: "in"  },
+        { name: "dmapi.player.combat.disarmed",        desc: "Player disarmed",        dir: "in"  },
+        { name: "dmapi.player.combat.flee",            desc: "Player fled combat",     dir: "in"  },
+        { name: "dmapi.player.combat.damage.outgoing", desc: "Player dealt damage",    dir: "out" },
+        { name: "dmapi.player.combat.damage.incoming", desc: "Player took damage",     dir: "in"  },
       ]
     },
 
@@ -378,6 +380,9 @@ const eventPayloads = {
   "dmapi.player.combat.kill": "{\n  mob: string,\n  kills: number,\n  line: string\n}",
   "dmapi.player.combat.disarmed": "{\n  disarmer: string,\n  line: string\n}",
   "dmapi.player.combat.flee": "{\n  line: string\n}",
+
+  "dmapi.player.combat.damage.outgoing": "{\n  direction: \"outgoing\",\n  verb: string,\n  attack: string,\n  target: string,\n  minDamage: number,\n  maxDamage: number,\n  avgDamage: number,\n  actualDamage?: number,\n  line: string\n}",
+  "dmapi.player.combat.damage.incoming": "{\n  direction: \"incoming\",\n  verb: string,\n  attack: string,\n  attacker: string,\n  minDamage: number,\n  maxDamage: number,\n  avgDamage: number,\n  actualDamage?: number,\n  line: string\n}",
 
   "dmapi.communication": "{\n  type: string,\n  sender?: string,\n  receiver?: string,\n  message?: string,\n  emote?: string,\n  line: string\n  // ...plus any other fields from the specific sub-event\n}",
   "dmapi.communication.emotedsayreceived": "{\n  sender: string,\n  emote: string,\n  message: string,\n  line: string\n}",

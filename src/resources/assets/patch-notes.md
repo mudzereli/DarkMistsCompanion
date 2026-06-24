@@ -35,6 +35,9 @@
 **Alchemy Formula Parser**: <code>ea_data.lua</code> import, export, and merge: inherited characters can import their existing trial data, paste new <code>alchemy list</code> output, and export the merged result to their Mudlet home dir for Enchanter Assist to use
 **Affects Window**: when browsing ignored affects, display refresh is paused to allow easier scrolling/viewing.
 **Clickable Items**: fixed pattern offsets and added some additional patterns for clickable items.
+**Custom Items**: includes items that were reworked for haste and Sudharma items that were rebalanced.
+**Damage Events**: `dmapi.player.combat.damage.outgoing` and `dmapi.player.combat.damage.incoming` - new DMAPI events for tracking combat damage.
 
 **Future Versions**
+- check map link to Gul'Doran City
 - potential way to disable "prac" command or detect lag
