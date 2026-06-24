@@ -823,6 +823,7 @@ function Darkmists.Init()
   ButtonBar.init()
   SessionTime.init()
   MakeArmor.init()
+  DamageMessages.init()
 
   -- CMud compatibility wrapper: persistent aliases/triggers/vars
   if CMudWrapper and CMudWrapper.load then
