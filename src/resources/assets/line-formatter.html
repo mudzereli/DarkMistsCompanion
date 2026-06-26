@@ -183,6 +183,7 @@ input[type="text"]:focus {
     <input type="text" id="linePrefix" class="wide" placeholder="e.g. desc + ">
   </div>
   <button id="formatBtn">Format</button>
+  <button id="removeNLBtn">Remove newlines</button>
   <button id="copyBtn">Copy to clipboard</button>
   <span id="copyFeedback" class="copy-feedback">✓ Copied</span>
 </div>
@@ -202,9 +203,10 @@ const inputEl   = document.getElementById('inputText');
 const outputEl  = document.getElementById('outputText');
 const wrapEl    = document.getElementById('wrapLength');
 const prefixEl  = document.getElementById('linePrefix');
-const formatBtn = document.getElementById('formatBtn');
-const copyBtn   = document.getElementById('copyBtn');
-const copyFb    = document.getElementById('copyFeedback');
+const formatBtn   = document.getElementById('formatBtn');
+const removeNLBtn = document.getElementById('removeNLBtn');
+const copyBtn     = document.getElementById('copyBtn');
+const copyFb      = document.getElementById('copyFeedback');
 const inStats   = document.getElementById('inputStats');
 const outStats  = document.getElementById('outputStats');
 
@@ -221,8 +223,8 @@ function formatText() {
       continue;
     }
 
-    // Wrap the line
-    let remaining = line;
+    // Strip leading whitespace and collapse double spaces
+    let remaining = line.replace(/^ +/, '').replace(/  +/g, ' ');
     while (remaining.length > 0) {
       if (remaining.length <= wrap) {
         result.push(prefix + remaining);
@@ -265,10 +267,16 @@ function copyOutput() {
 }
 
 // Auto-format on input change
+function stripNewlines() {
+  inputEl.value = inputEl.value.replaceAll('\n', ' ').replaceAll('\r', '');
+  formatText();
+}
+
 inputEl.addEventListener('input', formatText);
 wrapEl.addEventListener('input', formatText);
 prefixEl.addEventListener('input', formatText);
 formatBtn.addEventListener('click', formatText);
+removeNLBtn.addEventListener('click', stripNewlines);
 copyBtn.addEventListener('click', copyOutput);
 
 // Initial format
