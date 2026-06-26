@@ -28,5 +28,18 @@
 **Alchemy Formula Parser**: part numbers in the summary bar (1-Part through 5-Part) are now clickable links that filter both the formula table and the material heatmap to show only formulas with that many materials.
 **Clickable Items**: fixed pattern offsets and added some additional patterns for clickable items.
 
+**DMC Patch Notes: 1.5.9**
+
+**Alchemy Formula Parser**: <code>ea_data.lua</code> import, export, and merge: inherited characters can import their existing trial data, paste new <code>alchemy list</code> output, and export the merged result to their Mudlet home dir for Enchanter Assist to use
+**Clickable Items**: includes some items that were reworked for haste and Sudharma items that were rebalanced.
+**Line Formatter**: "Remove newlines" button, auto-strip leading whitespace per line, and collapse double spaces on format. These options are useful if you are copying an old description to make edits to it.
+**Map**: add updated room link in Magic Forest
+**Clickable Items**: added some additional patterns for clickable items.
+**Affects Window**: when browsing ignored affects, display refresh is paused to allow easier scrolling/viewing.
+**CMudWrapper**: fixed color bleeding to subsequent lines on Mudlet 4.21 when using `#COLOR`
+**Logger**: all framework modules now log on load (DarkMistsMeta, DMAlertWindow, DMClickables, DMSessionTime, DMStatRoller, DMWalker)
+**Damage Events**: `dmapi.player.combat.damage.outgoing` and `dmapi.player.combat.damage.incoming` and `dmapi.player.combat.damage.other` - new DMAPI events for tracking combat damage. DMC ShowDMG now uses these events, but other than that there should be no visual changes.
+
 **Future Versions**
+- check map link to Gul'Doran City
 - potential way to disable "prac" command or detect lag

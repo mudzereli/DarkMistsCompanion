@@ -419,6 +419,8 @@ function StatRoller.init()
 
   StatRoller.enabled = true
   StatRoller._initialized = true
+
+  DMLogger.log(pluginName, "Initialized")
 end
 
 function StatRoller.destroy()

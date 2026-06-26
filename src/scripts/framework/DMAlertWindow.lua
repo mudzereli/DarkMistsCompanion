@@ -67,6 +67,10 @@ local function ensure_init()
   hideWindow(panel.body)
 
   panel.inited = true
+
+  if DMLogger then
+    DMLogger.log("DMAlertWindow", "Loaded!")
+  end
 end
 
 function DMAlertWindow.Show(title, renderFunc, opts)

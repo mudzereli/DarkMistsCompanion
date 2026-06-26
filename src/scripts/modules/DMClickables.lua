@@ -449,4 +449,8 @@ function DMClickables.init()
   DarkmistsEvents.add("DMClickables.VaultNumbers", "dmapi.core.line", function()
     DMClickables.ClickableVaultNumbers()
   end)
+
+  if DMLogger then
+    DMLogger.log("DMClickables", "Loaded!")
+  end
 end

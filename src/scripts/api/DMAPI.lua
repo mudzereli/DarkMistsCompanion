@@ -40,7 +40,7 @@ dmapi = {
   settings = {
     themeColor = "<dark_slate_blue>",
     debugLevel = 0,
-    combatRoundInterval = 3.5,
+    combatRoundInterval = 3,
     promptTimeout = 3.0  -- Time before considering prompt stale
   }
 }
@@ -183,7 +183,9 @@ dmapi.player = {
     targetHpPct = 0,
     lastActivity = getEpoch(),
     kills = 0,
-    deaths = 0
+    deaths = 0,
+    damageDealt = 0,
+    damageTaken = 0
   },
   
   -- Extensible state for custom modules
@@ -579,6 +581,114 @@ function dmapi.parsers.mobCondition(line)
   return nil
 end
 
+--- Parse damage verb lines to extract combat damage information
+-- Handles both outgoing damage (player attacking) and incoming damage (being attacked).
+-- Uses the DMConstants.DAMAGE_VERBS lookup table to estimate damage ranges.
+-- @param line string Raw MUD line
+-- @return table|nil Damage info or nil if no damage verb matched
+function dmapi.parsers.damageVerb(line)
+  if not line or line == "" then return nil end
+
+  -- Build verb list sorted longest-first so compound verbs like
+  -- "*** DEMOLISHES ***" match before substrings like "DEMOLISHES"
+  local verbList = {}
+  for verb in pairs(DMConstants.DAMAGE_VERBS) do
+    table.insert(verbList, verb)
+  end
+  table.sort(verbList, function(a, b) return #a > #b end)
+
+  for _, verb in ipairs(verbList) do
+    local verbStart, verbEnd = line:find(verb, 1, true)
+    if verbStart then
+      local beforeVerb = line:sub(1, verbStart - 1)
+      local afterVerb  = line:sub(verbEnd + 1)
+      local range      = DMConstants.DAMAGE_VERBS[verb]
+
+      -- OUTGOING: "Your <attack> <verb> <target>[. | (<num>).]"
+      -- e.g., "Your pound scratches a centaur warrior student."
+      --       "Your pound scratches a centaur warrior student. (4)"
+      local attack = beforeVerb:match("^Your%s+(.+)$")
+      if attack then
+        local actualDamage
+        local target, dmg = afterVerb:match("^%s+(.-)%s%((%d+)%)%s*%.?$")
+        if target then
+          actualDamage = tonumber(dmg)
+        else
+          target = afterVerb:match("^%s+(.-)[%.!]$")
+        end
+        if target then
+          target = target:gsub("%s+$", "")
+          return {
+            direction = "outgoing",
+            verb = verb,
+            attack = attack,
+            target = target,
+            minDamage = range[1],
+            maxDamage = range[2],
+            avgDamage = math.ceil((range[1] + range[2]) / 2),
+            actualDamage = actualDamage,
+            line = line
+          }
+        end
+      end
+
+      -- INCOMING: "<attacker>'s <attack> <verb> you[. | (<num>).]"
+      -- e.g., "A centaur warrior student's slash misses you."
+      --       "A centaur warrior student's slash wounds you."
+      local attackerName, attackType = beforeVerb:match("^(.+)'s%s+(.+)$")
+      if attackerName then
+        local actualDamage
+        local _, dmg = afterVerb:match("^%s+you%.?%s*%((%d+)%)%s*%.?$")
+        if dmg then
+          actualDamage = tonumber(dmg)
+        end
+        if afterVerb:match("^%s+you[%.!]") then
+          return {
+            direction = "incoming",
+            verb = verb,
+            attack = attackType,
+            attacker = attackerName,
+            minDamage = range[1],
+            maxDamage = range[2],
+            avgDamage = math.ceil((range[1] + range[2]) / 2),
+            actualDamage = actualDamage,
+            line = line
+          }
+        end
+
+        -- OTHER-ON-OTHER: "<attacker>'s <attack> <verb> <target>[. | ! | (<num>).]"
+        -- e.g., "An earth sage elemental's crush MUTILATES a Glyndane cityguard!"
+        --       "A malamute's crush devastates a Glyndane cityguard."
+        -- Falls through from the incoming check above (target is not "you")
+        local actualDmgOther
+        local target, dmgOther = afterVerb:match("^%s+(.-)%s%((%d+)%)%s*%.?$")
+        if target then
+          actualDmgOther = tonumber(dmgOther)
+        else
+          target = afterVerb:match("^%s+(.-)[%.!]$")
+        end
+        if target then
+          target = target:gsub("%s+$", "")
+          return {
+            direction = "other",
+            verb = verb,
+            attack = attackType,
+            attacker = attackerName,
+            target = target,
+            minDamage = range[1],
+            maxDamage = range[2],
+            avgDamage = math.ceil((range[1] + range[2]) / 2),
+            actualDamage = actualDmgOther,
+            line = line
+          }
+        end
+      end
+    end
+  end
+
+  return nil
+end
+
 --- Parse experience gain
 -- @param line string The line to parse
 -- @return number|nil Experience gained
@@ -908,6 +1018,28 @@ end
 -- @return string|nil The last command
 function dmapi.core.getLastCommand()
   return dmapi.core.state.lastCommand
+end
+
+--- Fire damage events for combat verb lines (outgoing/incoming).
+-- Parses the line for damage verbs and raises typed events plus
+-- accumulates damageDealt/damageTaken on the combat state.
+-- @param line string Raw MUD line
+-- @return boolean True if a damage verb was matched
+local function maybeFireDamageEvent(line)
+  local info = dmapi.parsers.damageVerb(line)
+  if not info then return false end
+
+  if info.direction == "outgoing" then
+    dmapi.player.combat.damageDealt = (dmapi.player.combat.damageDealt or 0) + (info.actualDamage or info.avgDamage or 0)
+    dmapi.core.raiseEvent("dmapi.player.combat.damage.outgoing", info)
+  elseif info.direction == "incoming" then
+    dmapi.player.combat.damageTaken = (dmapi.player.combat.damageTaken or 0) + (info.actualDamage or info.avgDamage or 0)
+    dmapi.core.raiseEvent("dmapi.player.combat.damage.incoming", info)
+  else
+    dmapi.core.raiseEvent("dmapi.player.combat.damage.other", info)
+  end
+
+  return true
 end
 
 --- Fire periodic damage events for known tick-like afflictions
@@ -1432,6 +1564,12 @@ function dmapi.core.LineTrigger(line)
 
   -- Emit raw periodic-damage cues after communication parsing to avoid chat false positives.
   maybeFirePeriodicDamage(line)
+
+  -- Parse damage verb lines (outgoing/incoming combat damage).
+  -- Returns early if matched to avoid falling through to unrelated parsers.
+  if maybeFireDamageEvent(line) then
+    return
+  end
 
   -- Parse ingest successes and failures.
   local ingest = dmapi.parsers.ingest(line)
@@ -1985,7 +2123,9 @@ function dmapi.player.reset()
     targetHpPct = 0,
     lastActivity = getEpoch(),
     kills = 0,
-    deaths = 0
+    deaths = 0,
+    damageDealt = 0,
+    damageTaken = 0
   }
   if dmapi.settings.debugLevel > 0 then
     dmapi.core.debug("Player state reset")

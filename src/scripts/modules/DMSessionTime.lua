@@ -91,4 +91,8 @@ function SessionTime.init()
 
   SessionTime.reset()
   SessionTime.updateDisplay()
+
+  if DMLogger then
+    DMLogger.log("SessionTime", "Ready")
+  end
 end

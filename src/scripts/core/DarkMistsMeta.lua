@@ -1469,4 +1469,7 @@ function DarkMistsMeta.init()
     end
   end)
 
+  if DMLogger then
+    DMLogger.log(dm_good .. "DarkMistsMeta", dm_text .. "Ready")
+  end
 end

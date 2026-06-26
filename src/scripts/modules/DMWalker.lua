@@ -175,6 +175,9 @@ function MapDestinations.load()
   DarkmistsEvents.add("MapDestinations.walkCompletionCheck", "dmapi.world.prompt", MapDestinations.checkWalkCompletion)
   DarkmistsEvents.add("MapDestinations.areaArrivalCheck", "dmapi.world.prompt", MapDestinations.checkAreaArrival)
   DarkmistsEvents.add("MapDestinations.navigationBlocked", "dmapi.player.navigation.blocked", handleNavigationBlocked)
+
+  local count = 0; for _ in pairs(MapDestinations.list) do count = count + 1 end
+  DMLogger.log("WALK", "Map Destinations loaded (" .. tostring(count) .. " destinations)")
 end
 
 -- Rewrite full destination file from current in-memory state.

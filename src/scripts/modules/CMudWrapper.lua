@@ -1090,10 +1090,10 @@ function CMudWrapper.unload()
   end
 end
 
-function CMudWrapper.exec(line)
-  if line:sub(1, 1) ~= CMudWrapper.commandChar then return false end
+function CMudWrapper.exec(cmd)
+  if cmd:sub(1, 1) ~= CMudWrapper.commandChar then return false end
 
-  local args = parseArgs(line:sub(2))
+  local args = parseArgs(cmd:sub(2))
   local verb = (table.remove(args, 1) or ""):upper()
 
   -- Support top-level `#WAIT` (and shorthand like `#WA`) by delegating
@@ -1101,7 +1101,7 @@ function CMudWrapper.exec(line)
   -- WAIT semantics (timers and wait-for-line triggers) and handles
   -- multiple commands separated by the configured separator.
   if isPrefix(verb, "WAIT") then
-    CMudWrapper.runBody(line, {})
+    CMudWrapper.runBody(cmd, {})
     return true
   end
 
@@ -1194,13 +1194,16 @@ function CMudWrapper.exec(line)
       CMudWrapper.save()
       CMudWrapper.notify(DarkmistsTheme.goodTag .. ("line-color trigger created: %s → %s"):format(pattern, colorStr))
     elseif args[1] then
-      -- 1-arg form: #COLOR {fg bg} → color the entire current line
+      -- 1-arg form: #COLOR {fg bg} → color the entire triggering MUD line.
+      -- selectSection() instead of selectCurrentLine() to avoid 4.21 \n bleed.
       local colorStr = cleanColor(args[1])
       local fg_c, bg_c = splitColors(colorStr)
-      selectCurrentLine()
-      fg(fg_c)
-      if bg_c then bg(bg_c) end
-      resetFormat()
+      if line and line ~= "" then
+        selectSection(0, #line)
+        fg(fg_c)
+        if bg_c then bg(bg_c) end
+        resetFormat()
+      end
     end
     return true
 
@@ -1640,7 +1643,7 @@ function CMudWrapper.exec(line)
 
   elseif isPrefix(verb, "SHOW") or isPrefix(verb, "SAY") then
     -- Take raw text after the verb (preserves leading spaces that parseArgs strips)
-    local text = line:sub(2):match("^%a+(.*)$") or ""
+    local text = cmd:sub(2):match("^%a+(.*)$") or ""
     text = applyVars(text)
     text = text:gsub("%%cr", "\n")
     cecho(DarkmistsTheme.textTag .. text)

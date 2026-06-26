@@ -546,6 +546,7 @@ function ItemTracker.findFirstItemInLine(line, allowFallback)
     {"^you wear (.-) over your .+%.?$", 9},
     {"^you wear (.-) around your .+%.?$", 9},
     {"^you wear (.-) about your .+%.?$", 9},
+    {"^you wear (.-) as a .+%.?$", 9},
   }
 
   local phrase, offset = nil, 0
@@ -621,6 +622,12 @@ function ItemTracker.renderLineWithLinks(line)
 
   -- Container contents header (e.g. "A leather backpack holds:")
   if line:find("holds:%s*$") then
+    ItemTracker._capturingList = true
+    return false
+  end
+
+  -- Pet/mob inventory header (e.g. "The malamute shows you his inventory:")
+  if line:find("shows you his inventory:%s*$") or line:find("shows you her inventory:%s*$") then
     ItemTracker._capturingList = true
     return false
   end
