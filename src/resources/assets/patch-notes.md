@@ -33,6 +33,7 @@
 **Alchemy Formula Parser**: <code>ea_data.lua</code> import, export, and merge: inherited characters can import their existing trial data, paste new <code>alchemy list</code> output, and export the merged result to their Mudlet home dir for Enchanter Assist to use
 **Clickable Items**: includes some items that were reworked for haste and Sudharma items that were rebalanced.
 **Line Formatter**: "Remove newlines" button, auto-strip leading whitespace per line, and collapse double spaces on format. These options are useful if you are copying an old description to make edits to it.
+**Map**: add updated room link in Magic Forest
 **Clickable Items**: added some additional patterns for clickable items.
 **Affects Window**: when browsing ignored affects, display refresh is paused to allow easier scrolling/viewing.
 **CMudWrapper**: fixed color bleeding to subsequent lines on Mudlet 4.21 when using `#COLOR`
