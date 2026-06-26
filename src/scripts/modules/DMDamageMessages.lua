@@ -35,5 +35,6 @@ end
 function DamageMessages.init()
   DarkmistsEvents.add("DamageMessages.outgoing", "dmapi.player.combat.damage.outgoing", onDamage)
   DarkmistsEvents.add("DamageMessages.incoming", "dmapi.player.combat.damage.incoming", onDamage)
+  DarkmistsEvents.add("DamageMessages.other",     "dmapi.player.combat.damage.other",     onDamage)
   Darkmists.Log(DarkmistsTheme.mutedTag .. "DamageMessages", "Loaded — listening for damage events")
 end

@@ -272,6 +272,7 @@ const dmapi = {
         { name: "dmapi.player.combat.flee",            desc: "Player fled combat",     dir: "in"  },
         { name: "dmapi.player.combat.damage.outgoing", desc: "Player dealt damage",    dir: "out" },
         { name: "dmapi.player.combat.damage.incoming", desc: "Player took damage",     dir: "in"  },
+        { name: "dmapi.player.combat.damage.other",    desc: "NPC dealt damage to NPC", dir: "other" },
       ]
     },
 
@@ -383,6 +384,7 @@ const eventPayloads = {
 
   "dmapi.player.combat.damage.outgoing": "{\n  direction: \"outgoing\",\n  verb: string,\n  attack: string,\n  target: string,\n  minDamage: number,\n  maxDamage: number,\n  avgDamage: number,\n  actualDamage?: number,\n  line: string\n}",
   "dmapi.player.combat.damage.incoming": "{\n  direction: \"incoming\",\n  verb: string,\n  attack: string,\n  attacker: string,\n  minDamage: number,\n  maxDamage: number,\n  avgDamage: number,\n  actualDamage?: number,\n  line: string\n}",
+  "dmapi.player.combat.damage.other": "{\n  direction: \"other\",\n  verb: string,\n  attack: string,\n  attacker: string,\n  target: string,\n  minDamage: number,\n  maxDamage: number,\n  avgDamage: number,\n  actualDamage?: number,\n  line: string\n}",
 
   "dmapi.communication": "{\n  type: string,\n  sender?: string,\n  receiver?: string,\n  message?: string,\n  emote?: string,\n  line: string\n  // ...plus any other fields from the specific sub-event\n}",
   "dmapi.communication.emotedsayreceived": "{\n  sender: string,\n  emote: string,\n  message: string,\n  line: string\n}",

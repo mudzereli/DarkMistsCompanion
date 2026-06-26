@@ -655,6 +655,33 @@ function dmapi.parsers.damageVerb(line)
             line = line
           }
         end
+
+        -- OTHER-ON-OTHER: "<attacker>'s <attack> <verb> <target>[. | ! | (<num>).]"
+        -- e.g., "An earth sage elemental's crush MUTILATES a Glyndane cityguard!"
+        --       "A malamute's crush devastates a Glyndane cityguard."
+        -- Falls through from the incoming check above (target is not "you")
+        local actualDmgOther
+        local target, dmgOther = afterVerb:match("^%s+(.-)%s%((%d+)%)%s*%.?$")
+        if target then
+          actualDmgOther = tonumber(dmgOther)
+        else
+          target = afterVerb:match("^%s+(.-)[%.!]$")
+        end
+        if target then
+          target = target:gsub("%s+$", "")
+          return {
+            direction = "other",
+            verb = verb,
+            attack = attackType,
+            attacker = attackerName,
+            target = target,
+            minDamage = range[1],
+            maxDamage = range[2],
+            avgDamage = math.ceil((range[1] + range[2]) / 2),
+            actualDamage = actualDmgOther,
+            line = line
+          }
+        end
       end
     end
   end
@@ -1005,9 +1032,11 @@ local function maybeFireDamageEvent(line)
   if info.direction == "outgoing" then
     dmapi.player.combat.damageDealt = (dmapi.player.combat.damageDealt or 0) + (info.actualDamage or info.avgDamage or 0)
     dmapi.core.raiseEvent("dmapi.player.combat.damage.outgoing", info)
-  else
+  elseif info.direction == "incoming" then
     dmapi.player.combat.damageTaken = (dmapi.player.combat.damageTaken or 0) + (info.actualDamage or info.avgDamage or 0)
     dmapi.core.raiseEvent("dmapi.player.combat.damage.incoming", info)
+  else
+    dmapi.core.raiseEvent("dmapi.player.combat.damage.other", info)
   end
 
   return true

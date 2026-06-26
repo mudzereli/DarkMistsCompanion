@@ -36,7 +36,7 @@
 **Affects Window**: when browsing ignored affects, display refresh is paused to allow easier scrolling/viewing.
 **Clickable Items**: fixed pattern offsets and added some additional patterns for clickable items.
 **Custom Items**: includes items that were reworked for haste and Sudharma items that were rebalanced.
-**Damage Events**: `dmapi.player.combat.damage.outgoing` and `dmapi.player.combat.damage.incoming` - new DMAPI events for tracking combat damage.
+**Damage Events**: `dmapi.player.combat.damage.outgoing` and `dmapi.player.combat.damage.incoming` and `dmapi.player.combat.damage.other` - new DMAPI events for tracking combat damage.
 
 **Future Versions**
 - check map link to Gul'Doran City
