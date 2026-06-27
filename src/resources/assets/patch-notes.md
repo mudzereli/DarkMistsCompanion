@@ -40,6 +40,10 @@
 **Logger**: all framework modules now log on load (DarkMistsMeta, DMAlertWindow, DMClickables, DMSessionTime, DMStatRoller, DMWalker)
 **Damage Events**: `dmapi.player.combat.damage.outgoing` and `dmapi.player.combat.damage.incoming` and `dmapi.player.combat.damage.other` - new DMAPI events for tracking combat damage. DMC ShowDMG now uses these events, but other than that there should be no visual changes.
 
+**DMC Patch Notes: 1.5.10**
+
+**Clickable Items**: various items updated
+
 **Future Versions**
 - check map link to Gul'Doran City
 - potential way to disable "prac" command or detect lag
