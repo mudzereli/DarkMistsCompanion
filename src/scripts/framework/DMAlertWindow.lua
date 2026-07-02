@@ -181,4 +181,20 @@ function DMAlertWindow.ScheduleAlert(title, renderFunc, opts)
   return DMAlertWindow.Show(title, renderFunc, opts)
 end
 
+-- Expose panel dimensions so content sizing can derive from the actual config
+function DMAlertWindow.getBodyFontSize()
+  ensure_init()
+  return panel.bodyFontSize
+end
+
+function DMAlertWindow.getChromeHeight()
+  ensure_init()
+  return panel.headerH + panel.borderSize * 2
+end
+
+function DMAlertWindow.getBorderPx()
+  ensure_init()
+  return panel.borderSize * 2
+end
+
 return DMAlertWindow

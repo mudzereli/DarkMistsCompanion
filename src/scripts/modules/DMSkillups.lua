@@ -12,7 +12,7 @@ SkillUps = {
 -- Display constants — centralised so formatting changes propagate to window sizing
 local SEPARATOR = "═══════════════════════════════════════════════════"
 local SEP_LEN   = (utf8 and utf8.len and utf8.len(SEPARATOR)) or #SEPARATOR
-local HEADER_LINES = 6  -- blank + sep + title+reset + sep + blank + final sep
+local HEADER_LINES = 4  -- sep + title+reset + sep + blank (leading blank is absorbed by empty console)
 
 -- ===================================================================
 -- TRACKING FUNCTION
@@ -99,13 +99,15 @@ function SkillUps.showAlert()
     return
   end
 
-  -- Derive window size from the actual content constants above
-  local charW, charH = calcFontSize(getFontSize())
+  -- Derive window size from alert window's actual font and chrome dimensions
+  local charW, charH = calcFontSize(DMAlertWindow.getBodyFontSize())
   if not charW then charW = 8 end
   if not charH then charH = 16 end
-  local estWidth   = math.max(400, SEP_LEN * charW)
   local totalLines  = HEADER_LINES + #SkillUps.history
-  local estHeight   = math.min(520, totalLines * charH)
+  -- Match DMAlertWindow's wrapAt formula: floor((w - borderSize*2) / charW) - 2 >= SEP_LEN
+  -- So w >= (SEP_LEN + 2) * charW + borderSize*2
+  local estWidth   = math.max(400, (SEP_LEN + 2) * charW + DMAlertWindow.getBorderPx())
+  local estHeight   = math.min(520, totalLines * charH + DMAlertWindow.getChromeHeight())
 
   DMAlertWindow.Show("Skill Improvements", function(win)
     SkillUps.display(win)
