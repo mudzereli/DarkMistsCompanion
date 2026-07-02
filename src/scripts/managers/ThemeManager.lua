@@ -8,6 +8,11 @@ DarkmistsTheme = {}
 -- Session guard to avoid repeating background contrast warnings
 local _bgWarnShown = false
 
+-- Luminance cutoff for detecting a "light" terminal background (0-255 scale).
+-- 200 is conservative — high enough to avoid dim/muted backdrops, low enough
+-- to catch obvious light terminals. Tune for your terminal emulator if needed.
+local LUMINANCE_LIGHT_CUTOFF = 200
+
 -- ---------------------------------------------------------------------------
 -- Neutral theme: mid-value colors readable on both black and white backgrounds.
 -- Runs immediately at file load with zero dependencies — no Darkmists, no
@@ -94,7 +99,7 @@ function DarkmistsTheme.checkBackgroundContrast()
 
   -- perceived luminance formula (0-255 scale)
   local L = 0.2126 * r + 0.7152 * g + 0.0722 * b
-  local isLightBg = (L >= 200)
+  local isLightBg = (L >= LUMINANCE_LIGHT_CUTOFF)
 
   -- Suggest switching if background brightness and current theme mode are mismatched
   if isLightBg and not Darkmists.GlobalSettings.lightMode then
@@ -132,13 +137,30 @@ function DarkmistsTheme.buildTheme()
   t.bad       = t.red
   t.info      = t.blue
   t.muted     = t.silver
-  t.text      = t.text
+  t.text      = "ansi_white"
   t.accent    = t.cyan
   t.highlight = t.yellow
 
   buildTags(t)
+
+  -- Build a compact color listing for the log — all keys discovered dynamically
+  local keys = {}
+  for k, v in pairs(t) do
+    if type(v) == "string" and not k:find("Tag$") and not k:find("^_") then
+      keys[#keys + 1] = k
+    end
+  end
+  table.sort(keys)
+  local lines = {}
+  for _, k in ipairs(keys) do
+    local c = t[k]
+    lines[#lines + 1] = string.format("  %s%s<reset>: <%s>%s<reset>", t.mutedTag, k, c, c)
+  end
+
   Darkmists.Log(DarkmistsTheme.purpleTag .. "Darkmists Core",
-    (DarkmistsTheme.silverTag .. "Theme Built! Light Mode: %s%s%s"):format(DarkmistsTheme.infoTag, tostring(light), DarkmistsTheme.textTag))
+    (DarkmistsTheme.silverTag .. "Theme Built! Light Mode: %s%s\n%s"):format(
+      DarkmistsTheme.infoTag, tostring(light),
+      table.concat(lines, "\n")) .. DarkmistsTheme.textTag)
 end
 
 -- ---------------------------------------------------------------------------
