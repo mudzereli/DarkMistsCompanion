@@ -43,6 +43,7 @@
 **DMC Patch Notes: 1.5.10**
 
 **Clickable Items**: various items updated
+**CMudWrapper**: `#<num> {cmd1|cmd2|...}` now properly strips braces and splits on the command separator, so `#10 {camo|vis}` repeats the sequence of both commands 10 times instead of sending the raw text
 
 **Future Versions**
 - check map link to Gul'Doran City
