@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Custom Item Formatter</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='0.9em' font-size='90'%3E📦%3C/text%3E%3C/svg%3E">
+
+<style>
+:root {
+  --is-bg: #07060c;
+  --is-panel: #110d1d;
+  --is-panel-2: #1a1429;
+  --is-panel-3: #221a33;
+  --is-line: rgba(255, 215, 0, 0.14);
+  --is-line-strong: rgba(255, 215, 0, 0.35);
+  --is-text: #f3f0e6;
+  --is-muted: #948ea1;
+  --is-muted-dim: #6c6678;
+  --is-accent: #FFD700;
+  --is-accent-soft: #D4AF37;
+}
+
+body {
+  min-height: 100vh;
+  color: var(--is-text);
+  background: var(--is-bg);
+  font-family: "Segoe UI", "Trebuchet MS", system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  padding: 24px 32px;
+  margin: 0;
+}
+
+h2 {
+  color: var(--is-accent);
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  margin-bottom: 14px;
+}
+
+#instructions {
+  font-size: 13px;
+  color: var(--is-muted);
+  margin-bottom: 18px;
+  padding: 10px 14px;
+  background: var(--is-panel);
+  border: 1px solid var(--is-line);
+  border-radius: 8px;
+  line-height: 1.5;
+}
+#instructions code {
+  color: var(--is-accent);
+  background: var(--is-panel-2);
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+textarea {
+  width: 100%;
+  height: 160px;
+  resize: vertical;
+  background: var(--is-panel-2);
+  color: var(--is-text);
+  font-family: "JetBrains Mono", "Cascadia Code", "Fira Code", monospace;
+  font-size: 13px;
+  padding: 10px;
+  border: 1px solid var(--is-line);
+  border-radius: 6px;
+  outline: 0;
+  transition: border-color 0.15s;
+  box-sizing: border-box;
+}
+textarea:focus {
+  border-color: var(--is-line-strong);
+}
+
+.input-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin: 10px 0;
+  flex-wrap: wrap;
+}
+.input-row label {
+  color: var(--is-muted);
+  font-size: 13px;
+}
+.input-row input {
+  background: var(--is-panel-2);
+  color: var(--is-text);
+  border: 1px solid var(--is-line);
+  border-radius: 6px;
+  padding: 8px 10px;
+  font-family: monospace;
+  font-size: 13px;
+  outline: 0;
+  width: 120px;
+  box-sizing: border-box;
+}
+.input-row input:focus {
+  border-color: var(--is-line-strong);
+}
+
+button {
+  padding: 8px 18px;
+  margin: 5px 6px 5px 0;
+  cursor: pointer;
+  background: rgba(255, 215, 0, 0.08);
+  color: var(--is-accent);
+  border: 1px solid var(--is-line);
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 13px;
+  transition: background 0.15s, border-color 0.15s;
+}
+button:hover {
+  background: rgba(255, 215, 0, 0.14);
+  border-color: var(--is-line-strong);
+}
+
+#output {
+  width: 100%;
+  height: 200px;
+  resize: vertical;
+  background: var(--is-panel-2);
+  color: var(--is-accent-soft);
+  font-family: "JetBrains Mono", "Cascadia Code", "Fira Code", monospace;
+  font-size: 13px;
+  padding: 10px;
+  border: 1px solid var(--is-line);
+  border-radius: 6px;
+  outline: 0;
+  margin-top: 10px;
+  box-sizing: border-box;
+  white-space: pre;
+  overflow: auto;
+}
+
+#status {
+  font-size: 13px;
+  color: var(--is-muted);
+  margin-top: 8px;
+  min-height: 1.2em;
+}
+#status.ok { color: #4ade80; }
+#status.err { color: #f87171; }
+
+hr {
+  border: none;
+  border-top: 1px solid var(--is-line);
+  margin: 20px 0;
+}
+</style>
+</head>
+<body>
+
+<h2>📦 Custom Item Formatter</h2>
+
+<div id="instructions">
+  Paste raw <code>c id</code> output or item description text below. The tool extracts the item name
+  from the <code>Object '...'</code> line and formats everything into a JSON entry ready for
+  <code>custom_items.json</code>.<br><br>
+  You can format multiple items at once — paste each item description separated by a blank line.
+</div>
+
+<textarea id="input" placeholder="Paste item description here...
+
+Example:
+Area: The City of Sudharma
+Object 'a copper interlocking box chain ring' is type jewelry, extra flags burnproof.
+Weight is 0.7 pounds, value is 39000, level is 50.
+Material is copper and iron.
+restrict flags none.
+Affects damage roll by 3.
+Affects hit roll by 3."></textarea>
+
+<div class="input-row">
+  <label for="vnum">Vnum:</label>
+  <input id="vnum" type="text" placeholder="e.g. 82151" value="">
+  <label for="autoVnum" style="margin-left:6px">
+    <input id="autoVnum" type="checkbox" checked> Auto-increment
+  </label>
+  <label for="startVnum" style="margin-left:6px">
+    Start:
+    <input id="startVnum" type="text" placeholder="1" value="1" style="width:60px">
+  </label>
+</div>
+
+<div>
+  <button onclick="formatItems()">Format</button>
+  <button onclick="clearAll()">Clear</button>
+  <button onclick="copyOutput()">Copy</button>
+</div>
+
+<textarea id="output" readonly placeholder="Formatted JSON will appear here..."></textarea>
+
+<div id="status"></div>
+
+<hr>
+
+<h2 style="font-size:1rem; color:var(--is-muted-dim)">Preview</h2>
+<pre id="preview" style="color:var(--is-muted); font-size:12px; background:var(--is-panel); border:1px solid var(--is-line); border-radius:6px; padding:10px; min-height:40px; white-space:pre-wrap; overflow:auto;">(format to see preview)</pre>
+
+<script>
+let vnumCounter = 1
+
+function extractName(text) {
+  const match = text.match(/^Object '(.+)' is type /m)
+  return match ? match[1] : null
+}
+
+function buildDetails(text) {
+  return text
+    .split(/\r?\n/)
+    .map(l => l.trimEnd())
+    .join('\n')
+}
+
+function formatItems() {
+  const raw = document.getElementById("input").value.trim()
+  const status = document.getElementById("status")
+  const output = document.getElementById("output")
+  const preview = document.getElementById("preview")
+
+  if (!raw) {
+    status.className = "err"
+    status.innerText = "No input text provided."
+    return
+  }
+
+  const autoVnum = document.getElementById("autoVnum").checked
+  let vnum = document.getElementById("vnum").value.trim()
+  const startVnum = parseInt(document.getElementById("startVnum").value) || 1
+
+  if (!autoVnum && !vnum) {
+    status.className = "err"
+    status.innerText = "Enter a vnum or enable auto-increment."
+    return
+  }
+
+  // Split on blank lines to support multiple items
+  const blocks = raw.split(/\n\s*\n/).filter(b => b.trim())
+  const results = []
+  let counter = startVnum
+
+  for (const block of blocks) {
+    const name = extractName(block)
+    if (!name) {
+      status.className = "err"
+      status.innerText = `Could not find "Object '...'" line in one of the blocks.`
+      return
+    }
+
+    const id = autoVnum ? "c" + String(counter++) : vnum
+    const rawDetails = buildDetails(block)
+    // Manually build JSON so \\n stays as literal backslash-n instead of
+    // JSON.stringify double-escaping it
+    const escapedDetails = rawDetails.replace(/\n/g, '\\n').replace(/"/g, '\\"')
+    const json = '  {\n' +
+      '    "name": ' + JSON.stringify(name) + ',\n' +
+      '    "vnum": ' + JSON.stringify(id) + ',\n' +
+      '    "details": "' + escapedDetails + '"\n' +
+      '  },'
+    results.push(json)
+  }
+
+  const formatted = results.join(",\n\n")
+  output.value = formatted
+  preview.textContent = formatted || "(empty)"
+
+  status.className = "ok"
+  status.innerText = `Formatted ${results.length} item(s).`
+
+  // Update vnum field for convenience
+  if (autoVnum) {
+    document.getElementById("startVnum").value = String(counter)
+  }
+}
+
+function clearAll() {
+  document.getElementById("input").value = ""
+  document.getElementById("output").value = ""
+  document.getElementById("preview").textContent = "(format to see preview)"
+  document.getElementById("status").className = ""
+  document.getElementById("status").innerText = ""
+  if (!document.getElementById("autoVnum").checked) {
+    document.getElementById("vnum").value = ""
+  }
+}
+
+function copyOutput() {
+  const output = document.getElementById("output")
+  const status = document.getElementById("status")
+
+  if (!output.value) {
+    status.className = "err"
+    status.innerText = "Nothing to copy."
+    return
+  }
+
+  navigator.clipboard.writeText(output.value).then(() => {
+    status.className = "ok"
+    status.innerText = "Copied to clipboard!"
+  }).catch(() => {
+    output.select()
+    document.execCommand("copy")
+    status.className = "ok"
+    status.innerText = "Copied!"
+  })
+}
+</script>
+
+</body>
+</html>
