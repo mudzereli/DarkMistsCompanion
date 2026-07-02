@@ -134,6 +134,13 @@ function DMAlertWindow.Show(title, renderFunc, opts)
   clearWindow(panel.close)
   cechoLink(panel.close, "<dim_gray><u>[<red>X<dim_gray>]", [[DMAlertWindow.Hide()]], "Close", true)
 
+  if opts.scrollable then
+    enableScrollBar(panel.body)
+    enableScrolling(panel.body)
+  else
+    disableScrollBar(panel.body)
+    disableScrolling(panel.body)
+  end
   clearWindow(panel.body)
   if type(renderFunc) == "function" then
     renderFunc(panel.body)
