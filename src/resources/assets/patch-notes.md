@@ -42,10 +42,11 @@
 
 **DMC Patch Notes: 1.5.10**
 
-**Clickable Items**: updated clickable items
-**CMudWrapper**: `#<num> {cmd1|cmd2|...}` now properly strips braces and splits on the command separator, so `#10 {camo|vis}` repeats the sequence of both commands 10 times instead of sending the raw text
 **SkillUps**: skill improvement notifications now show an underlined clickable skill name that opens a scrollable `DMAlertWindow` with the full history, including a `[Reset]` button in the window body. Window auto-sizes to fit content.
+**CMudWrapper**: `#<num> {cmd1|cmd2|...}` now properly strips braces and splits on the command separator, so `#10 {camo|vis}` repeats the sequence of both commands 10 times instead of sending the raw text
 **Walker**: walk now stops automatically on disconnect (`sysDisconnectionEvent`) to avoid trying to navigate without a connection.
+**Map**: fixed layout of Ioio area
+**Clickable Items**: updated clickable items
 
 **Future Versions**
 - check map link to Gul'Doran City

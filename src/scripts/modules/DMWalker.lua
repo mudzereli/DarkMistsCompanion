@@ -177,6 +177,7 @@ function MapDestinations.load()
   DarkmistsEvents.add("MapDestinations.navigationBlocked", "dmapi.player.navigation.blocked", handleNavigationBlocked)
   DarkmistsEvents.add("MapDestinations.disconnect", "sysDisconnectionEvent", function()
     if MapDestinations._isWalking then
+      DMLogger.notify("WALK", "<red>Disconnected. Stopping walk.")
       MapDestinations.stop()
     end
   end)
@@ -264,7 +265,6 @@ function MapDestinations.stop()
   MapDestinations._isWalking = false
   MapDestinations._navigationBlockCount = 0
   expandAlias("map stop")
-  DMLogger.notify("WALK", "<red>Walk stopped.")
   return true
 end
 
