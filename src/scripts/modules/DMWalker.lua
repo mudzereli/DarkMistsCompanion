@@ -132,7 +132,7 @@ local function handleNavigationBlocked()
   raiseEvent("onMoveFail")
   MapDestinations._navigationBlockCount = MapDestinations._navigationBlockCount + 1
   if MapDestinations._navigationBlockCount >= MapDestinations._navigationBlockTilStop then
-    DMLogger.notify("WALK", "<red>Navigation blocked multiple times, stopping walk.") 
+    DMLogger.notify("WALK", "<red>Navigation blocked multiple times, stopping walk.")
     MapDestinations.stop()
     MapDestinations._navigationBlockCount = 0
   end
@@ -175,6 +175,12 @@ function MapDestinations.load()
   DarkmistsEvents.add("MapDestinations.walkCompletionCheck", "dmapi.world.prompt", MapDestinations.checkWalkCompletion)
   DarkmistsEvents.add("MapDestinations.areaArrivalCheck", "dmapi.world.prompt", MapDestinations.checkAreaArrival)
   DarkmistsEvents.add("MapDestinations.navigationBlocked", "dmapi.player.navigation.blocked", handleNavigationBlocked)
+  DarkmistsEvents.add("MapDestinations.disconnect", "sysDisconnectionEvent", function()
+    if MapDestinations._isWalking then
+      DMLogger.notify("WALK", "<red>Disconnected. Stopping walk.")
+      MapDestinations.stop()
+    end
+  end)
 
   local count = 0; for _ in pairs(MapDestinations.list) do count = count + 1 end
   DMLogger.log("WALK", "Map Destinations loaded (" .. tostring(count) .. " destinations)")
@@ -238,7 +244,10 @@ end
 --   true, "REMOVED", name on success
 --   false, errorMessage, name on failure
 function MapDestinations.remove(name)
-  name = name:lower()
+  name = normalizeDestinationName(name)
+  if not name then
+    return false, "INVALID_NAME", name
+  end
 
   if not MapDestinations.list[name] then
     return false, "NOT_FOUND", name

@@ -40,6 +40,14 @@
 **Logger**: all framework modules now log on load (DarkMistsMeta, DMAlertWindow, DMClickables, DMSessionTime, DMStatRoller, DMWalker)
 **Damage Events**: `dmapi.player.combat.damage.outgoing` and `dmapi.player.combat.damage.incoming` and `dmapi.player.combat.damage.other` - new DMAPI events for tracking combat damage. DMC ShowDMG now uses these events, but other than that there should be no visual changes.
 
+**DMC Patch Notes: 1.5.10**
+
+**SkillUps**: skill improvement notifications now show an underlined clickable skill name that opens a scrollable `DMAlertWindow` with the full history, including a `[Reset]` button in the window body. Window auto-sizes to fit content.
+**CMudWrapper**: `#<num> {cmd1|cmd2|...}` now properly strips braces and splits on the command separator, so `#10 {camo|vis}` repeats the sequence of both commands 10 times instead of sending the raw text
+**Walker**: walk now stops automatically on disconnect (`sysDisconnectionEvent`) to avoid trying to navigate without a connection.
+**Map**: fixed layout of Ioio area
+**Clickable Items**: updated clickable items
+
 **Future Versions**
 - check map link to Gul'Doran City
 - potential way to disable "prac" command or detect lag

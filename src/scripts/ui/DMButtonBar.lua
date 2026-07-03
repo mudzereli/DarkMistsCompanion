@@ -264,7 +264,7 @@ end
 -- Actions frequently call `expandAlias` to route commands into Mudlet.
 local MODULE_MENU = {
   {label = "🎓 Skillups", children = {
-    {label = "📜 Skillups", action = function() SkillUps.display() end},
+    {label = "📜 Skillups", action = function() SkillUps.showAlert() end},
     {label = "🔄 Reset Skillups", action = function() SkillUps.reset() end},
     {label = "❓ Skillups", action = function() expandAlias("dmc help skillups") end},
   }},

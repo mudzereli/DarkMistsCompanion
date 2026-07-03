@@ -1090,6 +1090,19 @@ function CMudWrapper.unload()
   end
 end
 
+-- Helper: if cmd matches a braced pattern, run its contents through runBody n times;
+-- otherwise run the fallback text through runLine n times.  Keeps the repeat logic
+-- in one place so pattern tweaks or commandChar changes are a single edit.
+local function repeatBrace(cmd, n, pattern, fallback)
+  local braced = pattern and cmd:match(pattern)
+  braced = braced and braced:sub(2, -2)
+  if braced then
+    for _ = 1, n do CMudWrapper.runBody(braced) end
+  else
+    for _ = 1, n do CMudWrapper.runLine(fallback) end
+  end
+end
+
 function CMudWrapper.exec(cmd)
   if cmd:sub(1, 1) ~= CMudWrapper.commandChar then return false end
 
@@ -1654,9 +1667,8 @@ function CMudWrapper.exec(cmd)
   elseif isPrefix(verb, "REPEAT") then
     local n = tonumber(args[1]) or 1
     local text = table.concat(args, " ", 2)
-    for _ = 1, n do
-      CMudWrapper.runLine(text)
-    end
+    local cc = escapeRegex(CMudWrapper.commandChar)
+    repeatBrace(cmd, n, "^" .. cc .. "%a+%s+%d+%s+(%b{})", text)
 
   elseif isPrefix(verb, "SEPARATOR") or isPrefix(verb, "SEP") then
     local newSep = args[1]
@@ -1685,9 +1697,8 @@ function CMudWrapper.exec(cmd)
   elseif verb:match("^%d+$") then
     local n = tonumber(verb) or 1
     local text = table.concat(args, " ")
-    for _ = 1, n do
-      CMudWrapper.runLine(text)
-    end
+    local cc = escapeRegex(CMudWrapper.commandChar)
+    repeatBrace(cmd, n, "^" .. cc .. verb .. "%s+(%b{})", text)
 
   elseif isPrefix(verb, "CLASS") then
     local classname = args[1]

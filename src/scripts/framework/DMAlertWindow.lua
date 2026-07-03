@@ -134,6 +134,13 @@ function DMAlertWindow.Show(title, renderFunc, opts)
   clearWindow(panel.close)
   cechoLink(panel.close, "<dim_gray><u>[<red>X<dim_gray>]", [[DMAlertWindow.Hide()]], "Close", true)
 
+  if opts.scrollable then
+    enableScrollBar(panel.body)
+    enableScrolling(panel.body)
+  else
+    disableScrollBar(panel.body)
+    disableScrolling(panel.body)
+  end
   clearWindow(panel.body)
   if type(renderFunc) == "function" then
     renderFunc(panel.body)
@@ -172,6 +179,22 @@ end
 -- Schedule an alert explicitly (alias for Show but kept for clarity)
 function DMAlertWindow.ScheduleAlert(title, renderFunc, opts)
   return DMAlertWindow.Show(title, renderFunc, opts)
+end
+
+-- Expose panel dimensions so content sizing can derive from the actual config
+function DMAlertWindow.getBodyFontSize()
+  ensure_init()
+  return panel.bodyFontSize
+end
+
+function DMAlertWindow.getChromeHeight()
+  ensure_init()
+  return panel.headerH + panel.borderSize * 2
+end
+
+function DMAlertWindow.getBorderPx()
+  ensure_init()
+  return panel.borderSize * 2
 end
 
 return DMAlertWindow
