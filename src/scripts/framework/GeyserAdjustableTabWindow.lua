@@ -8,6 +8,14 @@ Adjustable.TabWindow.blockNextFloat = false
 
 local tab_pos = nil
 
+-- Shorthand: TN(tab) → tab.."tab", used everywhere for the tab-header container key
+local function TN(tab) return tab.."tab" end
+
+-- Queue a layout save through DMTabs (no-op if DMTabs isn't available)
+function Adjustable.TabWindow:saveLayout()
+  if DMTabs and DMTabs.queueLayoutSave then DMTabs:queueLayoutSave() end
+end
+
 function Adjustable.TabWindow:createBaseContainers()
     self.header = self.header or Geyser.HBox:new({
         name = self.name.."header",
@@ -41,19 +49,20 @@ end
 
 -- function to create new tabs in tabs table or to rewrite/readjust them
 function Adjustable.TabWindow:createTabs()
-    for k,v in ipairs(self.tabs) do
+    for _, v in ipairs(self.tabs) do
+        local tn = TN(v)
         self[v] = self[v] or Geyser.Label:new({
             name = v,
             x = 0, y = 0,
             width = "100%",
             height = "100%",
-        },self.footer)
-        
+        }, self.footer)
+
         self[v]:setStyleSheet(self.containerStyle)
-        self[v].tabText = self[v].tabText or ("<center>"..v)
-        
-        self[v.."tab"] = self[v.."tab"] or Adjustable.Container:new({
-            name = v.."tab",
+        self[v].tabText = self[v].tabText or ("<center>" .. v)
+
+        self[tn] = self[tn] or Adjustable.Container:new({
+            name = tn,
             tabname = v,
             noLimit = true,
             titleText = self[v].tabText,
@@ -65,49 +74,46 @@ function Adjustable.TabWindow:createTabs()
             adjLabelstyle = self.inactiveTabStyle,
             titleTxtColor = self.tabTxtColor
         }, self.header)
-        
-        self[v.."tab"]:newLockStyle("tab", 
-        function(self)         
-            self.Inside:resize("-"..self.padding,"-"..self.padding)
-            self.Inside:move(self.padding, self.padding*2) 
+
+        self[tn]:newLockStyle("tab", function(self)
+            self.Inside:resize("-" .. self.padding, "-" .. self.padding)
+            self.Inside:move(self.padding, self.padding * 2)
         end)
-        
-        self[v.."tab"].lockStyle = "tab"
-        
-        self[v.."tab"].unlockContainer = function()
-            Adjustable.Container.unlockContainer(self[v.."tab"])
-            self[v.."tab"].adjLabel:echo(self[v].tabText)
+
+        self[tn].lockStyle = "tab"
+
+        self[tn].unlockContainer = function()
+            Adjustable.Container.unlockContainer(self[tn])
+            self[tn].adjLabel:echo(self[v].tabText)
         end
-        
+
         Adjustable.TabWindow.allTabs[v] = self
-        
-        self[v.."tab"].reposition = self.reposition
-        table.remove(Adjustable.Container.all_windows, table.index_of(Adjustable.Container.all_windows, v.."tab"))
-        Adjustable.Container.all[v.."tab"] = nil
-        self[v.."tab"].adjLabelstyle = self.inactiveTabStyle
-        self[v.."tab"].titleTxtColor = self.tabTxtColor
-        self[v.."tab"].adjLabel:setStyleSheet(self.inactiveTabStyle)
-        
-        
-        self[v.."tab"].adjLabel:echo(self[v].tabText)
-        
-        self[v.."tab"].adjLabel:setClickCallback(function(event) self:onClick(v, event) end)
-        self[v.."tab"].adjLabel:setReleaseCallback(function(event) self:onRelease(v, event) end)
-        self[v.."tab"].adjLabel:setMoveCallback(function(event) self:onMove(v, event) end)
-        self[v.."tab"].adjLabel:setDoubleClickCallback(function(event) self:onDoubleClick(v, event) end)
-        self[v.."tab"].minimizeLabel:setClickCallback(function() self:onMinimizeClick(v) end)
-        self[v.."tab"].minimizeLabel:echo("<center>🗗</center>")
-        self[v.."tab"].minLabel:setClickCallback(function() self:onMinimizeClick(v) end)
-        
-        
-        self[v.."center"] = self[v.."center"] or Geyser.Label:new({
-            name = v.."center",
+      
+        self[tn].reposition = self.reposition
+        table.remove(Adjustable.Container.all_windows, table.index_of(Adjustable.Container.all_windows, tn))
+        Adjustable.Container.all[tn] = nil
+        self[tn].adjLabelstyle = self.inactiveTabStyle
+        self[tn].titleTxtColor = self.tabTxtColor
+        self[tn].adjLabel:setStyleSheet(self.inactiveTabStyle)
+
+        self[tn].adjLabel:echo(self[v].tabText)
+
+        self[tn].adjLabel:setClickCallback(function(event) self:onClick(v, event) end)
+        self[tn].adjLabel:setReleaseCallback(function(event) self:onRelease(v, event) end)
+        self[tn].adjLabel:setMoveCallback(function(event) self:onMove(v, event) end)
+        self[tn].adjLabel:setDoubleClickCallback(function(event) self:onDoubleClick(v, event) end)
+        self[tn].minimizeLabel:setClickCallback(function() self:onMinimizeClick(v) end)
+        self[tn].minimizeLabel:echo("<center>🗗</center>")
+        self[tn].minLabel:setClickCallback(function() self:onMinimizeClick(v) end)
+
+        self[v .. "center"] = self[v .. "center"] or Geyser.Label:new({
+            name = v .. "center",
             x = 0, y = 0,
             width = "100%",
             height = "100%",
-        },self[v])
-        
-        self[v.."center"]:setStyleSheet(self.centerStyle)
+        }, self[v])
+
+        self[v .. "center"]:setStyleSheet(self.centerStyle)
         self[v]:hide()
     end
 end
@@ -154,20 +160,20 @@ end
 -- onMove function
 -- contains all the functionality to move the tab (collision check, make space ...)
 function Adjustable.TabWindow:onMove(tab, event)
-    self[tab.."tab"]:onMove(self[tab.."tab"].adjLabel, event)
-    self[tab.."tab"].adjLabel:echo(self[tab].tabText)
+    local tn = TN(tab)
+    self[tn]:onMove(self[tn].adjLabel, event)
+    self[tn].adjLabel:echo(self[tab].tabText)
     if self[tab].floating then
         return
     end
     if Adjustable.TabWindow.clicked then  
-        local result, value = self:checkMultiCollision(self[tab.."tab"])
+        local result, value = self:checkMultiCollision(self[tn])
         if Adjustable.TabWindow.currentWindow and Adjustable.TabWindow.currentWindow ~= value then
-            -- reset the tab space
             self:makeSpace(Adjustable.TabWindow.currentWindow, nil, true)
         end
         if result then
             Adjustable.TabWindow.currentWindow = value
-            tab_pos = value:findPosition(self[tab.."tab"])
+            tab_pos = value:findPosition(self[tn])
             self:makeSpace(value, tab_pos)
         else
             if Adjustable.TabWindow.currentWindow then
@@ -175,9 +181,7 @@ function Adjustable.TabWindow:onMove(tab, event)
             end
         end
     end
-    if DMTabs and DMTabs.queueLayoutSave then
-        DMTabs:queueLayoutSave()
-    end
+    self:saveLayout()
 end
 
 -- mouse movement on the overlay label
@@ -235,37 +239,35 @@ function Adjustable.TabWindow:onOverlayClick(event)
         container:onRelease(tab.tabname, event)
     end
     resetOverlay(self)
-    if DMTabs and DMTabs.queueLayoutSave then
-        DMTabs:queueLayoutSave()
-    end
+    self:saveLayout()
 end
 
 -- if clicked on the minimize label the tab will be 
 -- restored to be in a tabwindow again
 function Adjustable.TabWindow:onMinimizeClick(tab)  
-    local result, value = self:checkMultiCollision(self[tab.."tab"])
+    local result, value = self:checkMultiCollision(self[TN(tab)])
     self:restoreTab(tab, value)
-    if DMTabs and DMTabs.queueLayoutSave then
-        DMTabs:queueLayoutSave()
-    end
+    self:saveLayout()
 end
 
 -- activates the tab tab (doesn't deactivate the previous tab)
 -- @see Adjustable.TabWindow:deactivateTab()
 function Adjustable.TabWindow:activateTab(tab)
     self.current = tab
-  if self.current then
-    self[tab.."tab"].adjLabelstyle = self.activeTabStyle
-    self[tab.."tab"].adjLabel:setStyleSheet(self.activeTabStyle)
-    self[self.current]:show()
+    if self.current then
+        local tn = TN(tab)
+        self[tn].adjLabelstyle = self.activeTabStyle
+        self[tn].adjLabel:setStyleSheet(self.activeTabStyle)
+        self[self.current]:show()
     end
 end
 
 -- deactivates and hides the current active tab
 function Adjustable.TabWindow:deactivateTab()
-    if self.current and self[self.current] then  
-        self[self.current.."tab"].adjLabelstyle = self.inactiveTabStyle
-        self[self.current.."tab"].adjLabel:setStyleSheet(self.inactiveTabStyle)
+    if self.current and self[self.current] then
+        local tn = TN(self.current)
+        self[tn].adjLabelstyle = self.inactiveTabStyle
+        self[tn].adjLabel:setStyleSheet(self.inactiveTabStyle)
         self[self.current]:hide()
     end
 end
@@ -273,23 +275,23 @@ end
 -- handles click event on tab
 function Adjustable.TabWindow:onClick(tab, event)
     Adjustable.TabWindow.currentWindow = self
+    local tn = TN(tab)
     if event.button == "LeftButton" and not self[tab].floating then
-        self[tab.."tab"]:resize(self[tab.."tab"].get_width(),self[tab.."tab"].get_height())
-        self[tab.."tab"].container = Geyser
-        -- set minimized to true to prevent resizing
-        self[tab.."tab"].minimized = true
-        self[tab.."tab"]:unlockContainer()
-        self[tab.."tab"]:onClick(self[tab.."tab"].adjLabel, event)
-        self[tab.."tab"].adjLabel:raise(false)
-        self[tab.."tab"].exitLabel:hide()
-        self[tab.."tab"].minimizeLabel:hide()
+        self[tn]:resize(self[tn].get_width(), self[tn].get_height())
+        self[tn].container = Geyser
+        self[tn].minimized = true
+        self[tn]:unlockContainer()
+        self[tn]:onClick(self[tn].adjLabel, event)
+        self[tn].adjLabel:raise(false)
+        self[tn].exitLabel:hide()
+        self[tn].minimizeLabel:hide()
         Adjustable.TabWindow.clicked = true
-        Adjustable.TabWindow.clickedTab = self[tab.."tab"]
-        self[tab.."tab"].adjLabel:echo(self[tab].tabText)
+        Adjustable.TabWindow.clickedTab = self[tn]
+        self[tn].adjLabel:echo(self[tab].tabText)
     end
     
     if self[tab].floating then
-        self[tab.."tab"]:onClick(self[tab.."tab"].adjLabel, event)
+        self[tn]:onClick(self[tn].adjLabel, event)
     end
     if not self[tab].floating then
         self:deactivateTab()
@@ -316,8 +318,9 @@ end
 
 -- transforms the tab to a window
 function Adjustable.TabWindow:transformTabContainer(tab)
+    local tn = TN(tab)
     local myWindow = Adjustable.TabWindow.allTabs[tab] or self
-    local container = self[tab.."tab"]
+    local container = self[tn]
     if container.windowname == "main" then
         Geyser:add(container)
     else
@@ -332,7 +335,7 @@ function Adjustable.TabWindow:transformTabContainer(tab)
     container:show()
     container:raiseAll()
     myWindow[tab].floating = true
-    local center = self[tab.."center"]
+    local center = self[tab .. "center"]
     if center and center.windowList then
         for _, obj in pairs(center.windowList) do
             if obj.type == "adjustablecontainer" then
@@ -350,24 +353,23 @@ function Adjustable.TabWindow:transformTabContainer(tab)
     else 
         myWindow.current = nil
     end
-    if DMTabs and DMTabs.queueLayoutSave then
-        DMTabs:queueLayoutSave()
-    end
+    self:saveLayout()
 end
 
 --restores the window to be a tab again
 function Adjustable.TabWindow:restoreTab(tab, myWindow)
     myWindow = myWindow or self
-    local center = self[tab.."center"]
+    local tn = TN(tab)
+    local center = self[tab .. "center"]
 
     if center and center.windowList then
-    for _, obj in pairs(center.windowList) do
-        if obj.type == "adjustablecontainer" then
-        obj:lockContainer(nil, "full")
+        for _, obj in pairs(center.windowList) do
+            if obj.type == "adjustablecontainer" then
+                obj:lockContainer(nil, "full")
+            end
         end
     end
-    end
-    local container = self[tab.."tab"]
+    local container = self[tn]
     container:attachToBorder("none")
     container.container:remove(container)
     container:remove(self[tab])
@@ -379,9 +381,7 @@ function Adjustable.TabWindow:restoreTab(tab, myWindow)
     container.raiseOnClick = false
     scrollTo(-10)
     tempTimer(0,function() scrollTo() end)
-    if DMTabs and DMTabs.queueLayoutSave then
-        DMTabs:queueLayoutSave()
-    end
+    self:saveLayout()
 end
 
 -- function to make a gap where the tab can be dropped in
@@ -418,18 +418,19 @@ end
 
 -- function to change the parent window of the tab 
 function Adjustable.TabWindow:changeTabContainer(tab, myWindow, position)
+    local tn = TN(tab)
     myWindow[tab] = self[tab]
-    myWindow[tab.."tab"] = self[tab.."tab"]
-    myWindow[tab.."center"] = self[tab.."center"]
-    self[tab.."tab"].container = not(self[tab].floating) and self.header or Geyser 
+    myWindow[tn] = self[tn]
+    myWindow[tab .. "center"] = self[tab .. "center"]
+    self[tn].container = not(self[tab].floating) and self.header or Geyser 
     self[tab]:changeContainer(myWindow.footer)
-    self[tab.."tab"]:changeContainer(myWindow.header)
+    self[tn]:changeContainer(myWindow.header)
     if not (self[tab].floating) then
         self:removeTab(tab)
         self:createTabs()
     end
     myWindow:createTabs()
-    myWindow[tab.."tab"]:show()
+    myWindow[tn]:show()
     myWindow:addTab(tab, position)
     if self.current then
         self[self.current]:show()
@@ -442,9 +443,7 @@ function Adjustable.TabWindow:changeTabContainer(tab, myWindow, position)
         self.current = nil
     end
     myWindow:activateTab(tab)
-    if DMTabs and DMTabs.queueLayoutSave then
-        DMTabs:queueLayoutSave()
-    end
+    self:saveLayout()
 end
 
 -- handles the release event
@@ -452,19 +451,17 @@ function Adjustable.TabWindow:onRelease(tab, event, position)
     local myWindow = Adjustable.TabWindow.currentWindow or self
     local floating = self[tab].floating
     if event.button == "LeftButton" and Adjustable.TabWindow.currentWindow and not floating then
-        self[tab.."tab"]:lockContainer()
-        self[tab.."tab"].container = self.header
-        self[tab.."tab"]:onRelease(self[tab.."tab"].adjLabel, event)
-        self[tab.."tab"].adjLabel:echo(self[tab].tabText)
-        tab_pos = tab_pos or myWindow:findPosition(self[tab.."tab"])
+        self[TN(tab)]:lockContainer()
+        self[TN(tab)].container = self.header
+        self[TN(tab)]:onRelease(self[TN(tab)].adjLabel, event)
+        self[TN(tab)].adjLabel:echo(self[tab].tabText)
+        tab_pos = tab_pos or myWindow:findPosition(self[TN(tab)])
         if myWindow ~= self then
             self:changeTabContainer(tab, myWindow)
         end  
         myWindow:addTab(tab, tab_pos)
         myWindow:raiseAll()
-        if DMTabs and DMTabs.queueLayoutSave then
-            DMTabs:queueLayoutSave()
-        end
+        self:saveLayout()
     end
     
     if event.button == "LeftButton"
@@ -473,20 +470,15 @@ function Adjustable.TabWindow:onRelease(tab, event, position)
     and not Adjustable.TabWindow.blockNextFloat
     then
         self:transformTabContainer(tab)
-        self[tab.."tab"]:onRelease(self[tab.."tab"].adjLabel, event)
-        if DMTabs and DMTabs.queueLayoutSave then
-            DMTabs:queueLayoutSave()
-        end
+        self[TN(tab)]:onRelease(self[TN(tab)].adjLabel, event)
+        self:saveLayout()
     end
     
     if floating then
-        self[tab.."tab"]:onRelease(self[tab.."tab"].adjLabel, event)
-        if DMTabs and DMTabs.queueLayoutSave then
-            DMTabs:queueLayoutSave()
-        end
+        self[TN(tab)]:onRelease(self[TN(tab)].adjLabel, event)
+        self:saveLayout()
     end
-    -- Reset drag state ONLY if tab is docked
-    local c = self[tab.."tab"]
+    local c = self[TN(tab)]
     if c and not self[tab].floating then
         c.minimized = false
         c:lockContainer()
@@ -500,44 +492,37 @@ function Adjustable.TabWindow:onRelease(tab, event, position)
     tab_pos = nil
 end
 
+-- Internal: resolve a tab name or numeric index to its string key
+local function tabKey(self, which)
+    if type(which) == "number" and which <= #self.tabs then
+        return self.tabs[which], which
+    end
+    local idx = table.index_of(self.tabs, which)
+    return which, idx
+end
+
 -- change the text a tab displays
 function Adjustable.TabWindow:setTabText(which, text)
     assert(type(which) == "string" or type(which) == "number", "setTabText: bad argument #1 type (tab name/position as string or number expected, got "..type(which).."!)")
     assert(type(text) == "string", "setTabText: bad argument #2 type (tab text as string expected, got "..type(text).."!)")
+    local name, idx = tabKey(self, which)
+    if not idx then return nil, "setTabText: Couldn't find tab to set a new text" end
     text = "<center>"..text
-    if type(which) == "number" and which <= #self.tabs then
-        self[self.tabs[which]].tabText = text
-        self[self.tabs[which].."tab"].adjLabel:echo(text)
-        return true
-    end
-    local index = table.index_of(self.tabs, which)
-    if index then
-        self[self.tabs[index]].tabText = text
-        self[self.tabs[index].."tab"].adjLabel:echo(text)
-        return true
-    end
-    return nil, "setTabText: Couldn't find tab to set a new text"
+    self[name].tabText = text
+    self[TN(name)].adjLabel:echo(text)
+    return true
 end
 
 -- removes a tab (this won't be saved)
 function Adjustable.TabWindow:removeTab(which)
     assert(type(which) == "string" or type(which) == "number", "removeTab: bad argument #1 type (tab name/position as string or number expected, got "..type(which).."!)")
-    if type(which) == "number" and which <= #self.tabs then
-        self[self.tabs[which].."tab"]:hide()
-        self.header:remove(self[self.tabs[which].."tab"])
-        self.header:organize()
-        table.remove(self.tabs, which)
-        return true
-    end
-    local index = table.index_of(self.tabs, which)
-    if index then
-        self[self.tabs[index].."tab"]:hide()
-        self.header:remove(self[self.tabs[index].."tab"])
-        self.header:organize()
-        table.remove(self.tabs, index)
-        return true
-    end
-    return nil, "removeTab: Couldn't find tab to remove"
+    local name, idx = tabKey(self, which)
+    if not idx then return nil, "removeTab: Couldn't find tab to remove" end
+    self[TN(name)]:hide()
+    self.header:remove(self[TN(name)])
+    self.header:organize()
+    table.remove(self.tabs, idx)
+    return true
 end
 
 -- adds a tab (this won't be saved)
@@ -546,39 +531,41 @@ function Adjustable.TabWindow:addTab(name, pos)
     pos = pos or #self.tabs
     pos = pos > #self.tabs and #self.tabs or pos
     assert(type(pos) == "number", "addTab: bad argument #2 type (tab position as number expected, got "..type(pos).."!)")
-    --check if tabName exists already
+
     local index = table.index_of(self.tabs, name)
-    -- check if postion is valid
     if pos < 1 and #self.tabs ~= 0 then
         return nil, "addTab: not a valid position"
     end
-    
-    pos = index and pos > #self.tabs and #self.tabs or not(index) and pos == #self.tabs and pos + 1 or pos
-    
-    -- if tab exists and is at the same position already, do nothing
+
+    -- Clamp / adjust position for edge cases
+    if index and pos > #self.tabs then
+        pos = #self.tabs              -- existing tab clamped to last slot
+    elseif not index and pos == #self.tabs then
+        pos = pos + 1                 -- new tab appended after last
+    end
+
+    -- Already at the right position → nothing to do
     if index == pos then
         self.header:organize()
         return true
     end
-    
-    -- if tab exists and position is different, then change the position
-    if index then 
+
+    -- Reposition existing tab: remove from current slot, insert at new
+    if index then
         table.remove(self.tabs, index)
         table.remove(self.header.windows, index)
     end
     table.insert(self.tabs, pos, name)
-    
-    -- if tab is new created a new Label
+
+    -- New tab: create the label/container, then drop the duplicate header entry
     if not index then
         self:createTabs()
         table.remove(self.header.windows, #self.header.windows)
     end
-    
-    table.insert(self.header.windows, pos, self[name.."tab"].name)
+
+    table.insert(self.header.windows, pos, self[TN(name)].name)
     self.header:organize()
-    if DMTabs and DMTabs.queueLayoutSave then
-        DMTabs:queueLayoutSave()
-    end
+    self:saveLayout()
     return true
 end
 
