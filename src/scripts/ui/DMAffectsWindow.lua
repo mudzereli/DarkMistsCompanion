@@ -343,7 +343,7 @@ function AffectsWindow.copyCurrentLine()
   if line == "You are affected by the following:" then return end
 
   -- Exit early for condition lines (e.g. typing AFF while in combat).
-  for _, v in ipairs(dmapi.core.state.COMBAT_CONDITIONS) do
+  for _, v in ipairs(DMConstants.COMBAT_CONDITIONS) do
     if line:match(v) then return end
   end
 

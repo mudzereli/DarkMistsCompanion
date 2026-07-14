@@ -8,6 +8,40 @@
 DMConstants = {}
 
 -- ============================================================================
+-- Combat Condition Descriptions
+-- ----------------------------------------------------------------------------
+-- Ordered list of mob condition phrases from most healthy to near death.
+-- Used by DMAPI's mobCondition parser to assess target health in combat.
+-- ============================================================================
+
+DMConstants.COMBAT_CONDITIONS = {
+  "is in perfect condition",
+  "has a few nicks",
+  "has a few scratches",
+  "looks a little beat up",
+  "has a few bruises",
+  "has quite a few bruises",
+  "is heavily bruised",
+  "has some small wounds",
+  "has some nasty cuts",
+  "has quite a few wounds",
+  "is covered in bleeding wounds",
+  "is bleeding profusely",
+  "is spurting blood",
+  "is gushing blood",
+  "is screaming in pain",
+  "looks like a bloody mess",
+  "is stumbling in pain",
+  "is in pretty bad shape",
+  "is writhing in agony",
+  "is spasming in shock",
+  "is catatonic from the intense pain",
+  "is stumbling from grave injuries",
+  "is convulsing on the ground",
+  "nearly dead",
+}
+
+-- ============================================================================
 -- Damage Verb Ranges
 -- ----------------------------------------------------------------------------
 -- Maps combat message keywords to {min, max} damage ranges.
