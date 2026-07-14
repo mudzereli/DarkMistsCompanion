@@ -56,35 +56,7 @@ dmapi.core = {
     lastCombatRoundFired = getEpoch(),
     lastCommand = nil,
     capturingRoom = false,
-    exitLineMarker = 0,
-    
-    -- Combat condition descriptions in order of severity
-    COMBAT_CONDITIONS = {
-      "is in perfect condition",
-      "has a few nicks",
-      "has a few scratches",
-      "looks a little beat up",
-      "has a few bruises",
-      "has quite a few bruises",
-      "is heavily bruised",
-      "has some small wounds",
-      "has some nasty cuts",
-      "has quite a few wounds",
-      "is covered in bleeding wounds",
-      "is bleeding profusely",
-      "is spurting blood",
-      "is gushing blood",
-      "is screaming in pain",
-      "looks like a bloody mess",
-      "is stumbling in pain",
-      "is in pretty bad shape",
-      "is writhing in agony",
-      "is spasming in shock",
-      "is catatonic from the intense pain",
-      "is stumbling from grave injuries",
-      "is convulsing on the ground",
-      "nearly dead"
-    }
+    exitLineMarker = 0
   },
   
   -- One-line event mappings
@@ -559,7 +531,7 @@ end
 -- @param line string The line to parse
 -- @return table|nil Parsed mob state data
 function dmapi.parsers.mobCondition(line)
-  for _, phrase in ipairs(dmapi.core.state.COMBAT_CONDITIONS) do
+  for _, phrase in ipairs(DMConstants.COMBAT_CONDITIONS) do
     if line:find(phrase, 1, true) then
       local mob, condition, hpPct = line:match(
         "^(.+)%s+(" .. phrase .. ")[.!]%s+%((%d+%.?%d*)%%%)$"
