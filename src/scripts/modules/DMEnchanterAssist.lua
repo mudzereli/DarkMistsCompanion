@@ -656,29 +656,69 @@ function EnchanterAssist.run()
   EnchanterAssist.state = "idle"
 end
 
-function EnchanterAssist.showSessionFormulas()
+local EA_FORMULA_SEP     = "============================"
+local EA_FORMULA_SEP_LEN = (utf8 and utf8.len and utf8.len(EA_FORMULA_SEP)) or #EA_FORMULA_SEP
+
+function EnchanterAssist.showSessionFormulas(win)
+
+  local function echo(fmt, ...)
+    local msg = fmt:format(...)
+    if win then cecho(win, msg) else cecho(msg) end
+  end
 
   local discoveredCount = #EnchanterAssist.sessionFormulas
 
   if discoveredCount == 0 then
-    cecho("\n" .. ea_warn .. "No formulas discovered this session.\n")
+    if win then
+      echo("%sNo formulas discovered this session.", ea_warn)
+    else
+      cecho("\n" .. ea_warn .. "No formulas discovered this session.\n")
+    end
     return
   end
 
-  cecho("\n" .. ea_info .. "===== Session Formulas =====\n")
+  echo("\n%s===== Session Formulas =====\n", ea_info)
 
   for _, name in ipairs(EnchanterAssist.sessionFormulas) do
-    cechoLink(
-      string.format("%s• %s<u>%s</u>\n", ea_accent, ea_text, name),
-      function()
-        send("alch info " .. name)
-      end,
-      "Click to view formula info",
-      true
-    )
+    if win then
+      cechoLink(
+        win,
+        string.format("%s• %s<u>%s</u>\n", ea_accent, ea_text, name),
+        'send("alch info ' .. name .. '")',
+        "Click to view formula info",
+        true
+      )
+    else
+      cechoLink(
+        string.format("%s• %s<u>%s</u>\n", ea_accent, ea_text, name),
+        function()
+          send("alch info " .. name)
+        end,
+        "Click to view formula info",
+        true
+      )
+    end
   end
 
-  cecho(ea_info .. "============================\n")
+  echo("%s" .. EA_FORMULA_SEP .. "\n", ea_info)
+end
+function EnchanterAssist.showSessionFormulasAlert()
+  if #EnchanterAssist.sessionFormulas == 0 then
+    DMLogger.notify(ea_plugin, ea_warn .. "No formulas discovered this session!")
+    return
+  end
+
+  -- Estimate window size
+  local charW, charH = calcFontSize(DMAlertWindow.getBodyFontSize())
+  if not charW then charW = 8 end
+  if not charH then charH = 16 end
+  local totalLines  = 2 + #EnchanterAssist.sessionFormulas  --title + entries + closing separator
+  local estWidth   = math.max(400, EA_FORMULA_SEP_LEN * charW + DMAlertWindow.getBorderPx())
+  local estHeight   = math.min(520, totalLines * charH + DMAlertWindow.getChromeHeight())
+
+  DMAlertWindow.Show("Session Formulas", function(win)
+    EnchanterAssist.showSessionFormulas(win)
+  end, { width = estWidth, height = estHeight, scrollable = true })
 end
 
 function EnchanterAssist.finishAttempt()
@@ -698,13 +738,21 @@ function EnchanterAssist.finishAttempt()
   end
 end
 
-function EnchanterAssist.stats()
+-- Display constants for alert window sizing
+local EA_SEPARATOR        = "===================================="
+local EA_SEP_LEN          = (utf8 and utf8.len and utf8.len(EA_SEPARATOR)) or #EA_SEPARATOR
+local EA_STATS_DATA_LINES   = 10  -- Header + 5 part rows + session header + trials + formulas + closing sep
+
+function EnchanterAssist.stats(win)
+
+  local function echo(fmt, ...)
+    local msg = fmt:format(...)
+    if win then cecho(win, msg) else cecho(msg) end
+  end
 
   local n = #EnchanterAssist.allmats
 
-  cecho(
-    "\n" .. ea_info .. "===== EnchanterAssist Progress ====="
-  )
+  echo("\n%s===== EnchanterAssist Progress =====", ea_info)
 
   for r = 1, 5 do
 
@@ -727,48 +775,70 @@ function EnchanterAssist.stats()
       lineColor = ea_good
     end
 
-    cecho(
-      string.format(
-        "\n%s%d-part | %7d / %7d (%6.2f%%)",
-        lineColor,
-        r,
-        attemptedForMode,
-        totalCombos,
-        percent
-      )
+    echo(
+      "\n%s%d-part | %7d / %7d (%6.2f%%)",
+      lineColor,
+      r,
+      attemptedForMode,
+      totalCombos,
+      percent
     )
   end
 
-  cecho("\n" .. ea_info .. "-------- Session Statistics --------")
+  echo("\n%s-------- Session Statistics --------", ea_info)
 
-  cecho(string.format(
+  echo(
     "\n%sTrials Attempted:    %s%4d",
     ea_text,
     ea_good,
     EnchanterAssist.sessionTrials
-  ))
+  )
 
   local discoveredCount = #EnchanterAssist.sessionFormulas
 
-  cecho(string.format(
+  echo(
     "\n%sFormulas Discovered: %s%4d ",
     ea_text,
     ea_accent,
     discoveredCount
-  ))
+  )
 
   if discoveredCount > 0 then
-    cechoLink(
-      ea_gold .. "<u>[View All]</u>",
-      function()
-        EnchanterAssist.showSessionFormulas()
-      end,
-      "Show all discovered formulas",
-      true
-    )
+    if win then
+      cechoLink(
+        win,
+        ea_gold .. "<u>[View All]</u>",
+        [[DMAlertWindow.Hide(); EnchanterAssist.showSessionFormulasAlert()]],
+        "Show all discovered formulas",
+        true
+      )
+    else
+      cechoLink(
+        ea_gold .. "<u>[View All]</u>",
+        function()
+          EnchanterAssist.showSessionFormulas()
+        end,
+        "Show all discovered formulas",
+        true
+      )
+    end
   end
-  
-  cecho("\n" .. ea_info .. "====================================")
+
+  echo("\n%s" .. EA_SEPARATOR, ea_info)
+end
+
+function EnchanterAssist.showAlert()
+  -- Derive window size from alert window's actual font and chrome dimensions
+  local charW, charH = calcFontSize(DMAlertWindow.getBodyFontSize())
+  if not charW then charW = 8 end
+  if not charH then charH = 16 end
+  local totalLines  = EA_STATS_DATA_LINES
+  local estWidth   = math.max(400, (EA_SEP_LEN + 2) * charW + DMAlertWindow.getBorderPx())
+  local estHeight   = math.min(520, totalLines * charH + DMAlertWindow.getChromeHeight())
+
+  DMAlertWindow.Show("EnchanterAssist Progress", function(win)
+    EnchanterAssist.stats(win)
+  end, { width = estWidth, height = estHeight, scrollable = true })
 end
 
 function EnchanterAssist.reset()

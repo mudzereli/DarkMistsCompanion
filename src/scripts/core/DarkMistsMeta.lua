@@ -1321,7 +1321,7 @@ function DarkMistsMeta.init()
 
   DarkmistsAlias.add("^es reset$", EnchanterAssist.reset)
 
-  DarkmistsAlias.add("^es stats$", EnchanterAssist.stats)
+  DarkmistsAlias.add("^es stats$", EnchanterAssist.showAlert)
 
   DarkmistsAlias.add("^es missing$", EnchanterAssist.statsMissing)
 
