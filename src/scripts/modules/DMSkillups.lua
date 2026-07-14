@@ -80,7 +80,7 @@ function SkillUps.display(win)
         math.floor((timeAgo % 3600) / 60))
     end
 
-    echo("%s[%s%s%s] %s%-30s %s(%s)\n",
+    echo("%s[%s%s%s] %s%-25s %s(%s)\n",
       DarkmistsTheme.mutedTag,
       DarkmistsTheme.textTag, skillup.timestamp,
       DarkmistsTheme.mutedTag,
