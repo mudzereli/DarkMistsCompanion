@@ -559,6 +559,16 @@ function ItemTracker.findFirstItemInLine(line, allowFallback)
   end
 
   if not phrase then
+    -- <mob> gets <item> from the corpse of <someone>.
+    local gpos = lower:find(" gets ", 1, true)
+    local fpos = gpos and lower:find(" from the corpse of ", gpos + 5, true)
+    if gpos and fpos then
+      phrase = lower:sub(gpos + 6, fpos - 1)
+      offset = gpos + 5
+    end
+  end
+
+  if not phrase then
     -- Lines like "<thing> is carried by <mob>" or "<thing> is in <location>".
     -- Extract the left-side phrase and match item names at its end.
     local cpos = lower:find(" is carried by ")
