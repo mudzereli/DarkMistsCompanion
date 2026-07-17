@@ -48,6 +48,13 @@
 **Map**: fixed layout of Ioio area
 **Clickable Items**: updated clickable items
 
+**DMC Patch Notes: 1.5.11**
+
+**DarkMistsCore**: refactored startup flow for improved initialization reliability.
+**TabFrame/TabWindow**: refactored components for cleaner layout handling and separation of concerns.
+**SkillUps**: fixed display overflow in skill improvement history when the time since last skillup exceeds one hour.
+**Enchanter Assist**: trial data and assistant info now displayed in an alert window.
+**ItemTracker**: mobs looting corpses now trigger item link detection (e.g. `<mob> gets <item> from the corpse of <someone>`).
+
 **Future Versions**
-- check map link to Gul'Doran City
-- potential way to disable "prac" command or detect lag
+-  backwards compatibility testing No newline at end of file
