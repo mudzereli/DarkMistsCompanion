@@ -71,6 +71,27 @@ MapColors.AreaOverrides = {
   ["The Nine Hells"] = MapColors.Terrain.FIERY,
 }
 
+-- Hand-curated room overrides (highest priority, applied last so they always win)
+-- Keys are lowercased room names; may use '*' wildcards for partial matches.
+-- Hand-edit this list when a room's name has no detectable keyword (e.g. named
+-- shops like "The Iron Claw"). Note: package updates will overwrite this file.
+MapColors.RoomOverrides = {
+  -- Named shops with no recognizable shop keywords
+  ["the claw and chalice"] = MapColors.Terrain.INTERIOR_POI,
+  ["the ember whisker"] = MapColors.Terrain.INTERIOR_POI,
+  ["the bramble basket"] = MapColors.Terrain.INTERIOR_POI,
+  ["the iron claw"] = MapColors.Terrain.INTERIOR_POI,
+  ["little house of magic"] = MapColors.Terrain.INTERIOR_POI,
+  ["bottoms up!"] = MapColors.Terrain.INTERIOR_POI,
+  ["the restaurant section"] = MapColors.Terrain.INTERIOR_POI,
+  ["the east main street weapon smithy"] = MapColors.Terrain.INTERIOR_POI,
+  ["the east main street armory"] = MapColors.Terrain.INTERIOR_POI,
+  ["butchery of the city of sudharma"] = MapColors.Terrain.INTERIOR_POI,
+  ["city harmacy"] = MapColors.Terrain.INTERIOR_POI,
+  ["yin and yang construction company"] = MapColors.Terrain.INTERIOR_POI,
+  ["ny's wonders and baubles - ground floor"] = MapColors.Terrain.INTERIOR_POI,
+}
+
 -- Terrain category sets (for adjacency analysis and context detection)
 MapColors.NatureTerrains = {
   [MapColors.Terrain.THICK_WOODS] = true, [MapColors.Terrain.LIGHT_WOODS] = true,
@@ -845,6 +866,9 @@ function MapColors.UpdateMapColors()
     cecho(("\n<gray>... and %d more keywords"):format(statCount - 20))
   end
 
+  -- Hand-curated overrides always win over keyword matches
+  MapColors.ApplyRoomOverrides()
+
   local elapsed = os.clock() - startTime
   echo(("\n\nUpdate Map: done in %.2fs!\n"):format(elapsed))
 end
@@ -1000,6 +1024,41 @@ end
 -- BATCH UPDATE FUNCTIONS
 -- ============================================================================
 
+-- Apply hand-curated room overrides (highest priority; runs last so it wins)
+function MapColors.ApplyRoomOverrides()
+  local changes = 0
+
+  for _, id in ipairs(MapColors._allRoomIds) do
+    local data = MapColors._roomData[id]
+    if data then
+      local terrain = MapColors.RoomOverrides[data.lowername]
+
+      -- Fall back to wildcard patterns for partial name matches
+      if terrain == nil then
+        for pattern, t in pairs(MapColors.RoomOverrides) do
+          if pattern:find("%*", 1, true) then
+            local compiled = getCompiledPattern(pattern)
+            if data.lowername:find("^" .. compiled .. "$") then
+              terrain = t
+              break
+            end
+          end
+        end
+      end
+
+      if terrain then
+        applyEnv(id, terrain)
+        changes = changes + 1
+      end
+    end
+  end
+
+  if changes > 0 then
+    cecho(("\n<forest_green>[RoomOverrides] applied %d overrides"):format(changes))
+  end
+  return changes
+end
+
 -- Full coloring pass (from scratch)
 function MapColors.FullUpdatePass()
   local startTime = os.clock()
@@ -1009,6 +1068,7 @@ function MapColors.FullUpdatePass()
   MapColors.ConnectorPass()
   MapColors.FillInteriorPOI()
   MapColors.FillInteriorPOI()  -- Run twice to fill gaps
+  MapColors.ApplyRoomOverrides()  -- Last so curated overrides always win
   
   local elapsed = os.clock() - startTime
   cecho(("\n<forest_green>[FullUpdatePass] Completed in %.2f seconds"):format(elapsed))

@@ -55,6 +55,8 @@
 **SkillUps**: fixed display overflow in skill improvement history when the time since last skillup exceeds one hour.
 **Enchanter Assist**: trial data and assistant info now displayed in an alert window.
 **ItemTracker**: mobs looting corpses now trigger item link detection (e.g. `<mob> gets <item> from the corpse of <someone>`).
+**Map**: added Sunpaw Hollow.
+**Map**: fixed shop coloring in Sudharma — named shops (e.g. The Iron Claw, The Ember Whisker, The Claw and Chalice) now color as points of interest.
 
 **Future Versions**
 -  backwards compatibility testing No newline at end of file
