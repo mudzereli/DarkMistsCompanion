@@ -56,7 +56,9 @@
 **Enchanter Assist**: trial data and assistant info now displayed in an alert window.
 **ItemTracker**: mobs looting corpses now trigger item link detection (e.g. `<mob> gets <item> from the corpse of <someone>`).
 **Map**: added Sunpaw Hollow.
+**Map**: added the Sundered Vale.
 **Map**: fixed shop coloring in Sudharma — named shops now color as points of interest.
+**Item Viewer**: scoring and stat weight input polish.
 
 **Future Versions**
 -  backwards compatibility testing No newline at end of file
