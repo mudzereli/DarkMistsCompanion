@@ -847,6 +847,10 @@ th.grouped {
               <div class="d-flex justify-content-between align-items-center mb-2">
                 <h6 class="text-secondary mb-0">⚖️ Stat Weights & Scoring</h6>
                 <div>
+                  <label class="form-check form-check-inline small mb-0 me-2" title="Units per point: enter how many units equal 1 point (e.g. HP 20 = 20 HP per point)">
+                    <input class="form-check-input" type="checkbox" id="weightUnitsMode" onchange="toggleWeightMode()">
+                    <span class="form-check-label">Units per point</span>
+                  </label>
                   <button class="btn btn-sm btn-outline-primary preset-btn me-1" onclick="applyPreset('melee')">⚔️ Melee DPS</button>
                   <button class="btn btn-sm btn-outline-primary preset-btn me-1" onclick="applyPreset('tank')">🛡️ Tank</button>
                   <button class="btn btn-sm btn-outline-primary preset-btn me-1" onclick="applyPreset('caster')">🔮 Caster</button>
@@ -887,8 +891,12 @@ th.grouped {
                   <label class="form-label small mb-0">Mana Weight</label>
                   <input id="weightMana" type="number" class="form-control form-control-sm weight-input" value="0" step="0.1" min="0">
                 </div>
+                <div class="col-6 col-md-2">
+                  <label class="form-label small mb-0">Saves Weight</label>
+                  <input id="weightSaves" type="number" class="form-control form-control-sm weight-input" value="0" step="0.1" min="0">
+                </div>
               </div>
-              <div class="form-text mt-2">Set weights above 0 to enable scoring. Score column appears when weights are set.</div>
+              <div id="weightModeHint" class="form-text mt-2">Multiplier: score = stat × weight. Set any weight above 0 to enable scoring; the Score column appears when a weight is set.</div>
             </div>
           </div>
         </div>
@@ -936,6 +944,7 @@ th.grouped {
             <th data-key="holyPower" class="text-end">Holy<span class="sort"></span></th>
             <th data-key="hp" class="text-end">Health<span class="sort"></span></th>
             <th data-key="avgArmorClass" class="text-end">AvgAC<span class="sort"></span></th>
+            <th data-key="saveTotal" class="text-end">Saves<span class="sort"></span></th>
           </tr>
         </thead>
         <tbody></tbody>
@@ -953,6 +962,12 @@ let items = [];
 let sortKey = null;
 let sortAsc = true;
 let areaStats = {};
+// Save-scoring game constants (Dark Mists): generic "saves by N" applies at
+// N/SAVE_GENERIC_DIVISOR to each of the SAVE_CATEGORY_COUNT specific save categories.
+// Specific "save vs X" points are rated at SAVE_SPECIFIC_MULTIPLIER (lower than generic).
+const SAVE_CATEGORY_COUNT = 4;
+const SAVE_GENERIC_DIVISOR = 3;
+const SAVE_SPECIFIC_MULTIPLIER = 0.75;
 const SPECIAL_AREAS = new Set(['Quests', 'Fastolph\'s Shrine', 'Valhalla', 'Prizes', 'Shrine of Duality', 'Special Stuff', 'Thera Ball', "Tziensarith's God Room", "Melykurion's God Room", "Hope's Eternity","Room of Dreams","The Chamber of Eternal Agony","Palace of Prurience","The Halflings Den","The Shrine of Innovation","Shrine of Harmony","Shrine of the Silver Dragon","Cirdan's Shrine","Council of Elven Law","Luniin Forest","The Altar of Redemption","The House of Abasdarhon","Shrine of the Void","The Shrine of Merchants","Illunus Godroom","The Medicinal Garden","Shrine of the Jar God","Chamber of Horizons"]);
 
 const $ = (id) => document.getElementById(id);
@@ -996,6 +1011,23 @@ function initTableStickyState() {
 /* =========================================================
    Stat Weight Presets
    ========================================================= */
+// Weight input model: false = "score = stat × weight" (multiplier mode),
+// true = "units per point" mode (enter how many units equal 1 point).
+let weightUnitsMode = false;
+
+// Canonical weight field definitions (id = input element, key = weight key).
+const WEIGHT_INPUTS = [
+  { id: 'weightHit',    key: 'hit',    label: 'Hitroll' },
+  { id: 'weightDam',    key: 'dam',    label: 'Damroll' },
+  { id: 'weightHP',     key: 'hp',     label: 'HP' },
+  { id: 'weightAC',     key: 'ac',     label: 'AC' },
+  { id: 'weightSpell',  key: 'spell',  label: 'Spell' },
+  { id: 'weightHoly',   key: 'holy',   label: 'Holy' },
+  { id: 'weightAvgDmg', key: 'avgDmg', label: 'Avg Dmg' },
+  { id: 'weightMana',   key: 'mana',   label: 'Mana' },
+  { id: 'weightSaves',  key: 'saves',  label: 'Saves' }
+];
+
 const PRESETS = {
   melee: {
     hit: 2,
@@ -1039,19 +1071,22 @@ const PRESETS = {
   }
 };
 
+const round4 = x => Math.round(x * 10000) / 10000;
+
+// Convert a raw input value to the canonical multiplier used for scoring.
+function weightAsMultiplier(inputEl) {
+  const v = Number(inputEl.value || 0);
+  return weightUnitsMode && v > 0 ? 1 / v : v;
+}
+
 function applyPreset(name) {
   const preset = PRESETS[name];
   if (!preset) return;
-  
-  $('weightHit').value = preset.hit;
-  $('weightDam').value = preset.dam;
-  $('weightHP').value = preset.hp;
-  $('weightAC').value = preset.ac;
-  $('weightSpell').value = preset.spell;
-  $('weightHoly').value = preset.holy;
-  $('weightAvgDmg').value = preset.avgDmg;
-  $('weightMana').value = preset.mana;
-  
+  // Presets are authored as multipliers; convert to the active input mode.
+  WEIGHT_INPUTS.forEach(f => {
+    const m = preset[f.key] || 0;
+    $(f.id).value = weightUnitsMode && m > 0 ? round4(1 / m) : m;
+  });
   render();
 }
 
@@ -1064,26 +1099,20 @@ function resetWeights() {
   $('weightHoly').value = 0;
   $('weightAvgDmg').value = 0;
   $('weightMana').value = 0;
+  $('weightSaves').value = 0;
   
   render();
 }
 
 function getWeights() {
-  return {
-    hit: Number($('weightHit').value || 0),
-    dam: Number($('weightDam').value || 0),
-    hp: Number($('weightHP').value || 0),
-    ac: Number($('weightAC').value || 0),
-    spell: Number($('weightSpell').value || 0),
-    holy: Number($('weightHoly').value || 0),
-    avgDmg: Number($('weightAvgDmg').value || 0),
-    mana: Number($('weightMana').value || 0)
-  };
+  const w = {};
+  WEIGHT_INPUTS.forEach(f => { w[f.key] = weightAsMultiplier($(f.id)); });
+  return w;
 }
 
 function hasAnyWeights() {
   const w = getWeights();
-  return w.hit || w.dam || w.hp || w.ac || w.spell || w.holy || w.avgDmg || w.mana;
+  return w.hit || w.dam || w.hp || w.ac || w.spell || w.holy || w.avgDmg || w.mana || w.saves;
 }
 
 function calculateScore(item) {
@@ -1098,8 +1127,33 @@ function calculateScore(item) {
   score += (item.holyPower || 0) * w.holy;
   score += (item.avgDamage || 0) * w.avgDmg;
   score += (item.mana || 0) * w.mana;
+  score -= (item.saveTotal || 0) * w.saves; // negative saves = good
   
   return Math.round(score * 10) / 10;
+}
+
+// Switch the weight inputs between multiplier mode and units-per-point mode.
+function toggleWeightMode() {
+  weightUnitsMode = $('weightUnitsMode').checked;
+  // Flip the displayed values between the two representations.
+  WEIGHT_INPUTS.forEach(f => {
+    const el = $(f.id);
+    const v = Number(el.value || 0);
+    el.value = v > 0 ? round4(1 / v) : 0;
+  });
+  updateWeightModeUI();
+  render();
+}
+
+function updateWeightModeUI() {
+  const units = $('weightUnitsMode').checked;
+  WEIGHT_INPUTS.forEach(f => {
+    const label = $(f.id).closest('.col-6')?.querySelector('label');
+    if (label) label.textContent = f.label + (units ? ' / point' : ' Weight');
+  });
+  $('weightModeHint').textContent = units
+    ? 'Units-per-point: enter how many units equal 1 point (e.g. HP 20 means 20 HP = 1 point). The most valuable stat is usually 1.'
+    : 'Multiplier: score = stat × weight. Set any weight above 0 to enable scoring; the Score column appears when a weight is set.';
 }
 
 /* =========================================================
@@ -1362,6 +1416,23 @@ function clearAllFilters() {
 /* =========================================================
    Parsing & Stats
    ========================================================= */
+function computeSaveTotal(rawText) {
+  // Sum specific "Affects save vs X by N" bonuses (any category — future-proof).
+  let specificSum = 0;
+  let found = false;
+  for (const m of rawText.matchAll(/Affects save vs (\w+) by (-?\d+)/gi)) {
+    specificSum += SAVE_SPECIFIC_MULTIPLIER * Number(m[2]);
+    found = true;
+  }
+  // Generic "Affects saves by N" applies at N/SAVE_GENERIC_DIVISOR to each category.
+  const generic = rawText.match(/Affects saves by (-?\d+)/i);
+  if (generic) {
+    specificSum += (SAVE_CATEGORY_COUNT * Number(generic[1])) / SAVE_GENERIC_DIVISOR;
+    found = true;
+  }
+  return found ? specificSum : null;
+}
+
 function avgDice(diceString) {
   const match = diceString?.match(/(\d+)d(\d+)/);
   return match ? (Number(match[1]) * (Number(match[2]) + 1)) / 2 : null;
@@ -1522,7 +1593,8 @@ function parseItem(rawText, sourceId) {
     holyPower: rawText.match(/Affects holy power by (-?\d+)/) ? Number(RegExp.$1) : null,
     mana: rawText.match(/Affects mana by (-?\d+)/) ? Number(RegExp.$1) : null,
     hp: rawText.match(/Affects hp by (-?\d+)/) ? Number(RegExp.$1) : null,
-    damageNoun: rawText.match(/Damage noun is (.+?)\.?$/im)?.[1]?.trim() ?? ''
+    damageNoun: rawText.match(/Damage noun is (.+?)\.?$/im)?.[1]?.trim() ?? '',
+    saveTotal: computeSaveTotal(rawText)
   };
   
   item.wearSlot = inferWearSlot(item);
@@ -1808,7 +1880,7 @@ function updateTableHeaders() {
         <th colspan="1" class="grouped">Score</th>
         <th colspan="7" class="grouped">General</th>
         <th colspan="4" class="grouped">Combat</th>
-        <th colspan="6" class="grouped">Character</th>
+        <th colspan="7" class="grouped">Character</th>
       `;
       
       const scoreHeader = document.createElement('th');
@@ -1831,7 +1903,7 @@ function updateTableHeaders() {
       groupedHeader.innerHTML = `
         <th colspan="7" class="grouped">General</th>
         <th colspan="4" class="grouped">Combat</th>
-        <th colspan="6" class="grouped">Character</th>
+        <th colspan="7" class="grouped">Character</th>
       `;
     }
   }
@@ -2030,7 +2102,7 @@ function render() {
   
   // Build table rows (only for current page)
   const rows = [];
-  const colSpan = showScore ? 16 : 15;
+  const colSpan = showScore ? 19 : 18;
   
   for (let idx = startIdx; idx < endIdx; idx++) {
     const item = filtered[idx];
@@ -2056,6 +2128,7 @@ function render() {
       `<td class="text-end stat holy">${item.holyPower ?? ''}</td>`,
       `<td class="text-end stat hp">${item.hp ?? ''}</td>`,
       `<td class="text-end stat ac">${item.avgArmorClass ?? ''}</td>`,
+      `<td class="text-end stat">${item.saveTotal != null ? Math.round(item.saveTotal) : ''}</td>`,
       `</tr>`,
       `<tr class="mud-row d-none" data-id="${item.id}">`,
       `<td colspan="${colSpan}"><div class="mud-output"><pre>${item.raw}</pre></div></td>`,
