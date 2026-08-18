@@ -50,16 +50,17 @@
 
 **DMC Patch Notes: 1.5.11**
 
-**DarkMistsCore**: refactored startup flow for improved initialization reliability.
-**TabFrame/TabWindow**: refactored components for cleaner layout handling and separation of concerns.
 **SkillUps**: fixed display overflow in skill improvement history when the time since last skillup exceeds one hour.
 **Enchanter Assist**: trial data and assistant info now displayed in an alert window.
+**Map**: added Sunpaw Hollow.
+**Map**: added The Sundered Vale.
+**Map**: added The Fractured Herd.
+**Map**: adjusted shop coloring in Sudharma - shops now properly color as points of interest.
 **ItemTracker**: mobs looting corpses now trigger item link detection (e.g. `<mob> gets <item> from the corpse of <someone>`).
 **ItemTracker**: updated items from the website.
-**Map**: added Sunpaw Hollow.
-**Map**: added the Sundered Vale.
-**Map**: fixed shop coloring in Sudharma — named shops now color as points of interest.
 **Item Viewer**: scoring and stat weight input polish.
+**DarkMistsCore**: refactored startup flow for improved initialization reliability.
+**TabFrame/TabWindow**: refactored components for cleaner layout handling and separation of concerns.
 
 **Future Versions**
 -  backwards compatibility testing No newline at end of file

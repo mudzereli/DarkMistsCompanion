@@ -28,7 +28,7 @@ MapColors.TerrainColor = {
   [MapColors.Terrain.DEEP_WATER] = {145, 185, 225},
   [MapColors.Terrain.STONY] = {205, 210, 220},
   [MapColors.Terrain.STONY_PATH] = {220, 225, 235},
-  [MapColors.Terrain.SNOWY] = {245, 250, 255},
+  [MapColors.Terrain.SNOWY] = {220, 240, 255},
   [MapColors.Terrain.VALLEY] = {205, 190, 190},
   [MapColors.Terrain.TUNNEL] = {165, 165, 175},
   [MapColors.Terrain.CAVE] = {150, 155, 165},
@@ -90,6 +90,7 @@ MapColors.RoomOverrides = {
   ["city harmacy"] = MapColors.Terrain.INTERIOR_POI,
   ["yin and yang construction company"] = MapColors.Terrain.INTERIOR_POI,
   ["ny's wonders and baubles - ground floor"] = MapColors.Terrain.INTERIOR_POI,
+  ["the training ground"] = MapColors.Terrain.PLAINS,
 }
 
 -- Terrain category sets (for adjacency analysis and context detection)
@@ -147,6 +148,7 @@ MapColors.WordAssociations = {
   { "chasm", MapColors.Terrain.VALLEY }, { "pit", MapColors.Terrain.VALLEY },
   { "ravine", MapColors.Terrain.VALLEY },
   { "summit", MapColors.Terrain.SNOWY }, { "peak", MapColors.Terrain.SNOWY },
+  { "tundra", MapColors.Terrain.SNOWY },
 
   -- Sand/beaches/deserts
   { "sandy", MapColors.Terrain.SANDY }, { "beach", MapColors.Terrain.SANDY },
@@ -267,6 +269,7 @@ MapColors.WordAssociations = {
   -- Military structures
   { "guard post", MapColors.Terrain.STONY }, { "guardpost", MapColors.Terrain.STONY },
   { "arena", MapColors.Terrain.STONY }, { "barracks", MapColors.Terrain.STONY },
+  { "billet", MapColors.Terrain.STONY }, { "lodge", MapColors.Terrain.STONY },
   { "outpost", MapColors.Terrain.STONY }, { "stands", MapColors.Terrain.WOODEN },
 
   -- Shops/points of interest (high visibility)
@@ -304,7 +307,7 @@ MapColors.WordAssociations = {
   { "alley", MapColors.Terrain.SHADOWY }, { "alleyway", MapColors.Terrain.SHADOWY },
   { "catacomb", MapColors.Terrain.CORRUPTED }, { "crypt", MapColors.Terrain.CORRUPTED },
   { "tomb", MapColors.Terrain.CORRUPTED }, { "sarcophagus", MapColors.Terrain.CORRUPTED },
-  { "antechamber", MapColors.Terrain.CORRUPTED },
+  { "antechamber", MapColors.Terrain.METAL },
   { "depth", MapColors.Terrain.CAVE }, { "stair*", MapColors.Terrain.VALLEY },
   --{ "stairwell", MapColors.Terrain.VALLEY }, { "staircase", MapColors.Terrain.VALLEY },
   { "tunnel", MapColors.Terrain.TUNNEL },
