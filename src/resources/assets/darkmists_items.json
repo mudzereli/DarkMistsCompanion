@@ -1525,6 +1525,61 @@
     "details": "Area: Theran Library Collection\nObject 'The ABC Coloring Book by Isara Silvara' is type book, extra flags glowing.\nWeight is 4.5 pounds, value is 95, level is 1.\nMaterial is leather and paper.\nrestrict flags none."
   },
   {
+    "name": "a book entitled, THE CRUSADER'S GUIDE TO HONORABLE WAR",
+    "vnum": 4402,
+    "details": "Area: Theran Library Collection\nObject 'a book entitled, THE CRUSADER'S GUIDE TO HONORABLE WAR' is type book, extra flags none.\nWeight is 3.0 pounds, value is 400, level is 1.\nMaterial is leather and linen paper.\nrestrict flags none."
+  },
+  {
+    "name": "a pair of soft batting mittens",
+    "vnum": 15359,
+    "details": "Area: Felari Starter Toys\nObject 'a pair of soft batting mittens' is type weapon, extra flags none.\nWeight is 0.6 pounds, value is 1, level is 1.\nMaterial is cloth.\nrestrict flags none.\nWeapon type is claw (exotic).\nDamage is 1d6 (average 3).\nDamage noun is claw."
+  },
+  {
+    "name": "a miniature scratching-post staff",
+    "vnum": 15358,
+    "details": "Area: Felari Starter Toys\nObject 'a miniature scratching-post staff' is type weapon, extra flags none.\nWeight is 1.6 pounds, value is 1, level is 1.\nMaterial is wood.\nrestrict flags none.\nWeapon type is staff.\nDamage is 1d5 (average 3).\nDamage noun is pound."
+  },
+  {
+    "name": "an oversized cat-teaser pole",
+    "vnum": 15357,
+    "details": "Area: Felari Starter Toys\nObject 'an oversized cat-teaser pole' is type weapon, extra flags none.\nWeight is 1.8 pounds, value is 1, level is 1.\nMaterial is wood.\nrestrict flags none.\nWeapon type is polearm.\nDamage is 1d7 (average 4).\nDamage noun is slash."
+  },
+  {
+    "name": "a trailing ball of yarn",
+    "vnum": 15356,
+    "details": "Area: Felari Starter Toys\nObject 'a trailing ball of yarn' is type weapon, extra flags none.\nWeight is 0.5 pounds, value is 1, level is 1.\nMaterial is yarn.\nrestrict flags none.\nWeapon type is whip.\nDamage is 2d2 (average 3).\nDamage noun is whip."
+  },
+  {
+    "name": "a griffon-feather cat toy",
+    "vnum": 15355,
+    "details": "Area: Felari Starter Toys\nObject 'a griffon-feather cat toy' is type weapon, extra flags none.\nWeight is 0.8 pounds, value is 1, level is 1.\nMaterial is feathers.\nrestrict flags none.\nWeapon type is flail.\nDamage is 1d5 (average 3).\nDamage noun is crush."
+  },
+  {
+    "name": "a feather-ribbon play spear",
+    "vnum": 15354,
+    "details": "Area: Felari Starter Toys\nObject 'a feather-ribbon play spear' is type weapon, extra flags none.\nWeight is 1.1 pounds, value is 1, level is 1.\nMaterial is wood.\nrestrict flags none.\nWeapon type is spear.\nDamage is 1d6 (average 3).\nDamage noun is thrust."
+  },
+  {
+    "name": "a cheddar toy hatchet",
+    "vnum": 15353,
+    "details": "Area: Felari Starter Toys\nObject 'a cheddar toy hatchet' is type weapon, extra flags none.\nWeight is 1.4 pounds, value is 1, level is 1.\nMaterial is wood.\nrestrict flags none.\nWeapon type is axe.\nDamage is 1d6 (average 3).\nDamage noun is chop."
+  },
+  {
+    "name": "a knitting-needle dagger",
+    "vnum": 15352,
+    "details": "Area: Felari Starter Toys\nObject 'a knitting-needle dagger' is type weapon, extra flags none.\nWeight is 0.4 pounds, value is 1, level is 1.\nMaterial is steel.\nrestrict flags none.\nWeapon type is dagger.\nDamage is 1d4 (average 2).\nDamage noun is pierce."
+  },
+  {
+    "name": "a plush mouse mace",
+    "vnum": 15351,
+    "details": "Area: Felari Starter Toys\nObject 'a plush mouse mace' is type weapon, extra flags none.\nWeight is 1.0 pounds, value is 1, level is 1.\nMaterial is cloth.\nrestrict flags none.\nWeapon type is mace/club.\nDamage is 1d6 (average 3).\nDamage noun is pound."
+  },
+  {
+    "name": "a fish-shaped wooden saber",
+    "vnum": 15350,
+    "details": "Area: Felari Starter Toys\nObject 'a fish-shaped wooden saber' is type weapon, extra flags none.\nWeight is 1.2 pounds, value is 1, level is 1.\nMaterial is wood.\nrestrict flags none.\nWeapon type is sword.\nDamage is 1d6 (average 3).\nDamage noun is slash."
+  },
+  {
     "name": "a dark leather-bound book entitled, \"Odius Love Poetry\"",
     "vnum": 18504,
     "details": "Area: Poetry Collection\nObject 'a dark leather-bound book entitled, \"Odius Love Poetry\"' is type book, extra flags nonmetal.\nWeight is 0.1 pounds, value is 15, level is 1.\nMaterial is leather and parchment.\nrestrict flags none."
@@ -3403,6 +3458,11 @@
     "name": "filet of trout",
     "vnum": 3200,
     "details": "Area: Midgaard River\nObject 'filet of trout' is type food, extra flags visdeath meltdrop.\nWeight is 1.0 pounds, value is 60, level is 0.\nMaterial is food.\nrestrict flags none."
+  },
+  {
+    "name": "a pile of yellow cake",
+    "vnum": 10793,
+    "details": "Area: Glyndane\nObject 'a pile of yellow cake' is type trash, extra flags nopurge.\nWeight is 5.0 pounds, value is 0, level is 0.\nMaterial is cake crumb batter.\nrestrict flags none."
   },
   {
     "name": "A leather bound book labelled \"holy missiles\"",
@@ -11713,6 +11773,206 @@
     "name": "an ornate hoopak",
     "vnum": 30700,
     "details": "Area: Wistfolk\nObject 'an ornate hoopak' is type weapon, extra flags none.\nWeight is 8.5 pounds, value is 7929, level is 34.\nMaterial is wood.\nrestrict flags none.\nWeapon type is staff.\nDamage is 1d42 (average 21).\nDamage noun is beating.\nAffects damage roll by 2.\nAffects hit roll by 2.\nAffects armor class by -7."
+  },
+  {
+    "name": "a bound sheaf of memory",
+    "vnum": 18943,
+    "details": "Area: Shrine of Memories\nObject 'a bound sheaf of memory' is type trash, extra flags nosacrifice.\nWeight is 0.1 pounds, value is 40, level is 15.\nMaterial is vellum and twine.\nrestrict flags none."
+  },
+  {
+    "name": "a grit-scoured memory fragment",
+    "vnum": 18939,
+    "details": "Area: Shrine of Memories\nObject 'a grit-scoured memory fragment' is type trash, extra flags none.\nWeight is 0.1 pounds, value is 40, level is 15.\nMaterial is vellum.\nrestrict flags none."
+  },
+  {
+    "name": "a leaf-stained memory fragment",
+    "vnum": 18938,
+    "details": "Area: Shrine of Memories\nObject 'a leaf-stained memory fragment' is type trash, extra flags none.\nWeight is 0.1 pounds, value is 40, level is 15.\nMaterial is vellum.\nrestrict flags none."
+  },
+  {
+    "name": "a bloodstained memory fragment",
+    "vnum": 18937,
+    "details": "Area: Shrine of Memories\nObject 'a bloodstained memory fragment' is type trash, extra flags none.\nWeight is 0.1 pounds, value is 40, level is 15.\nMaterial is vellum.\nrestrict flags none."
+  },
+  {
+    "name": "the Widow's Veil",
+    "vnum": 18936,
+    "details": "Area: Shrine of Memories\nObject 'the Widow's Veil' is type armor, extra flags magic burnproof.\nWeight is 0.8 pounds, value is 0, level is 51.\nMaterial is ash and charred silk.\nrestrict flags none.\nArmor class is 10 pierce, 10 bash, 8 slash, and 8 vs. magic.\nAffects dexterity by 10.\nAffects armor class by -5."
+  },
+  {
+    "name": "a beating heart wrapped in a spider's web",
+    "vnum": 18935,
+    "details": "Area: Shrine of Memories\nObject 'a beating heart wrapped in a spider's web' is type armor, extra flags noremove nolocate burnproof nouncurse brand pulsing.\nWeight is 0.0 pounds, value is 0, level is 1.\nMaterial is energy.\nrestrict flags none.\nArmor class is 8 pierce, 8 bash, 8 slash, and 8 vs. magic."
+  },
+  {
+    "name": "a sleek and shiny tuna fish",
+    "vnum": 18934,
+    "details": "Area: Shrine of Memories\nObject 'a sleek and shiny tuna fish' is type weapon, extra flags nolocate sellextract burnproof.\nWeight is 2.0 pounds, value is 150000, level is 60.\nMaterial is meat.\nrestrict flags none.\nWeapon type is sword.\nDamage is 1d57 (average 29).\nDamage noun is thrust.\nWeapons flags: sharp\nAffects dexterity by -3.\nAffects damage roll by 5.\nAffects hit roll by 10."
+  },
+  {
+    "name": "a sleek and shiny swordfish",
+    "vnum": 18933,
+    "details": "Area: Shrine of Memories\nObject 'a sleek and shiny swordfish' is type weapon, extra flags nolocate sellextract burnproof.\nWeight is 2.0 pounds, value is 150000, level is 60.\nMaterial is meat.\nrestrict flags none.\nWeapon type is sword.\nDamage is 1d57 (average 29).\nDamage noun is thrust.\nWeapons flags: sharp armor-piercing vorpal drowning\nAffects dexterity by -3.\nAffects damage roll by 5.\nAffects hit roll by 10."
+  },
+  {
+    "name": "The Revelation of Nyrisia",
+    "vnum": 18932,
+    "details": "Area: Shrine of Memories\nObject 'The Revelation of Nyrisia' is type book, extra flags magic nopurge nosacrifice burnproof.\nWeight is 10.0 pounds, value is 100, level is 60.\nMaterial is leather.\nrestrict flags none."
+  },
+  {
+    "name": "glass bookshelf",
+    "vnum": 18931,
+    "details": "Area: Shrine of Memories\nObject 'glass bookshelf' is type container, extra flags magic bless nopurge nosacrifice nolocate burnproof.\nWeight is 11111.0 pounds, value is 0, level is 0.\nMaterial is glass.\nrestrict flags none.\nCapacity: 10000#  Maximum weight: 50#  flags: none"
+  },
+  {
+    "name": "Prophecy of Nyrisia Vol. 2",
+    "vnum": 18930,
+    "details": "Area: Shrine of Memories\nObject 'Prophecy of Nyrisia Vol. 2' is type book, extra flags magic nopurge nosacrifice burnproof.\nWeight is 10.0 pounds, value is 100, level is 60.\nMaterial is leather.\nrestrict flags none."
+  },
+  {
+    "name": "Prophecy of Nyrisia Vol. 1",
+    "vnum": 18929,
+    "details": "Area: Shrine of Memories\nObject 'Prophecy of Nyrisia Vol. 1' is type book, extra flags magic nopurge nosacrifice burnproof.\nWeight is 10.0 pounds, value is 100, level is 60.\nMaterial is leather.\nrestrict flags none."
+  },
+  {
+    "name": "a portal in the shape of a keyhole",
+    "vnum": 18928,
+    "details": "Area: Shrine of Memories\nObject 'a portal in the shape of a keyhole' is type portal, extra flags glowing humming nosacrifice nolocate burnproof.\nWeight is 0.1 pounds, value is 0, level is 0.\nMaterial is energy.\nrestrict flags none."
+  },
+  {
+    "name": "an intricate lapis lazuli necklace",
+    "vnum": 18927,
+    "details": "Area: Shrine of Memories\nObject 'an intricate lapis lazuli necklace' is type armor, extra flags glowing humming noremove inventory nopurge nolocate burnproof.\nWeight is 1.0 pounds, value is 0, level is 51.\nMaterial is glass.\nrestrict flags none.\nArmor class is 0 pierce, 0 bash, 0 slash, and 0 vs. magic.\nAffects save vs maledictions by -25."
+  },
+  {
+    "name": "Nalifar's simple black monocle",
+    "vnum": 18926,
+    "details": "Area: Shrine of Memories\nObject 'Nalifar's simple black monocle' is type armor, extra flags glowing humming noremove inventory nopurge nolocate burnproof.\nWeight is 1.0 pounds, value is 0, level is 51.\nMaterial is glass.\nrestrict flags none.\nArmor class is 0 pierce, 0 bash, 0 slash, and 0 vs. magic.\nAffects armor class by -5.\nAffects mana by 25.\nAffects spell power by 4.\nAffects save vs maledictions by -5.\nAffects hp by 25."
+  },
+  {
+    "name": "(camouflaged) A grey-green belt of fig leaves",
+    "vnum": 18925,
+    "details": "Area: Shrine of Memories\nObject '(camouflaged) A grey-green belt of fig leaves' is type armor, extra flags glowing nopurge nosacrifice nonmetal nolocate burnproof.\nWeight is 3.3 pounds, value is 0, level is 45.\nMaterial is plant.\nrestrict flags none.\nArmor class is 10 pierce, 10 bash, 10 slash, and 10 vs. magic.\nAffects mana by 25.\nAffects hp by 35."
+  },
+  {
+    "name": "Tales of a Goddess Unwoven by Time",
+    "vnum": 18924,
+    "details": "Area: Shrine of Memories\nObject 'Tales of a Goddess Unwoven by Time' is type book, extra flags magic nopurge nosacrifice burnproof.\nWeight is 10.0 pounds, value is 100, level is 60.\nMaterial is leather.\nrestrict flags none."
+  },
+  {
+    "name": "a rift to the spiritual realm",
+    "vnum": 18923,
+    "details": "Area: Shrine of Memories\nObject 'a rift to the spiritual realm' is type container, extra flags glowing humming magic nodrop bless noremove inventory nopurge nosacrifice nonmetal nolocate burnproof.\nWeight is 2.0 pounds, value is 100, level is 0.\nMaterial is nothingness.\nrestrict flags none.\nCapacity: 750#  Maximum weight: 25#  flags: none"
+  },
+  {
+    "name": "(camouflaged) A grey-green belt of fig leaves",
+    "vnum": 18922,
+    "details": "Area: Shrine of Memories\nObject '(camouflaged) A grey-green belt of fig leaves' is type armor, extra flags glowing nopurge nosacrifice nonmetal nolocate burnproof.\nWeight is 3.3 pounds, value is 0, level is 45.\nMaterial is plant.\nrestrict flags none.\nArmor class is 10 pierce, 10 bash, 10 slash, and 10 vs. magic.\nAffects mana by 25.\nAffects hp by 35."
+  },
+  {
+    "name": "(in-flux) a perpetually fluctuating rubber belt",
+    "vnum": 18921,
+    "details": "Area: Shrine of Memories\nObject '(in-flux) a perpetually fluctuating rubber belt' is type armor, extra flags glowing nopurge nosacrifice nonmetal nolocate burnproof.\nWeight is 3.3 pounds, value is 0, level is 45.\nMaterial is rubber.\nrestrict flags none.\nArmor class is 10 pierce, 10 bash, 10 slash, and 10 vs. magic.\nAffects mana by 25.\nAffects hp by 35."
+  },
+  {
+    "name": "(Unholy Aura) black clerical robes of the Waning Crescent",
+    "vnum": 18920,
+    "details": "Area: Shrine of Memories\nObject '(Unholy Aura) black clerical robes of the Waning Crescent' is type armor, extra flags glowing evil nopurge nosacrifice nonmetal nolocate burnproof.\nWeight is 4.7 pounds, value is 0, level is 45.\nMaterial is satin.\nrestrict flags none.\nArmor class is 10 pierce, 10 bash, 10 slash, and 10 vs. magic.\nAffects mana by 25.\nAffects hp by 35."
+  },
+  {
+    "name": "(Lavender Aura) A small pendant bearing the Bunny crest of Drinlinda",
+    "vnum": 18919,
+    "details": "Area: Shrine of Memories\nObject '(Lavender Aura) A small pendant bearing the Bunny crest of Drinlinda' is type armor, extra flags nopurge nosacrifice nonmetal nolocate burnproof.\nWeight is 1.3 pounds, value is 0, level is 45.\nMaterial is ebony.\nrestrict flags none.\nArmor class is 10 pierce, 10 bash, 10 slash, and 10 vs. magic.\nAffects damage roll by 6.\nAffects hit roll by 4."
+  },
+  {
+    "name": "(brilliant) a small filligree diamond hourglass pendant",
+    "vnum": 18918,
+    "details": "Area: Shrine of Memories\nObject '(brilliant) a small filligree diamond hourglass pendant' is type armor, extra flags glowing nopurge nosacrifice nonmetal nolocate burnproof.\nWeight is 1.3 pounds, value is 0, level is 45.\nMaterial is diamond and etherealness.\nrestrict flags none.\nArmor class is 10 pierce, 10 bash, 10 slash, and 10 vs. magic.\nAffects mana by 25.\nAffects hp by 35."
+  },
+  {
+    "name": "a red statue",
+    "vnum": 18917,
+    "details": "Area: Shrine of Memories\nObject 'a red statue' is type trash, extra flags none.\nWeight is 0.0 pounds, value is 0, level is 0.\nMaterial is marble.\nrestrict flags none."
+  },
+  {
+    "name": "a violet statue",
+    "vnum": 18916,
+    "details": "Area: Shrine of Memories\nObject 'a violet statue' is type trash, extra flags none.\nWeight is 0.0 pounds, value is 0, level is 0.\nMaterial is marble.\nrestrict flags none."
+  },
+  {
+    "name": "a indigo statue",
+    "vnum": 18915,
+    "details": "Area: Shrine of Memories\nObject 'a indigo statue' is type trash, extra flags none.\nWeight is 0.0 pounds, value is 0, level is 0.\nMaterial is marble.\nrestrict flags none."
+  },
+  {
+    "name": "a blue statue",
+    "vnum": 18914,
+    "details": "Area: Shrine of Memories\nObject 'a blue statue' is type trash, extra flags none.\nWeight is 0.0 pounds, value is 0, level is 0.\nMaterial is marble.\nrestrict flags none."
+  },
+  {
+    "name": "a green statue",
+    "vnum": 18913,
+    "details": "Area: Shrine of Memories\nObject 'a green statue' is type trash, extra flags none.\nWeight is 0.0 pounds, value is 0, level is 0.\nMaterial is marble.\nrestrict flags none."
+  },
+  {
+    "name": "a yellow statue",
+    "vnum": 18912,
+    "details": "Area: Shrine of Memories\nObject 'a yellow statue' is type trash, extra flags none.\nWeight is 0.0 pounds, value is 0, level is 0.\nMaterial is marble.\nrestrict flags none."
+  },
+  {
+    "name": "an orange statue",
+    "vnum": 18911,
+    "details": "Area: Shrine of Memories\nObject 'an orange statue' is type trash, extra flags none.\nWeight is 0.0 pounds, value is 0, level is 0.\nMaterial is marble.\nrestrict flags none."
+  },
+  {
+    "name": "An endless hole in the ground",
+    "vnum": 18910,
+    "details": "Area: Shrine of Memories\nObject 'An endless hole in the ground' is type portal, extra flags none.\nWeight is 0.0 pounds, value is 0, level is 0.\nMaterial is energy.\nrestrict flags none."
+  },
+  {
+    "name": "A pair of six eyed bug goggles",
+    "vnum": 18909,
+    "details": "Area: Shrine of Memories\nObject 'A pair of six eyed bug goggles' is type armor, extra flags glowing humming noremove inventory nopurge nolocate burnproof.\nWeight is 1.0 pounds, value is 0, level is 51.\nMaterial is leather and glass.\nrestrict flags none.\nArmor class is 0 pierce, 0 bash, 0 slash, and 0 vs. magic.\nAdds detect_invis affect."
+  },
+  {
+    "name": "Xathen's Crime Fighting Goggles",
+    "vnum": 18908,
+    "details": "Area: Shrine of Memories\nObject 'Xathen's Crime Fighting Goggles' is type armor, extra flags glowing humming noremove inventory nopurge nolocate burnproof.\nWeight is 1.0 pounds, value is 0, level is 51.\nMaterial is leather and glass.\nrestrict flags none.\nArmor class is 0 pierce, 0 bash, 0 slash, and 0 vs. magic.\nAffects armor class by -5.\nAffects mana by -25.\nAffects spell power by 3.\nAffects save vs maledictions by -3.\nAffects hp by 5."
+  },
+  {
+    "name": "a keyhole",
+    "vnum": 18907,
+    "details": "Area: Shrine of Memories\nObject 'a keyhole' is type armor, extra flags noremove nolocate burnproof nouncurse brand pulsing.\nWeight is 0.0 pounds, value is 0, level is 1.\nMaterial is energy.\nrestrict flags none.\nArmor class is 8 pierce, 8 bash, 8 slash, and 8 vs. magic."
+  },
+  {
+    "name": "the Godfather's Ring",
+    "vnum": 18906,
+    "details": "Area: Shrine of Memories\nObject 'the Godfather's Ring' is type armor, extra flags glowing humming noremove.\nWeight is 0.6 pounds, value is 253213, level is 59.\nMaterial is adamantite.\nrestrict flags none.\nArmor class is 5 pierce, 15 bash, 15 slash, and 5 vs. magic.\nAffects save vs transport by -2.\nAffects save vs spell by -2.\nAffects armor class by -5.\nAffects strength by 4.\nAffects damage roll by 3.\nAffects hp by 25."
+  },
+  {
+    "name": "a diamond-edged knife called 'Sunrise'",
+    "vnum": 18905,
+    "details": "Area: Shrine of Memories\nObject 'a diamond-edged knife called 'Sunrise'' is type weapon, extra flags glowing anti_evil noremove nouncurse pulsing.\nWeight is 2.0 pounds, value is 0, level is 51.\nMaterial is diamond.\nrestrict flags none.\nWeapon type is dagger.\nDamage is 8d6 (average 28).\nDamage noun is sting.\nWeapons flags: sharp armor-piercing"
+  },
+  {
+    "name": "(Perfect) a single ocean-blue dragonscale",
+    "vnum": 18904,
+    "details": "Area: Shrine of Memories\nObject '(Perfect) a single ocean-blue dragonscale' is type armor, extra flags noremove nolocate burnproof nouncurse brand pulsing.\nWeight is 0.0 pounds, value is 0, level is 1.\nMaterial is energy.\nrestrict flags none.\nArmor class is 8 pierce, 8 bash, 8 slash, and 8 vs. magic."
+  },
+  {
+    "name": "(Oozing) a black ring of depletion",
+    "vnum": 18903,
+    "details": "Area: Shrine of Memories\nObject '(Oozing) a black ring of depletion' is type armor, extra flags evil nopurge rotdeath nosacrifice nolocate meltdrop burnproof.\nWeight is 0.0 pounds, value is 0, level is 57.\nMaterial is slime and emptiness.\nrestrict flags none.\nArmor class is 5 pierce, 5 bash, 5 slash, and 5 vs. magic."
+  },
+  {
+    "name": "an orb of vision",
+    "vnum": 18902,
+    "details": "Area: Shrine of Memories\nObject 'an orb of vision' is type treasure, extra flags magic.\nWeight is 1.0 pounds, value is 0, level is 0.\nMaterial is glass.\nrestrict flags none."
+  },
+  {
+    "name": "a broken glass orb",
+    "vnum": 18901,
+    "details": "Area: Shrine of Memories\nObject 'a broken glass orb' is type armor, extra flags noremove nolocate burnproof nouncurse brand pulsing.\nWeight is 0.0 pounds, value is 0, level is 1.\nMaterial is energy.\nrestrict flags none.\nArmor class is 8 pierce, 8 bash, 8 slash, and 8 vs. magic."
   },
   {
     "name": "page five from the Ancient Book of Warfare",
@@ -28397,7 +28657,7 @@
   {
     "name": "the Staff of the Gardener",
     "vnum": 27307,
-    "details": "Area: The Abbey (Basilica Complex)\nObject 'the Staff of the Gardener' is type weapon, extra flags invis magic bless rotdeath visdeath nonmetal nolocate burnproof.\nWeight is 7.1 pounds, value is 96600, level is 55.\nMaterial is wood.\nrestrict flags cleric_allowed.\nWeapon type is mace/club.\nDamage is 10d5 (average 30).\nDamage noun is thwack.\nWeapons flags: flaming sharp\nAffects holy power by 2.\nAffects damage roll by 5.\nAffects hit roll by 6.\nAffects constitution by -1."
+    "details": "Area: The Abbey (Basilica Complex)\nObject 'the Staff of the Gardener' is type weapon, extra flags invis magic bless rotdeath nonmetal nolocate burnproof.\nWeight is 7.1 pounds, value is 96600, level is 55.\nMaterial is wood.\nrestrict flags cleric_allowed.\nWeapon type is mace/club.\nDamage is 10d5 (average 30).\nDamage noun is thwack.\nWeapons flags: flaming sharp\nAffects holy power by 2.\nAffects damage roll by 5.\nAffects hit roll by 5.\nAffects constitution by -1."
   },
   {
     "name": "a holy symbol ring",
@@ -42140,181 +42400,6 @@
     "details": "Area: City of the Pure\nObject 'a shot of Snake Bite' is type drink, extra flags meltdrop sellextract.\nWeight is 0.3 pounds, value is 150, level is 0.\nMaterial is glass.\nrestrict flags none.\nIt holds light amber-colored Snake Bite."
   },
   {
-    "name": "a beating heart wrapped in a spider's web",
-    "vnum": 18935,
-    "details": "Area: Shrine of Memories\nObject 'a beating heart wrapped in a spider's web' is type armor, extra flags noremove nolocate burnproof nouncurse brand pulsing.\nWeight is 0.0 pounds, value is 0, level is 1.\nMaterial is energy.\nrestrict flags none.\nArmor class is 8 pierce, 8 bash, 8 slash, and 8 vs. magic."
-  },
-  {
-    "name": "a sleek and shiny tuna fish",
-    "vnum": 18934,
-    "details": "Area: Shrine of Memories\nObject 'a sleek and shiny tuna fish' is type weapon, extra flags nolocate sellextract burnproof.\nWeight is 2.0 pounds, value is 150000, level is 60.\nMaterial is meat.\nrestrict flags none.\nWeapon type is sword.\nDamage is 1d57 (average 29).\nDamage noun is thrust.\nWeapons flags: sharp\nAffects dexterity by -3.\nAffects damage roll by 5.\nAffects hit roll by 10."
-  },
-  {
-    "name": "a sleek and shiny swordfish",
-    "vnum": 18933,
-    "details": "Area: Shrine of Memories\nObject 'a sleek and shiny swordfish' is type weapon, extra flags nolocate sellextract burnproof.\nWeight is 2.0 pounds, value is 150000, level is 60.\nMaterial is meat.\nrestrict flags none.\nWeapon type is sword.\nDamage is 1d57 (average 29).\nDamage noun is thrust.\nWeapons flags: sharp armor-piercing vorpal drowning\nAffects dexterity by -3.\nAffects damage roll by 5.\nAffects hit roll by 10."
-  },
-  {
-    "name": "The Revelation of Nyrisia",
-    "vnum": 18932,
-    "details": "Area: Shrine of Memories\nObject 'The Revelation of Nyrisia' is type book, extra flags magic nopurge nosacrifice burnproof.\nWeight is 10.0 pounds, value is 100, level is 60.\nMaterial is leather.\nrestrict flags none."
-  },
-  {
-    "name": "glass bookshelf",
-    "vnum": 18931,
-    "details": "Area: Shrine of Memories\nObject 'glass bookshelf' is type container, extra flags magic bless nopurge nosacrifice nolocate burnproof.\nWeight is 11111.0 pounds, value is 0, level is 0.\nMaterial is glass.\nrestrict flags none.\nCapacity: 10000#  Maximum weight: 50#  flags: none"
-  },
-  {
-    "name": "Prophecy of Nyrisia Vol. 2",
-    "vnum": 18930,
-    "details": "Area: Shrine of Memories\nObject 'Prophecy of Nyrisia Vol. 2' is type book, extra flags magic nopurge nosacrifice burnproof.\nWeight is 10.0 pounds, value is 100, level is 60.\nMaterial is leather.\nrestrict flags none."
-  },
-  {
-    "name": "Prophecy of Nyrisia Vol. 1",
-    "vnum": 18929,
-    "details": "Area: Shrine of Memories\nObject 'Prophecy of Nyrisia Vol. 1' is type book, extra flags magic nopurge nosacrifice burnproof.\nWeight is 10.0 pounds, value is 100, level is 60.\nMaterial is leather.\nrestrict flags none."
-  },
-  {
-    "name": "a portal in the shape of a keyhole",
-    "vnum": 18928,
-    "details": "Area: Shrine of Memories\nObject 'a portal in the shape of a keyhole' is type portal, extra flags glowing humming nosacrifice nolocate burnproof.\nWeight is 0.1 pounds, value is 0, level is 0.\nMaterial is energy.\nrestrict flags none."
-  },
-  {
-    "name": "an intricate lapis lazuli necklace",
-    "vnum": 18927,
-    "details": "Area: Shrine of Memories\nObject 'an intricate lapis lazuli necklace' is type armor, extra flags glowing humming noremove inventory nopurge nolocate burnproof.\nWeight is 1.0 pounds, value is 0, level is 51.\nMaterial is glass.\nrestrict flags none.\nArmor class is 0 pierce, 0 bash, 0 slash, and 0 vs. magic.\nAffects save vs maledictions by -25."
-  },
-  {
-    "name": "Nalifar's simple black monocle",
-    "vnum": 18926,
-    "details": "Area: Shrine of Memories\nObject 'Nalifar's simple black monocle' is type armor, extra flags glowing humming noremove inventory nopurge nolocate burnproof.\nWeight is 1.0 pounds, value is 0, level is 51.\nMaterial is glass.\nrestrict flags none.\nArmor class is 0 pierce, 0 bash, 0 slash, and 0 vs. magic.\nAffects armor class by -5.\nAffects mana by 25.\nAffects spell power by 4.\nAffects save vs maledictions by -5.\nAffects hp by 25."
-  },
-  {
-    "name": "(camouflaged) A grey-green belt of fig leaves",
-    "vnum": 18925,
-    "details": "Area: Shrine of Memories\nObject '(camouflaged) A grey-green belt of fig leaves' is type armor, extra flags glowing nopurge nosacrifice nonmetal nolocate burnproof.\nWeight is 3.3 pounds, value is 0, level is 45.\nMaterial is plant.\nrestrict flags none.\nArmor class is 10 pierce, 10 bash, 10 slash, and 10 vs. magic.\nAffects mana by 25.\nAffects hp by 35."
-  },
-  {
-    "name": "Tales of a Goddess Unwoven by Time",
-    "vnum": 18924,
-    "details": "Area: Shrine of Memories\nObject 'Tales of a Goddess Unwoven by Time' is type book, extra flags magic nopurge nosacrifice burnproof.\nWeight is 10.0 pounds, value is 100, level is 60.\nMaterial is leather.\nrestrict flags none."
-  },
-  {
-    "name": "a rift to the spiritual realm",
-    "vnum": 18923,
-    "details": "Area: Shrine of Memories\nObject 'a rift to the spiritual realm' is type container, extra flags glowing humming magic nodrop bless noremove inventory nopurge nosacrifice nonmetal nolocate burnproof.\nWeight is 2.0 pounds, value is 100, level is 0.\nMaterial is nothingness.\nrestrict flags none.\nCapacity: 750#  Maximum weight: 25#  flags: none"
-  },
-  {
-    "name": "(camouflaged) A grey-green belt of fig leaves",
-    "vnum": 18922,
-    "details": "Area: Shrine of Memories\nObject '(camouflaged) A grey-green belt of fig leaves' is type armor, extra flags glowing nopurge nosacrifice nonmetal nolocate burnproof.\nWeight is 3.3 pounds, value is 0, level is 45.\nMaterial is plant.\nrestrict flags none.\nArmor class is 10 pierce, 10 bash, 10 slash, and 10 vs. magic.\nAffects mana by 25.\nAffects hp by 35."
-  },
-  {
-    "name": "(in-flux) a perpetually fluctuating rubber belt",
-    "vnum": 18921,
-    "details": "Area: Shrine of Memories\nObject '(in-flux) a perpetually fluctuating rubber belt' is type armor, extra flags glowing nopurge nosacrifice nonmetal nolocate burnproof.\nWeight is 3.3 pounds, value is 0, level is 45.\nMaterial is rubber.\nrestrict flags none.\nArmor class is 10 pierce, 10 bash, 10 slash, and 10 vs. magic.\nAffects mana by 25.\nAffects hp by 35."
-  },
-  {
-    "name": "(Unholy Aura) black clerical robes of the Waning Crescent",
-    "vnum": 18920,
-    "details": "Area: Shrine of Memories\nObject '(Unholy Aura) black clerical robes of the Waning Crescent' is type armor, extra flags glowing evil nopurge nosacrifice nonmetal nolocate burnproof.\nWeight is 4.7 pounds, value is 0, level is 45.\nMaterial is satin.\nrestrict flags none.\nArmor class is 10 pierce, 10 bash, 10 slash, and 10 vs. magic.\nAffects mana by 25.\nAffects hp by 35."
-  },
-  {
-    "name": "(Lavender Aura) A small pendant bearing the Bunny crest of Drinlinda",
-    "vnum": 18919,
-    "details": "Area: Shrine of Memories\nObject '(Lavender Aura) A small pendant bearing the Bunny crest of Drinlinda' is type armor, extra flags nopurge nosacrifice nonmetal nolocate burnproof.\nWeight is 1.3 pounds, value is 0, level is 45.\nMaterial is ebony.\nrestrict flags none.\nArmor class is 10 pierce, 10 bash, 10 slash, and 10 vs. magic.\nAffects damage roll by 6.\nAffects hit roll by 4."
-  },
-  {
-    "name": "(brilliant) a small filligree diamond hourglass pendant",
-    "vnum": 18918,
-    "details": "Area: Shrine of Memories\nObject '(brilliant) a small filligree diamond hourglass pendant' is type armor, extra flags glowing nopurge nosacrifice nonmetal nolocate burnproof.\nWeight is 1.3 pounds, value is 0, level is 45.\nMaterial is diamond and etherealness.\nrestrict flags none.\nArmor class is 10 pierce, 10 bash, 10 slash, and 10 vs. magic.\nAffects mana by 25.\nAffects hp by 35."
-  },
-  {
-    "name": "a red statue",
-    "vnum": 18917,
-    "details": "Area: Shrine of Memories\nObject 'a red statue' is type trash, extra flags none.\nWeight is 0.0 pounds, value is 0, level is 0.\nMaterial is marble.\nrestrict flags none."
-  },
-  {
-    "name": "a violet statue",
-    "vnum": 18916,
-    "details": "Area: Shrine of Memories\nObject 'a violet statue' is type trash, extra flags none.\nWeight is 0.0 pounds, value is 0, level is 0.\nMaterial is marble.\nrestrict flags none."
-  },
-  {
-    "name": "a indigo statue",
-    "vnum": 18915,
-    "details": "Area: Shrine of Memories\nObject 'a indigo statue' is type trash, extra flags none.\nWeight is 0.0 pounds, value is 0, level is 0.\nMaterial is marble.\nrestrict flags none."
-  },
-  {
-    "name": "a blue statue",
-    "vnum": 18914,
-    "details": "Area: Shrine of Memories\nObject 'a blue statue' is type trash, extra flags none.\nWeight is 0.0 pounds, value is 0, level is 0.\nMaterial is marble.\nrestrict flags none."
-  },
-  {
-    "name": "a green statue",
-    "vnum": 18913,
-    "details": "Area: Shrine of Memories\nObject 'a green statue' is type trash, extra flags none.\nWeight is 0.0 pounds, value is 0, level is 0.\nMaterial is marble.\nrestrict flags none."
-  },
-  {
-    "name": "a yellow statue",
-    "vnum": 18912,
-    "details": "Area: Shrine of Memories\nObject 'a yellow statue' is type trash, extra flags none.\nWeight is 0.0 pounds, value is 0, level is 0.\nMaterial is marble.\nrestrict flags none."
-  },
-  {
-    "name": "an orange statue",
-    "vnum": 18911,
-    "details": "Area: Shrine of Memories\nObject 'an orange statue' is type trash, extra flags none.\nWeight is 0.0 pounds, value is 0, level is 0.\nMaterial is marble.\nrestrict flags none."
-  },
-  {
-    "name": "An endless hole in the ground",
-    "vnum": 18910,
-    "details": "Area: Shrine of Memories\nObject 'An endless hole in the ground' is type portal, extra flags none.\nWeight is 0.0 pounds, value is 0, level is 0.\nMaterial is energy.\nrestrict flags none."
-  },
-  {
-    "name": "A pair of six eyed bug goggles",
-    "vnum": 18909,
-    "details": "Area: Shrine of Memories\nObject 'A pair of six eyed bug goggles' is type armor, extra flags glowing humming noremove inventory nopurge nolocate burnproof.\nWeight is 1.0 pounds, value is 0, level is 51.\nMaterial is leather and glass.\nrestrict flags none.\nArmor class is 0 pierce, 0 bash, 0 slash, and 0 vs. magic.\nAdds detect_invis affect."
-  },
-  {
-    "name": "Xathen's Crime Fighting Goggles",
-    "vnum": 18908,
-    "details": "Area: Shrine of Memories\nObject 'Xathen's Crime Fighting Goggles' is type armor, extra flags glowing humming noremove inventory nopurge nolocate burnproof.\nWeight is 1.0 pounds, value is 0, level is 51.\nMaterial is leather and glass.\nrestrict flags none.\nArmor class is 0 pierce, 0 bash, 0 slash, and 0 vs. magic.\nAffects armor class by -5.\nAffects mana by -25.\nAffects spell power by 3.\nAffects save vs maledictions by -3.\nAffects hp by 5."
-  },
-  {
-    "name": "a keyhole",
-    "vnum": 18907,
-    "details": "Area: Shrine of Memories\nObject 'a keyhole' is type armor, extra flags noremove nolocate burnproof nouncurse brand pulsing.\nWeight is 0.0 pounds, value is 0, level is 1.\nMaterial is energy.\nrestrict flags none.\nArmor class is 8 pierce, 8 bash, 8 slash, and 8 vs. magic."
-  },
-  {
-    "name": "the Godfather's Ring",
-    "vnum": 18906,
-    "details": "Area: Shrine of Memories\nObject 'the Godfather's Ring' is type armor, extra flags glowing humming noremove.\nWeight is 0.6 pounds, value is 253213, level is 59.\nMaterial is adamantite.\nrestrict flags none.\nArmor class is 5 pierce, 15 bash, 15 slash, and 5 vs. magic.\nAffects save vs transport by -2.\nAffects save vs spell by -2.\nAffects armor class by -5.\nAffects strength by 4.\nAffects damage roll by 3.\nAffects hp by 25."
-  },
-  {
-    "name": "a diamond-edged knife called 'Sunrise'",
-    "vnum": 18905,
-    "details": "Area: Shrine of Memories\nObject 'a diamond-edged knife called 'Sunrise'' is type weapon, extra flags glowing anti_evil noremove nouncurse pulsing.\nWeight is 2.0 pounds, value is 0, level is 51.\nMaterial is diamond.\nrestrict flags none.\nWeapon type is dagger.\nDamage is 8d6 (average 28).\nDamage noun is sting.\nWeapons flags: sharp armor-piercing"
-  },
-  {
-    "name": "(Perfect) a single ocean-blue dragonscale",
-    "vnum": 18904,
-    "details": "Area: Shrine of Memories\nObject '(Perfect) a single ocean-blue dragonscale' is type armor, extra flags noremove nolocate burnproof nouncurse brand pulsing.\nWeight is 0.0 pounds, value is 0, level is 1.\nMaterial is energy.\nrestrict flags none.\nArmor class is 8 pierce, 8 bash, 8 slash, and 8 vs. magic."
-  },
-  {
-    "name": "(Oozing) a black ring of depletion",
-    "vnum": 18903,
-    "details": "Area: Shrine of Memories\nObject '(Oozing) a black ring of depletion' is type armor, extra flags evil nopurge rotdeath nosacrifice nolocate meltdrop burnproof.\nWeight is 0.0 pounds, value is 0, level is 57.\nMaterial is slime and emptiness.\nrestrict flags none.\nArmor class is 5 pierce, 5 bash, 5 slash, and 5 vs. magic."
-  },
-  {
-    "name": "an orb of vision",
-    "vnum": 18902,
-    "details": "Area: Shrine of Memories\nObject 'an orb of vision' is type treasure, extra flags magic.\nWeight is 1.0 pounds, value is 0, level is 0.\nMaterial is glass.\nrestrict flags none."
-  },
-  {
-    "name": "a broken glass orb",
-    "vnum": 18901,
-    "details": "Area: Shrine of Memories\nObject 'a broken glass orb' is type armor, extra flags noremove nolocate burnproof nouncurse brand pulsing.\nWeight is 0.0 pounds, value is 0, level is 1.\nMaterial is energy.\nrestrict flags none.\nArmor class is 8 pierce, 8 bash, 8 slash, and 8 vs. magic."
-  },
-  {
     "name": "crystal claw",
     "vnum": 28711,
     "details": "Area: Fungus Caves\nObject 'crystal claw' is type weapon, extra flags none.\nWeight is 1.0 pounds, value is 0, level is 12.\nMaterial is crystal.\nrestrict flags none.\nWeapon type is claw (exotic).\nDamage is 6d4 (average 15).\nDamage noun is slice.\nWeapons flags: sharp armor-piercing\nAffects damage roll by 2.\nAffects dexterity by 3.\nAffects hit roll by 2."
@@ -46043,5 +46128,700 @@
     "name": "the Scholar Page",
     "vnum": 35100,
     "details": "Area: The Scholar's Den\nObject 'the Scholar Page' is type treasure, extra flags glowing humming bless.\nWeight is 0.2 pounds, value is 0, level is 20.\nMaterial is gold.\nrestrict flags none."
+  },
+  {
+    "name": "a pair of leather leggings",
+    "vnum": 34617,
+    "details": "Area: Sunpaw Hollow\nObject 'a pair of leather leggings' is type armor, extra flags inventory.\nWeight is 5.0 pounds, value is 180, level is 3.\nMaterial is leather.\nrestrict flags none.\nArmor class is 1 pierce, 1 bash, 1 slash, and 0 vs. magic."
+  },
+  {
+    "name": "a leather vest",
+    "vnum": 34616,
+    "details": "Area: Sunpaw Hollow\nObject 'a leather vest' is type armor, extra flags inventory.\nWeight is 6.0 pounds, value is 200, level is 3.\nMaterial is leather.\nrestrict flags none.\nArmor class is 1 pierce, 1 bash, 1 slash, and 0 vs. magic."
+  },
+  {
+    "name": "a hunting spear",
+    "vnum": 34615,
+    "details": "Area: Sunpaw Hollow\nObject 'a hunting spear' is type weapon, extra flags inventory.\nWeight is 4.0 pounds, value is 300, level is 5.\nMaterial is wood.\nrestrict flags none.\nWeapon type is spear.\nDamage is 3d6 (average 10).\nDamage noun is pierce."
+  },
+  {
+    "name": "a claw-forged dagger",
+    "vnum": 34614,
+    "details": "Area: Sunpaw Hollow\nObject 'a claw-forged dagger' is type weapon, extra flags inventory.\nWeight is 1.5 pounds, value is 250, level is 5.\nMaterial is steel.\nrestrict flags none.\nWeapon type is dagger.\nDamage is 2d4 (average 5).\nDamage noun is claw."
+  },
+  {
+    "name": "a potion of cure light",
+    "vnum": 34613,
+    "details": "Area: Sunpaw Hollow\nObject 'a potion of cure light' is type potion, extra flags magic.\nWeight is 0.5 pounds, value is 60, level is 0.\nMaterial is glass.\nrestrict flags none.\nLevel 6 spells of: 'cure light'."
+  },
+  {
+    "name": "a wand of magic missiles",
+    "vnum": 34612,
+    "details": "Area: Sunpaw Hollow\nObject 'a wand of magic missiles' is type wand, extra flags magic inventory.\nWeight is 1.0 pounds, value is 320, level is 5.\nMaterial is wood.\nrestrict flags none.\nHas 15 charges of level 8 'magic missile'."
+  },
+  {
+    "name": "a scroll of recall",
+    "vnum": 34611,
+    "details": "Area: Sunpaw Hollow\nObject 'a scroll of recall' is type scroll, extra flags magic.\nWeight is 0.1 pounds, value is 150, level is 0.\nMaterial is paper.\nrestrict flags none.\nLevel 12 spells of: 'power word recall'."
+  },
+  {
+    "name": "a torch",
+    "vnum": 34610,
+    "details": "Area: Sunpaw Hollow\nObject 'a torch' is type light, extra flags inventory.\nWeight is 0.5 pounds, value is 10, level is 0.\nMaterial is wood.\nrestrict flags none."
+  },
+  {
+    "name": "a hooded lantern",
+    "vnum": 34609,
+    "details": "Area: Sunpaw Hollow\nObject 'a hooded lantern' is type light, extra flags inventory.\nWeight is 4.0 pounds, value is 75, level is 0.\nMaterial is brass.\nrestrict flags none."
+  },
+  {
+    "name": "a small canoe",
+    "vnum": 34608,
+    "details": "Area: Sunpaw Hollow\nObject 'a small canoe' is type boat, extra flags inventory.\nWeight is 32.0 pounds, value is 150, level is 0.\nMaterial is wood.\nrestrict flags none."
+  },
+  {
+    "name": "a travel sack",
+    "vnum": 34607,
+    "details": "Area: Sunpaw Hollow\nObject 'a travel sack' is type container, extra flags inventory.\nWeight is 1.8 pounds, value is 20, level is 0.\nMaterial is canvas.\nrestrict flags none.\nCapacity: 60#  Maximum weight: 15#  flags: none"
+  },
+  {
+    "name": "a shoulder bag",
+    "vnum": 34606,
+    "details": "Area: Sunpaw Hollow\nObject 'a shoulder bag' is type container, extra flags inventory.\nWeight is 1.2 pounds, value is 15, level is 0.\nMaterial is leather.\nrestrict flags none.\nCapacity: 40#  Maximum weight: 8#  flags: none"
+  },
+  {
+    "name": "a jug of milk",
+    "vnum": 34605,
+    "details": "Area: Sunpaw Hollow\nObject 'a jug of milk' is type drink, extra flags inventory.\nWeight is 1.0 pounds, value is 12, level is 0.\nMaterial is clay.\nrestrict flags none.\nIt holds white-colored milk."
+  },
+  {
+    "name": "a waterskin",
+    "vnum": 34604,
+    "details": "Area: Sunpaw Hollow\nObject 'a waterskin' is type drink, extra flags inventory.\nWeight is 1.5 pounds, value is 10, level is 0.\nMaterial is leather.\nrestrict flags none.\nIt holds clear-colored water."
+  },
+  {
+    "name": "a bowl of fish stew",
+    "vnum": 34603,
+    "details": "Area: Sunpaw Hollow\nObject 'a bowl of fish stew' is type food, extra flags inventory.\nWeight is 1.5 pounds, value is 25, level is 0.\nMaterial is food.\nrestrict flags none."
+  },
+  {
+    "name": "some dried fish",
+    "vnum": 34602,
+    "details": "Area: Sunpaw Hollow\nObject 'some dried fish' is type food, extra flags inventory.\nWeight is 3.0 pounds, value is 15, level is 0.\nMaterial is food.\nrestrict flags none."
+  },
+  {
+    "name": "the donation pit",
+    "vnum": 34601,
+    "details": "Area: Sunpaw Hollow\nObject 'the donation pit' is type container, extra flags nopurge nosacrifice.\nWeight is 1.0 pounds, value is 1, level is 0.\nMaterial is .\nrestrict flags none.\nCapacity: 10000#  Maximum weight: 1000#  flags: none"
+  },
+  {
+    "name": "a fountain",
+    "vnum": 34600,
+    "details": "Area: Sunpaw Hollow\nObject 'a fountain' is type fountain, extra flags none.\nWeight is 0.0 pounds, value is 0, level is 0.\nMaterial is stone.\nrestrict flags none."
+  },
+  {
+    "name": "a glowing memory orb",
+    "vnum": 32900,
+    "details": "Area: The Clock Tower of Nyrisia\nObject 'a glowing memory orb' is type light, extra flags glowing.\nWeight is 0.1 pounds, value is 5, level is 0.\nMaterial is glass.\nrestrict flags none."
+  },
+  {
+    "name": "Aldochus' green-and-black quiver",
+    "vnum": 33965,
+    "details": "Area: The Fractured Herd\nObject 'Aldochus' green-and-black quiver' is type container, extra flags magic bless.\nWeight is 2.0 pounds, value is 140000, level is 60.\nMaterial is leather.\nrestrict flags none.\nCapacity: 100#  Maximum weight: 8#  flags: none\nAffects hp by 40.\nAffects armor class by -20.\nAffects spell power by 5."
+  },
+  {
+    "name": "a chieftain's braided herd-cord belt",
+    "vnum": 33964,
+    "details": "Area: The Fractured Herd\nObject 'a chieftain's braided herd-cord belt' is type armor, extra flags magic bless.\nWeight is 2.0 pounds, value is 180000, level is 60.\nMaterial is hide and bone.\nrestrict flags none.\nArmor class is 12 pierce, 12 bash, 12 slash, and 8 vs. magic.\nAffects save vs transport by -5.\nAffects save vs maledictions by -5.\nAffects save vs spell by -5.\nAffects hp by 30.\nAffects damage roll by 5.\nAffects hit roll by 5."
+  },
+  {
+    "name": "Aldochus' green-scale vambraces",
+    "vnum": 33963,
+    "details": "Area: The Fractured Herd\nObject 'Aldochus' green-scale vambraces' is type armor, extra flags magic bless.\nWeight is 2.0 pounds, value is 145000, level is 60.\nMaterial is leather.\nrestrict flags none.\nArmor class is 10 pierce, 10 bash, 10 slash, and 8 vs. magic.\nAffects hp by 40.\nAffects save vs transport by -4.\nAffects save vs spell by -4.\nAffects spell power by 4."
+  },
+  {
+    "name": "Aldochus' soft hunter shoes",
+    "vnum": 33962,
+    "details": "Area: The Fractured Herd\nObject 'Aldochus' soft hunter shoes' is type armor, extra flags magic bless.\nWeight is 2.0 pounds, value is 140000, level is 60.\nMaterial is titanium.\nrestrict flags centaur_allowed.\nArmor class is 8 pierce, 8 bash, 8 slash, and 6 vs. magic.\nAffects hp by 25.\nAffects spell power by 4."
+  },
+  {
+    "name": "Aldochus' hunter fourleggings",
+    "vnum": 33961,
+    "details": "Area: The Fractured Herd\nObject 'Aldochus' hunter fourleggings' is type armor, extra flags magic bless.\nWeight is 2.0 pounds, value is 165000, level is 60.\nMaterial is leather.\nrestrict flags none.\nArmor class is 12 pierce, 12 bash, 12 slash, and 10 vs. magic.\nAffects hp by 25.\nAffects spell power by 4."
+  },
+  {
+    "name": "Aldochus' dark green scale chest",
+    "vnum": 33960,
+    "details": "Area: The Fractured Herd\nObject 'Aldochus' dark green scale chest' is type armor, extra flags magic bless.\nWeight is 2.0 pounds, value is 200000, level is 60.\nMaterial is leather.\nrestrict flags none.\nArmor class is 18 pierce, 18 bash, 18 slash, and 12 vs. magic.\nAffects hp by 50.\nAffects spell power by 5."
+  },
+  {
+    "name": "Aldochus' black leather scouting hood",
+    "vnum": 33959,
+    "details": "Area: The Fractured Herd\nObject 'Aldochus' black leather scouting hood' is type armor, extra flags magic bless.\nWeight is 2.0 pounds, value is 145000, level is 60.\nMaterial is leather.\nrestrict flags none.\nArmor class is 12 pierce, 12 bash, 12 slash, and 8 vs. magic.\nAffects hp by 40.\nAffects spell power by 4."
+  },
+  {
+    "name": "an Aldochus faction totem",
+    "vnum": 33958,
+    "details": "Area: The Fractured Herd\nObject 'an Aldochus faction totem' is type armor, extra flags magic bless.\nWeight is 0.5 pounds, value is 115000, level is 60.\nMaterial is bone.\nrestrict flags none.\nArmor class is 6 pierce, 6 bash, 6 slash, and 6 vs. magic.\nAffects save vs spell by -3.\nAffects hp by 40.\nAffects spell power by 3."
+  },
+  {
+    "name": "a verdant scout ring",
+    "vnum": 33957,
+    "details": "Area: The Fractured Herd\nObject 'a verdant scout ring' is type armor, extra flags magic bless.\nWeight is 0.5 pounds, value is 120000, level is 60.\nMaterial is bone.\nrestrict flags none.\nArmor class is 6 pierce, 6 bash, 6 slash, and 4 vs. magic.\nAffects hp by 40.\nAffects spell power by 3."
+  },
+  {
+    "name": "Aldochus' green-fletched composite bow",
+    "vnum": 33956,
+    "details": "Area: The Fractured Herd\nObject 'Aldochus' green-fletched composite bow' is type weapon, extra flags magic bless.\nWeight is 3.0 pounds, value is 170000, level is 60.\nMaterial is horn.\nrestrict flags none.\nWeapon type is bow.\nDamage is 6d9 (average 30).\nDamage noun is pierce.\nWeapons flags: sharp two-handed fatiguing\nAffects regeneration by 3.\nAffects accuracy by 50.\nAffects attack speed by 2.\nAffects spell power by 10."
+  },
+  {
+    "name": "Kraeteon's black iron vambraces",
+    "vnum": 33955,
+    "details": "Area: The Fractured Herd\nObject 'Kraeteon's black iron vambraces' is type armor, extra flags magic bless.\nWeight is 8.0 pounds, value is 145000, level is 60.\nMaterial is iron.\nrestrict flags none.\nArmor class is 10 pierce, 10 bash, 10 slash, and 8 vs. magic.\nAffects save vs transport by -4.\nAffects save vs spell by -4.\nAffects hp by 75.\nAffects damage roll by 4.\nAffects hit roll by 4."
+  },
+  {
+    "name": "Kraeteon's iron war-shoes",
+    "vnum": 33954,
+    "details": "Area: The Fractured Herd\nObject 'Kraeteon's iron war-shoes' is type armor, extra flags magic bless.\nWeight is 2.0 pounds, value is 140000, level is 60.\nMaterial is titanium.\nrestrict flags centaur_allowed.\nArmor class is 8 pierce, 8 bash, 8 slash, and 6 vs. magic.\nAffects save vs spell by -15.\nAffects save vs transport by -15.\nAffects save vs maledictions by -15.\nAffects moves by 75.\nAffects damage roll by 3.\nAffects hit roll by 4."
+  },
+  {
+    "name": "Kraeteon's war fourleggings",
+    "vnum": 33953,
+    "details": "Area: The Fractured Herd\nObject 'Kraeteon's war fourleggings' is type armor, extra flags magic bless.\nWeight is 18.0 pounds, value is 165000, level is 60.\nMaterial is iron.\nrestrict flags none.\nArmor class is 12 pierce, 12 bash, 12 slash, and 10 vs. magic.\nAffects hp by 25.\nAffects damage roll by 4.\nAffects hit roll by 4."
+  },
+  {
+    "name": "Kraeteon's black iron breastplate",
+    "vnum": 33952,
+    "details": "Area: The Fractured Herd\nObject 'Kraeteon's black iron breastplate' is type armor, extra flags magic bless.\nWeight is 18.0 pounds, value is 200000, level is 60.\nMaterial is iron.\nrestrict flags none.\nArmor class is 18 pierce, 18 bash, 18 slash, and 12 vs. magic.\nAffects regeneration by 4.\nAffects damage roll by 5.\nAffects hit roll by 5.\nAffects hp by 35."
+  },
+  {
+    "name": "a red-plumed war helm",
+    "vnum": 33951,
+    "details": "Area: The Fractured Herd\nObject 'a red-plumed war helm' is type armor, extra flags magic bless.\nWeight is 5.0 pounds, value is 145000, level is 60.\nMaterial is iron.\nrestrict flags none.\nArmor class is 12 pierce, 12 bash, 12 slash, and 8 vs. magic.\nAffects save vs transport by -10.\nAffects hp by 30.\nAffects damage roll by 4.\nAffects hit roll by 4."
+  },
+  {
+    "name": "a Kraeteon faction collar",
+    "vnum": 33950,
+    "details": "Area: The Fractured Herd\nObject 'a Kraeteon faction collar' is type armor, extra flags magic bless.\nWeight is 1.0 pounds, value is 115000, level is 60.\nMaterial is iron.\nrestrict flags none.\nArmor class is 6 pierce, 6 bash, 6 slash, and 6 vs. magic.\nAffects save vs breath by -3.\nAffects save vs transport by -5.\nAffects save vs maledictions by -5.\nAffects save vs spell by -6.\nAffects damage roll by 3.\nAffects hit roll by 3.\nAffects hp by 25."
+  },
+  {
+    "name": "a red iron war ring",
+    "vnum": 33949,
+    "details": "Area: The Fractured Herd\nObject 'a red iron war ring' is type armor, extra flags magic bless.\nWeight is 0.5 pounds, value is 120000, level is 60.\nMaterial is iron.\nrestrict flags none.\nArmor class is 6 pierce, 6 bash, 6 slash, and 4 vs. magic.\nAffects save vs maledictions by -10.\nAffects hp by 25.\nAffects damage roll by 5.\nAffects hit roll by 5."
+  },
+  {
+    "name": "Kraeteon's red-iron war axe",
+    "vnum": 33948,
+    "details": "Area: The Fractured Herd\nObject 'Kraeteon's red-iron war axe' is type weapon, extra flags magic bless.\nWeight is 10.0 pounds, value is 170000, level is 60.\nMaterial is iron.\nrestrict flags none.\nWeapon type is axe.\nDamage is 4d14 (average 30).\nDamage noun is slash.\nWeapons flags: flaming frost sharp shocking drowning resonating\nAffects damage roll by 10.\nAffects hit roll by 10."
+  },
+  {
+    "name": "a frost-trimmed chieftain's cloak",
+    "vnum": 33947,
+    "details": "Area: The Fractured Herd\nObject 'a frost-trimmed chieftain's cloak' is type armor, extra flags magic bless.\nWeight is 2.0 pounds, value is 150000, level is 60.\nMaterial is fur.\nrestrict flags none.\nArmor class is 6 pierce, 6 bash, 6 slash, and 0 vs. magic.\nAffects save vs spell by -5.\nAffects hp by 30.\nAffects damage roll by 4.\nAffects hit roll by 4."
+  },
+  {
+    "name": "a chieftain's iron-clad horseshoes",
+    "vnum": 33946,
+    "details": "Area: The Fractured Herd\nObject 'a chieftain's iron-clad horseshoes' is type armor, extra flags magic bless.\nWeight is 2.0 pounds, value is 150000, level is 60.\nMaterial is titanium.\nrestrict flags centaur_allowed.\nArmor class is 8 pierce, 8 bash, 8 slash, and 3 vs. magic.\nAffects moves by 50.\nAffects holy power by 3.\nAffects damage roll by 3.\nAffects hit roll by 4."
+  },
+  {
+    "name": "a chieftain's ceremonial fourleggings",
+    "vnum": 33945,
+    "details": "Area: The Fractured Herd\nObject 'a chieftain's ceremonial fourleggings' is type armor, extra flags magic bless.\nWeight is 20.0 pounds, value is 180000, level is 60.\nMaterial is bronze.\nrestrict flags none.\nArmor class is 13 pierce, 13 bash, 13 slash, and 7 vs. magic.\nAffects hp by 25.\nAffects holy power by 3.\nAffects damage roll by 4.\nAffects hit roll by 4."
+  },
+  {
+    "name": "a chieftain's ceremonial breastplate",
+    "vnum": 33944,
+    "details": "Area: The Fractured Herd\nObject 'a chieftain's ceremonial breastplate' is type armor, extra flags magic bless.\nWeight is 20.0 pounds, value is 230000, level is 60.\nMaterial is bronze.\nrestrict flags none.\nArmor class is 18 pierce, 18 bash, 18 slash, and 10 vs. magic.\nAffects holy power by 3.\nAffects damage roll by 6.\nAffects hit roll by 6.\nAffects hp by 40."
+  },
+  {
+    "name": "a chieftain's great helm",
+    "vnum": 33943,
+    "details": "Area: The Fractured Herd\nObject 'a chieftain's great helm' is type armor, extra flags magic bless.\nWeight is 6.0 pounds, value is 160000, level is 60.\nMaterial is bronze.\nrestrict flags none.\nArmor class is 13 pierce, 13 bash, 13 slash, and 5 vs. magic.\nAffects hp by 35.\nAffects damage roll by 5.\nAffects hit roll by 5."
+  },
+  {
+    "name": "a chieftain's bone totem",
+    "vnum": 33942,
+    "details": "Area: The Fractured Herd\nObject 'a chieftain's bone totem' is type armor, extra flags magic bless.\nWeight is 0.5 pounds, value is 125000, level is 60.\nMaterial is bone.\nrestrict flags none.\nArmor class is 5 pierce, 5 bash, 5 slash, and 2 vs. magic.\nAffects save vs spell by -4.\nAffects hp by 30.\nAffects holy power by 3."
+  },
+  {
+    "name": "a chieftain's signet ring",
+    "vnum": 33941,
+    "details": "Area: The Fractured Herd\nObject 'a chieftain's signet ring' is type armor, extra flags magic bless.\nWeight is 0.5 pounds, value is 130000, level is 60.\nMaterial is bronze.\nrestrict flags none.\nArmor class is 5 pierce, 5 bash, 5 slash, and 0 vs. magic.\nAffects holy power by 3.\nAffects damage roll by 3.\nAffects hit roll by 3."
+  },
+  {
+    "name": "Dardodem's ceremonial warhammer",
+    "vnum": 33940,
+    "details": "Area: The Fractured Herd\nObject 'Dardodem's ceremonial warhammer' is type weapon, extra flags magic bless.\nWeight is 14.0 pounds, value is 220000, level is 60.\nMaterial is bronze.\nrestrict flags none.\nWeapon type is mace/club.\nDamage is 7d8 (average 31).\nDamage noun is crush.\nWeapons flags: flaming frost sharp shocking drowning resonating\nAffects holy power by 3.\nAffects damage roll by 8.\nAffects hit roll by 8."
+  },
+  {
+    "name": "hunter's leather vambraces",
+    "vnum": 33939,
+    "details": "Area: The Fractured Herd\nObject 'hunter's leather vambraces' is type armor, extra flags magic.\nWeight is 2.0 pounds, value is 4500, level is 51.\nMaterial is leather.\nrestrict flags none.\nArmor class is 6 pierce, 6 bash, 6 slash, and 3 vs. magic.\nAffects save vs transport by -3.\nAffects save vs spell by -3.\nAffects damage roll by 3.\nAffects hit roll by 3."
+  },
+  {
+    "name": "soft-soled hunter horseshoes",
+    "vnum": 33938,
+    "details": "Area: The Fractured Herd\nObject 'soft-soled hunter horseshoes' is type armor, extra flags magic.\nWeight is 2.0 pounds, value is 4000, level is 51.\nMaterial is titanium.\nrestrict flags centaur_allowed.\nArmor class is 8 pierce, 8 bash, 8 slash, and 4 vs. magic.\nAffects moves by 25.\nAffects damage roll by 2.\nAffects hit roll by 3."
+  },
+  {
+    "name": "hunter's leather fourleggings",
+    "vnum": 33937,
+    "details": "Area: The Fractured Herd\nObject 'hunter's leather fourleggings' is type armor, extra flags magic.\nWeight is 2.0 pounds, value is 5000, level is 51.\nMaterial is leather.\nrestrict flags none.\nArmor class is 9 pierce, 9 bash, 9 slash, and 5 vs. magic.\nAffects moves by 20.\nAffects damage roll by 3.\nAffects hit roll by 3."
+  },
+  {
+    "name": "a close-fitted hunter's chest piece",
+    "vnum": 33936,
+    "details": "Area: The Fractured Herd\nObject 'a close-fitted hunter's chest piece' is type armor, extra flags magic.\nWeight is 2.0 pounds, value is 6000, level is 51.\nMaterial is leather.\nrestrict flags none.\nArmor class is 12 pierce, 12 bash, 12 slash, and 5 vs. magic.\nAffects damage roll by 3.\nAffects hit roll by 3.\nAffects hp by 25."
+  },
+  {
+    "name": "a fitted hunter's leather hood",
+    "vnum": 33935,
+    "details": "Area: The Fractured Herd\nObject 'a fitted hunter's leather hood' is type armor, extra flags magic.\nWeight is 2.0 pounds, value is 4500, level is 51.\nMaterial is leather.\nrestrict flags none.\nArmor class is 8 pierce, 8 bash, 8 slash, and 4 vs. magic.\nAffects hp by 25.\nAffects damage roll by 3.\nAffects hit roll by 3."
+  },
+  {
+    "name": "a composite horn hunting bow",
+    "vnum": 33934,
+    "details": "Area: The Fractured Herd\nObject 'a composite horn hunting bow' is type weapon, extra flags magic.\nWeight is 3.0 pounds, value is 6000, level is 51.\nMaterial is horn.\nrestrict flags none.\nWeapon type is bow.\nDamage is 4d12 (average 26).\nDamage noun is pierce.\nWeapons flags: sharp two-handed fatiguing\nAffects damage roll by 3.\nAffects hit roll by 3."
+  },
+  {
+    "name": "a carved shaman's totem pendant",
+    "vnum": 33933,
+    "details": "Area: The Fractured Herd\nObject 'a carved shaman's totem pendant' is type armor, extra flags magic.\nWeight is 0.3 pounds, value is 3500, level is 49.\nMaterial is bone.\nrestrict flags none.\nArmor class is 2 pierce, 2 bash, 2 slash, and 1 vs. magic.\nAffects save vs spell by -2.\nAffects hp by 15.\nAffects holy power by 1."
+  },
+  {
+    "name": "carved bone horseshoes",
+    "vnum": 33932,
+    "details": "Area: The Fractured Herd\nObject 'carved bone horseshoes' is type armor, extra flags magic.\nWeight is 2.0 pounds, value is 4000, level is 49.\nMaterial is titanium.\nrestrict flags centaur_allowed.\nArmor class is 7 pierce, 7 bash, 7 slash, and 4 vs. magic.\nAffects moves by 20.\nAffects hp by 15.\nAffects holy power by 1."
+  },
+  {
+    "name": "shaman's fur fourleggings",
+    "vnum": 33931,
+    "details": "Area: The Fractured Herd\nObject 'shaman's fur fourleggings' is type armor, extra flags magic.\nWeight is 2.0 pounds, value is 5000, level is 49.\nMaterial is fur.\nrestrict flags none.\nArmor class is 8 pierce, 8 bash, 8 slash, and 5 vs. magic.\nAffects damage roll by 2.\nAffects hp by 20.\nAffects holy power by 1."
+  },
+  {
+    "name": "a layered shaman's fur vest",
+    "vnum": 33930,
+    "details": "Area: The Fractured Herd\nObject 'a layered shaman's fur vest' is type armor, extra flags magic.\nWeight is 2.0 pounds, value is 6000, level is 49.\nMaterial is fur.\nrestrict flags none.\nArmor class is 12 pierce, 12 bash, 12 slash, and 5 vs. magic.\nAffects hit roll by 2.\nAffects hp by 25.\nAffects holy power by 1."
+  },
+  {
+    "name": "a bone-and-fur shaman's headdress",
+    "vnum": 33929,
+    "details": "Area: The Fractured Herd\nObject 'a bone-and-fur shaman's headdress' is type armor, extra flags magic.\nWeight is 2.0 pounds, value is 4500, level is 49.\nMaterial is bone.\nrestrict flags none.\nArmor class is 8 pierce, 8 bash, 8 slash, and 4 vs. magic.\nAffects hit roll by 2.\nAffects hp by 25.\nAffects holy power by 1."
+  },
+  {
+    "name": "a carved shaman's staff",
+    "vnum": 33928,
+    "details": "Area: The Fractured Herd\nObject 'a carved shaman's staff' is type weapon, extra flags magic.\nWeight is 4.0 pounds, value is 6000, level is 49.\nMaterial is hardwood.\nrestrict flags none.\nWeapon type is staff.\nDamage is 5d10 (average 27).\nDamage noun is thwack.\nWeapons flags: flaming frost sharp shocking\nAffects holy power by 1.\nAffects damage roll by 2.\nAffects hit roll by 2."
+  },
+  {
+    "name": "a dark travelling cloak",
+    "vnum": 33927,
+    "details": "Area: The Fractured Herd\nObject 'a dark travelling cloak' is type armor, extra flags magic.\nWeight is 2.0 pounds, value is 4000, level is 46.\nMaterial is wool.\nrestrict flags none.\nArmor class is 5 pierce, 5 bash, 5 slash, and 3 vs. magic.\nAffects save vs spell by -5.\nAffects save vs transport by -5.\nAffects save vs maledictions by -5.\nAffects moves by 22.\nAffects damage roll by 2.\nAffects hit roll by 3."
+  },
+  {
+    "name": "leather-padded scout horseshoes",
+    "vnum": 33926,
+    "details": "Area: The Fractured Herd\nObject 'leather-padded scout horseshoes' is type armor, extra flags magic.\nWeight is 2.0 pounds, value is 3500, level is 46.\nMaterial is titanium.\nrestrict flags centaur_allowed.\nArmor class is 7 pierce, 7 bash, 7 slash, and 3 vs. magic.\nAffects save vs spell by -5.\nAffects save vs transport by -5.\nAffects save vs maledictions by -5.\nAffects moves by 22.\nAffects damage roll by 2.\nAffects hit roll by 3."
+  },
+  {
+    "name": "leather scout fourleggings",
+    "vnum": 33925,
+    "details": "Area: The Fractured Herd\nObject 'leather scout fourleggings' is type armor, extra flags magic.\nWeight is 2.0 pounds, value is 4500, level is 46.\nMaterial is leather.\nrestrict flags none.\nArmor class is 8 pierce, 8 bash, 8 slash, and 4 vs. magic.\nAffects hp by 20.\nAffects damage roll by 3.\nAffects hit roll by 2."
+  },
+  {
+    "name": "a fitted scout's chest piece",
+    "vnum": 33924,
+    "details": "Area: The Fractured Herd\nObject 'a fitted scout's chest piece' is type armor, extra flags magic.\nWeight is 2.0 pounds, value is 5500, level is 46.\nMaterial is leather.\nrestrict flags none.\nArmor class is 12 pierce, 12 bash, 12 slash, and 5 vs. magic.\nAffects damage roll by 3.\nAffects hit roll by 2.\nAffects hp by 30."
+  },
+  {
+    "name": "a black scout's hood",
+    "vnum": 33923,
+    "details": "Area: The Fractured Herd\nObject 'a black scout's hood' is type armor, extra flags magic.\nWeight is 2.0 pounds, value is 4000, level is 46.\nMaterial is leather.\nrestrict flags none.\nArmor class is 8 pierce, 8 bash, 8 slash, and 4 vs. magic.\nAffects hp by 22.\nAffects damage roll by 2.\nAffects hit roll by 3."
+  },
+  {
+    "name": "a scout's hunting blade",
+    "vnum": 33922,
+    "details": "Area: The Fractured Herd\nObject 'a scout's hunting blade' is type weapon, extra flags magic.\nWeight is 2.0 pounds, value is 5500, level is 46.\nMaterial is steel.\nrestrict flags none.\nWeapon type is dagger.\nDamage is 5d10 (average 27).\nDamage noun is pierce.\nWeapons flags: flaming sharp\nAffects damage roll by 4.\nAffects hit roll by 4."
+  },
+  {
+    "name": "an iron war band",
+    "vnum": 33921,
+    "details": "Area: The Fractured Herd\nObject 'an iron war band' is type armor, extra flags magic.\nWeight is 0.5 pounds, value is 3000, level is 44.\nMaterial is iron.\nrestrict flags none.\nArmor class is 2 pierce, 2 bash, 2 slash, and 1 vs. magic.\nAffects save vs spell by -5.\nAffects save vs transport by -5.\nAffects save vs maledictions by -5.\nAffects moves by 20.\nAffects damage roll by 2.\nAffects hit roll by 2."
+  },
+  {
+    "name": "iron war horseshoes",
+    "vnum": 33920,
+    "details": "Area: The Fractured Herd\nObject 'iron war horseshoes' is type armor, extra flags magic.\nWeight is 2.0 pounds, value is 3500, level is 44.\nMaterial is titanium.\nrestrict flags centaur_allowed.\nArmor class is 6 pierce, 6 bash, 6 slash, and 3 vs. magic.\nAffects save vs spell by -5.\nAffects save vs transport by -5.\nAffects save vs maledictions by -5.\nAffects moves by 20.\nAffects damage roll by 2.\nAffects hit roll by 2."
+  },
+  {
+    "name": "iron war fourleggings",
+    "vnum": 33919,
+    "details": "Area: The Fractured Herd\nObject 'iron war fourleggings' is type armor, extra flags magic.\nWeight is 18.0 pounds, value is 4500, level is 44.\nMaterial is iron.\nrestrict flags none.\nArmor class is 8 pierce, 8 bash, 8 slash, and 4 vs. magic.\nAffects hp by 20.\nAffects damage roll by 2.\nAffects hit roll by 2."
+  },
+  {
+    "name": "an iron war breastplate",
+    "vnum": 33918,
+    "details": "Area: The Fractured Herd\nObject 'an iron war breastplate' is type armor, extra flags magic.\nWeight is 18.0 pounds, value is 5500, level is 44.\nMaterial is iron.\nrestrict flags none.\nArmor class is 12 pierce, 12 bash, 12 slash, and 5 vs. magic.\nAffects damage roll by 2.\nAffects hit roll by 2.\nAffects hp by 30."
+  },
+  {
+    "name": "an iron war helm",
+    "vnum": 33917,
+    "details": "Area: The Fractured Herd\nObject 'an iron war helm' is type armor, extra flags magic.\nWeight is 5.0 pounds, value is 4000, level is 44.\nMaterial is iron.\nrestrict flags none.\nArmor class is 8 pierce, 8 bash, 8 slash, and 4 vs. magic.\nAffects hp by 20.\nAffects damage roll by 2.\nAffects hit roll by 2."
+  },
+  {
+    "name": "a tundra war axe",
+    "vnum": 33916,
+    "details": "Area: The Fractured Herd\nObject 'a tundra war axe' is type weapon, extra flags magic.\nWeight is 9.0 pounds, value is 5500, level is 44.\nMaterial is iron.\nrestrict flags none.\nWeapon type is axe.\nDamage is 5d10 (average 27).\nDamage noun is slash.\nWeapons flags: flaming sharp\nAffects damage roll by 3.\nAffects hit roll by 3."
+  },
+  {
+    "name": "the Council Fire",
+    "vnum": 33915,
+    "details": "Area: The Fractured Herd\nObject 'the Council Fire' is type furniture, extra flags bless nolocate.\nWeight is 200.0 pounds, value is 0, level is 50.\nMaterial is ash and wood.\nrestrict flags none."
+  },
+  {
+    "name": "the Great Fire",
+    "vnum": 33914,
+    "details": "Area: The Fractured Herd\nObject 'the Great Fire' is type furniture, extra flags bless nolocate.\nWeight is 200.0 pounds, value is 0, level is 50.\nMaterial is ash and wood.\nrestrict flags none."
+  },
+  {
+    "name": "a black iron hunt sigil",
+    "vnum": 33913,
+    "details": "Area: The Fractured Herd\nObject 'a black iron hunt sigil' is type trash, extra flags none.\nWeight is 1.0 pounds, value is 0, level is 44.\nMaterial is iron.\nrestrict flags none."
+  },
+  {
+    "name": "a verdant feather bundle",
+    "vnum": 33912,
+    "details": "Area: The Fractured Herd\nObject 'a verdant feather bundle' is type trash, extra flags none.\nWeight is 0.2 pounds, value is 0, level is 44.\nMaterial is feather.\nrestrict flags none."
+  },
+  {
+    "name": "a carved bone trail marker",
+    "vnum": 33911,
+    "details": "Area: The Fractured Herd\nObject 'a carved bone trail marker' is type trash, extra flags none.\nWeight is 1.0 pounds, value is 0, level is 44.\nMaterial is bone.\nrestrict flags none."
+  },
+  {
+    "name": "a green-dyed scout braid",
+    "vnum": 33910,
+    "details": "Area: The Fractured Herd\nObject 'a green-dyed scout braid' is type trash, extra flags none.\nWeight is 0.2 pounds, value is 0, level is 44.\nMaterial is hair.\nrestrict flags none."
+  },
+  {
+    "name": "an Aldochus hunting totem",
+    "vnum": 33909,
+    "details": "Area: The Fractured Herd\nObject 'an Aldochus hunting totem' is type trash, extra flags none.\nWeight is 1.0 pounds, value is 0, level is 44.\nMaterial is bone.\nrestrict flags none."
+  },
+  {
+    "name": "a black iron war sigil",
+    "vnum": 33908,
+    "details": "Area: The Fractured Herd\nObject 'a black iron war sigil' is type trash, extra flags none.\nWeight is 1.0 pounds, value is 0, level is 44.\nMaterial is iron.\nrestrict flags none."
+  },
+  {
+    "name": "a crimson warpaint vial",
+    "vnum": 33907,
+    "details": "Area: The Fractured Herd\nObject 'a crimson warpaint vial' is type trash, extra flags none.\nWeight is 0.5 pounds, value is 0, level is 44.\nMaterial is iron.\nrestrict flags none."
+  },
+  {
+    "name": "a red-dyed war braid",
+    "vnum": 33906,
+    "details": "Area: The Fractured Herd\nObject 'a red-dyed war braid' is type trash, extra flags none.\nWeight is 0.2 pounds, value is 0, level is 44.\nMaterial is hair.\nrestrict flags none."
+  },
+  {
+    "name": "a blood-sealed oath scroll",
+    "vnum": 33905,
+    "details": "Area: The Fractured Herd\nObject 'a blood-sealed oath scroll' is type trash, extra flags none.\nWeight is 0.2 pounds, value is 0, level is 44.\nMaterial is parchment.\nrestrict flags none."
+  },
+  {
+    "name": "a Kraeteon war standard",
+    "vnum": 33904,
+    "details": "Area: The Fractured Herd\nObject 'a Kraeteon war standard' is type trash, extra flags none.\nWeight is 3.0 pounds, value is 0, level is 44.\nMaterial is cloth and iron.\nrestrict flags none."
+  },
+  {
+    "name": "a stripped hunting fletching",
+    "vnum": 33903,
+    "details": "Area: The Fractured Herd\nObject 'a stripped hunting fletching' is type trash, extra flags visdeath.\nWeight is 0.2 pounds, value is 0, level is 51.\nMaterial is bone.\nrestrict flags none."
+  },
+  {
+    "name": "a shaman's bone fetish",
+    "vnum": 33902,
+    "details": "Area: The Fractured Herd\nObject 'a shaman's bone fetish' is type trash, extra flags visdeath.\nWeight is 0.5 pounds, value is 0, level is 49.\nMaterial is bone.\nrestrict flags none."
+  },
+  {
+    "name": "a scout's sheath knife",
+    "vnum": 33901,
+    "details": "Area: The Fractured Herd\nObject 'a scout's sheath knife' is type trash, extra flags visdeath.\nWeight is 1.0 pounds, value is 0, level is 46.\nMaterial is steel.\nrestrict flags none."
+  },
+  {
+    "name": "a war-notched axe blade",
+    "vnum": 33900,
+    "details": "Area: The Fractured Herd\nObject 'a war-notched axe blade' is type trash, extra flags visdeath.\nWeight is 3.0 pounds, value is 0, level is 44.\nMaterial is iron.\nrestrict flags none."
+  },
+  {
+    "name": "a grey elf barbed staff",
+    "vnum": 33753,
+    "details": "Area: The Sundered Vale\nObject 'a grey elf barbed staff' is type weapon, extra flags magic.\nWeight is 8.0 pounds, value is 5000, level is 45.\nMaterial is hardwood.\nrestrict flags none.\nWeapon type is staff.\nDamage is 4d12 (average 26).\nDamage noun is pierce.\nWeapons flags: sharp"
+  },
+  {
+    "name": "a grey elf whip",
+    "vnum": 33752,
+    "details": "Area: The Sundered Vale\nObject 'a grey elf whip' is type weapon, extra flags magic.\nWeight is 5.0 pounds, value is 5000, level is 45.\nMaterial is leather.\nrestrict flags none.\nWeapon type is whip.\nDamage is 4d12 (average 26).\nDamage noun is undefined.\nWeapons flags: vampiric"
+  },
+  {
+    "name": "a grey elf flail",
+    "vnum": 33751,
+    "details": "Area: The Sundered Vale\nObject 'a grey elf flail' is type weapon, extra flags magic.\nWeight is 12.0 pounds, value is 5000, level is 45.\nMaterial is steel.\nrestrict flags none.\nWeapon type is flail.\nDamage is 4d12 (average 26).\nDamage noun is undefined.\nWeapons flags: sharp"
+  },
+  {
+    "name": "a grey elf field dagger",
+    "vnum": 33750,
+    "details": "Area: The Sundered Vale\nObject 'a grey elf field dagger' is type weapon, extra flags magic.\nWeight is 6.0 pounds, value is 5000, level is 45.\nMaterial is steel.\nrestrict flags none.\nWeapon type is dagger.\nDamage is 4d12 (average 26).\nDamage noun is stab.\nWeapons flags: sharp"
+  },
+  {
+    "name": "a grey elf shortsword",
+    "vnum": 33749,
+    "details": "Area: The Sundered Vale\nObject 'a grey elf shortsword' is type weapon, extra flags magic.\nWeight is 10.0 pounds, value is 5000, level is 45.\nMaterial is steel.\nrestrict flags none.\nWeapon type is sword.\nDamage is 4d12 (average 26).\nDamage noun is slash.\nWeapons flags: sharp"
+  },
+  {
+    "name": "grey elf leg wraps",
+    "vnum": 33748,
+    "details": "Area: The Sundered Vale\nObject 'grey elf leg wraps' is type armor, extra flags magic.\nWeight is 12.0 pounds, value is 4000, level is 45.\nMaterial is leather.\nrestrict flags none.\nArmor class is 8 pierce, 8 bash, 8 slash, and 4 vs. magic.\nAffects save vs maledictions by -15."
+  },
+  {
+    "name": "grey elf arm wraps",
+    "vnum": 33747,
+    "details": "Area: The Sundered Vale\nObject 'grey elf arm wraps' is type armor, extra flags magic.\nWeight is 8.0 pounds, value is 4000, level is 45.\nMaterial is leather.\nrestrict flags none.\nArmor class is 6 pierce, 6 bash, 6 slash, and 3 vs. magic.\nAffects saves by -5.\nAffects save vs maledictions by -5.\nAffects save vs transport by -3.\nAffects save vs spell by -3."
+  },
+  {
+    "name": "a grey elf travelling cloak",
+    "vnum": 33746,
+    "details": "Area: The Sundered Vale\nObject 'a grey elf travelling cloak' is type armor, extra flags magic.\nWeight is 6.0 pounds, value is 4000, level is 45.\nMaterial is wool.\nrestrict flags none.\nArmor class is 5 pierce, 5 bash, 5 slash, and 3 vs. magic.\nAffects hit roll by 3.\nAffects damage roll by 3.\nAffects hp by 20."
+  },
+  {
+    "name": "a grey elf field vest",
+    "vnum": 33745,
+    "details": "Area: The Sundered Vale\nObject 'a grey elf field vest' is type armor, extra flags magic.\nWeight is 20.0 pounds, value is 5000, level is 45.\nMaterial is leather.\nrestrict flags none.\nArmor class is 12 pierce, 12 bash, 12 slash, and 5 vs. magic.\nAffects damage roll by 2.\nAffects hit roll by 2.\nAffects hp by 25."
+  },
+  {
+    "name": "a grey elf field helm",
+    "vnum": 33744,
+    "details": "Area: The Sundered Vale\nObject 'a grey elf field helm' is type armor, extra flags magic.\nWeight is 8.0 pounds, value is 4000, level is 45.\nMaterial is steel.\nrestrict flags none.\nArmor class is 8 pierce, 8 bash, 8 slash, and 4 vs. magic.\nAffects hp by 25.\nAffects damage roll by 2.\nAffects hit roll by 2."
+  },
+  {
+    "name": "a grey elf bracer",
+    "vnum": 33743,
+    "details": "Area: The Sundered Vale\nObject 'a grey elf bracer' is type armor, extra flags magic.\nWeight is 4.0 pounds, value is 3500, level is 45.\nMaterial is leather.\nrestrict flags none.\nArmor class is 4 pierce, 4 bash, 4 slash, and 2 vs. magic.\nAffects moves by 25.\nAffects mana by 15.\nAffects hp by 15."
+  },
+  {
+    "name": "a grey elf ear stud",
+    "vnum": 33742,
+    "details": "Area: The Sundered Vale\nObject 'a grey elf ear stud' is type armor, extra flags magic.\nWeight is 1.0 pounds, value is 2500, level is 45.\nMaterial is silver.\nrestrict flags none.\nArmor class is 2 pierce, 2 bash, 2 slash, and 1 vs. magic.\nAffects damage roll by 3.\nAffects hit roll by 2."
+  },
+  {
+    "name": "a pair of grey elf field lenses",
+    "vnum": 33741,
+    "details": "Area: The Sundered Vale\nObject 'a pair of grey elf field lenses' is type armor, extra flags magic.\nWeight is 1.0 pounds, value is 3000, level is 45.\nMaterial is glass.\nrestrict flags none.\nArmor class is 2 pierce, 2 bash, 2 slash, and 1 vs. magic.\nAffects hp by 25."
+  },
+  {
+    "name": "a grey elf chain pendant",
+    "vnum": 33740,
+    "details": "Area: The Sundered Vale\nObject 'a grey elf chain pendant' is type armor, extra flags magic.\nWeight is 3.0 pounds, value is 3000, level is 45.\nMaterial is silver.\nrestrict flags none.\nArmor class is 2 pierce, 2 bash, 2 slash, and 1 vs. magic.\nAffects save vs transport by -2.\nAffects saves by -2.\nAffects save vs spell by -2.\nAffects hp by 10."
+  },
+  {
+    "name": "a grey elf signet ring",
+    "vnum": 33739,
+    "details": "Area: The Sundered Vale\nObject 'a grey elf signet ring' is type armor, extra flags magic.\nWeight is 2.0 pounds, value is 3000, level is 45.\nMaterial is silver.\nrestrict flags none.\nArmor class is 2 pierce, 2 bash, 2 slash, and 1 vs. magic.\nAffects hp by 25."
+  },
+  {
+    "name": "a drow barbed staff",
+    "vnum": 33738,
+    "details": "Area: The Sundered Vale\nObject 'a drow barbed staff' is type weapon, extra flags magic anti_good anti_neutral_align.\nWeight is 8.0 pounds, value is 5000, level is 45.\nMaterial is hardwood.\nrestrict flags none.\nWeapon type is staff.\nDamage is 4d12 (average 26).\nDamage noun is pierce.\nWeapons flags: sharp"
+  },
+  {
+    "name": "a drow lash",
+    "vnum": 33737,
+    "details": "Area: The Sundered Vale\nObject 'a drow lash' is type weapon, extra flags magic anti_good anti_neutral_align.\nWeight is 5.0 pounds, value is 5000, level is 45.\nMaterial is leather.\nrestrict flags none.\nWeapon type is whip.\nDamage is 4d12 (average 26).\nDamage noun is undefined.\nWeapons flags: vampiric"
+  },
+  {
+    "name": "a drow iron flail",
+    "vnum": 33736,
+    "details": "Area: The Sundered Vale\nObject 'a drow iron flail' is type weapon, extra flags magic anti_good anti_neutral_align.\nWeight is 12.0 pounds, value is 5000, level is 45.\nMaterial is iron.\nrestrict flags none.\nWeapon type is flail.\nDamage is 4d12 (average 26).\nDamage noun is undefined.\nWeapons flags: sharp"
+  },
+  {
+    "name": "a drow fang",
+    "vnum": 33735,
+    "details": "Area: The Sundered Vale\nObject 'a drow fang' is type weapon, extra flags magic anti_good anti_neutral_align.\nWeight is 6.0 pounds, value is 5000, level is 45.\nMaterial is steel.\nrestrict flags none.\nWeapon type is dagger.\nDamage is 4d12 (average 26).\nDamage noun is stab.\nWeapons flags: sharp"
+  },
+  {
+    "name": "a drow blade",
+    "vnum": 33734,
+    "details": "Area: The Sundered Vale\nObject 'a drow blade' is type weapon, extra flags magic anti_good anti_neutral_align.\nWeight is 10.0 pounds, value is 5000, level is 45.\nMaterial is steel.\nrestrict flags none.\nWeapon type is sword.\nDamage is 4d12 (average 26).\nDamage noun is slash.\nWeapons flags: sharp"
+  },
+  {
+    "name": "drow leg guards",
+    "vnum": 33733,
+    "details": "Area: The Sundered Vale\nObject 'drow leg guards' is type armor, extra flags magic anti_good anti_neutral_align.\nWeight is 12.0 pounds, value is 4000, level is 45.\nMaterial is steel.\nrestrict flags none.\nArmor class is 8 pierce, 8 bash, 8 slash, and 4 vs. magic.\nAffects save vs maledictions by -15."
+  },
+  {
+    "name": "drow arm guards",
+    "vnum": 33732,
+    "details": "Area: The Sundered Vale\nObject 'drow arm guards' is type armor, extra flags magic anti_good anti_neutral_align.\nWeight is 8.0 pounds, value is 4000, level is 45.\nMaterial is steel.\nrestrict flags none.\nArmor class is 6 pierce, 6 bash, 6 slash, and 3 vs. magic.\nAffects saves by -5.\nAffects save vs maledictions by -5.\nAffects save vs transport by -3.\nAffects save vs spell by -3."
+  },
+  {
+    "name": "a drow shadow cloak",
+    "vnum": 33731,
+    "details": "Area: The Sundered Vale\nObject 'a drow shadow cloak' is type armor, extra flags magic anti_good anti_neutral_align.\nWeight is 6.0 pounds, value is 4000, level is 45.\nMaterial is silk.\nrestrict flags none.\nArmor class is 5 pierce, 5 bash, 5 slash, and 3 vs. magic.\nAffects hit roll by 3.\nAffects damage roll by 3.\nAffects hp by 20."
+  },
+  {
+    "name": "a drow chitin plate",
+    "vnum": 33730,
+    "details": "Area: The Sundered Vale\nObject 'a drow chitin plate' is type armor, extra flags magic anti_good anti_neutral_align.\nWeight is 20.0 pounds, value is 5000, level is 45.\nMaterial is stone.\nrestrict flags none.\nArmor class is 12 pierce, 12 bash, 12 slash, and 5 vs. magic.\nAffects damage roll by 2.\nAffects hit roll by 2.\nAffects hp by 25."
+  },
+  {
+    "name": "a drow officer helm",
+    "vnum": 33729,
+    "details": "Area: The Sundered Vale\nObject 'a drow officer helm' is type armor, extra flags magic anti_good anti_neutral_align.\nWeight is 8.0 pounds, value is 4000, level is 45.\nMaterial is steel.\nrestrict flags none.\nArmor class is 8 pierce, 8 bash, 8 slash, and 4 vs. magic.\nAffects hp by 25.\nAffects damage roll by 2.\nAffects hit roll by 2."
+  },
+  {
+    "name": "a drow wrist guard",
+    "vnum": 33728,
+    "details": "Area: The Sundered Vale\nObject 'a drow wrist guard' is type armor, extra flags magic anti_good anti_neutral_align.\nWeight is 4.0 pounds, value is 3500, level is 45.\nMaterial is leather.\nrestrict flags none.\nArmor class is 4 pierce, 4 bash, 4 slash, and 2 vs. magic.\nAffects moves by 25.\nAffects mana by 15.\nAffects hp by 15."
+  },
+  {
+    "name": "a drow barbed ear stud",
+    "vnum": 33727,
+    "details": "Area: The Sundered Vale\nObject 'a drow barbed ear stud' is type armor, extra flags magic anti_good anti_neutral_align.\nWeight is 1.0 pounds, value is 2500, level is 45.\nMaterial is iron.\nrestrict flags none.\nArmor class is 2 pierce, 2 bash, 2 slash, and 1 vs. magic.\nAffects damage roll by 3.\nAffects hit roll by 2."
+  },
+  {
+    "name": "a pair of drow shadow lenses",
+    "vnum": 33726,
+    "details": "Area: The Sundered Vale\nObject 'a pair of drow shadow lenses' is type armor, extra flags magic anti_good anti_neutral_align.\nWeight is 1.0 pounds, value is 3000, level is 45.\nMaterial is glass.\nrestrict flags none.\nArmor class is 2 pierce, 2 bash, 2 slash, and 1 vs. magic.\nAffects hp by 25."
+  },
+  {
+    "name": "a drow spider pendant",
+    "vnum": 33725,
+    "details": "Area: The Sundered Vale\nObject 'a drow spider pendant' is type armor, extra flags magic anti_good anti_neutral_align.\nWeight is 3.0 pounds, value is 3000, level is 45.\nMaterial is silver.\nrestrict flags none.\nArmor class is 2 pierce, 2 bash, 2 slash, and 1 vs. magic.\nAffects save vs transport by -2.\nAffects saves by -2.\nAffects save vs spell by -2.\nAffects hp by 10."
+  },
+  {
+    "name": "a ring of drow obsidian",
+    "vnum": 33724,
+    "details": "Area: The Sundered Vale\nObject 'a ring of drow obsidian' is type armor, extra flags magic anti_good anti_neutral_align.\nWeight is 2.0 pounds, value is 3000, level is 45.\nMaterial is obsidian.\nrestrict flags none.\nArmor class is 2 pierce, 2 bash, 2 slash, and 1 vs. magic.\nAffects hp by 25."
+  },
+  {
+    "name": "an elven barbed staff",
+    "vnum": 33723,
+    "details": "Area: The Sundered Vale\nObject 'an elven barbed staff' is type weapon, extra flags magic anti_evil anti_neutral_align.\nWeight is 8.0 pounds, value is 5000, level is 45.\nMaterial is hardwood.\nrestrict flags none.\nWeapon type is staff.\nDamage is 4d12 (average 26).\nDamage noun is pierce.\nWeapons flags: sharp"
+  },
+  {
+    "name": "an elven whip",
+    "vnum": 33722,
+    "details": "Area: The Sundered Vale\nObject 'an elven whip' is type weapon, extra flags magic anti_evil anti_neutral_align.\nWeight is 5.0 pounds, value is 5000, level is 45.\nMaterial is leather.\nrestrict flags none.\nWeapon type is whip.\nDamage is 4d12 (average 26).\nDamage noun is undefined.\nWeapons flags: vampiric"
+  },
+  {
+    "name": "an elven cavalry flail",
+    "vnum": 33721,
+    "details": "Area: The Sundered Vale\nObject 'an elven cavalry flail' is type weapon, extra flags magic anti_evil anti_neutral_align.\nWeight is 12.0 pounds, value is 5000, level is 45.\nMaterial is steel.\nrestrict flags none.\nWeapon type is flail.\nDamage is 4d12 (average 26).\nDamage noun is undefined.\nWeapons flags: sharp"
+  },
+  {
+    "name": "an elven dagger",
+    "vnum": 33720,
+    "details": "Area: The Sundered Vale\nObject 'an elven dagger' is type weapon, extra flags magic anti_evil anti_neutral_align.\nWeight is 6.0 pounds, value is 5000, level is 45.\nMaterial is steel.\nrestrict flags none.\nWeapon type is dagger.\nDamage is 4d12 (average 26).\nDamage noun is stab.\nWeapons flags: sharp"
+  },
+  {
+    "name": "an elven longsword",
+    "vnum": 33719,
+    "details": "Area: The Sundered Vale\nObject 'an elven longsword' is type weapon, extra flags magic anti_evil anti_neutral_align.\nWeight is 10.0 pounds, value is 5000, level is 45.\nMaterial is steel.\nrestrict flags none.\nWeapon type is sword.\nDamage is 4d12 (average 26).\nDamage noun is slash.\nWeapons flags: sharp"
+  },
+  {
+    "name": "elven greaves",
+    "vnum": 33718,
+    "details": "Area: The Sundered Vale\nObject 'elven greaves' is type armor, extra flags magic anti_evil anti_neutral_align.\nWeight is 12.0 pounds, value is 4000, level is 45.\nMaterial is steel.\nrestrict flags none.\nArmor class is 8 pierce, 8 bash, 8 slash, and 4 vs. magic.\nAffects save vs maledictions by -15."
+  },
+  {
+    "name": "elven vambraces",
+    "vnum": 33717,
+    "details": "Area: The Sundered Vale\nObject 'elven vambraces' is type armor, extra flags magic anti_evil anti_neutral_align.\nWeight is 8.0 pounds, value is 4000, level is 45.\nMaterial is steel.\nrestrict flags none.\nArmor class is 6 pierce, 6 bash, 6 slash, and 3 vs. magic.\nAffects saves by -5.\nAffects save vs maledictions by -5.\nAffects save vs transport by -3.\nAffects save vs spell by -3."
+  },
+  {
+    "name": "an elven campaign cloak",
+    "vnum": 33716,
+    "details": "Area: The Sundered Vale\nObject 'an elven campaign cloak' is type armor, extra flags magic anti_evil anti_neutral_align.\nWeight is 6.0 pounds, value is 4000, level is 45.\nMaterial is wool.\nrestrict flags none.\nArmor class is 5 pierce, 5 bash, 5 slash, and 3 vs. magic.\nAffects hit roll by 3.\nAffects damage roll by 3.\nAffects hp by 20."
+  },
+  {
+    "name": "an elven breastplate",
+    "vnum": 33715,
+    "details": "Area: The Sundered Vale\nObject 'an elven breastplate' is type armor, extra flags magic anti_evil anti_neutral_align.\nWeight is 20.0 pounds, value is 5000, level is 45.\nMaterial is steel.\nrestrict flags none.\nArmor class is 12 pierce, 12 bash, 12 slash, and 5 vs. magic.\nAffects damage roll by 2.\nAffects hit roll by 2.\nAffects hp by 25."
+  },
+  {
+    "name": "an elven battle helm",
+    "vnum": 33714,
+    "details": "Area: The Sundered Vale\nObject 'an elven battle helm' is type armor, extra flags magic anti_evil anti_neutral_align.\nWeight is 8.0 pounds, value is 4000, level is 45.\nMaterial is steel.\nrestrict flags none.\nArmor class is 8 pierce, 8 bash, 8 slash, and 4 vs. magic.\nAffects hp by 25.\nAffects damage roll by 2.\nAffects hit roll by 2."
+  },
+  {
+    "name": "an elven bracer",
+    "vnum": 33713,
+    "details": "Area: The Sundered Vale\nObject 'an elven bracer' is type armor, extra flags magic anti_evil anti_neutral_align.\nWeight is 4.0 pounds, value is 3500, level is 45.\nMaterial is leather.\nrestrict flags none.\nArmor class is 4 pierce, 4 bash, 4 slash, and 2 vs. magic.\nAffects moves by 25.\nAffects mana by 15.\nAffects hp by 15."
+  },
+  {
+    "name": "an elven ear cuff",
+    "vnum": 33712,
+    "details": "Area: The Sundered Vale\nObject 'an elven ear cuff' is type armor, extra flags magic anti_evil anti_neutral_align.\nWeight is 1.0 pounds, value is 2500, level is 45.\nMaterial is silver.\nrestrict flags none.\nArmor class is 2 pierce, 2 bash, 2 slash, and 1 vs. magic.\nAffects damage roll by 3.\nAffects hit roll by 2."
+  },
+  {
+    "name": "a pair of elven field lenses",
+    "vnum": 33711,
+    "details": "Area: The Sundered Vale\nObject 'a pair of elven field lenses' is type armor, extra flags magic anti_evil anti_neutral_align.\nWeight is 1.0 pounds, value is 3000, level is 45.\nMaterial is glass.\nrestrict flags none.\nArmor class is 2 pierce, 2 bash, 2 slash, and 1 vs. magic.\nAffects hp by 25."
+  },
+  {
+    "name": "a pendant of the Elven Host",
+    "vnum": 33710,
+    "details": "Area: The Sundered Vale\nObject 'a pendant of the Elven Host' is type armor, extra flags magic anti_evil anti_neutral_align.\nWeight is 3.0 pounds, value is 3000, level is 45.\nMaterial is silver.\nrestrict flags none.\nArmor class is 2 pierce, 2 bash, 2 slash, and 1 vs. magic.\nAffects save vs transport by -2.\nAffects saves by -2.\nAffects save vs spell by -2.\nAffects hp by 10."
+  },
+  {
+    "name": "a ring of elven silver",
+    "vnum": 33709,
+    "details": "Area: The Sundered Vale\nObject 'a ring of elven silver' is type armor, extra flags magic anti_evil anti_neutral_align.\nWeight is 2.0 pounds, value is 3000, level is 45.\nMaterial is silver.\nrestrict flags none.\nArmor class is 2 pierce, 2 bash, 2 slash, and 1 vs. magic.\nAffects hp by 25."
+  },
+  {
+    "name": "a shadow seal",
+    "vnum": 33708,
+    "details": "Area: The Sundered Vale\nObject 'a shadow seal' is type trash, extra flags visdeath.\nWeight is 0.1 pounds, value is 0, level is 45.\nMaterial is iron.\nrestrict flags none."
+  },
+  {
+    "name": "a shadow-marked battle plan",
+    "vnum": 33707,
+    "details": "Area: The Sundered Vale\nObject 'a shadow-marked battle plan' is type trash, extra flags visdeath.\nWeight is 0.1 pounds, value is 0, level is 42.\nMaterial is parchment.\nrestrict flags none."
+  },
+  {
+    "name": "an intercepted shadow missive",
+    "vnum": 33706,
+    "details": "Area: The Sundered Vale\nObject 'an intercepted shadow missive' is type trash, extra flags visdeath.\nWeight is 0.1 pounds, value is 0, level is 39.\nMaterial is parchment.\nrestrict flags none."
+  },
+  {
+    "name": "a severed elven head",
+    "vnum": 33705,
+    "details": "Area: The Sundered Vale\nObject 'a severed elven head' is type trash, extra flags visdeath.\nWeight is 0.1 pounds, value is 0, level is 45.\nMaterial is flesh and bone.\nrestrict flags none."
+  },
+  {
+    "name": "an elven scalp",
+    "vnum": 33704,
+    "details": "Area: The Sundered Vale\nObject 'an elven scalp' is type trash, extra flags visdeath.\nWeight is 0.1 pounds, value is 0, level is 42.\nMaterial is flesh.\nrestrict flags none."
+  },
+  {
+    "name": "a severed elven ear",
+    "vnum": 33703,
+    "details": "Area: The Sundered Vale\nObject 'a severed elven ear' is type trash, extra flags visdeath.\nWeight is 0.1 pounds, value is 0, level is 39.\nMaterial is flesh.\nrestrict flags none."
+  },
+  {
+    "name": "a drow elite's insignia",
+    "vnum": 33702,
+    "details": "Area: The Sundered Vale\nObject 'a drow elite's insignia' is type trash, extra flags visdeath.\nWeight is 0.1 pounds, value is 0, level is 45.\nMaterial is iron.\nrestrict flags none."
+  },
+  {
+    "name": "a drow warrior's insignia",
+    "vnum": 33701,
+    "details": "Area: The Sundered Vale\nObject 'a drow warrior's insignia' is type trash, extra flags visdeath.\nWeight is 0.1 pounds, value is 0, level is 42.\nMaterial is iron.\nrestrict flags none."
+  },
+  {
+    "name": "a drow scout's insignia",
+    "vnum": 33700,
+    "details": "Area: The Sundered Vale\nObject 'a drow scout's insignia' is type trash, extra flags visdeath.\nWeight is 0.1 pounds, value is 0, level is 39.\nMaterial is iron.\nrestrict flags none."
   }
 ]
