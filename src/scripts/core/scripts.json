@@ -12,6 +12,12 @@
               "isFolder": "no"
        },
        {
+              "name": "DMPatterns",
+              "isActive": "yes",
+              "script": "",
+              "isFolder": "no"
+       },
+       {
               "name": "DMLogger",
               "isActive": "yes",
               "script": "",
