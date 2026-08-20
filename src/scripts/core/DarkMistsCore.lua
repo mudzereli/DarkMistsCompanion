@@ -223,6 +223,7 @@ end
 -- Prompt the user before performing a UI reload (safe pathway)
 function Darkmists.PromptSafeReload(opts)
   opts = opts or {}
+  Darkmists._reloadConfirmed = false
   local title = opts.title or "Reload UI"
   local body = opts.body or (
     "Reloading the UI will reset the Dark Mists interface and apply any pending layout or theme changes. If you have unsaved settings, save them first.\n\n" ..
@@ -235,10 +236,31 @@ function Darkmists.PromptSafeReload(opts)
     -- Use a string that hides the panel then defers the actual reload to avoid
     -- stale C++ callback references (safe pattern used elsewhere).
     cechoLink(win, DarkmistsTheme.mutedTag .. "<u>[" .. DarkmistsTheme.goodTag .. "Reload Now" .. DarkmistsTheme.mutedTag .. "]",
-      [[DMAlertWindow.Hide(); tempTimer(0, 'Darkmists.SafeReload()')]],
+      [[Darkmists._reloadConfirmed = true; DMAlertWindow.Hide(); tempTimer(0, 'Darkmists.SafeReload()')]],
       "Reload the UI (safe)", true
     )
-  end, { width = opts.width or 640, height = opts.height or 200 })
+  end, {
+    width = opts.width or 640,
+    height = opts.height or 200,
+    -- Cancelling the prompt (closing it without reloading) discards any
+    -- queued theme switch so it isn't applied on the next startup.
+    onClose = function()
+      if not Darkmists._reloadConfirmed then
+        Darkmists.cancelPendingTheme()
+      end
+    end,
+  })
+end
+
+-- Discard a queued theme change (used when a reload prompt is cancelled).
+function Darkmists.cancelPendingTheme()
+  if Darkmists.GlobalSettings.pendingThemeMode ~= nil then
+    Darkmists.GlobalSettings.pendingThemeMode = nil
+    Darkmists.SaveSettings()
+    if DMLogger and DMLogger.notify then
+      DMLogger.notify("Settings", "Theme change cancelled")
+    end
+  end
 end
 
 local function openAsset(path) DMUtil.openLocalFile(path) end
@@ -715,6 +737,15 @@ function Darkmists.Init()
   local hadSettings = Darkmists.LoadSettings()
   local savedLayoutVersion = Darkmists.GlobalSettings.layoutCacheVersion
   local versionChanged = hadSettings and savedLayoutVersion ~= Darkmists.LAYOUT_CACHE_VERSION
+
+  -- Deferred theme toggle: the Light/Dark settings menu only sets a pending
+  -- flag. Apply it to lightMode now (on this reload/startup build) so nothing
+  -- re-themes before the user confirms the reload.
+  if Darkmists.GlobalSettings.pendingThemeMode ~= nil then
+    Darkmists.GlobalSettings.lightMode = Darkmists.GlobalSettings.pendingThemeMode
+    Darkmists.GlobalSettings.pendingThemeMode = nil
+    Darkmists.SaveSettings()
+  end
 
   DarkmistsTheme.buildTheme()
   Darkmists.RegisterEvents()

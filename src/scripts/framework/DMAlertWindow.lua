@@ -19,6 +19,7 @@ panel.headerH      = 30      -- title bar estimate (sizing helper)
 panel.borderSize   = 6       -- chrome padding estimate (sizing helper)
 panel.bodyFontSize = 12
 panel.title        = "Alert"
+panel.bodyGap      = 6       -- breathing room between the title bar and body
 
 -- ---------------------------------------------------------------------------
 -- Theming (retro-terminal)
@@ -47,7 +48,7 @@ QLabel:hover { background-color: rgb(255,215,215); border-color: rgb(180,50,50);
   else
     adjStyle = [[
 QLabel {
-  background-color: rgba(20,10,40,92%);
+  background-color: rgba(20,10,40,100%);
   border: 1px solid rgba(150,120,255,30%);
   border-bottom: 2px solid rgba(150,120,255,55%);
   border-radius: 0px;
@@ -166,18 +167,19 @@ function DMAlertWindow.Show(title, renderFunc, opts)
   panel.container:resize(w, h)
   panel.container:move(px, py)
 
-  -- Fit the body tightly to the content area: start below the title bar and
-  -- keep only a small padding margin on the other three sides. The stored
+  -- Fit the body to the content area: start below the title bar with a small
+  -- gap so the console doesn't sit flush against the title. The stored
   -- geometry is updated too so Adjustable's reposition keeps this until the
   -- next Show.
   local titleBarH = panel.container.buttonsize + 10
   local pad = panel.container.padding
+  local gap = panel.bodyGap
   panel.container.Inside.x = pad
-  panel.container.Inside.y = titleBarH
+  panel.container.Inside.y = titleBarH + gap
   panel.container.Inside.width = w - pad * 2
-  panel.container.Inside.height = h - titleBarH - pad
-  panel.container.Inside:move(pad, titleBarH)
-  panel.container.Inside:resize(w - pad * 2, h - titleBarH - pad)
+  panel.container.Inside.height = h - titleBarH - gap - pad
+  panel.container.Inside:move(pad, titleBarH + gap)
+  panel.container.Inside:resize(w - pad * 2, h - titleBarH - gap - pad)
 
   -- Body font + wrap computed from the actual pixel width
   local bodyFontSize = opts.bodyFontSize or panel.bodyFontSize

@@ -71,6 +71,10 @@ function DarkmistsTheme.buildNeutralTheme()
     buttonActiveBg      = "#7a5cff",
     buttonActiveFg      = "#ffffff",
     buttonActiveBorder  = "#b9a6ff",
+    -- Per-button accent colors (safe pre-init defaults)
+    buttonRefreshColor  = "#a78bfa",
+    buttonClearColor    = "#ff7b6b",
+    buttonIgnoreColor   = "#ffd27a",
   }
   buildTags(t)
 end
@@ -171,6 +175,10 @@ function DarkmistsTheme.buildTheme()
       buttonActiveBg      = "#7a5cff",
       buttonActiveFg      = "#ffffff",
       buttonActiveBorder  = "rgb(90,60,170)",
+      -- Per-button accents: darker/deeper so they stay readable on white
+      buttonRefreshColor  = "#5b3fd4",
+      buttonClearColor    = "#c0392b",
+      buttonIgnoreColor   = "#9a6a00",
     }
   else
     t.panel = {
@@ -184,6 +192,10 @@ function DarkmistsTheme.buildTheme()
       buttonActiveBg      = "#7a5cff",
       buttonActiveFg      = "#ffffff",
       buttonActiveBorder  = "#b9a6ff",
+      -- Per-button accents: bright pastels that pop on the dark bar
+      buttonRefreshColor  = "#a78bfa",
+      buttonClearColor    = "#ff7b6b",
+      buttonIgnoreColor   = "#ffd27a",
     }
   end
 
@@ -241,6 +253,7 @@ QLabel {
   border: 1px solid %s;
   border-radius: 0px;
   padding: 0px 8px;
+  margin: 3px 0px;
   font-weight: bold;
 }
 QLabel:hover {
@@ -256,6 +269,7 @@ QLabel {
   border: 1px solid %s;
   border-radius: 0px;
   padding: 0px 8px;
+  margin: 3px 0px;
 }
 QLabel:hover {
   color: %s;

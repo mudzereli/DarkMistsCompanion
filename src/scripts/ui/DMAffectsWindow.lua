@@ -79,6 +79,9 @@ function AffectsWindow.create()
 
   -- Fixed interactive header (live Age label + Refresh/Clear/Ignore buttons
   -- with tooltips and hover styling) above the scrollable effects console.
+  -- Accent colors are theme tokens so they adapt to light/dark mode.
+  local panelColors = DarkmistsTheme.panel or {}
+
   local ph = DMPanelHeader.create("AffectsWindow", "Current Affects", "Affects", {
     headerHeight = 28,
     consoleColor = Darkmists.getDefaultBackgroundColor(),
@@ -86,15 +89,15 @@ function AffectsWindow.create()
     fontSize = cfg.fontSize,
     buttons = {
       { key = "refresh", label = "refresh",
-        color = "#a78bfa",
+        color = panelColors.buttonRefreshColor or "#a78bfa",
         tooltip = "Refresh affects list",
         onClick = function() send("affects") end },
       { key = "clear", label = "clear",
-        color = "#ff7b6b",
+        color = panelColors.buttonClearColor or "#ff7b6b",
         tooltip = "Remove all expired affects",
         onClick = function() AffectsWindow.clearExpiredAffects() end },
       { key = "ignore", label = "ignore",
-        color = "#ffd27a",
+        color = panelColors.buttonIgnoreColor or "#ffd27a",
         tooltip = "Toggle ignored affects list",
         onClick = function() AffectsWindow.toggleShowIgnored() end },
     },
