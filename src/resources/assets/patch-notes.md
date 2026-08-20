@@ -61,6 +61,12 @@
 **Item Viewer**: scoring and stat weight input polish.
 **DarkMistsCore**: refactored startup flow for improved initialization reliability.
 **TabFrame/TabWindow**: refactored components for cleaner layout handling and separation of concerns.
+**Affects Window**: upgraded to a proper tab panel with a fixed header (live age display plus refresh/clear/ignore controls).
+**Alert Window**: now a movable window - drag by the title bar, closes via the [X]; keeps the retro styling.
+**DMAPI**: centralized all line-matching patterns into a single `DMPatterns` module for easier maintenance.
 
 **Future Versions**
--  backwards compatibility testing No newline at end of file
+- header for WHO window (like affects window)
+- improved styling on alert window
+- REAL settings page and HELP pages
+- backwards compatibility testing No newline at end of file
