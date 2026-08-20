@@ -214,7 +214,7 @@ end
 -- ---------------------------------------------------------------------------
 
 -- QSS for the fixed header strip above a panel's body console. Retro
--- terminal status bar: dark bar with a glowing green bottom accent line.
+-- terminal status bar: dark bar with a glowing purple accent line.
 function DarkmistsTheme.buildHeaderStyle()
   local p = DarkmistsTheme.panel or {}
   return string.format([[
@@ -222,7 +222,7 @@ QLabel {
   background-color: %s;
   border: 1px solid %s;
   border-bottom: 2px solid %s;
-  border-radius: 2px;
+  border-radius: 0px;
 }
 ]], p.headerBg, p.headerBorder, p.headerAccent)
 end
@@ -239,7 +239,7 @@ QLabel {
   color: %s;
   background-color: %s;
   border: 1px solid %s;
-  border-radius: 2px;
+  border-radius: 0px;
   padding: 0px 8px;
   font-weight: bold;
 }
@@ -254,7 +254,7 @@ QLabel {
   color: %s;
   background-color: %s;
   border: 1px solid %s;
-  border-radius: 2px;
+  border-radius: 0px;
   padding: 0px 8px;
 }
 QLabel:hover {

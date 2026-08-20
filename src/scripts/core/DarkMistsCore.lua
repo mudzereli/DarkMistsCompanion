@@ -447,7 +447,11 @@ function Darkmists.createTabPanel(id, title, tabName)
     width = "100%", height = "100%",
     titleText = title,
     titleTxtColor = Darkmists.getDefaultTextColor(),
-    padding = 8,
+    -- When a tab window is undocked, Adjustable shows its own title bar
+    -- (height ~buttonsize+10) and offsets the content down by padding*2.
+    -- padding must be >= half that height so the header panel doesn't
+    -- overlap the window title bar. Docked (locked "full") it is ignored.
+    padding = 14,
     adjLabelstyle = Darkmists.getDefaultAdjLabelstyle(),
     lockStyle = "full",
     locked = true,
@@ -623,6 +627,7 @@ function Darkmists.CleanupUI(opts)
   if DarkmistsTimer and DarkmistsTimer.clearAll then pcall(DarkmistsTimer.clearAll) end
 
   if DMAlertWindow and DMAlertWindow.Hide then pcall(DMAlertWindow.Hide) end
+  if DMAlertWindow and DMAlertWindow.destroy then pcall(DMAlertWindow.destroy) end
   if AffectsWindow and AffectsWindow.destroy then pcall(AffectsWindow.destroy) end
   if WhoWindow and WhoWindow.destroy then pcall(WhoWindow.destroy) end
   if ScorePanel and ScorePanel.destroy then pcall(ScorePanel.destroy) end
