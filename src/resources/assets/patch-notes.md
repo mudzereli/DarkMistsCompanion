@@ -65,6 +65,10 @@
 **Alert Window**: now a movable window - drag by the title bar, closes via the [X]; keeps the retro styling.
 **DMAPI**: centralized all line-matching patterns into a single `DMPatterns` module for easier maintenance.
 
+**DMC Patch Notes: 1.5.12**
+
+**Walker**: walk status messages (area arrival, navigation blocked, disconnect) now use theme colors instead of hardcoded colors, so they adapt correctly to light/dark mode.
+
 **Future Versions**
 - header for WHO window (like affects window)
 - improved styling on alert window
