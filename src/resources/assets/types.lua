@@ -221,4 +221,7 @@
 ---@field buildTheme fun()
 ---@field buildNeutralTheme fun()
 ---@field checkBackgroundContrast fun()
+---@field buildHeaderStyle fun(): string
+---@field buildButtonStyle fun(active: boolean, color?: string): string
+---@field panel table
 ---@field test fun()

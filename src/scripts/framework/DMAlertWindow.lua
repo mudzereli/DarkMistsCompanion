@@ -1,71 +1,123 @@
--- DMAlertWindow: lightweight centered alert panel (header + close + body)
+-- ============================================================================
+-- DMAlertWindow
+-- ----------------------------------------------------------------------------
+-- Movable retro-styled alert panel built on Adjustable.Container.
+-- Drag by the title bar to move; close via the [X]. The DMAlertWindow API
+-- (Show / Hide / ScheduleAlert + sizing helpers) is unchanged, so existing
+-- callers that render into the passed console name keep working untouched.
+-- ============================================================================
 DMAlertWindow = {}
 
 local panel    = {}   -- internal UI state and default dimensions
 local _queue   = {}   -- pending alerts waiting to be shown
 local _current = nil  -- opts table for the currently-displayed alert
 
+-- Default dimensions; consumers may override via opts
+panel.w            = 640
+panel.h            = 300
+panel.headerH      = 30      -- title bar estimate (sizing helper)
+panel.borderSize   = 6       -- chrome padding estimate (sizing helper)
+panel.bodyFontSize = 12
+panel.title        = "Alert"
+panel.bodyGap      = 6       -- breathing room between the title bar and body
+
+-- ---------------------------------------------------------------------------
+-- Theming (retro-terminal)
+-- ---------------------------------------------------------------------------
 local function _applyTheme()
+  if not panel.container then return end
+
   local light = Darkmists and Darkmists.GlobalSettings and Darkmists.GlobalSettings.lightMode
+  local p = (DarkmistsTheme and DarkmistsTheme.panel) or {}
+
+  local adjStyle, exitStyle, titleColor, bodyColor
   if light then
-    setBackgroundColor(panel.border, 210,210,210)
-    setBackgroundColor(panel.header, 190,190,190)
-    setBackgroundColor(panel.close,  190,190,190)
-    setBackgroundColor(panel.body,   235,235,235)
-    setFgColor(panel.header, 30,30,30)
-    setFgColor(panel.close,  160,30,30)
-    setFgColor(panel.body,   40,40,40)
+    adjStyle = [[
+QLabel {
+  background-color: rgb(244,241,250);
+  border: 1px solid rgb(210,198,235);
+  border-bottom: 2px solid rgb(100,70,190);
+  border-radius: 0px;
+}]]
+    exitStyle = [[
+QLabel { color: #c22; background-color: rgba(255,230,230,70%); border: 1px solid rgba(200,60,60,50%); border-radius: 0px; font-weight: bold; qproperty-alignment: 'AlignVCenter | AlignCenter'; }
+QLabel:hover { background-color: rgb(255,215,215); border-color: rgb(180,50,50); }
+]]
+    titleColor = "#202020"
+    bodyColor = { 235, 235, 235 }
   else
-    setBackgroundColor(panel.border, 24,24,24)
-    setBackgroundColor(panel.header, 40,40,40)
-    setBackgroundColor(panel.close,  40,40,40)
-    setBackgroundColor(panel.body,   18,18,18)
-    setFgColor(panel.header, 255,255,255)
-    setFgColor(panel.close,  255,128,128)
-    setFgColor(panel.body,   220,220,220)
+    adjStyle = [[
+QLabel {
+  background-color: rgba(20,10,40,100%);
+  border: 1px solid rgba(150,120,255,30%);
+  border-bottom: 2px solid rgba(150,120,255,55%);
+  border-radius: 0px;
+}]]
+    exitStyle = [[
+QLabel { color: #ff6b6b; background-color: rgba(40,10,10,80%); border: 1px solid rgba(255,90,90,40%); border-radius: 0px; font-weight: bold; qproperty-alignment: 'AlignVCenter | AlignCenter'; }
+QLabel:hover { background-color: rgba(255,90,90,25%); border-color: rgba(255,120,110,70%); }
+]]
+    titleColor = "#e0d6ff"
+    bodyColor = { 18, 18, 18 }
   end
+
+  panel.container.adjLabel:setStyleSheet(adjStyle)
+  panel.container.exitLabel:setStyleSheet(exitStyle)
+  panel.container.minimizeLabel:setStyleSheet(exitStyle)
+  panel.container:setTitle(nil, titleColor)
+  panel.body:setColor(unpack(bodyColor))
 end
 
 local function ensure_init()
   if panel.inited then return end
 
-  panel.border = "dmalert_border"
-  panel.header = "dmalert_header"
-  panel.close  = "dmalert_close"
-  panel.body   = "dmalert_body"
+  panel.container = Adjustable.Container:new({
+    name = "dmalert_container",
+    autoLoad = false,
+    autoSave = false,
+    -- Small content padding; the body is positioned below the title bar in
+    -- Show() so it never overlaps it.
+    titleText = panel.title,
+    padding = 6,
+    buttonsize = 18,
+    buttonFontSize = 11,
+  })
+  -- Larger, readable title bar text.
+  panel.container.adjLabel:setFontSize(14)
 
-  createMiniConsole(panel.border, 0, 0, 1, 1)
-  disableScrolling(panel.border)
-  createMiniConsole(panel.header, 0, 0, 1, 1)
-  disableScrolling(panel.header)
-  createMiniConsole(panel.close, 0, 0, 1, 1)
-  disableScrolling(panel.close)
-  createMiniConsole(panel.body, 0, 0, 1, 1)
-  disableScrolling(panel.body)
+  panel.body = Geyser.MiniConsole:new({
+    name = "dmalert_body",
+    x = 0, y = 0,
+    width = "100%", height = "100%",
+  }, panel.container)
+  panel.body:setFont(getFont())
+  panel.body:setFontSize(panel.bodyFontSize)
+  panel.body:disableScrollBar()
+  panel.body:disableScrolling()
 
-  -- Default panel dimensions; consumers may override via opts
-  panel.w            = 640
-  panel.h            = 300
-  panel.headerH      = 30
-  panel.borderSize   = 6
-  panel.bodyFontSize = 12
+  -- Keep only the close button for a clean, alert-like title bar.
+  panel.container.minimizeLabel:hide()
 
-  setMiniConsoleFontSize(panel.header, 14)
-  setFont(panel.header, getFont())
-  setMiniConsoleFontSize(panel.close, 14)
-  setFont(panel.close, getFont())
-  setMiniConsoleFontSize(panel.body, panel.bodyFontSize)
-  setFont(panel.body, getFont())
+  -- Retro red close button. QSS color can't recolor rich-text labels, so the
+  -- red comes from the echoed span; the stylesheet adds the border + hover.
+  panel.container.exitLabel:setFontSize(12)
+  panel.container.exitLabel:setAlignment("c")
+  panel.container.exitLabel:echo("<center><span style='color:#ff6b6b;'><b>✕</b></span></center>")
+  -- Make the close button a full-title-bar-height square anchored in the top
+  -- corner, and update the stored geometry so Adjustable keeps this placement
+  -- on subsequent repositions.
+  local btnW = panel.container.buttonsize + 8
+  local btnH = panel.container.buttonsize + 10   -- title bar height
+  panel.container.exitLabel.width  = btnW
+  panel.container.exitLabel.height = btnH
+  panel.container.exitLabel.x = -btnW   -- flush against the far right corner
+  panel.container.exitLabel.y = 0
+  panel.container.exitLabel:resize(btnW, btnH)
+  panel.container.exitLabel:move(panel.container.exitLabel.x, panel.container.exitLabel.y)
+  panel.container.exitLabel:setClickCallback(function() DMAlertWindow.Hide() end)
 
   _applyTheme()
-
-  setWindowWrap(panel.body, 80)
-
-  hideWindow(panel.border)
-  hideWindow(panel.header)
-  hideWindow(panel.close)
-  hideWindow(panel.body)
-
+  panel.container:hide()
   panel.inited = true
 
   if DMLogger then
@@ -73,6 +125,9 @@ local function ensure_init()
   end
 end
 
+-- ---------------------------------------------------------------------------
+-- Public API
+-- ---------------------------------------------------------------------------
 function DMAlertWindow.Show(title, renderFunc, opts)
   ensure_init()
   opts = opts or {}
@@ -83,15 +138,14 @@ function DMAlertWindow.Show(title, renderFunc, opts)
     return
   end
 
-  -- Track current alert so Hide() can call its onClose hook
   _current = opts
+  panel.title = tostring(title or "Alert")
 
   _applyTheme()
+  panel.container:setTitle(panel.title)
 
   local w = opts.width or panel.w
   local h = opts.height or panel.h
-  local headerH = opts.headerH or panel.headerH
-  local borderSize = opts.borderSize or panel.borderSize
 
   -- Constrain to the usable window area (respecting UI borders)
   local winW, winH = getMainWindowSize()
@@ -110,56 +164,53 @@ function DMAlertWindow.Show(title, renderFunc, opts)
   local px = left + math.floor((usableW - w) / 2)
   local py = top + math.floor((usableH - h) / 2)
 
-  resizeWindow(panel.border, w, h)
-  resizeWindow(panel.header, w - (borderSize*2), headerH)
-  resizeWindow(panel.close, 44, headerH)
-  resizeWindow(panel.body, w - (borderSize*2), h - headerH - (borderSize*2))
+  panel.container:resize(w, h)
+  panel.container:move(px, py)
 
-  moveWindow(panel.border, px,                       py)
-  moveWindow(panel.header, px + borderSize,          py + borderSize)
-  moveWindow(panel.close,  px + w - borderSize - 44, py + borderSize)
-  moveWindow(panel.body,   px + borderSize,          py + borderSize + headerH)
+  -- Fit the body to the content area: start below the title bar with a small
+  -- gap so the console doesn't sit flush against the title. The stored
+  -- geometry is updated too so Adjustable's reposition keeps this until the
+  -- next Show.
+  local titleBarH = panel.container.buttonsize + 10
+  local pad = panel.container.padding
+  local gap = panel.bodyGap
+  panel.container.Inside.x = pad
+  panel.container.Inside.y = titleBarH + gap
+  panel.container.Inside.width = w - pad * 2
+  panel.container.Inside.height = h - titleBarH - gap - pad
+  panel.container.Inside:move(pad, titleBarH + gap)
+  panel.container.Inside:resize(w - pad * 2, h - titleBarH - gap - pad)
 
-  -- Recalculate wrap column from actual pixel width and font metrics
+  -- Body font + wrap computed from the actual pixel width
   local bodyFontSize = opts.bodyFontSize or panel.bodyFontSize
-  setMiniConsoleFontSize(panel.body, bodyFontSize)
+  panel.body:setFontSize(bodyFontSize)
   local charWidth = calcFontSize(bodyFontSize) or 8  -- calcFontSize returns charW, charH
   if charWidth <= 0 then charWidth = 8 end
-  local wrapAt = math.max(20, math.floor((w - borderSize * 2) / charWidth) - 2)
-  setWindowWrap(panel.body, wrapAt)
-
-  clearWindow(panel.header)
-  cecho(panel.header, string.format("<cadet_blue>%s", tostring(title or "Alert")))
-
-  clearWindow(panel.close)
-  cechoLink(panel.close, "<dim_gray><u>[<red>X<dim_gray>]", [[DMAlertWindow.Hide()]], "Close", true)
+  local wrapAt = math.max(20, math.floor((w - panel.container.padding * 2) / charWidth) - 2)
+  setWindowWrap(panel.body.name, wrapAt)
 
   if opts.scrollable then
-    enableScrollBar(panel.body)
-    enableScrolling(panel.body)
+    panel.body:enableScrollBar()
+    panel.body:enableScrolling()
   else
-    disableScrollBar(panel.body)
-    disableScrolling(panel.body)
-  end
-  clearWindow(panel.body)
-  if type(renderFunc) == "function" then
-    renderFunc(panel.body)
-  elseif type(renderFunc) == "string" then
-    cecho(panel.body, renderFunc)
+    panel.body:disableScrollBar()
+    panel.body:disableScrolling()
   end
 
-  showWindow(panel.border)
-  showWindow(panel.header)
-  showWindow(panel.close)
-  showWindow(panel.body)
+  panel.body:clear()
+  if type(renderFunc) == "function" then
+    renderFunc(panel.body.name)
+  elseif type(renderFunc) == "string" then
+    cecho(panel.body.name, renderFunc)
+  end
+
+  panel.container:show()
+  panel.container:raiseAll()
 end
 
 function DMAlertWindow.Hide()
   if not panel.inited then return end
-  hideWindow(panel.body)
-  hideWindow(panel.header)
-  hideWindow(panel.close)
-  hideWindow(panel.border)
+  panel.container:hide()
 
   -- Run onClose hook if supplied (pcall so callback errors don't break the queue)
   if _current and type(_current.onClose) == "function" then
@@ -181,6 +232,18 @@ function DMAlertWindow.ScheduleAlert(title, renderFunc, opts)
   return DMAlertWindow.Show(title, renderFunc, opts)
 end
 
+-- Tear down the Geyser container on unload (reload safety)
+function DMAlertWindow.destroy()
+  if panel.container and panel.container.delete then
+    pcall(panel.container.delete, panel.container)
+  end
+  panel.container = nil
+  panel.body = nil
+  panel.inited = false
+  _current = nil
+  _queue = {}
+end
+
 -- Expose panel dimensions so content sizing can derive from the actual config
 function DMAlertWindow.getBodyFontSize()
   ensure_init()
@@ -189,12 +252,12 @@ end
 
 function DMAlertWindow.getChromeHeight()
   ensure_init()
-  return panel.headerH + panel.borderSize * 2
+  return (panel.container.buttonsize or 16) + 10 + panel.container.padding * 2
 end
 
 function DMAlertWindow.getBorderPx()
   ensure_init()
-  return panel.borderSize * 2
+  return panel.container.padding * 2
 end
 
 return DMAlertWindow

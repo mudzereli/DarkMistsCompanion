@@ -57,6 +57,25 @@ function DarkmistsTheme.buildNeutralTheme()
   t.text      = "ansi_white"
   t.accent    = "cornflower_blue"
   t.highlight = "dark_goldenrod"
+
+  -- Panel header / button chrome (QSS colors) — safe pre-init defaults.
+  -- Retro-terminal palette: near-black purple-tinted bar with purple accent.
+  t.panel = {
+    headerBg            = "rgba(20,10,40,35%)",
+    headerBorder        = "rgba(150,120,255,22%)",
+    headerAccent        = "rgba(150,120,255,45%)",
+    buttonBg            = "rgba(20,10,40,30%)",
+    buttonBorder        = "rgba(150,120,255,25%)",
+    buttonHoverBg       = "rgba(150,120,255,14%)",
+    buttonHoverFg       = "#ffd27a",
+    buttonActiveBg      = "#7a5cff",
+    buttonActiveFg      = "#ffffff",
+    buttonActiveBorder  = "#b9a6ff",
+    -- Per-button accent colors (safe pre-init defaults)
+    buttonRefreshColor  = "#a78bfa",
+    buttonClearColor    = "#ff7b6b",
+    buttonIgnoreColor   = "#ffd27a",
+  }
   buildTags(t)
 end
 
@@ -141,6 +160,45 @@ function DarkmistsTheme.buildTheme()
   t.accent    = t.cyan
   t.highlight = t.yellow
 
+  -- Panel header / button chrome (QSS colors). Retro-terminal: green accent,
+  -- amber hover, bright-on-green active state. Light mode keeps the same
+  -- accent language on a light terminal bar.
+  if light then
+    t.panel = {
+      headerBg            = "rgb(244,241,250)",
+      headerBorder        = "rgb(210,198,235)",
+      headerAccent        = "rgb(100,70,190)",
+      buttonBg            = "rgb(255,255,255)",
+      buttonBorder        = "rgb(200,188,235)",
+      buttonHoverBg       = "rgb(232,225,250)",
+      buttonHoverFg       = "#9a6a00",
+      buttonActiveBg      = "#7a5cff",
+      buttonActiveFg      = "#ffffff",
+      buttonActiveBorder  = "rgb(90,60,170)",
+      -- Per-button accents: darker/deeper so they stay readable on white
+      buttonRefreshColor  = "#5b3fd4",
+      buttonClearColor    = "#c0392b",
+      buttonIgnoreColor   = "#9a6a00",
+    }
+  else
+    t.panel = {
+      headerBg            = "rgba(12,6,26,55%)",
+      headerBorder        = "rgba(150,120,255,20%)",
+      headerAccent        = "rgba(150,120,255,45%)",
+      buttonBg            = "rgba(12,6,26,35%)",
+      buttonBorder        = "rgba(150,120,255,25%)",
+      buttonHoverBg       = "rgba(150,120,255,16%)",
+      buttonHoverFg       = "#ffd27a",
+      buttonActiveBg      = "#7a5cff",
+      buttonActiveFg      = "#ffffff",
+      buttonActiveBorder  = "#b9a6ff",
+      -- Per-button accents: bright pastels that pop on the dark bar
+      buttonRefreshColor  = "#a78bfa",
+      buttonClearColor    = "#ff7b6b",
+      buttonIgnoreColor   = "#ffd27a",
+    }
+  end
+
   buildTags(t)
 
   -- Build a compact color listing for the log — all keys discovered dynamically
@@ -161,6 +219,64 @@ function DarkmistsTheme.buildTheme()
     (DarkmistsTheme.silverTag .. "Theme Built! Light Mode: %s%s\n%s"):format(
       DarkmistsTheme.infoTag, tostring(light),
       table.concat(lines, "\n")) .. DarkmistsTheme.textTag)
+end
+
+-- ---------------------------------------------------------------------------
+-- Panel header chrome (used by DMPanelHeader)
+-- ---------------------------------------------------------------------------
+
+-- QSS for the fixed header strip above a panel's body console. Retro
+-- terminal status bar: dark bar with a glowing purple accent line.
+function DarkmistsTheme.buildHeaderStyle()
+  local p = DarkmistsTheme.panel or {}
+  return string.format([[
+QLabel {
+  background-color: %s;
+  border: 1px solid %s;
+  border-bottom: 2px solid %s;
+  border-radius: 0px;
+}
+]], p.headerBg, p.headerBorder, p.headerAccent)
+end
+
+-- QSS for a header button. Retro-terminal: `color` is the button's accent
+-- text/border color (a QSS color). Hover brightens to amber; `active` flips
+-- to a bright fill with dark text (e.g. an on toggle like the ignored view).
+function DarkmistsTheme.buildButtonStyle(active, color)
+  local p = DarkmistsTheme.panel or {}
+  color = color or p.buttonActiveFg
+  if active then
+    return string.format([[
+QLabel {
+  color: %s;
+  background-color: %s;
+  border: 1px solid %s;
+  border-radius: 0px;
+  padding: 0px 8px;
+  margin: 3px 0px;
+  font-weight: bold;
+}
+QLabel:hover {
+  color: %s;
+  border-color: %s;
+}
+]], p.buttonActiveFg, p.buttonActiveBg, color, p.buttonHoverFg, color)
+  end
+  return string.format([[
+QLabel {
+  color: %s;
+  background-color: %s;
+  border: 1px solid %s;
+  border-radius: 0px;
+  padding: 0px 8px;
+  margin: 3px 0px;
+}
+QLabel:hover {
+  color: %s;
+  border-color: %s;
+  background-color: %s;
+}
+]], color, p.buttonBg, p.buttonBorder, p.buttonHoverFg, color, p.buttonHoverBg)
 end
 
 -- ---------------------------------------------------------------------------

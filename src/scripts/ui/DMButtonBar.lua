@@ -323,15 +323,17 @@ local SETTINGS_MENU = {
   {label = "📊 Toggle UI", action = function() Darkmists.ShowUIIntroMessage(true) end},
 
   {label = "🌞 Light Mode", action = function()
-    Darkmists.GlobalSettings.lightMode = true
-    DMLogger.notify("Settings", "Light Mode Enabled - Reload UI for Changes to Take place")
+    -- Defer the switch: queue it and apply only on the next UI reload/startup,
+    -- so nothing re-themes before the user confirms.
+    Darkmists.GlobalSettings.pendingThemeMode = true
+    DMLogger.notify("Settings", "Light Mode queued - Reload UI to apply")
     Darkmists.SaveSettings()
     Darkmists.PromptSafeReload()
   end},
 
   {label = "🌚 Dark Mode", action = function()
-    Darkmists.GlobalSettings.lightMode = false
-    DMLogger.notify("Settings", "Dark Mode Enabled - Reload UI for Changes to Take place")
+    Darkmists.GlobalSettings.pendingThemeMode = false
+    DMLogger.notify("Settings", "Dark Mode queued - Reload UI to apply")
     Darkmists.SaveSettings()
     Darkmists.PromptSafeReload()
   end},

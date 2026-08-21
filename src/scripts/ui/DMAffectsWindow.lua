@@ -75,20 +75,49 @@ end
 function AffectsWindow.create()
   if AffectsWindow.window then return end
 
-  AffectsWindow.window = Darkmists.createTabPanel("AffectsWindow", "Current Affects", "Affects")
-    
-  AffectsWindow.console = Geyser.MiniConsole:new({
-    name   = "AffectsWindowConsole",
-    x      = "1%",
-    y      = "1%",
-    width  = "98%",
-    height = "98%",
-    color = Darkmists.getDefaultBackgroundColor()
-  }, AffectsWindow.window)
-  AffectsWindow.console:setFontSize(AffectsWindow.config.fontSize)
-  AffectsWindow.console:setFont(AffectsWindow.config.fontName)
+  local cfg = AffectsWindow.config
+
+  -- Fixed interactive header (live Age label + Refresh/Clear/Ignore buttons
+  -- with tooltips and hover styling) above the scrollable effects console.
+  -- Accent colors are theme tokens so they adapt to light/dark mode.
+  local panelColors = DarkmistsTheme.panel or {}
+
+  local ph = DMPanelHeader.create("AffectsWindow", "Current Affects", "Affects", {
+    headerHeight = 28,
+    consoleColor = Darkmists.getDefaultBackgroundColor(),
+    font = cfg.fontName,
+    fontSize = cfg.fontSize,
+    buttons = {
+      { key = "refresh", label = "refresh",
+        color = panelColors.buttonRefreshColor or "#a78bfa",
+        tooltip = "Refresh affects list",
+        onClick = function() send("affects") end },
+      { key = "clear", label = "clear",
+        color = panelColors.buttonClearColor or "#ff7b6b",
+        tooltip = "Remove all expired affects",
+        onClick = function() AffectsWindow.clearExpiredAffects() end },
+      { key = "ignore", label = "ignore",
+        color = panelColors.buttonIgnoreColor or "#ffd27a",
+        tooltip = "Toggle ignored affects list",
+        onClick = function() AffectsWindow.toggleShowIgnored() end },
+    },
+  })
+
+  AffectsWindow.window    = ph.panel
+  AffectsWindow.header    = ph.header
+  AffectsWindow.headerBox = ph.hbox
+  AffectsWindow.controls  = ph.controls
+  AffectsWindow.console   = ph.console
+
+  AffectsWindow.console:setFontSize(cfg.fontSize)
+  AffectsWindow.console:setFont(cfg.fontName)
   AffectsWindow.console:enableAutoWrap()
   AffectsWindow.console:enableScrollBar()
+
+  -- Hide the ignore toggle until there is something to manage.
+  if ph.controls.ignore then
+    ph.controls.ignore:hide()
+  end
 
   AffectsWindow.window:show()
   AffectsWindow.window:raiseAll()
@@ -108,14 +137,15 @@ function AffectsWindow.startCapture()
   AffectsWindow.capturing = true
   AffectsWindow.lastUpdateTime = os.time()
 
-  -- Reset snapshot keyset
+  -- Reset snapshot keyset and rendered-duration cache
   AffectsWindow.currentKeys = {}
+  AffectsWindow._lastMins = nil
 
   AffectsWindow.startAgeTimer()
 
   if AffectsWindow.window then
     AffectsWindow.console:clear()
-    AffectsWindow.displayHeader()
+    AffectsWindow.updateHeader()
   end
 end
 
@@ -238,58 +268,39 @@ function AffectsWindow.countIgnored()
   return n
 end
 
-function AffectsWindow.displayHeader()
-  if not AffectsWindow.window or not AffectsWindow.lastUpdateTime then return end
+-- Update the persistent header (live Age label + ignore button state)
+-- without touching the console. Called on every age tick and after data
+-- changes, so the header no longer scrolls away or gets rebuilt per render.
+function AffectsWindow.updateHeader()
+  if not AffectsWindow.controls then return end
 
-  local console = AffectsWindow.console
-  local realElapsed = os.time() - AffectsWindow.lastUpdateTime
-  local age = AffectsWindow.getAge()
-
-  console:cecho(string.format(
-    "%sAge: %s%ss %s(%s%s) %s| ",
-    DarkmistsTheme.yellowTag,
-    DarkmistsTheme.textTag,
-    realElapsed,
-    DarkmistsTheme.mutedTag,
-    age,
-    DarkmistsTheme.mutedTag,
-    DarkmistsTheme.textTag
-  ))
-  resetFormat()
-
-  -- Added separator + themed refresh link
-  local textLinkColor = DarkmistsTheme.textTag
-  local clearLinkColor = DarkmistsTheme.redTag
-
-  console:cechoLink(
-    textLinkColor .. "<u>[Refresh]</u>" .. DarkmistsTheme.textTag,
-    function() send("affects") end,
-    "Refresh affects list",
-    true
-  )
-  console:cecho(" ")
-  console:cechoLink(
-    clearLinkColor .. "<u>[Clear]" .. DarkmistsTheme.textTag,
-    function() AffectsWindow.clearExpiredAffects() end,
-    "Remove all expired affects",
-    true
-  )
-
-  -- Ignored-list toggle: show count and link to expand/collapse the
-  -- inline ignored-spell management section.
-  local ignoredCount = AffectsWindow.countIgnored()
-  if ignoredCount > 0 then
-    console:cecho(" ")
-    console:cechoLink(
-      DarkmistsTheme.mutedTag .. "<u>[»:" .. tostring(ignoredCount) .. "]",
-      function() AffectsWindow.toggleShowIgnored() end,
-      "Toggle ignored affects list",
-      true
-    )
-    console:cecho(DarkmistsTheme.textTag)
+  -- Live age display: "AGE 5m (12s)" with state-colored value
+  local ageLabel = AffectsWindow.controls.age
+  if ageLabel then
+    local info = AffectsWindow.getAgeInfo()
+    local valueHex  = cecho2hecho("<" .. info.color .. ">") or "#ffffff"
+    local dimHex    = cecho2hecho("<" .. DarkmistsTheme.muted .. ">") or "#8a8a8a"
+    local real = os.time() - (AffectsWindow.lastUpdateTime or os.time())
+    ageLabel:echo(
+      ("<span style='color:%s;'><b>AGE</b></span> <span style='color:%s;'><b>%s</b></span> (<span style='color:%s;'>%ds</span>)")
+      :format(dimHex, valueHex, info.label, dimHex, real))
   end
 
-  console:cecho("\n\n")
+  -- Ignore toggle: shown only when there are ignored spells, and styled
+  -- active while the ignored-management view is open.
+  local btn = AffectsWindow.controls.ignore
+  if btn then
+    local n = AffectsWindow.countIgnored()
+    if n > 0 then
+      btn:show()
+      btn:echo(("<center>%s (%d)</center>"):format(btn.defLabel or "ignore", n))
+      DMPanelHeader.applyButtonStyle(btn, AffectsWindow.showIgnored)
+      -- Reflow the header so auto-width buttons keep their spacing.
+      if AffectsWindow.headerBox then AffectsWindow.headerBox:organize() end
+    else
+      btn:hide()
+    end
+  end
 end
 
 function AffectsWindow.parseDuration(text)
@@ -343,7 +354,7 @@ function AffectsWindow.copyCurrentLine()
   if line == "You are affected by the following:" then return end
 
   -- Exit early for condition lines (e.g. typing AFF while in combat).
-  for _, v in ipairs(dmapi.core.state.COMBAT_CONDITIONS) do
+  for _, v in ipairs(DMConstants.COMBAT_CONDITIONS) do
     if line:match(v) then return end
   end
 
@@ -468,8 +479,8 @@ function AffectsWindow.refreshDisplay()
   local console = AffectsWindow.console
   local cfg = AffectsWindow.config
 
+  AffectsWindow.updateHeader()
   console:clear()
-  AffectsWindow.displayHeader()
 
   -- Ignored-management mode: render once when toggled
   if AffectsWindow.showIgnored then
@@ -554,7 +565,11 @@ function AffectsWindow.refreshDisplay()
       dur
     ))
   end
-
+  -- Cache remaining minutes so the age tick can skip redundant redraws
+  AffectsWindow._lastMins = {}
+  for _, item in ipairs(activeAffects) do
+    AffectsWindow._lastMins[item.affect.key] = item.mins
+  end
   -- Render expired affects with clickable X and Ignore
   -- Expired affects show [X] to remove once and [Ignore] to add the
   -- spell name to the auto-remove set so future expirations disappear
@@ -600,21 +615,56 @@ end
 -- AGE TIMER
 -- ============================================================================
 
-function AffectsWindow.getAge()
-  -- Compute a human-friendly age label by converting elapsed real
-  -- seconds to in-game minutes using `timeRatio` and formatting the
-  -- result for display in the header.
-  if not AffectsWindow.lastUpdateTime then return "Unknown" end
+-- Human-friendly age label + theme color name (for the header label).
+function AffectsWindow.getAgeInfo()
+  if not AffectsWindow.lastUpdateTime then
+    return { label = "Unknown", color = DarkmistsTheme.muted }
+  end
 
   local mins = math.floor(((os.time() - AffectsWindow.lastUpdateTime)
                * AffectsWindow.config.timeRatio) / 60)
 
-  if mins == 0 then return DarkmistsTheme.goodTag .. "Just updated" end
-  if mins < 60 then return string.format("%s%dm", DarkmistsTheme.cyanTag, mins) end
+  if mins == 0 then return { label = "Just updated", color = DarkmistsTheme.good } end
+  if mins < 60 then return { label = string.format("%dm", mins), color = DarkmistsTheme.cyan } end
 
   local h, r = math.floor(mins / 60), mins % 60
-  return r > 0 and string.format("%s%dh %dm", DarkmistsTheme.warnTag, h, r)
-              or string.format("%s%dh", DarkmistsTheme.warnTag, h)
+  return {
+    label = r > 0 and string.format("%dh %dm", h, r) or string.format("%dh", h),
+    color = DarkmistsTheme.warn,
+  }
+end
+
+function AffectsWindow.getAge()
+  -- Compat wrapper: themed string form of getAgeInfo()
+  local info = AffectsWindow.getAgeInfo()
+  return ("<%s>%s"):format(info.color, info.label)
+end
+
+-- Re-render the list only when a displayed remaining-minute value actually
+-- changed, so the age tick doesn't rebuild the whole console every second.
+function AffectsWindow.maybeRefreshDurations()
+  if not AffectsWindow.window or not AffectsWindow.lastUpdateTime then return end
+  if AffectsWindow.showIgnored then return end
+
+  local now = os.time()
+  local cfg = AffectsWindow.config
+  local last = AffectsWindow._lastMins or {}
+
+  local changed = false
+  for _, affect in ipairs(AffectsWindow.affectsList) do
+    if not affect.expired then
+      local mins = affect.durationMins -
+        math.floor(((now - affect.captureTime) * cfg.timeRatio) / 60)
+      if last[affect.key] ~= mins then
+        changed = true
+        break
+      end
+    end
+  end
+
+  if changed then
+    AffectsWindow.refreshDisplay()
+  end
 end
 
 function AffectsWindow.startAgeTimer()
@@ -627,11 +677,13 @@ function AffectsWindow.startAgeTimer()
     "AffectsWindow.AgeTimer",
     AffectsWindow.config.updateInterval,
     function()
-      -- Don't clear/redraw while viewing the ignored-affects page,
-      -- so the user can scroll freely. Ages still tick in the background.
+      -- Cheap header-only tick; the list only re-renders when a displayed
+      -- remaining-minute value actually changes. While browsing the ignored
+      -- page, only the header updates so the user can scroll freely.
       if not AffectsWindow.showIgnored then
-        AffectsWindow.refreshDisplay()
+        AffectsWindow.maybeRefreshDurations()
       end
+      AffectsWindow.updateHeader()
     end,
     true
   )
@@ -737,6 +789,20 @@ function AffectsWindow.destroy()
   end
 
   DarkmistsEvents.remove(keys.eventPrompt)
+
+  -- Tear down Geyser handles so reloads don't leak the console/container.
+  if AffectsWindow.console and AffectsWindow.console.delete then
+    pcall(AffectsWindow.console.delete, AffectsWindow.console)
+  end
+  if AffectsWindow.window and AffectsWindow.window.delete then
+    pcall(AffectsWindow.window.delete, AffectsWindow.window)
+  end
+  AffectsWindow.console   = nil
+  AffectsWindow.window    = nil
+  AffectsWindow.header    = nil
+  AffectsWindow.headerBox = nil
+  AffectsWindow.controls  = nil
+  AffectsWindow._lastMins = nil
 
   AffectsWindow.capturing = false
   Darkmists.Log("AffectsWindow", "Destroyed")

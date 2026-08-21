@@ -56,35 +56,7 @@ dmapi.core = {
     lastCombatRoundFired = getEpoch(),
     lastCommand = nil,
     capturingRoom = false,
-    exitLineMarker = 0,
-    
-    -- Combat condition descriptions in order of severity
-    COMBAT_CONDITIONS = {
-      "is in perfect condition",
-      "has a few nicks",
-      "has a few scratches",
-      "looks a little beat up",
-      "has a few bruises",
-      "has quite a few bruises",
-      "is heavily bruised",
-      "has some small wounds",
-      "has some nasty cuts",
-      "has quite a few wounds",
-      "is covered in bleeding wounds",
-      "is bleeding profusely",
-      "is spurting blood",
-      "is gushing blood",
-      "is screaming in pain",
-      "looks like a bloody mess",
-      "is stumbling in pain",
-      "is in pretty bad shape",
-      "is writhing in agony",
-      "is spasming in shock",
-      "is catatonic from the intense pain",
-      "is stumbling from grave injuries",
-      "is convulsing on the ground",
-      "nearly dead"
-    }
+    exitLineMarker = 0
   },
   
   -- One-line event mappings
@@ -245,7 +217,7 @@ dmapi.parsers = {}
 -- @param line string The line to parse
 -- @return table|nil Array of exit directions
 function dmapi.parsers.exits(line)
-  local exitsBlob = line:match("^%[Exits:%s*(.-)%s*%]$")
+  local exitsBlob = line:match(DMPatterns.EXITS)
   if not exitsBlob then return nil end
 
   local exits = {}
@@ -263,23 +235,17 @@ function dmapi.parsers.currency(line)
   local gold, silver, xp, xpToLevel
   
   -- Try: You have X gold, Y silver, and Z experience (W exp to level)
-  gold, silver, xp, xpToLevel = line:match(
-    "^You have (%d+) gold, (%d+) silver, and (%d+) experience %((%d+) exp to level%)"
-  )
+  gold, silver, xp, xpToLevel = line:match(DMPatterns.CURRENCY_FULL)
   
   if not gold then
     -- Try: You have X gold, Y silver, and Z experience.
-    gold, silver, xp = line:match(
-      "^You have (%d+) gold, (%d+) silver, and (%d+) experience%."
-    )
+    gold, silver, xp = line:match(DMPatterns.CURRENCY_NOLVL)
     xpToLevel = -1
   end
   
   if not gold then
     -- Try: You have scored X exp, and have Y gold and Z silver coins.
-    xp, gold, silver = line:match(
-      "^You have scored (%d+) exp, and have (%d+) gold and (%d+) silver coins%."
-    )
+    xp, gold, silver = line:match(DMPatterns.CURRENCY_SCORE)
     xpToLevel = -1
   end
   
@@ -298,9 +264,7 @@ end
 -- @param line string The line to parse
 -- @return table|nil Parsed level up data
 function dmapi.parsers.levelUp(line)
-  local hp, hpMax, mn, mnMax, mv, mvMax, prac, pracTotal = line:match(
-    "^You gain (%d+)/(%d+) hp, (%d+)/(%d+) mana, (%d+)/(%d+) move, and (%d+)/(%d+) practices%."
-  )
+  local hp, hpMax, mn, mnMax, mv, mvMax, prac, pracTotal = line:match(DMPatterns.LEVEL_UP)
   
   if not hp then return nil end
 
@@ -332,8 +296,8 @@ function dmapi.parsers.prompt(line)
   -- <500hp 300mn 55%rg 200mv 20420tnl>
   -- =========================================================================
 
-  if line:match("^<%d+hp") then
-    local promptBody = line:match("^<(.-)>")
+  if line:match(DMPatterns.PROMPT_HP_PREFIX) then
+    local promptBody = line:match(DMPatterns.PROMPT_BODY)
     if not promptBody then return nil end
 
     local data = {
@@ -366,13 +330,13 @@ function dmapi.parsers.prompt(line)
     data.mv, data.mvRegen = extractWithRegen("mv")
 
     -- Rage (percent, NO regen)
-    local rageVal = promptBody:match("(%d+)%%rg")
+    local rageVal = promptBody:match(DMPatterns.PROMPT_RAGE)
     if rageVal then
       data.rg = tonumber(rageVal)
     end
 
     -- TNL
-    local tnlVal = promptBody:match("(%d+)tnl")
+    local tnlVal = promptBody:match(DMPatterns.PROMPT_TNL)
     if tnlVal then
       data.tnl = tonumber(tnlVal)
     end
@@ -390,7 +354,7 @@ function dmapi.parsers.prompt(line)
 
   -- <109hp 633mn 0%rg 192mv 20420tnl>
   hp, mn, rg, mv, tnl =
-    line:match("^<(%d+)hp%s+(%d+)mn%s+(%d+)%%rg%s+(%d+)mv%s+(%d+)tnl>")
+    line:match(DMPatterns.PROMPT_LEGACY_RAGE)
   if hp then
     return {
       hp = tonumber(hp),
@@ -404,7 +368,7 @@ function dmapi.parsers.prompt(line)
 
   -- <109hp 633mn 192mv 20420tnl>
   hp, mn, mv, tnl =
-    line:match("^<(%d+)hp%s+(%d+)mn%s+(%d+)mv%s+(%d+)tnl>")
+    line:match(DMPatterns.PROMPT_LEGACY_TNL)
   if hp then
     return {
       hp = tonumber(hp),
@@ -417,7 +381,7 @@ function dmapi.parsers.prompt(line)
 
   -- <109hp 633mn 192mv>
   hp, mn, mv =
-    line:match("^<(%d+)hp%s+(%d+)mn%s+(%d+)mv>")
+    line:match(DMPatterns.PROMPT_LEGACY_SIMPLE)
   if hp then
     return {
       hp = tonumber(hp),
@@ -436,8 +400,8 @@ function dmapi.parsers.prompt(line)
   -- <75%hp 60%mn 50%rg 100%mv 1200tnl>
   -- =========================================================================
 
-  if line:match("^<%d+%%hp") then
-    local promptBody = line:match("^<(.-)>")
+  if line:match(DMPatterns.PROMPT_PCT_PREFIX) then
+    local promptBody = line:match(DMPatterns.PROMPT_BODY)
     if not promptBody then return nil end
 
     local data = {
@@ -485,13 +449,13 @@ function dmapi.parsers.prompt(line)
     end
 
     -- Rage (no regen)
-    local rgPct = promptBody:match("(%d+)%%rg")
+    local rgPct = promptBody:match(DMPatterns.PROMPT_RAGE)
     if rgPct then
       data.rg = tonumber(rgPct)
     end
 
     -- TNL
-    local tnlVal = promptBody:match("(%d+)tnl")
+    local tnlVal = promptBody:match(DMPatterns.PROMPT_TNL)
     if tnlVal then
       data.tnl = tonumber(tnlVal)
     end
@@ -511,15 +475,11 @@ function dmapi.parsers.vitalsFromScore(line)
   local hp, hpMax, mn, mnMax, mv, mvMax, rg
   
   -- Try with rage: You have 100/100 hit, 50/50 mana, 100/100 movement, 50% rage.
-  hp, hpMax, mn, mnMax, mv, mvMax, rg = line:match(
-    "^You have (%d+)%/(%d+) hit, (%d+)%/(%d+) mana, (%d+)%/(%d+) movement, (%d+)%% rage%.$"
-  )
+  hp, hpMax, mn, mnMax, mv, mvMax, rg = line:match(DMPatterns.VITALS_RAGE)
 
   if not hp then
     -- Try without rage
-    hp, hpMax, mn, mnMax, mv, mvMax = line:match(
-      "^You have (%d+)%/(%d+) hit, (%d+)%/(%d+) mana, (%d+)%/(%d+) movement%.$"
-    )
+    hp, hpMax, mn, mnMax, mv, mvMax = line:match(DMPatterns.VITALS_NORAGE)
     rg = -1
   end
 
@@ -541,9 +501,7 @@ end
 -- @param line string The line to parse
 -- @return table|nil Parsed level data
 function dmapi.parsers.levelFromScore(line)
-  local level, years, hours = line:match(
-    "^Level (%d+), (%d+) years old %((%d+) hours%)%. You are .+%.$"
-  )
+  local level, years, hours = line:match(DMPatterns.LEVEL_FROM_SCORE)
 
   if not level then return nil end
 
@@ -559,7 +517,7 @@ end
 -- @param line string The line to parse
 -- @return table|nil Parsed mob state data
 function dmapi.parsers.mobCondition(line)
-  for _, phrase in ipairs(dmapi.core.state.COMBAT_CONDITIONS) do
+  for _, phrase in ipairs(DMConstants.COMBAT_CONDITIONS) do
     if line:find(phrase, 1, true) then
       local mob, condition, hpPct = line:match(
         "^(.+)%s+(" .. phrase .. ")[.!]%s+%((%d+%.?%d*)%%%)$"
@@ -693,10 +651,10 @@ end
 -- @param line string The line to parse
 -- @return number|nil Experience gained
 function dmapi.parsers.experienceGain(line)
-  local gain = line:match("You have earned (%d+) experience points!")
+  local gain = line:match(DMPatterns.XP_GAIN)
   if gain then return tonumber(gain) end
   
-  gain = line:match("You receive (%d+) experience points%.")
+  gain = line:match(DMPatterns.XP_RECEIVE)
   if gain then return tonumber(gain) end
   
   return nil
@@ -706,10 +664,10 @@ end
 -- @param line string The line to parse
 -- @return string|nil Skill name
 function dmapi.parsers.skillImproved(line)
-  local skill = line:match("become better at ([%a%s'-]+)!$")
+  local skill = line:match(DMPatterns.SKILL_IMPROVED)
   if skill then return skill end
   
-  skill = line:match("^You learn from your mistakes%, and your ([%a%s'-]+) (.*) improves%.$")
+  skill = line:match(DMPatterns.SKILL_LEARNED)
   if skill then return skill end
   
   return nil
@@ -719,7 +677,7 @@ end
 -- @param line string The line to parse
 -- @return table|nil Parsed ingest event data
 function dmapi.parsers.ingest(line)
-  local item, container = line:match("^You drink (.+) from (.+)%.$")
+  local item, container = line:match(DMPatterns.DRINK)
   if item and container then
     return {
       action = "drink",
@@ -731,7 +689,7 @@ function dmapi.parsers.ingest(line)
     }
   end
 
-  item = line:match("^You eat (.+)%.$")
+  item = line:match(DMPatterns.EAT)
   if item then
     return {
       action = "eat",
@@ -742,7 +700,7 @@ function dmapi.parsers.ingest(line)
     }
   end
 
-  if line:match("^You are too full to eat more%.$") then
+  if line:match(DMPatterns.TOO_FULL) then
     return {
       action = "eat",
       success = false,
@@ -752,7 +710,7 @@ function dmapi.parsers.ingest(line)
     }
   end
 
-  if line:match("^You fail to reach your mouth%.%s+%*Hic%*$") then
+  if line:match(DMPatterns.TOO_DRUNK) then
     return {
       action = "ingest",
       success = false,
@@ -769,22 +727,22 @@ end
 -- @param line string The line to parse
 -- @return boolean True if player death detected
 function dmapi.parsers.playerDeath(line)
-  return line:match("^You have been KILLED!!$") ~= nil
-    or line:match("^You are DEAD!!$") ~= nil
+  return line:match(DMPatterns.PLAYER_KILLED) ~= nil
+    or line:match(DMPatterns.PLAYER_DEAD) ~= nil
 end
 
 --- Parse kill detection
 -- @param line string The line to parse
 -- @return string|nil Mob name if kill detected
 function dmapi.parsers.mobKill(line)
-  local mob = line:match("^(.+) is DEAD!!$")
+  local mob = line:match(DMPatterns.MOB_DEAD)
   return mob
 end
 
 -- Parse Bank Balances
 function dmapi.parsers.bankBalance(line)
   local gold, silver =
-    line:match("^You have (%d+) gold coins and (%d+) silver in your account%.$")
+    line:match(DMPatterns.BANK_BALANCE)
 
   if gold then
     return {
@@ -794,7 +752,7 @@ function dmapi.parsers.bankBalance(line)
     }
   end
 
-  if line:match("You have no account here!") then
+  if line:match(DMPatterns.BANK_NO_ACCOUNT) then
     return {
       gold = 0,
       silver = 0,
@@ -808,10 +766,10 @@ end
 -- Parse House Balance
 function dmapi.parsers.houseBalance(line)
   local gold =
-    line:match("^Your house's account has (%d+) gold in it%.$")
+    line:match(DMPatterns.HOUSE_BALANCE)
 
   if not gold then
-    gold = line:match("^Your house's balance is (%d+) gold%.$")
+    gold = line:match(DMPatterns.HOUSE_BALANCE_ALT)
   end
 
   if gold then
@@ -827,7 +785,7 @@ end
 -- Parse Bank Deposits
 function dmapi.parsers.bankDeposit(line)
   local amount, currency =
-    line:match("^You deposit (%d+) (%a+)%.")
+    line:match(DMPatterns.BANK_DEPOSIT)
 
   if amount and (currency == "gold" or currency == "silver") then
     return {
@@ -843,7 +801,7 @@ end
 -- Parse Bank Withdrawals
 function dmapi.parsers.bankWithdraw(line)
   local amount, currency, fee, feeCurrency =
-    line:match("^You withdraw (%d+) (%a+) and were charged an additional fee of (%d+) (%a+)%.")
+    line:match(DMPatterns.BANK_WITHDRAW)
 
   if amount
      and (currency == "gold" or currency == "silver")
@@ -863,8 +821,8 @@ function dmapi.parsers.bankWithdraw(line)
 end
 
 function dmapi.parsers.bankWithdrawFail(line)
-  if line:match("^Sorry, but you do not have that much (.*) in your account", 1, true)
-     or line:match("^Sorry, but you need (.*) in your account", 1, true)
+  if line:match(DMPatterns.BANK_NO_FUNDS, 1, true)
+     or line:match(DMPatterns.BANK_NEED_FUNDS, 1, true)
   then
     return { line = line }
   end
@@ -875,13 +833,7 @@ end
 -- Parse Attributes from Score
 function dmapi.parsers.attributes(line)
   local sB,sM,iB,iM,wB,wM,dB,dM,cB,cM =
-    line:match(
-      "^Str:%s*(%d+)%((%d+)%)%s+" ..
-      "Int:%s*(%d+)%((%d+)%)%s+" ..
-      "Wis:%s*(%d+)%((%d+)%)%s+" ..
-      "Dex:%s*(%d+)%((%d+)%)%s+" ..
-      "Con:%s*(%d+)%((%d+)%)"
-    )
+    line:match(DMPatterns.ATTRIBUTES)
 
   if not sB then return nil end
 
@@ -1063,7 +1015,7 @@ local function maybeFirePeriodicDamage(line)
     return nil
   end
 
-  local affliction = line:match("^Your ([%a]+) [%a]+ you[!.]$")
+  local affliction = line:match(DMPatterns.AFFLICTION_SELF)
   if affliction then
     kind = afflictionToKind(affliction)
     if kind then
@@ -1072,7 +1024,7 @@ local function maybeFirePeriodicDamage(line)
   end
 
   if not kind then
-    local otherActor, otherAffliction = line:match("^(.-)'s ([%a]+) [%a]+ (him|her|them)[!.]$")
+    local otherActor, otherAffliction = line:match(DMPatterns.AFFLICTION_OTHER)
     kind = afflictionToKind(otherAffliction)
     if kind then
       actor = otherActor
@@ -1095,7 +1047,7 @@ end
 local function maybeFireAlchemyOutcome(line)
   if not line or line == "" then return false end
 
-  if line:match("^You are too tired to complete the process") then
+  if line:match(DMPatterns.ALCHEMY_TIRED) then
     dmapi.core.raiseEvent("dmapi.player.alchemy.tired", {
       line = line,
       timestamp = getEpoch()
@@ -1103,7 +1055,7 @@ local function maybeFireAlchemyOutcome(line)
     return true
   end
 
-  if line:match("^You do not have that to perform alchemy on") then
+  if line:match(DMPatterns.ALCHEMY_NO_ITEM) then
     dmapi.core.raiseEvent("dmapi.player.alchemy.noitem", {
       line = line,
       timestamp = getEpoch()
@@ -1111,7 +1063,7 @@ local function maybeFireAlchemyOutcome(line)
     return true
   end
 
-  if line:match("^No further alchemy may be performed on that item%.") then
+  if line:match(DMPatterns.ALCHEMY_ALREADY_DONE) then
     dmapi.core.raiseEvent("dmapi.player.alchemy.alreadydone", {
       line = line,
       timestamp = getEpoch()
@@ -1119,7 +1071,7 @@ local function maybeFireAlchemyOutcome(line)
     return true
   end
 
-  if line:match("^You botch the brew, and your alchemy process") then
+  if line:match(DMPatterns.ALCHEMY_BOTCH) then
     dmapi.core.raiseEvent("dmapi.player.alchemy.botch", {
       line = line,
       timestamp = getEpoch()
@@ -1127,7 +1079,7 @@ local function maybeFireAlchemyOutcome(line)
     return true
   end
 
-  if line:match("^Your alchemy process results in a gooey mess") then
+  if line:match(DMPatterns.ALCHEMY_NO_MATCH) then
     dmapi.core.raiseEvent("dmapi.player.alchemy.nomatch", {
       line = line,
       timestamp = getEpoch()
@@ -1135,7 +1087,7 @@ local function maybeFireAlchemyOutcome(line)
     return true
   end
 
-  if line:match("^The brew reacted strangely%.") then
+  if line:match(DMPatterns.ALCHEMY_WEAPON_ONLY) then
     dmapi.core.raiseEvent("dmapi.player.alchemy.weapononly", {
       line = line,
       timestamp = getEpoch()
@@ -1143,7 +1095,7 @@ local function maybeFireAlchemyOutcome(line)
     return true
   end
 
-  local formula = line:match("^You have discovered the alchemy formula (.*)!")
+  local formula = line:match(DMPatterns.ALCHEMY_DISCOVERED)
   if formula then
     dmapi.core.raiseEvent("dmapi.player.alchemy.discovered", {
       formula = formula,
@@ -1206,7 +1158,7 @@ local function handleCommunicationLine(line)
 
   -- EMOTED SAY: Role-played speech with an emote action (e.g., "Warrior smiles says, 'Hello!'")
   -- Used for immersive roleplay and emotional expression in dialogue
-  sender, emote, message = line:match("^(%S+) ([^ ]+) says, '(.*)'$")
+  sender, emote, message = line:match(DMPatterns.COMM_EMOTE_SAY_RECV)
   if sender and emote and message then
     local firstWord = sender:lower()
     if firstWord ~= "the" and firstWord ~= "a" and firstWord ~= "an" then
@@ -1221,7 +1173,7 @@ local function handleCommunicationLine(line)
   end
 
   -- Player's own emoted say (sent by player)
-  emote, message = line:match("^You ([^ ]+) say, '(.*)'$")
+  emote, message = line:match(DMPatterns.COMM_EMOTE_SAY_SENT)
   if emote and message then
     dmapi.core.raiseEvent("dmapi.communication.emotedsaysent", {
       sender = "You",
@@ -1234,7 +1186,7 @@ local function handleCommunicationLine(line)
 
   -- PANIC YELL: Emergency/distress signal used in combat or danger situations
   -- Higher priority message that alerts nearby players to danger
-  message = line:match("^You yell in panic, '(.*)'$")
+  message = line:match(DMPatterns.COMM_PANIC_YELL_SENT)
   if message then
     dmapi.core.raiseEvent("dmapi.communication.yellpanicsent", {
       sender = "You",
@@ -1245,7 +1197,7 @@ local function handleCommunicationLine(line)
   end
 
   -- Receiving another player's panic yell
-  sender, message = line:match("^(.-) yells in panic, '(.*)'$")
+  sender, message = line:match(DMPatterns.COMM_PANIC_YELL_RECV)
   if sender then
     dmapi.core.raiseEvent("dmapi.communication.yellpanicreceived", {
       sender = sender,
@@ -1257,7 +1209,7 @@ local function handleCommunicationLine(line)
 
   -- MENTAL BLAST: Psychic yell; telepathic communication heard far and wide
   -- Like yell but transmitted telepathically instead of vocally
-  sender, message = line:match("^(.-) mentally blasts '(.*)'$")
+  sender, message = line:match(DMPatterns.COMM_MENTAL_BLAST_RECV)
   if sender and message then
     dmapi.core.raiseEvent("dmapi.communication.mentalblastreceived", {
       sender = sender,
@@ -1268,7 +1220,7 @@ local function handleCommunicationLine(line)
   end
 
   -- Player's own mental blast (sent by player); psychic yell version
-  message = line:match("^You mentally blast, '(.*)'$")
+  message = line:match(DMPatterns.COMM_MENTAL_BLAST_SENT)
   if message then
     dmapi.core.raiseEvent("dmapi.communication.mentalblastsent", {
       sender = "You",
@@ -1280,7 +1232,7 @@ local function handleCommunicationLine(line)
 
   -- MENTAL BLAST PANIC: Emergency telepathic distress signal
   -- Combines mental projection with urgency/alarm
-  message = line:match("^You mentally blast in panic, '(.*)'$")
+  message = line:match(DMPatterns.COMM_MP_PANIC_SENT)
   if message then
     dmapi.core.raiseEvent("dmapi.communication.mentalblastpanicsent", {
       sender = "You",
@@ -1291,7 +1243,7 @@ local function handleCommunicationLine(line)
   end
 
   -- Receiving another player's panic mental blast
-  sender, message = line:match("^(.-) mentally blasts in panic, '(.*)'$")
+  sender, message = line:match(DMPatterns.COMM_MP_PANIC_RECV)
   if sender and message then
     dmapi.core.raiseEvent("dmapi.communication.mentalblastpanicreceived", {
       sender = sender,
@@ -1303,7 +1255,7 @@ local function handleCommunicationLine(line)
 
   -- TELL: Private direct message from another player
   -- Only visible to sender and recipient; used for private conversations
-  sender, message = line:match("^(.*) tells you, '(.*)'$")
+  sender, message = line:match(DMPatterns.COMM_TELL_RECV)
   if sender then
     dmapi.core.raiseEvent("dmapi.communication.tellreceived", {
       sender = sender,
@@ -1315,7 +1267,7 @@ local function handleCommunicationLine(line)
   end
 
   -- Player's own tell (sent by player)
-  receiver, message = line:match("^You tell (.*), '(.*)'$")
+  receiver, message = line:match(DMPatterns.COMM_TELL_SENT)
   if receiver then
     dmapi.core.raiseEvent("dmapi.communication.tellsent", {
       sender = "Me",
@@ -1328,7 +1280,7 @@ local function handleCommunicationLine(line)
 
   -- SAY: Public local communication heard by everyone in the same room
   -- Standard roleplay dialogue; immersive and socially visible
-  sender, message = line:match("^(.*) says, '(.*)'$")
+  sender, message = line:match(DMPatterns.COMM_SAY_RECV)
   if sender then
     dmapi.core.raiseEvent("dmapi.communication.sayreceived", {
       sender = sender,
@@ -1339,7 +1291,7 @@ local function handleCommunicationLine(line)
   end
 
   -- Player's own say (sent by player)
-  message = line:match("^You say, '(.*)'$")
+  message = line:match(DMPatterns.COMM_SAY_SENT)
   if message then
     dmapi.core.raiseEvent("dmapi.communication.saysent", {
       sender = "Player",
@@ -1351,7 +1303,7 @@ local function handleCommunicationLine(line)
 
   -- MENTAL PROJECTION: Non-hostile telepathic communication
   -- Used for friendly psychic messages, mystical communication, or supernatural abilities
-  sender, message = line:match("^(.*) mentally projects, '(.*)'$")
+  sender, message = line:match(DMPatterns.COMM_MP_SAY_RECV)
   if sender then
     dmapi.core.raiseEvent("dmapi.communication.mpsayreceived", {
       sender = sender,
@@ -1362,7 +1314,7 @@ local function handleCommunicationLine(line)
   end
 
   -- Player's own mental projection (sent by player)
-  message = line:match("^You mentally project, '(.*)'$")
+  message = line:match(DMPatterns.COMM_MP_SAY_SENT)
   if message then
     dmapi.core.raiseEvent("dmapi.communication.mpsaysent", {
       sender = "Player",
@@ -1374,7 +1326,7 @@ local function handleCommunicationLine(line)
 
   -- MENTAL PROJECTION TELL: Private telepathic direct message
   -- Combines mental projection with targeted delivery like a tell
-  sender, message = line:match("^(.*) mentally projects to you, '(.*)'$")
+  sender, message = line:match(DMPatterns.COMM_MP_TELL_RECV)
   if sender then
     dmapi.core.raiseEvent("dmapi.communication.mptellreceived", {
       sender = sender,
@@ -1386,7 +1338,7 @@ local function handleCommunicationLine(line)
   end
 
   -- MENTAL PROJECTION GROUP: Telepathic message sent to party/group
-  sender, message = line:match("^(.*) mentally projects to the group '(.*)'$")
+  sender, message = line:match(DMPatterns.COMM_MP_GROUP_RECV)
   if sender then
     dmapi.core.raiseEvent("dmapi.communication.mpgtellreceived", {
       sender = sender,
@@ -1397,7 +1349,7 @@ local function handleCommunicationLine(line)
   end
 
   -- Player's own mental projection group message (sent by player)
-  message = line:match("^You mentally project to the group '(.*)'$")
+  message = line:match(DMPatterns.COMM_MP_GROUP_SENT)
   if message then
     dmapi.core.raiseEvent("dmapi.communication.mpgtellsent", {
       sender = "Player",
@@ -1408,7 +1360,7 @@ local function handleCommunicationLine(line)
   end
 
   -- Player's own mental projection tell (sent by player)
-  receiver, message = line:match("^You mentally project to (.*), '(.*)'$")
+  receiver, message = line:match(DMPatterns.COMM_MP_TELL_SENT)
   if receiver then
     dmapi.core.raiseEvent("dmapi.communication.mptellsent", {
       sender = "Me",
@@ -1421,7 +1373,7 @@ local function handleCommunicationLine(line)
 
   -- GROUP TELL: Message to your adventuring group/party
   -- Visible only to grouped members; used for team coordination
-  sender, message = line:match("^(.*) tells the group '(.*)'$")
+  sender, message = line:match(DMPatterns.COMM_GROUP_TELL_RECV)
   if sender then
     dmapi.core.raiseEvent("dmapi.communication.gtellreceived", {
       sender = sender,
@@ -1432,7 +1384,7 @@ local function handleCommunicationLine(line)
   end
 
   -- Player's own group tell (sent by player)
-  message = line:match("^You tell the group '(.*)'$")
+  message = line:match(DMPatterns.COMM_GROUP_TELL_SENT)
   if message then
     dmapi.core.raiseEvent("dmapi.communication.gtellsent", {
       sender = "Player",
@@ -1444,7 +1396,7 @@ local function handleCommunicationLine(line)
 
   -- YELL: Loud public communication heard across a wide area
   -- Used for announcements or urgent public messages; more far-reaching than say
-  sender, message = line:match("^(.*) yells, '(.*)'$")
+  sender, message = line:match(DMPatterns.COMM_YELL_RECV)
   if sender then
     dmapi.core.raiseEvent("dmapi.communication.yellreceived", {
       sender = sender,
@@ -1455,7 +1407,7 @@ local function handleCommunicationLine(line)
   end
 
   -- Player's own yell (sent by player)
-  message = line:match("^You yell, '(.*)'$")
+  message = line:match(DMPatterns.COMM_YELL_SENT)
   if message then
     dmapi.core.raiseEvent("dmapi.communication.yellsent", {
       sender = "Player",
@@ -1467,7 +1419,7 @@ local function handleCommunicationLine(line)
 
   -- NEWBIE CHANNEL: Public channel for new player questions and assistance
   -- Used for onboarding, mentoring, and new player support
-  sender, message = line:match("^%[NEWBIE%] (.*)%: (.*)$")
+  sender, message = line:match(DMPatterns.COMM_NEWBIE)
   if sender then
     dmapi.core.raiseEvent("dmapi.communication.newbiechannel", {
       sender = sender,
@@ -1479,7 +1431,7 @@ local function handleCommunicationLine(line)
 
   -- NEWBIE CHANNEL DISCORD RELAY: Messages relayed from Discord server to in-game newbie channel
   -- Allows Discord users to assist new players in-game
-  sender, message = line:match("^%[NEWBIE via Discord%] (.*)%: (.*)$")
+  sender, message = line:match(DMPatterns.COMM_NEWBIE_DISCORD)
   if sender then
     dmapi.core.raiseEvent("dmapi.communication.newbiechanneldiscord", {
       sender = sender,
@@ -1490,7 +1442,7 @@ local function handleCommunicationLine(line)
   end
 
   -- Player's own OOC message (sent by player)
-  receiver, message = line:match("^%[OOC%] to (.*)%: (.*)$")
+  receiver, message = line:match(DMPatterns.COMM_OOC_SENT)
   if receiver then
     dmapi.core.raiseEvent("dmapi.communication.oocsent", {
       sender = "Me",
@@ -1503,7 +1455,7 @@ local function handleCommunicationLine(line)
 
   -- OOC (OUT OF CHARACTER): Non-roleplay meta-communication
   -- Used for discussing game mechanics, rules, strategy outside of roleplay
-  sender, message = line:match("^%[OOC%] (.*)%: (.*)$")
+  sender, message = line:match(DMPatterns.COMM_OOC_RECV)
   if sender then
     dmapi.core.raiseEvent("dmapi.communication.oocreceived", {
       sender = sender,
@@ -1517,7 +1469,7 @@ local function handleCommunicationLine(line)
   -- HOUSE CHANNELS: Guild/organization-specific communication channels
   -- Each house (faction, guild) has its own private channel for member coordination
   -- Examples: CONCLAVE, CRUSADER, LIGHT, BRETHREN, OUTLAW, JUSTICAR, etc.
-  channel, sender, message = line:match("^%[(.*)%] (.*)%: (.*)$")
+  channel, sender, message = line:match(DMPatterns.COMM_HOUSE_CHANNEL)
   if sender and HOUSE_CHANNELS[channel] then
     dmapi.core.raiseEvent("dmapi.communication.housechannel", {
       sender = sender,
@@ -1582,7 +1534,7 @@ function dmapi.core.LineTrigger(line)
   end
 
   -- Parse closed door: The door is closed.
-  local closedName = line:match("^The (.+) is closed%.$")
+  local closedName = line:match(DMPatterns.DOOR_CLOSED)
   if closedName then
     dmapi.core.raiseEvent("dmapi.player.navigation.closed", {
       name = closedName,
@@ -1592,7 +1544,7 @@ function dmapi.core.LineTrigger(line)
   end
   
   -- Parse locked door
-  if line:match("^It is locked%.$") then
+  if line:match(DMPatterns.DOOR_LOCKED) then
     dmapi.core.raiseEvent("dmapi.player.navigation.locked", {line = line})
     return
   end
@@ -1626,18 +1578,18 @@ function dmapi.core.LineTrigger(line)
   
   local silver, gold, source
   -- Parse coin gains from corpses
-  silver, gold, source = line:match("^You get (%d+) silver coins? and (%d+) gold coins? from the corpse of (.*)%.")
+  silver, gold, source = line:match(DMPatterns.LOOT_CORPSE_BOTH)
   if not source then
-    silver, source = line:match("^You get (%d+) silver coins? from the corpse of (.*)%.")
+    silver, source = line:match(DMPatterns.LOOT_CORPSE_SILVER)
   end
   if not source then
-    gold, source = line:match("^You get (%d+) gold coins? from the corpse of (.*)%.")
+    gold, source = line:match(DMPatterns.LOOT_CORPSE_GOLD)
   end
   if not source then
-    source, silver, gold = line:match("^You sell (.*) for (%d+) silver and (%d+) gold pieces%.")
+    source, silver, gold = line:match(DMPatterns.LOOT_SELL)
   end
   if not source then
-    silver = line:match("^The gods give you (.*) silver coins? for your sacrifice%.")
+    silver = line:match(DMPatterns.LOOT_SACRIFICE)
     if silver == "one" then
       silver = 1
     end
@@ -1646,7 +1598,7 @@ function dmapi.core.LineTrigger(line)
     end
   end
   if not source then
-    source, silver = line:match("^You buy (.*) for (%d+) silver%.")
+    source, silver = line:match(DMPatterns.LOOT_BUY)
     -- we want to make the silver negative since we're purchasing
     if silver then
       silver = silver * -1
@@ -1732,7 +1684,7 @@ function dmapi.core.LineTrigger(line)
   end
 
   -- Parse equipment zapped
-  local zappedItem = line:match("You are zapped by (.*) and drop it%.")
+  local zappedItem = line:match(DMPatterns.EQUIP_ZAPPED)
   if zappedItem then
     dmapi.core.raiseEvent("dmapi.player.equipment.zapped", {
       item = zappedItem,
@@ -1742,7 +1694,7 @@ function dmapi.core.LineTrigger(line)
   end
   
   -- Parse disarm
-  local disarmer = line:match("(.*) DISARMS you and sends your weapon flying!")
+  local disarmer = line:match(DMPatterns.COMBAT_DISARM)
   if disarmer then
     dmapi.core.raiseEvent("dmapi.player.combat.disarmed", {
       disarmer = disarmer,
@@ -1752,8 +1704,8 @@ function dmapi.core.LineTrigger(line)
   end
 
   -- Parse sleep
-  local sleepOn = line:match("You go to sleep on (.*)%.")
-  if line:match("You go to sleep%.") or sleepOn then
+  local sleepOn = line:match(DMPatterns.SLEEP_ON)
+  if line:match(DMPatterns.SLEEP) or sleepOn then
     dmapi.core.raiseEvent("dmapi.player.sleep.enter", {
       sleepOn = sleepOn,
       line = line
@@ -1762,15 +1714,15 @@ function dmapi.core.LineTrigger(line)
   end
   
   -- Parse rest
-  if line:match("^You sit down") 
-      or line:match("^You rest") then
+  if line:match(DMPatterns.REST_SIT) 
+      or line:match(DMPatterns.REST_ENTER) then
     dmapi.player.status.resting = true
     dmapi.core.raiseEvent("dmapi.player.rest.enter", {line = line})
     return
   end
   
-  if line:match("^You stop resting")
-    or line:match("^You stand up") then
+  if line:match(DMPatterns.REST_EXIT)
+    or line:match(DMPatterns.STAND_UP) then
     dmapi.player.status.resting = false
     dmapi.core.raiseEvent("dmapi.player.rest.exit", {line = line})
     return
@@ -1893,11 +1845,11 @@ function dmapi.core.LineTrigger(line)
   
   -- Parse thirst
   local thirstLevel =
-        line:match("^You are thirsty%.")               and 1
-     or line:match("^Your mouth is parched!")          and 2
-     or line:match("^You are beginning to dehydrate!") and 3
-     or line:match("^You are dying of thirst!")        and 4
-     or line:match("^Your thirst is quenched%.")       and 0
+        line:match(DMPatterns.THIRST_LEVEL1)               and 1
+     or line:match(DMPatterns.THIRST_LEVEL2)          and 2
+     or line:match(DMPatterns.THIRST_LEVEL3) and 3
+     or line:match(DMPatterns.THIRST_LEVEL4)        and 4
+     or line:match(DMPatterns.THIRST_QUENCHED)       and 0
 
   if thirstLevel then
     dmapi.player.status.thirsty = thirstLevel
@@ -1912,14 +1864,14 @@ function dmapi.core.LineTrigger(line)
   
   -- Parse hunger
   local hungerLevel =
-        line:match("^You are hungry%.")              and 1
-     or line:match("^You are famished!")             and 2
-     or line:match("^You are beginning to starve!")  and 3
-     or line:match("^You are starving!")             and 4
-     or line:match("^Your starvation")               and 4
-     or line:match("^You are no longer hungry%.")    and 0
-     or line:match("^You are full%.")                and -1
-     or line:match("^You are too full to eat more%.") and -1
+        line:match(DMPatterns.HUNGER_LEVEL1)              and 1
+     or line:match(DMPatterns.HUNGER_LEVEL2)             and 2
+     or line:match(DMPatterns.HUNGER_LEVEL3)  and 3
+     or line:match(DMPatterns.HUNGER_LEVEL4)             and 4
+     or line:match(DMPatterns.HUNGER_STARVATION)               and 4
+     or line:match(DMPatterns.HUNGER_SATED)    and 0
+     or line:match(DMPatterns.HUNGER_FULL)                and -1
+     or line:match(DMPatterns.TOO_FULL) and -1
 
   if hungerLevel then
     dmapi.player.status.hungry = hungerLevel
@@ -1980,7 +1932,7 @@ function dmapi.core.LineTrigger(line)
   end
   
   -- dmapi.world.exit
-  if line:match("Alas, all good things must come to an end.") then
+  if line:match(DMPatterns.WORLD_EXIT) then
     dmapi.core.raiseEvent("dmapi.world.exit")
     dmapi.player.online = false
     return
@@ -1998,45 +1950,45 @@ function dmapi.core.LineTrigger(line)
   -- Parse weather
   local weather, weatherDetail
 
-  if line:match("^The sun rises in the east%.$")
-    or line:match("^The day has begun%.?$") then
+  if line:match(DMPatterns.WEATHER_SUNRISE)
+    or line:match(DMPatterns.WEATHER_DAY) then
     weather = "day"
     weatherDetail = "sunrise"
-  elseif line:match("^The sun slowly disappears in the west%.$")
-    or line:match("^The night has begun%.?$") then
+  elseif line:match(DMPatterns.WEATHER_SUNSET)
+    or line:match(DMPatterns.WEATHER_NIGHT) then
     weather = "night"
     weatherDetail = "sunset"
-  elseif line:match("^You look up and notice that it is no longer raining sleet%.$") then
+  elseif line:match(DMPatterns.WEATHER_SLEET_END) then
     weather = "clear"
     weatherDetail = "sleet_end"
-  elseif line:match("^You look up and notice that it is no longer raining%.$")
-    or line:match("no longer raining") then
+  elseif line:match(DMPatterns.WEATHER_RAIN_END)
+    or line:match(DMPatterns.WEATHER_RAIN_END2) then
     weather = "clear"
     weatherDetail = "rain_end"
-  elseif line:match("^Torrential rain begins to fall as a storm erupts%.$") then
+  elseif line:match(DMPatterns.WEATHER_STORM) then
     weather = "storm"
     weatherDetail = "storm_rain"
-  elseif line:match("^Pelting freezing rain begins to furiously slap against your face%.$") then
+  elseif line:match(DMPatterns.WEATHER_FREEZE_HVY) then
     weather = "storm"
     weatherDetail = "freezing_rain_heavy"
-  elseif line:match("^Freezing rain begins to fall against your face%.$") then
+  elseif line:match(DMPatterns.WEATHER_FREEZE) then
     weather = "rain"
     weatherDetail = "freezing_rain"
-  elseif line:match("^The crackling sound of thunder booms%.$") then
+  elseif line:match(DMPatterns.WEATHER_THUNDER) then
     weather = "storm"
     weatherDetail = "thunder"
-  elseif line:match("^The thunderclap from the storm seems to cease%.$")
-    or line:match("storm seems to cease") then
+  elseif line:match(DMPatterns.WEATHER_THUNDER_END)
+    or line:match(DMPatterns.WEATHER_STORM_END) then
     weather = "storm_end"
     weatherDetail = "storm_end"
-  elseif line:match("^The sky appears somewhat cloudy, and it begins to rain%.$")
-    or line:match("begins to rain") then
+  elseif line:match(DMPatterns.WEATHER_CLOUDY_RAIN)
+    or line:match(DMPatterns.WEATHER_BEGINS_RAIN) then
     weather = "rain"
     weatherDetail = "rain"
-  elseif line:match("very cloudy") then
+  elseif line:match(DMPatterns.WEATHER_VERY_CLOUDY) then
     weather = "cloudy"
     weatherDetail = "cloudy"
-  elseif line:match("calmness begins") then
+  elseif line:match(DMPatterns.WEATHER_CALM) then
     weather = "calm"
     weatherDetail = "calm"
   end

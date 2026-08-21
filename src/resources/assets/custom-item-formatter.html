@@ -157,22 +157,29 @@ hr {
 <h2>📦 Custom Item Formatter</h2>
 
 <div id="instructions">
-  Paste raw <code>c id</code> output or item description text below. The tool extracts the item name
-  from the <code>Object '...'</code> line and formats everything into a JSON entry ready for
+  Paste a raw identify dump from the MUD below — each item starts with an
+  <code>Object '...' is type ...</code> line (the MUD prompt may be merged onto it) and ends with a
+  blank line. The tool extracts the item name and formats everything into a JSON entry ready for
   <code>custom_items.json</code>.<br><br>
-  You can format multiple items at once — paste each item description separated by a blank line.
+  You can format multiple items at once — just paste the whole dump. Names are prefixed with
+  <code>(custom) </code> to match the existing data.
 </div>
 
-<textarea id="input" placeholder="Paste item description here...
+<textarea id="input" placeholder="Paste a raw MUD dump here — each item starts with the Object line and ends with a blank line.
 
 Example:
-Area: The City of Sudharma
-Object 'a copper interlocking box chain ring' is type jewelry, extra flags burnproof.
+[55/55hp 120/120mn 300mv] Object 'a copper interlocking box chain ring' is type jewelry, extra flags burnproof.
 Weight is 0.7 pounds, value is 39000, level is 50.
 Material is copper and iron.
 restrict flags none.
 Affects damage roll by 3.
-Affects hit roll by 3."></textarea>
+Affects hit roll by 3.
+
+Object 'a black dragon earring' is type jewelry, extra flags glowing.
+Weight is 1.3 pounds, value is 29000, level is 40.
+Material is blackdragonscale and dragonscale and steel.
+restrict flags none.
+Affects damage roll by 4."></textarea>
 
 <div class="input-row">
   <label for="vnum">Vnum:</label>
@@ -204,20 +211,39 @@ Affects hit roll by 3."></textarea>
 <script>
 let vnumCounter = 1
 
+function stripAnsi(text) {
+  // Defensive ANSI CSI strip; no-op for plain text pasted from the client.
+  return text.replace(/\x1b\[[0-9;?]*[ -\/]*[@-~]/g, "")
+}
+
 function extractName(text) {
-  const match = text.match(/^Object '(.+)' is type /m)
+  // Not anchored to the line start: the MUD prompt can be merged onto the Object line.
+  const match = text.match(/Object '(.+)' is type /)
   return match ? match[1] : null
 }
 
 function buildDetails(text) {
-  return text
-    .split(/\r?\n/)
-    .map(l => l.trimEnd())
-    .join('\n')
+  const lines = text.split(/\r?\n/)
+
+  // Drop leading prompt / command-echo lines before the Object '...' line,
+  // keeping a preceding "Area:" line if present.
+  const objLine = lines.findIndex(l => l.includes("Object '"))
+  if (objLine > 0) {
+    const kept = lines.slice(0, objLine).filter(l => /^Area:/i.test(l.trim()))
+    lines.splice(0, objLine, ...kept)
+  }
+
+  // If the prompt is merged onto the Object '...' line itself, strip it.
+  if (lines.length > 0 && lines[0].includes("Object '")) {
+    const idx = lines[0].indexOf("Object '")
+    if (idx > 0) lines[0] = lines[0].slice(idx)
+  }
+
+  return lines.map(l => l.trimEnd()).join('\n')
 }
 
 function formatItems() {
-  const raw = document.getElementById("input").value.trim()
+  const raw = stripAnsi(document.getElementById("input").value).trim()
   const status = document.getElementById("status")
   const output = document.getElementById("output")
   const preview = document.getElementById("preview")
@@ -257,10 +283,10 @@ function formatItems() {
     // JSON.stringify double-escaping it
     const escapedDetails = rawDetails.replace(/\n/g, '\\n').replace(/"/g, '\\"')
     const json = '  {\n' +
-      '    "name": ' + JSON.stringify(name) + ',\n' +
+      '    "name": ' + JSON.stringify("(custom) " + name) + ',\n' +
       '    "vnum": ' + JSON.stringify(id) + ',\n' +
       '    "details": "' + escapedDetails + '"\n' +
-      '  },'
+      '  }'
     results.push(json)
   }
 

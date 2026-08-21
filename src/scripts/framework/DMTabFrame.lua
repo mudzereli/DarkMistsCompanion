@@ -30,59 +30,49 @@ local function is_light_mode()
 end
 
 local function build_tab_styles()
-  local isLight = is_light_mode()
-  local inactiveStyle = isLight and string.format([[ 
+  local paddingPx = TAB_LABEL_PADDING_PX
+
+  local inactiveBg, inactiveHoverBg, inactiveBorder, inactiveHoverBorder, activeBg, activeTopBorder
+  if is_light_mode() then
+    inactiveBg          = "rgb(245,245,250)"
+    inactiveHoverBg     = "rgb(235,225,255)"
+    inactiveBorder      = "rgb(220,220,235)"
+    inactiveHoverBorder = "rgb(200,180,255)"
+    activeBg            = "rgb(170,140,255)"
+    activeTopBorder     = "rgb(48, 51, 107)"
+  else
+    inactiveBg          = "rgba(255,255,255,5%)"
+    inactiveHoverBg     = "rgba(180,160,255,28%)"
+    inactiveBorder      = "rgba(255,255,255,0%)"
+    inactiveHoverBorder = "rgba(255,255,255,0%)"
+    activeBg            = "rgb(48, 51, 107)"
+    activeTopBorder     = "rgb(170,140,255)"
+  end
+
+  local inactiveStyle = string.format([[
   QLabel {
-    background-color: rgb(245,245,250);
-    border: 1px solid rgb(220,220,235);
-    margin-left: 1px;
-    margin-right: 1px;
+    background-color: %s;
+    border: 1px solid %s;
+    margin-left: 1px; margin-right: 1px;
     padding: %dpx;
     qproperty-alignment: 'AlignCenter';
   }
   QLabel:hover {
-    background-color: rgb(235,225,255);
-    border: 1px solid rgb(200,180,255);
+    background-color: %s;
+    border: 1px solid %s;
   }
-]], TAB_LABEL_PADDING_PX)
-  or string.format([[ 
+]], inactiveBg, inactiveBorder, paddingPx, inactiveHoverBg, inactiveHoverBorder)
+  local activeStyle = string.format([[
   QLabel {
-    background-color: rgba(255,255,255,5%%);
-    margin-left: 1px;
-    margin-right: 1px;
-    padding: %dpx;
-    qproperty-alignment: 'AlignCenter';
-  }
-  QLabel:hover {
-    background-color: rgba(180,160,255,28%%);
-  }
-]], TAB_LABEL_PADDING_PX)
-
-  local activeStyle = isLight and string.format([[ 
-  QLabel {
-    background-color: rgb(170,140,255);
+    background-color: %s;
     color: white;
-    border-top: 3px solid rgb(48, 51, 107);   /* Dark Mists deep purple */
-    margin-left: 1px;
-    margin-right: 1px;
+    border-top: 3px solid %s;
+    margin-left: 1px; margin-right: 1px;
     padding: %dpx;
     font-weight: bold;
     qproperty-alignment: 'AlignCenter';
   }
-]], TAB_LABEL_PADDING_PX)
-  or string.format([[ 
-  QLabel {
-    background-color: rgb(48, 51, 107);   /* Dark Mists deep purple */
-    color: white;
-    border-top: 3px solid rgb(170,140,255);
-    margin-left: 1px;
-    margin-right: 1px;
-    padding: %dpx;
-    font-weight: bold;
-    qproperty-alignment: 'AlignCenter';
-  }
-]], TAB_LABEL_PADDING_PX)
-
+]], activeBg, activeTopBorder, paddingPx)
   return inactiveStyle, activeStyle
 end
 
@@ -167,6 +157,7 @@ function DMTabFrame.create()
     height = "50%",
 
     titleText = "",
+    color = Darkmists.getDefaultBackgroundColor(),
     lockStyle = "border",
     titleTxtColor = Darkmists.getDefaultTextColor(),
     adjLabelstyle = Darkmists.getDefaultAdjLabelstyle(),
@@ -182,8 +173,8 @@ function DMTabFrame.create()
 
     tabs = {"Chat","Affects","Who","Player"},
 
-    color1 = Darkmists.getDefaultTextColor(),
-    color2 = Darkmists.getDefaultTextColor(),
+    color1 = Darkmists.getDefaultBackgroundColor(),
+    color2 = Darkmists.getDefaultBackgroundColor(),
     tabTxtColor = Darkmists.getDefaultTextColor(),
 
     inactiveTabStyle = inactiveStyle,
@@ -241,16 +232,14 @@ function DMTabFrame.postLoadSetup()
       end
     end
 
-    for _, win in pairs(Adjustable.TabWindow.all) do
-      if win.tabs and #win.tabs > 0 then
-        win:deactivateTab()
-        win.current = nil
-
-        for _, tabName in ipairs(win.tabs) do
-          if win[tabName] and not win[tabName].floating then
-            win:activateTab(tabName)
-            break
-          end
+    -- Activate first non-floating tab (only our own window)
+    if tabs.tabs and #tabs.tabs > 0 then
+      tabs:deactivateTab()
+      tabs.current = nil
+      for _, tabName in ipairs(tabs.tabs) do
+        if tabs[tabName] and not tabs[tabName].floating then
+          tabs:activateTab(tabName)
+          break
         end
       end
     end
@@ -312,21 +301,16 @@ function DMTabFrame.destroy()
     DMTabFrame.tabs._autosaveTimer = nil
   end
 
-  tempTimer(0, function()
-    -- drop module globals so saved UI won't reference stale functions/objects
-    if DMTabFrame.tabs and DMTabFrame.tabs._delete then
-      pcall(DMTabFrame.tabs._delete, DMTabFrame.tabs)
-    end
-    DMTabFrame.tabs = nil
-    DMTabs = nil
-  end)
+  -- Defer the final _delete to avoid destroying UI objects while still inside
+  -- callbacks/event handlers that expect them to exist.  Nil the globals
+  -- immediately so init() won't see stale references.
+  local tabsToDelete = DMTabFrame.tabs
+  DMTabFrame.tabs = nil
+  DMTabs = nil
+  if tabsToDelete and tabsToDelete._delete then
+    tempTimer(0, function() pcall(tabsToDelete._delete, tabsToDelete) end)
+  end
 end
-
---[[
-DarkmistsEvents.add("DMTabFrameProfileSave", "sysProfileSaveStarted", function()
-  DMTabs:queueLayoutSave()
-end)
-]]--
 
 -- repeating autosave timer (assign to var so it can be killed on reload)
 function DMTabFrame.init()

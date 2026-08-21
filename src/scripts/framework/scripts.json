@@ -16,5 +16,11 @@
               "isActive": "yes",
               "script": "",
               "isFolder": "no"
+       },
+       {
+              "name": "DMPanelHeader",
+              "isActive": "yes",
+              "script": "",
+              "isFolder": "no"
        }
 ]
