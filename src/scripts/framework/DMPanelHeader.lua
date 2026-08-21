@@ -59,6 +59,7 @@ function DMPanelHeader.create(id, title, tabName, opts)
   }, header)
 
   local controls = {}
+  local spacers  = {}
 
   if opts.age ~= false then
     controls.age = Geyser.Label:new({
@@ -73,7 +74,18 @@ function DMPanelHeader.create(id, title, tabName, opts)
   end
 
   for _, b in ipairs(opts.buttons or {}) do
-    controls[b.key] = DMPanelHeader.makeButton(id, b, hbox, opts.font, opts.fontSize)
+    if b.stretch then
+      -- Transparent stretchy spacer: absorbs leftover width so buttons after
+      -- it anchor to the right edge of the strip (kept out of `controls` so
+      -- restyle/applyButtonStyle never touches it).
+      spacers[b.key] = Geyser.Label:new({
+        name = id .. "_" .. b.key,
+        h_stretch_factor = b.factor or 1,
+      }, hbox)
+      spacers[b.key]:setStyleSheet("background-color: rgba(0,0,0,0%);")
+    else
+      controls[b.key] = DMPanelHeader.makeButton(id, b, hbox, opts.font, opts.fontSize)
+    end
   end
 
   -- Body console: fills the layout below the header.
@@ -90,6 +102,7 @@ function DMPanelHeader.create(id, title, tabName, opts)
     header = header,
     hbox = hbox,
     controls = controls,
+    spacers = spacers,
     console = console,
   }
   DMPanelHeader.current = handle
@@ -98,7 +111,9 @@ end
 
 -- Build a header button label (fixed width, hover + active styling, tooltip).
 -- b: { key, label, width (px, default 72), tooltip, onClick, color (optional
---     terminal accent hex used for the button's text/border) }
+--     terminal accent hex used for the button's text/border), marginX
+--     (optional px gap on each side), marginL/marginR (optional px gap on one
+--     side only, overrides marginX for that side) }
 function DMPanelHeader.makeButton(id, b, parent, font, fontSize)
   local btn = Geyser.Label:new({
     name = id .. "_" .. b.key,
@@ -113,6 +128,11 @@ function DMPanelHeader.makeButton(id, b, parent, font, fontSize)
   btn.defLabel = b.label
   btn.defColor = b.color
   btn._active = false
+  -- Optional horizontal gaps: marginX applies to both sides; marginL/marginR
+  -- override a single side (e.g. a larger gap at the strip edges).
+  btn.marginX = b.marginX
+  btn.marginL = b.marginL
+  btn.marginR = b.marginR
 
   if font then btn:setFont(font) end
   if fontSize then btn:setFontSize(fontSize) end
@@ -147,7 +167,14 @@ end
 function DMPanelHeader.applyButtonStyle(btn, active)
   if not btn then return end
   btn._active = active
-  btn:setStyleSheet(DarkmistsTheme.buildButtonStyle(active, btn.defColor))
+  local sheet = DarkmistsTheme.buildButtonStyle(active, btn.defColor)
+  local mL = btn.marginL or btn.marginX or 0
+  local mR = btn.marginR or btn.marginX or 0
+  if mL > 0 or mR > 0 then
+    -- Extra breathing room around the button (e.g. chat letters + strip edges).
+    sheet = sheet .. string.format("\nQLabel { margin-left: %dpx; margin-right: %dpx; }", mL, mR)
+  end
+  btn:setStyleSheet(sheet)
   -- Rich-text labels ignore QSS `color`, so set the text color via fgColor:
   -- active = the bright-fill text color, inactive = the button's accent.
   local panel = DarkmistsTheme.panel or {}

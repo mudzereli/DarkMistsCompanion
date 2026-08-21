@@ -179,6 +179,15 @@ function DarkmistsTheme.buildTheme()
       buttonRefreshColor  = "#5b3fd4",
       buttonClearColor    = "#c0392b",
       buttonIgnoreColor   = "#9a6a00",
+      -- Chat history filter buttons
+      buttonAllColor      = "#5b3fd4",
+      buttonSayColor      = "#a16207",
+      buttonYellColor     = "#0e7490",
+      buttonTellColor     = "#15803d",
+      buttonGroupColor    = "#7e22ce",
+      buttonOOCColor      = "#0369a1",
+      buttonNewbieColor   = "#4d7c0f",
+      buttonHouseColor    = "#4b5563",
     }
   else
     t.panel = {
@@ -196,6 +205,15 @@ function DarkmistsTheme.buildTheme()
       buttonRefreshColor  = "#a78bfa",
       buttonClearColor    = "#ff7b6b",
       buttonIgnoreColor   = "#ffd27a",
+      -- Chat history filter buttons
+      buttonAllColor      = "#a78bfa",
+      buttonSayColor      = "#fbbf24",
+      buttonYellColor     = "#7dd3fc",
+      buttonTellColor     = "#4ade80",
+      buttonGroupColor    = "#c084fc",
+      buttonOOCColor      = "#67e8f9",
+      buttonNewbieColor   = "#86efac",
+      buttonHouseColor    = "#d6dbe3",
     }
   end
 

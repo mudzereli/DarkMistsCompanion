@@ -18,6 +18,40 @@ ChatHistory.config = {
 ChatHistory.messages = {}
 ChatHistory.window   = nil
 ChatHistory.console  = nil
+ChatHistory.header   = nil
+ChatHistory.controls = nil
+
+--================================--
+-- Channel Filters
+--================================--
+
+-- Map each filter button (key) to the message types it controls. Grouping
+-- keeps related protocols under one toggle.
+ChatHistory.filterGroups = {
+  say    = { "say", "emotedsay", "mpsay" },
+  yell   = { "yell", "yellpanic", "mentalblast", "mentalblastpanic" },
+  tell   = { "tell", "mptell" },
+  group  = { "gtell", "mpgtell" },
+  ooc    = { "ooc" },
+  newbie = { "newbie", "newbiediscord" },
+  house  = { "house" },
+}
+
+-- Reverse lookup: message type -> owning filter key.
+ChatHistory.msgGroup = {}
+for group, types in pairs(ChatHistory.filterGroups) do
+  for _, msgType in ipairs(types) do
+    ChatHistory.msgGroup[msgType] = group
+  end
+end
+
+-- Per-channel visibility state; all on by default (show everything). This is
+-- the single source of truth for what renders. Rebuilt on each load so
+-- filters always reset to "All" on reload.
+ChatHistory.filters = {}
+for group in pairs(ChatHistory.filterGroups) do
+  ChatHistory.filters[group] = true
+end
 
 --================================--
 -- Window Creation
@@ -26,21 +60,57 @@ ChatHistory.console  = nil
 function ChatHistory.create()
   if ChatHistory.window and ChatHistory.console then return end
 
-  ChatHistory.window = Darkmists.createTabPanel("ChatHistory","Chat History","Chat")
+  local cfg = ChatHistory.config
+  local panelColors = DarkmistsTheme.panel or {}
 
-  ChatHistory.console = Geyser.MiniConsole:new({
-      name   = "ChatHistoryConsole",
-      x      = "1%",
-      y      = "1%",
-      width  = "98%",
-      height = "98%",
-      color = Darkmists.getDefaultBackgroundColor()
-    }, ChatHistory.window)
+  -- Fixed interactive header (single-letter channel filter toggles with
+  -- tooltips) above the scrollable chat log.
+  local ph = DMPanelHeader.create("ChatHistory", "Chat History", "Chat", {
+    consoleColor = Darkmists.getDefaultBackgroundColor(),
+    font = cfg.fontName,
+    fontSize = cfg.fontSize,
+    age = false,
+    buttons = {
+      { key = "all", label = "ALL", color = panelColors.buttonAllColor or "#a78bfa", marginL = 4,
+        tooltip = "All channels",
+        onClick = function() ChatHistory.setAllFilters(true) end },
+      -- Stretchy spacer: keeps ALL on the left, channel letters anchored right.
+      { key = "spacer", stretch = true },
+      { key = "say", label = "S", color = panelColors.buttonSayColor or "#fbbf24", marginX = 1,
+        tooltip = "Say, emoted say, mp say",
+        onClick = function() ChatHistory.toggleFilter("say") end },
+      { key = "yell", label = "Y", color = panelColors.buttonYellColor or "#7dd3fc", marginX = 1,
+        tooltip = "Yell, yell panic, mental blast, mental blast panic",
+        onClick = function() ChatHistory.toggleFilter("yell") end },
+      { key = "tell", label = "T", color = panelColors.buttonTellColor or "#4ade80", marginX = 1,
+        tooltip = "Tell, mp tell",
+        onClick = function() ChatHistory.toggleFilter("tell") end },
+      { key = "group", label = "G", color = panelColors.buttonGroupColor or "#c084fc", marginX = 1,
+        tooltip = "Group tell, mp group tell",
+        onClick = function() ChatHistory.toggleFilter("group") end },
+      { key = "ooc", label = "O", color = panelColors.buttonOOCColor or "#67e8f9", marginX = 1,
+        tooltip = "OOC",
+        onClick = function() ChatHistory.toggleFilter("ooc") end },
+      { key = "newbie", label = "N", color = panelColors.buttonNewbieColor or "#86efac", marginX = 1,
+        tooltip = "Newbie, newbie via Discord",
+        onClick = function() ChatHistory.toggleFilter("newbie") end },
+      { key = "house", label = "H", color = panelColors.buttonHouseColor or "#d6dbe3", marginX = 1, marginR = 4,
+        tooltip = "House",
+        onClick = function() ChatHistory.toggleFilter("house") end },
+    },
+  })
 
-  ChatHistory.console:setFont(ChatHistory.config.fontName)
-  ChatHistory.console:setFontSize(ChatHistory.config.fontSize)
+  ChatHistory.window   = ph.panel
+  ChatHistory.header   = ph.header
+  ChatHistory.controls = ph.controls
+  ChatHistory.console  = ph.console
+
+  ChatHistory.console:setFontSize(cfg.fontSize)
+  ChatHistory.console:setFont(cfg.fontName)
   ChatHistory.console:enableAutoWrap()
   ChatHistory.console:enableScrollBar()
+
+  ChatHistory.syncFilterButtons()
 
   ChatHistory.window:show()
   ChatHistory.window:raiseAll()
@@ -213,6 +283,60 @@ local function formatMessage(m)
 end
 
 --================================--
+-- Channel Filter Controls
+--================================--
+
+-- True when every channel filter is enabled (styles the "All" button).
+function ChatHistory._allActive()
+  for _, enabled in pairs(ChatHistory.filters) do
+    if not enabled then return false end
+  end
+  return true
+end
+
+-- Whether a message type should currently render in the log.
+function ChatHistory.filterIncludes(msgType)
+  local group = ChatHistory.msgGroup[msgType]
+  if not group then return true end -- unknown types always show
+  return ChatHistory.filters[group] ~= false
+end
+
+-- Sync button active styling with the current filter state.
+function ChatHistory.syncFilterButtons()
+  if not ChatHistory.controls then return end
+  for key, enabled in pairs(ChatHistory.filters) do
+    local btn = ChatHistory.controls[key]
+    if btn then
+      DMPanelHeader.applyButtonStyle(btn, enabled)
+    end
+  end
+  local all = ChatHistory.controls.all
+  if all then
+    DMPanelHeader.applyButtonStyle(all, ChatHistory._allActive())
+  end
+end
+
+-- Toggle a single channel group on/off, then re-render.
+-- Note: check for a *missing* key with `== nil` — a channel that is currently
+-- off has a `false` value, so `if not filters[key]` would wrongly early-return
+-- and make an off channel impossible to re-enable.
+function ChatHistory.toggleFilter(key)
+  if ChatHistory.filters[key] == nil then return end
+  ChatHistory.filters[key] = not ChatHistory.filters[key]
+  ChatHistory.syncFilterButtons()
+  ChatHistory.refresh()
+end
+
+-- Master "All" control: enable (or disable) every channel group.
+function ChatHistory.setAllFilters(on)
+  for key in pairs(ChatHistory.filters) do
+    ChatHistory.filters[key] = on and true or false
+  end
+  ChatHistory.syncFilterButtons()
+  ChatHistory.refresh()
+end
+
+--================================--
 -- Message Management
 --================================--
 
@@ -236,6 +360,7 @@ end
 
 function ChatHistory.appendMessage(msg)
   if not ChatHistory.window then return end
+  if not ChatHistory.filterIncludes(msg.msgType) then return end
   ChatHistory.console:cecho(formatMessage(msg))
 end
 
@@ -245,7 +370,10 @@ function ChatHistory.refresh()
 
   -- Messages are stored newest-first; render oldest-to-newest to keep chronology stable.
   for i = #ChatHistory.messages, 1, -1 do
-    ChatHistory.console:cecho(formatMessage(ChatHistory.messages[i]))
+    local msg = ChatHistory.messages[i]
+    if ChatHistory.filterIncludes(msg.msgType) then
+      ChatHistory.console:cecho(formatMessage(msg))
+    end
   end
 end
 
@@ -315,4 +443,24 @@ function ChatHistory.init()
   ChatHistory.create()
   ChatHistory.registerEvents()
   ChatHistory.refresh()
+end
+
+--================================--
+-- Teardown
+--================================--
+
+function ChatHistory.destroy()
+  DarkmistsEvents.remove("ChatHistoryProfileSave")
+
+  if ChatHistory.console and ChatHistory.console.delete then
+    pcall(ChatHistory.console.delete, ChatHistory.console)
+  end
+  if ChatHistory.window and ChatHistory.window.delete then
+    pcall(ChatHistory.window.delete, ChatHistory.window)
+  end
+
+  ChatHistory.console  = nil
+  ChatHistory.window   = nil
+  ChatHistory.header   = nil
+  ChatHistory.controls = nil
 end
