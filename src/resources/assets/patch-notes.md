@@ -68,10 +68,12 @@
 **DMC Patch Notes: 1.5.12**
 
 **Walker**: walk status messages (area arrival, navigation blocked, disconnect) now use theme colors instead of hardcoded colors, so they adapt correctly to light/dark mode.
+**Walker**: `walk list` now opens a movable, scrollable destination alert with optional filtering and clickable destinations.
+**Alert Window**: added a minimize/restore button beside the close button; minimizing hides the alert content and leaves the title bar visible.
 **Chat History Filters**: the Chat tab header now has filter toggles — single-letter buttons (A/S/Y/T/G/O/N/H) for All, Say, Yell, Tell, Group, OOC, Newbie, and House. Click to show or hide each channel; hover a letter to see the full channel list. Filters reset to All on reload.
+**Affects Window**: reordered the header action buttons (ignore, refresh, clear).
 
 **Future Versions**
 - header for WHO window (like affects window)
-- improved styling on alert window
 - REAL settings page and HELP pages
 - backwards compatibility testing No newline at end of file

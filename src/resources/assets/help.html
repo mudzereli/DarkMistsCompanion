@@ -548,8 +548,8 @@
         <thead><tr><th>Command</th><th>Description</th></tr></thead>
         <tbody>
           <tr><td><code>walk &lt;name&gt;</code></td><td>Speedwalk to a saved destination</td></tr>
-          <tr><td><code>walk list</code></td><td>Show all saved destinations, grouped by area</td></tr>
-          <tr><td><code>walk list &lt;filter&gt;</code></td><td>Filter destinations by name, room name, or area</td></tr>
+          <tr><td><code>walk list</code></td><td>Open all saved destinations in a movable alert, grouped by area</td></tr>
+          <tr><td><code>walk list &lt;filter&gt;</code></td><td>Open a filtered destination alert by name, room name, or area</td></tr>
           <tr><td><code>walk add &lt;name&gt;</code></td><td>Save your current room under a name</td></tr>
           <tr><td><code>walk add &lt;name&gt; &lt;roomid&gt;</code></td><td>Save a specific room ID under a name</td></tr>
           <tr><td><code>walk rem &lt;name&gt;</code></td><td>Delete a saved destination</td></tr>
@@ -563,6 +563,12 @@
         <strong>Area walk:</strong> <code>walk area arkham</code> searches area names for
         "arkham" and begins walking toward any match. The walk stops automatically once you
         arrive inside that area.
+      </div>
+
+      <div class="tip">
+        <strong>Destination list:</strong> The <code>walk list</code> alert can be dragged by its
+        title bar and scrolled when needed. Click an underlined destination name to start walking
+        there. Closing the alert only hides it; it does not cancel an active walk.
       </div>
     </section>
 

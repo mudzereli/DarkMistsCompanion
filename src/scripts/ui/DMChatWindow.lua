@@ -73,7 +73,7 @@ function ChatHistory.create()
     buttons = {
       { key = "all", label = "ALL", color = panelColors.buttonAllColor or "#a78bfa", marginL = 4,
         tooltip = "All channels",
-        onClick = function() ChatHistory.setAllFilters(true) end },
+        onClick = function() ChatHistory.setAllFilters(not ChatHistory._allActive()) end },
       -- Stretchy spacer: keeps ALL on the left, channel letters anchored right.
       { key = "spacer", stretch = true },
       { key = "say", label = "S", color = panelColors.buttonSayColor or "#fbbf24", marginX = 1,

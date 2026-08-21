@@ -934,59 +934,7 @@ function DarkMistsMeta.init()
   -- WALK COMMAND
   -- =============================================================================
   local function renderWalkList(filter)
-    local c = dm_text
-
-    DMLogger.notify("WALK","Destinations by Area:")
-
-    local grouped = MapDestinations.getGroupedFiltered(filter)
-    if not next(grouped) then
-      cecho("\n  "..dm_muted.."(none)")
-      return
-    end
-
-    local areaNames = {}
-    for areaName in pairs(grouped) do
-      table.insert(areaNames, areaName)
-    end
-    table.sort(areaNames)
-
-    for _, areaName in ipairs(areaNames) do
-      for _, entry in ipairs(grouped[areaName]) do
-        local roomName = getRoomName(entry.room) or "UNKNOWN"
-        local destinationName = DMUtil.cap(entry.name, 24)
-        local namePadding = string.rep(" ", math.max(0, 24 - #destinationName))
-
-        cecho(string.format(
-          "\n%s[%s%-16s%s] %s",
-          dm_warn,
-          c,
-          DMUtil.cap(areaName, 16),
-          dm_warn,
-          c
-        ))
-
-        cechoLink(
-          ("%s<u>%s</u>"):format(c, destinationName),
-          function()
-            expandAlias(("walk %s"):format(entry.name))
-          end,
-          ("Click: walk %s"):format(entry.name),
-          true
-        )
-
-        cecho(string.format(
-          "%s%s → %s[%s%5d%s]%s%-27s",
-          namePadding,
-          dm_muted,
-          dm_muted,
-          c,
-          entry.room,
-          dm_muted,
-          c,
-          DMUtil.cap(roomName,27)
-        ))
-      end
-    end
+    DMWalkAlert.show(filter)
   end
 
   DarkmistsAlias.add("^walk(?:\\s+(.*))?$", function()
@@ -1003,7 +951,7 @@ function DarkMistsMeta.init()
         .. dm_muted .. "Speedwalk between known rooms using the map speedwalk system. \nDestinations must be discovered and routes clear.\n\n"
         .. dm_header_color .. "Walk Commands:\n"
         .. line(c .. "walk <name>", dm_muted .. "Navigate to a saved destination")
-        .. line(c .. "walk list <filter: optional>", dm_muted .. "Show saved destinations (optional filter)")
+        .. line(c .. "walk list <filter: optional>", dm_muted .. "Open movable destination list (optional filter)")
         .. line(c .. "walk add <name> <roomid: optional>", dm_muted .. "Add persistent destination (max 24 chars, room optional)")
         .. line(c .. "walk rem <name>", dm_muted .. "Remove a saved destination")
         .. line(c .. "walk area <name>", dm_muted .. "Navigate to first room in matching area")
