@@ -187,6 +187,10 @@ function DMAlertWindow.Show(title, renderFunc, opts)
     return
   end
 
+  if panel.container.minimized then
+    panel.container:restore()
+  end
+
   _current = opts
   panel.title = tostring(title or "Alert")
 

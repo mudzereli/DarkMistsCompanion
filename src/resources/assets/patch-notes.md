@@ -77,3 +77,4 @@
 - header for WHO window (like affects window)
 - REAL settings page and HELP pages
 - backwards compatibility testing No newline at end of file
+- fix alert window > open alert window (walk list) > minimize it > trigger another alert window (es stats) > close first alert window > new window content is hidden = bug

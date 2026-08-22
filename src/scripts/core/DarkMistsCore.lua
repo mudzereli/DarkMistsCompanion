@@ -226,8 +226,8 @@ function Darkmists.PromptSafeReload(opts)
   Darkmists._reloadConfirmed = false
   local title = opts.title or "Reload UI"
   local body = opts.body or (
-    "Reloading the UI will reset the Dark Mists interface and apply any pending layout or theme changes. If you have unsaved settings, save them first.\n\n" ..
-    DarkmistsTheme.goodTag .. "Reload Now<r>" .. " to proceed, or close this panel to cancel.\n  "
+    DarkmistsTheme.textTag .. "Reloading the UI will reset the Dark Mists interface and apply any pending layout or theme changes. If you have unsaved settings, save them first.\n\n" ..
+    DarkmistsTheme.goodTag .. "Reload Now" .. DarkmistsTheme.textTag .. " to proceed, or close this panel to cancel.\n  "
   )
 
   DMAlertWindow.Show(title, function(win)
