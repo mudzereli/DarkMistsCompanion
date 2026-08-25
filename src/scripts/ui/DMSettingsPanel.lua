@@ -10,57 +10,202 @@ DMSettingsPanel.container = nil
 DMSettingsPanel.content = nil
 DMSettingsPanel.status = nil
 DMSettingsPanel.controls = {}
+DMSettingsPanel.pages = {
+  "Appearance", "Status Bars", "Windows", "Enchanter Assist",
+  "ShowDMG", "ItemTracker", "Utilities",
+}
+DMSettingsPanel.pageContainers = {}
+DMSettingsPanel.activePage = "Appearance"
 DMSettingsPanel.visible = false
 
-local rowHeight = 36
-local labelWidth = 190
-local controlWidth = 152
-local inputWidth = 248
+local rowHeight = 30
+local labelWidth = 220
+local controlWidth = 150
+local controlX = labelWidth + 4
+local actionX = controlX + controlWidth + 16
+local actionWidth = 92
+local integerButtonWidth = 44
+local integerButtonGap = 4
+local inputWidth = actionX + actionWidth - controlX
+local headerMargin = 0
+local headerY = 8
+local headerHeight = 94
+local headerContentInset = 8
+local headerContentX = headerMargin + headerContentInset
+local headerContentY = headerY + headerContentInset
+local headerWidth = "100%-" .. (headerMargin * 2)
+local headerPageWidth = 140
+local headerPageButtonWidth = 136
+local headerPageRowHeight = 27
+local headerStatusY = headerContentY + 54
+local headerStatusHeight = 24
+local headerActionGap = 6
+local headerActionWidth = 104
+local headerPageGap = 8
+local pageY = headerY + headerHeight + headerPageGap
+local inputFontSize = math.max(8, ((Darkmists.GlobalSettings and Darkmists.GlobalSettings.fontSize) or 12) - 2)
 
-local labelStyle = [[
+local labelStyle
+local labelTextColor
+local sectionStyle
+local sectionTextColor
+local valueStyle
+local valueTextColor
+local buttonStyle
+local buttonTextColor
+local selectedButtonStyle
+local selectedButtonTextColor
+local inputStyle
+local colorMenuStyle
+local containerStyle
+local headerControlStyle
+local notificationStyle
+
+local function opaqueColor(color, fallback)
+  local value = tostring(color or fallback or "")
+  local red, green, blue = value:match(
+    "^rgba%s*%(%s*(%d+)%s*,%s*(%d+)%s*,%s*(%d+)%s*,%s*[%d%.]+%%%s*%)"
+  )
+  if red then
+    return string.format("rgb(%d,%d,%d)", tonumber(red), tonumber(green), tonumber(blue))
+  end
+  return value
+end
+
+local function opaqueStyle(style)
+  return (style or ""):gsub(
+    "rgba%s*%(%s*(%d+)%s*,%s*(%d+)%s*,%s*(%d+)%s*,%s*[%d%.]+%%%s*%)",
+    function(red, green, blue)
+      return string.format("rgb(%d,%d,%d)", tonumber(red), tonumber(green), tonumber(blue))
+    end
+  )
+end
+
+local function refreshThemeStyles()
+  local panel = (DarkmistsTheme and DarkmistsTheme.panel) or {}
+  local textColor = (Darkmists and Darkmists.GlobalSettings and Darkmists.GlobalSettings.lightMode)
+    and "#202020" or "#e0d6ff"
+  local headerBg = opaqueColor(panel.headerBg, "#101418")
+  local headerBorder = opaqueColor(panel.headerBorder, "#536372")
+  local headerAccent = opaqueColor(panel.headerAccent, headerBorder)
+  local headerControlAccent = "#b8860b"
+  local buttonBg = opaqueColor(panel.buttonBg, "#1b2229")
+  local buttonBorder = opaqueColor(panel.buttonBorder, "#394550")
+  local buttonHoverBg = opaqueColor(panel.buttonHoverBg, "#27313a")
+  local buttonHoverFg = panel.buttonHoverFg or "#f0c674"
+
+  labelStyle = string.format([[
   QLabel {
-    background-color: #101418;
-    color: #d7dee5;
+    background-color: %s;
+    color: %s;
+    border: 1px solid %s;
     padding-left: 6px;
   }
-]]
+]], headerBg, textColor, headerBorder)
 
-local valueStyle = [[
+  valueStyle = string.format([[
   QLabel {
-    background-color: #1b2229;
-    color: #f0c674;
-    border: 1px solid #394550;
+    background-color: %s;
+    color: %s;
+    border: 1px solid %s;
     padding-left: 6px;
   }
-  QLabel::hover { background-color: #27313a; }
-]]
+  QLabel::hover { background-color: %s; }
+]], buttonBg, buttonHoverFg, buttonBorder, buttonHoverBg)
 
-local buttonStyle = [[
+  local buttonActiveBg = opaqueColor(panel.buttonActiveBg, buttonBg)
+  local buttonActiveFg = panel.buttonActiveFg or "#ffffff"
+  local buttonActiveBorder = opaqueColor(panel.buttonActiveBorder, buttonBorder)
+
+  labelTextColor = textColor
+  sectionTextColor = buttonHoverFg
+  valueTextColor = buttonHoverFg
+  buttonTextColor = buttonHoverFg
+  selectedButtonTextColor = buttonActiveFg
+
+  sectionStyle = string.format([[
   QLabel {
-    background-color: #26333d;
-    color: #d7dee5;
-    border: 1px solid #536372;
+    background-color: %s;
+    color: %s;
+    border: 1px solid %s;
+    border-bottom: 2px solid %s;
+    border-radius: 0px;
+    padding-left: 8px;
+    font-weight: bold;
+  }
+]], headerBg, textColor, headerBorder, headerAccent)
+
+  notificationStyle = string.format([[
+  QLabel {
+    background-color: %s;
+    color: %s;
+    border: 2px solid %s;
+    border-radius: 0px;
+    padding-left: 8px;
+    font-weight: bold;
+  }
+]], buttonBg, textColor, buttonActiveBorder)
+
+  buttonStyle = string.format([[
+  QLabel {
+    background-color: %s;
+    color: %s;
+    border: 1px solid %s;
+    border-radius: 0px;
     padding-left: 4px;
     padding-right: 4px;
   }
-  QLabel::hover { background-color: #38505f; }
-]]
-
-local inputStyle = [[
-  QPlainTextEdit {
-    background-color: #1b2229;
-    color: #f0c674;
-    border: 1px solid #394550;
-    padding: 2px;
+  QLabel::hover {
+    background-color: %s;
+    color: %s;
   }
-]]
+]], buttonBg, buttonHoverFg, buttonBorder, buttonHoverBg, buttonHoverFg)
 
-local colorMenuStyle = [[
+  selectedButtonStyle = string.format([[
   QLabel {
-    background-color: #101418;
-    border: 1px solid #536372;
+    background-color: %s;
+    color: %s;
+    border: 1px solid %s;
+    border-radius: 0px;
+    padding-left: 4px;
+    padding-right: 4px;
+    font-weight: bold;
   }
-]]
+  QLabel::hover {
+    background-color: %s;
+    color: %s;
+  }
+]], buttonActiveBg, buttonActiveFg, buttonActiveBorder, buttonActiveBg, buttonActiveFg)
+
+  inputStyle = string.format([[
+  QPlainTextEdit {
+    background-color: %s;
+    color: %s;
+    border: 1px solid %s;
+    font-size: 10pt;
+    padding: 0px 2px;
+  }
+]], buttonBg, buttonHoverFg, buttonBorder)
+
+  colorMenuStyle = string.format([[
+  QLabel {
+    background-color: %s;
+    border: 1px solid %s;
+  }
+]], headerBg, headerBorder)
+
+  containerStyle = string.format("QLabel { background-color: %s; }", buttonBg)
+
+  headerControlStyle = string.format([[
+  QLabel {
+    background-color: %s;
+    border: 1px solid %s;
+    border-top: 2px solid %s;
+    border-bottom: 2px solid %s;
+    border-radius: 0px;
+  }
+]], headerBg, headerControlAccent, headerControlAccent, headerControlAccent)
+end
 
 local function themeTag(name, fallback)
   if DarkmistsTheme and DarkmistsTheme[name] then
@@ -69,7 +214,7 @@ local function themeTag(name, fallback)
   return fallback
 end
 
-local function makeLabel(name, x, y, width, height, message, parent, style)
+local function makeLabel(name, x, y, width, height, message, parent, style, foregroundColor)
   local label = Geyser.Label:new({
     name = name,
     x = x, y = y,
@@ -78,12 +223,15 @@ local function makeLabel(name, x, y, width, height, message, parent, style)
   }, parent)
   label:setFontSize((Darkmists.GlobalSettings and Darkmists.GlobalSettings.fontSize) or 12)
   label:setStyleSheet(style or labelStyle)
+  if foregroundColor and label.setFgColor then
+    label:setFgColor(foregroundColor)
+  end
   return label
 end
 
 local function choiceLabel(setting, value)
   for _, choice in ipairs(setting.choices or {}) do
-    if choice.value == value then return choice.label end
+    if choice.value == value then return choice.label or tostring(choice.value) end
   end
   return tostring(value)
 end
@@ -102,8 +250,26 @@ end
 
 local function setStatus(message, isError)
   if not DMSettingsPanel.status then return end
+  DMSettingsPanel.status:setStyleSheet(notificationStyle)
   local tag = isError and themeTag("badTag", "<red>") or themeTag("goodTag", "<green>")
   DMSettingsPanel.status:echo(tag .. tostring(message) .. "<r>")
+end
+
+local function pageForSetting(setting)
+  if setting.page then return setting.page end
+  if setting.group == "Enchanter Assist" then return "Enchanter Assist" end
+  if setting.group == "ShowDMG" then return "ShowDMG" end
+  return setting.group
+end
+
+local function settingsForPage(pageName)
+  local result = {}
+  for _, setting in ipairs(DMSettings.list()) do
+    if pageForSetting(setting) == pageName then
+      table.insert(result, setting)
+    end
+  end
+  return result
 end
 
 function DMSettingsPanel.apply(key, value)
@@ -112,7 +278,11 @@ function DMSettingsPanel.apply(key, value)
     setStatus(message or "Setting rejected.", true)
     return false
   end
-  setStatus("Saved.", false)
+  if DMSettings.reloadRequired(DMSettings.get(key)) then
+    setStatus("Saved. Reload UI to apply.", false)
+  else
+    setStatus("Saved.", false)
+  end
   DMSettingsPanel.refresh()
   return true
 end
@@ -135,13 +305,14 @@ local function cycleValue(setting)
   if choices[1] then DMSettingsPanel.apply(setting.key, choices[1].value) end
 end
 
-local function adjustPartCount(setting, delta)
+local function adjustInteger(setting, delta)
   local current = tonumber(DMSettings.value(setting.key)) or setting.default
   DMSettingsPanel.apply(setting.key, current + delta)
 end
 
 local function makeButton(name, x, y, width, message, action, parent)
-  local button = makeLabel(name, x, y, width, rowHeight - 6, message, parent, buttonStyle)
+  local button = makeLabel(name, x, y, width, rowHeight - 6, message, parent,
+    buttonStyle, buttonTextColor)
   button:setAlignment("center")
   button:setClickCallback(action)
   return button
@@ -157,14 +328,17 @@ local function colorSwatchStyle(color, selected)
   if not red then
     return buttonStyle
   end
-  local borderColor = selected and "#f0c674" or "#394550"
+  local panel = (DarkmistsTheme and DarkmistsTheme.panel) or {}
+  local borderColor = selected and opaqueColor(panel.buttonActiveBorder, "#f0c674")
+    or opaqueColor(panel.buttonBorder, "#394550")
+  local hoverBorder = panel.buttonHoverFg or "#ffffff"
   return string.format([[
     QLabel {
       background-color: rgb(%d, %d, %d);
       border: 2px solid %s;
     }
-    QLabel::hover { border: 2px solid #ffffff; }
-  ]], red, green, blue, borderColor)
+    QLabel::hover { border: 2px solid %s; }
+  ]], red, green, blue, borderColor, hoverBorder)
 end
 
 local function refreshColorMenu(control)
@@ -174,7 +348,7 @@ local function refreshColorMenu(control)
     control.value:setStyleSheet(colorSwatchStyle(current, true))
   end
   if control.selector and control.selector.setToolTip then
-    control.selector:setToolTip("Change damage color: " .. choiceLabel(control.setting, current))
+    control.selector:setToolTip("Change " .. control.setting.label:lower() .. ": " .. choiceLabel(control.setting, current))
   end
   if control.menuItems then
     for value, item in pairs(control.menuItems) do
@@ -194,9 +368,9 @@ local function makeColorMenu(control, y)
 
   control.menu = Geyser.Container:new({
     name = "DMSettingsColorMenu_" .. keyName,
-    x = 230, y = y + rowHeight - 2,
+    x = actionX, y = y + rowHeight - 2,
     width = menuWidth, height = menuHeight,
-  }, DMSettingsPanel.content)
+  }, control.parent)
   makeLabel("DMSettingsColorMenuBackground_" .. keyName, 0, 0,
     "100%", "100%", "", control.menu, colorMenuStyle)
   control.menuItems = {}
@@ -209,7 +383,7 @@ local function makeColorMenu(control, y)
       itemWidth - 4, itemHeight - 4,
       "", control.menu, colorSwatchStyle(choice.value, false))
     item:setAlignment("center")
-    if item.setToolTip then item:setToolTip(choice.label) end
+    if item.setToolTip then item:setToolTip(tostring(choice.value)) end
     item:setClickCallback(function()
       DMSettingsPanel.apply(control.setting.key, choice.value)
       closeColorMenu(control)
@@ -234,40 +408,43 @@ end
 
 local function makeRow(setting, y)
   local keyName = setting.key:gsub("[^%w]", "_")
-  local parent = DMSettingsPanel.content
+  local parent = DMSettingsPanel.currentPageContainer
   makeLabel("DMSettingsLabel_" .. keyName, 0, y, labelWidth, rowHeight - 6,
-    setting.label, parent)
+    setting.label .. (DMSettings.reloadRequired(setting) and " *" or ""),
+    parent, labelStyle, labelTextColor)
 
-  local control = {setting = setting}
-  if setting.type == "text" then
+  local control = {setting = setting, parent = parent}
+  if setting.type == "text" or setting.type == "rgba" then
     local input = Geyser.CommandLine:new({
       name = "DMSettingsInput_" .. keyName,
-      x = labelWidth + 4, y = y,
+      x = controlX, y = y,
       width = inputWidth, height = rowHeight - 6,
     }, parent)
     input:setStyleSheet(inputStyle)
+    input:setFontSize(inputFontSize)
     input:setAction(function(settingKey, text)
       DMSettingsPanel.apply(settingKey, text)
     end, setting.key)
     control.input = input
   else
-    control.value = makeLabel("DMSettingsValue_" .. keyName, labelWidth + 4, y,
-      controlWidth, rowHeight - 6, "", parent, valueStyle)
+    control.value = makeLabel("DMSettingsValue_" .. keyName, controlX, y,
+      controlWidth, rowHeight - 6, "", parent, valueStyle, valueTextColor)
     control.value:setAlignment("center")
 
-    if setting.key == "enchanterAssist.partCount" then
-      makeButton("DMSettingsMinus", 350, y, 44, "-", function()
-        adjustPartCount(setting, -1)
+    if setting.type == "integer" then
+      makeButton("DMSettingsMinus_" .. keyName, actionX, y, integerButtonWidth, "-", function()
+        adjustInteger(setting, -1)
       end, parent)
-      makeButton("DMSettingsPlus", 398, y, 44, "+", function()
-        adjustPartCount(setting, 1)
+      makeButton("DMSettingsPlus_" .. keyName,
+        actionX + integerButtonWidth + integerButtonGap, y, integerButtonWidth, "+", function()
+        adjustInteger(setting, 1)
       end, parent)
     elseif setting.type == "color" then
-      control.selector = makeButton("DMSettingsColorSelect_" .. keyName, 350, y, 92, "Change", function()
+      control.selector = makeButton("DMSettingsColorSelect_" .. keyName, actionX, y, actionWidth, "Change", function()
         toggleColorMenu(control, y)
       end, parent)
     else
-      makeButton("DMSettingsCycle_" .. keyName, 350, y, 92, "Change", function()
+      makeButton("DMSettingsCycle_" .. keyName, actionX, y, actionWidth, "Change", function()
         cycleValue(setting)
       end, parent)
     end
@@ -278,11 +455,53 @@ local function makeRow(setting, y)
 end
 
 local function makeSection(title, y)
-  local tag = themeTag("infoTag", "<cyan>")
   local heading = makeLabel("DMSettingsSection_" .. title:gsub("%s", "_"), 0, y,
-    "100%", rowHeight - 6, tag .. "<b>" .. title .. "</b><r>", DMSettingsPanel.content)
+    "100%", rowHeight - 6, "<b>" .. title .. "</b>", DMSettingsPanel.currentPageContainer,
+    sectionStyle, sectionTextColor)
   heading:setAlignment("left")
   return y + rowHeight
+end
+
+local function showPage(pageName)
+  local page = DMSettingsPanel.pageContainers[pageName]
+  if not page then return end
+
+  for name, container in pairs(DMSettingsPanel.pageContainers) do
+    if name == pageName then container:show() else container:hide() end
+  end
+  DMSettingsPanel.activePage = pageName
+
+  for name, button in pairs(DMSettingsPanel.pageButtons or {}) do
+    local selected = name == pageName
+    button:setStyleSheet(selected and selectedButtonStyle or buttonStyle)
+    if button.setFgColor then
+      button:setFgColor(selected and selectedButtonTextColor or buttonTextColor)
+    end
+  end
+end
+
+local function buildPage(pageName)
+  local keyName = pageName:gsub("[^%w]", "_")
+  local page = Geyser.Container:new({
+    name = "DMSettingsPage_" .. keyName,
+    x = 0, y = pageY,
+    width = "100%", height = "100%-" .. pageY,
+  }, DMSettingsPanel.content)
+  makeLabel("DMSettingsPageBackground_" .. keyName, 0, 0,
+    "100%", "100%", "", page, containerStyle)
+  DMSettingsPanel.pageContainers[pageName] = page
+  DMSettingsPanel.currentPageContainer = page
+
+  local y = 0
+  local previousGroup = nil
+  for _, setting in ipairs(settingsForPage(pageName)) do
+    if setting.group ~= previousGroup then
+      if previousGroup then y = y + 4 end
+      y = makeSection(setting.group, y)
+      previousGroup = setting.group
+    end
+    y = makeRow(setting, y)
+  end
 end
 
 function DMSettingsPanel.refresh()
@@ -308,6 +527,9 @@ function DMSettingsPanel.destroy()
   DMSettingsPanel.content = nil
   DMSettingsPanel.status = nil
   DMSettingsPanel.controls = {}
+  DMSettingsPanel.pageContainers = {}
+  DMSettingsPanel.pageButtons = {}
+  DMSettingsPanel.currentPageContainer = nil
   DMSettingsPanel.visible = false
 end
 
@@ -317,10 +539,11 @@ function DMSettingsPanel.init()
     return true
   end
 
+  refreshThemeStyles()
   DMSettingsPanel.container = Adjustable.Container:new({
     name = "DMSettingsPanel",
     x = "20%", y = "12%",
-    width = 560, height = 570,
+    width = 605, height = 600,
     titleText = "Dark Mists Settings",
     titleTxtColor = Darkmists.getDefaultTextColor(),
     padding = 14,
@@ -332,6 +555,12 @@ function DMSettingsPanel.init()
     adjLabelstyle = Darkmists.getDefaultAdjLabelstyle(),
   })
 
+  if DarkmistsTheme and DarkmistsTheme.buildHeaderStyle then
+    DMSettingsPanel.container.adjLabel:setStyleSheet(
+      opaqueStyle(DarkmistsTheme.buildHeaderStyle())
+    )
+  end
+
   DMSettingsPanel.container.exitLabel:setClickCallback(function()
     DMSettingsPanel.hide()
   end)
@@ -341,34 +570,51 @@ function DMSettingsPanel.init()
     x = 0, y = 0,
     width = "100%", height = "100%",
   }, DMSettingsPanel.container.Inside)
+  makeLabel("DMSettingsContentBackground", 0, 0,
+    "100%", "100%", "", DMSettingsPanel.content, containerStyle)
+  makeLabel("DMSettingsHeaderControls", headerMargin, headerY,
+    headerWidth, headerHeight, "", DMSettingsPanel.content, headerControlStyle)
 
-  local y = 0
-  y = makeSection("Enchanter Assist", y)
-  for _, setting in ipairs(DMSettings.list("Enchanter Assist")) do
-    y = makeRow(setting, y)
+  DMSettingsPanel.pageButtons = {}
+  local pageColumns = 4
+  for index, pageName in ipairs(DMSettingsPanel.pages) do
+    local keyName = pageName:gsub("[^%w]", "_")
+    local column = (index - 1) % pageColumns
+    local row = math.floor((index - 1) / pageColumns)
+    DMSettingsPanel.pageButtons[pageName] = makeButton(
+      "DMSettingsPageButton_" .. keyName,
+      headerContentX + column * headerPageWidth,
+      headerContentY + row * headerPageRowHeight,
+      headerPageButtonWidth, pageName,
+      function() showPage(pageName) end,
+      DMSettingsPanel.content)
   end
 
-  y = makeSection("ShowDMG", y + 8)
-  for _, setting in ipairs(DMSettings.list("ShowDMG")) do
-    y = makeRow(setting, y)
-  end
-
-  DMSettingsPanel.status = makeLabel("DMSettingsStatus", 0, y + 4, "100%", rowHeight,
+  DMSettingsPanel.status = makeLabel("DMSettingsStatus", headerContentX, headerStatusY,
+    340, headerStatusHeight,
     themeTag("mutedTag", "<gray>") .. "Changes save immediately.<r>",
-    DMSettingsPanel.content, labelStyle)
+    DMSettingsPanel.content, notificationStyle)
   DMSettingsPanel.status:setAlignment("left")
 
-  makeButton("DMSettingsReload", 0, y + rowHeight + 4, 120, "Reload UI", function()
+  local headerReloadX = headerContentX + 340 + headerActionGap
+  makeButton("DMSettingsReload", headerReloadX, headerStatusY, headerActionWidth, "Reload UI", function()
     if Darkmists and Darkmists.PromptSafeReload then
       Darkmists.PromptSafeReload()
     end
   end, DMSettingsPanel.content)
-  makeButton("DMSettingsClose", 128, y + rowHeight + 4, 120, "Close", function()
+  makeButton("DMSettingsClose", headerReloadX + headerActionWidth + headerActionGap,
+    headerStatusY, headerActionWidth, "Close", function()
     DMSettingsPanel.hide()
   end, DMSettingsPanel.content)
 
+  for _, pageName in ipairs(DMSettingsPanel.pages) do
+    buildPage(pageName)
+  end
+  DMSettingsPanel.currentPageContainer = nil
+
   DMSettingsPanel.container:hide()
   DMSettingsPanel.visible = false
+  showPage(DMSettingsPanel.activePage)
   DMSettingsPanel.refresh()
 
   if DMLogger and DMLogger.log then

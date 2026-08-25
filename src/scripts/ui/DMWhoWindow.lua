@@ -150,6 +150,7 @@ function WhoWindow.capturePlayerList()
   local current = getLineNumber()
   local headers = 0
   local i = 1
+  local capturedLineNumbers = {}
 
   -- iterate backwards until we've found `numPlayers` entries or a safety limit
   while headers < numPlayers and i < 999 do
@@ -163,6 +164,7 @@ function WhoWindow.capturePlayerList()
     -- detect player entry lines by their bracketed prefix (e.g. [rank])
     if text:match("^%[[^%]]+%]") then
       headers = headers + 1
+      table.insert(capturedLineNumbers, target)
 
       -- copy the formatted line (colors preserved) into our list
       selectCurrentLine()
@@ -170,6 +172,16 @@ function WhoWindow.capturePlayerList()
     end
 
     i = i + 1
+  end
+
+  if WhoWindow.config.deleteOriginalLines and type(deleteLine) == "function" then
+    -- Delete from the highest line number downward so earlier targets keep
+    -- their original cursor positions as lines are removed.
+    table.sort(capturedLineNumbers, function(a, b) return a > b end)
+    for _, target in ipairs(capturedLineNumbers) do
+      moveCursor(0, target)
+      deleteLine()
+    end
   end
 
   -- refresh UI after capture
@@ -219,7 +231,7 @@ function WhoWindow.init()
   WhoWindow.config.fontName = Darkmists.GlobalSettings.fontName
 
   -- whether to delete the original who lines from the main window
-  WhoWindow.config.deleteOriginalLines = Darkmists.GlobalSettings.whoWindowDeleteOriginalLines
+  WhoWindow.refreshConfig()
 
   -- timestamp (os.time) of the last successful capture; 0 == never
   WhoWindow.config.lastUpdated = WhoWindow.config.lastUpdated or 0
@@ -237,4 +249,8 @@ function WhoWindow.init()
   )
 
   Darkmists.Log("WhoWindow", "Initialized")
+end
+
+function WhoWindow.refreshConfig()
+  WhoWindow.config.deleteOriginalLines = Darkmists.GlobalSettings.whoWindowDeleteOriginalLines == true
 end

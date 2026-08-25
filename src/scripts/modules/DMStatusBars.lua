@@ -595,6 +595,19 @@ function StatusBar.setMoveable(enabled)
   Darkmists.Log(DarkmistsTheme.redTag.. "StatusBars", string.format("Moveable mode: %s", tostring(moveable)))
 end
 
+function StatusBar.setTotalHeightPercent(value)
+  value = math.max(1, math.min(40, math.floor(tonumber(value) or 10)))
+  StatusBar.config.containerHeightPct = value
+  Darkmists.GlobalSettings.statusBarTotalHeightPercent = value
+  Darkmists.SaveSettings()
+
+  if StatusBar.container then
+    StatusBar.container:move(nil, (100 - value) .. "%")
+    StatusBar.container:resize(nil, value .. "%")
+    StatusBar.reflow()
+  end
+end
+
 function StatusBar.toggleMoveable()
   StatusBar.setMoveable(not StatusBar.config.moveable)
 end

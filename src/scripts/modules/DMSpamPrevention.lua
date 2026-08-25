@@ -86,8 +86,14 @@ end
 -- -----------------------------------------------------------------------------
 function SpamPrevention.init()
   if Darkmists and Darkmists.GlobalSettings then
+    if Darkmists.GlobalSettings.spamEnabled ~= nil then
+      SpamPrevention.enabled = Darkmists.GlobalSettings.spamEnabled
+    end
     if Darkmists.GlobalSettings.spamThreshold ~= nil then
       SpamPrevention.threshold = tonumber(Darkmists.GlobalSettings.spamThreshold) or SpamPrevention.threshold
+    end
+    if Darkmists.GlobalSettings.spamMinLength ~= nil then
+      SpamPrevention.minLength = tonumber(Darkmists.GlobalSettings.spamMinLength) or SpamPrevention.minLength
     end
     if Darkmists.GlobalSettings.spamFallbackCommand ~= nil then
       SpamPrevention.fallbackCommand = Darkmists.GlobalSettings.spamFallbackCommand

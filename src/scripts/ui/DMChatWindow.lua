@@ -358,6 +358,15 @@ function ChatHistory.addMessage(msgType, sender, receiver, message, extra)
   ChatHistory.appendMessage(msg)
 end
 
+function ChatHistory.setMaxMessages(value)
+  value = math.max(1, math.floor(tonumber(value) or ChatHistory.config.maxMessages or 100))
+  ChatHistory.config.maxMessages = value
+  while #ChatHistory.messages > value do
+    table.remove(ChatHistory.messages)
+  end
+  ChatHistory.refresh()
+end
+
 function ChatHistory.appendMessage(msg)
   if not ChatHistory.window then return end
   if not ChatHistory.filterIncludes(msg.msgType) then return end
@@ -439,6 +448,8 @@ end
 --================================--
 
 function ChatHistory.init()
+  ChatHistory.config.maxMessages = tonumber(Darkmists.GlobalSettings.chatHistoryMaxMessages)
+    or ChatHistory.config.maxMessages
   ChatHistory.applyTheme()
   ChatHistory.create()
   ChatHistory.registerEvents()

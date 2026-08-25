@@ -81,3 +81,10 @@
 - minimap startup performance improvements
 - backwards compatibility testing No newline at end of file
 - fix alert window > open alert window (walk list) > minimize it > trigger another alert window (es stats) > close first alert window > new window content is hidden = bug
+
+**DMC Patch Notes: 1.5.14**
+
+**Settings Panel**: expanded into Appearance, Status Bars, Windows, Utilities, and Advanced pages with immediate validation and persistence for supported UI, window, utility, and styling settings. Changes that require a UI reload are marked in the panel.
+**Settings Migration**: legacy ShowDMG enabled, mode, and color keys are migrated to the current persisted names when present.
+**Settings Panel**: added dedicated Enchanter Assist, ShowDMG, and ItemTracker pages; Utilities now contains only Spam Prevention, Stat Roller, and MakeArmor settings.
+**Settings Panel**: added editable status-bar foreground/background RGBA colors and dark/light ItemTracker link colors with immediate runtime refresh.

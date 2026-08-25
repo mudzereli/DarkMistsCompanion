@@ -416,6 +416,13 @@ function StatRoller.init()
   StatRoller.settings.leniency = tonumber(Darkmists.GlobalSettings.statRollerLeniency)
     or tonumber(StatRoller.settings.leniency)
     or 0
+  StatRoller.settings.showDetails = Darkmists.GlobalSettings.statRollerShowDetails ~= nil
+    and Darkmists.GlobalSettings.statRollerShowDetails
+    or StatRoller.settings.showDetails
+  StatRoller.settings.barWidth = tonumber(Darkmists.GlobalSettings.statRollerBarWidth)
+    or StatRoller.settings.barWidth
+  StatRoller.settings.sparklineWidth = tonumber(Darkmists.GlobalSettings.statRollerSparklineWidth)
+    or StatRoller.settings.sparklineWidth
 
   StatRoller.enabled = true
   StatRoller._initialized = true

@@ -122,18 +122,27 @@ Darkmists.DefaultSettings = {
   affectsWindowAffectModLength = 16,
   -- Spam prevention threshold before fallback/deny triggers
   spamThreshold = 24,
+  -- Spam prevention settings
+  spamEnabled = true,
+  spamMinLength = 3,
   -- Optional fallback command sent when spam threshold is reached
   spamFallbackCommand = "save",
   -- Clickable Item Link Color (lua showColors(3) to see allowable colors)
-  itemTrackerLinkColorDarkMode = "pale_goldenrod",
+  itemTrackerLinkColorDarkMode = "PaleGoldenrod",
   -- Clickable Item Link Color (lua showColors(3) to see allowable colors)
-  itemTrackerLinkColorLightMode = "dark_slate_blue",
+  itemTrackerLinkColorLightMode = "DarkSlateBlue",
   -- Delete original Affect lines when running Score/Affect commands
   affectsWindowDeleteOriginalLines = false,
   -- Delete original Who lines when running Who command
   whoWindowDeleteOriginalLines = false,
+  -- Chat and skill history limits
+  chatHistoryMaxMessages = 100,
+  skillUpsMaxEntries = 50,
   -- Stat Roller Leniency (0 = Roll must be Max, 1 = Roll can be 1 lower than Max, etc)
   statRollerLeniency = 1,
+  statRollerShowDetails = true,
+  statRollerBarWidth = 24,
+  statRollerSparklineWidth = 16,
   -- First Run Flag (for Setting up default settings)
   hasInitializedUILayout = false,
   -- First Time Intro Message?
@@ -500,9 +509,19 @@ function Darkmists.LoadSettings()
     local settings = {}
 ---@diagnostic disable-next-line: undefined-field
     table.load(saveFilePath, settings)
-    -- Override user saved settings with Defaults derived from mudlet settings
-    settings.fontName = Darkmists.DefaultSettings.fontName
-    settings.fontSize = Darkmists.DefaultSettings.fontSize
+    -- Migrate older ShowDMG names once, without overwriting newer values.
+    if settings.damageMessageEnabled == nil and settings.showdmgEnabled ~= nil then
+      settings.damageMessageEnabled = settings.showdmgEnabled
+    end
+    if settings.damageMessageMode == nil and settings.showdmgMode ~= nil then
+      settings.damageMessageMode = settings.showdmgMode
+    end
+    if settings.damageMessageColor == nil and settings.showdmgColor ~= nil then
+      settings.damageMessageColor = settings.showdmgColor
+    end
+    -- Fill missing font settings from Mudlet without overwriting user values.
+    settings.fontName = settings.fontName or Darkmists.DefaultSettings.fontName
+    settings.fontSize = settings.fontSize or Darkmists.DefaultSettings.fontSize
 
     -- Merge settings (preserve values even if layoutCacheVersion missing)
     DMUtil.deep_copy_into(Darkmists.GlobalSettings, settings)

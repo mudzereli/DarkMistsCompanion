@@ -359,14 +359,34 @@
       <h2 id="ui-settings">Settings Panel</h2>
       <p>
         The movable settings panel is available from the Button Bar &gt; Settings menu or with
-        <code>dmc settings</code>. It currently exposes Enchanter Assist and ShowDMG settings.
-        Valid changes are saved immediately to each module's existing persistence file.
+        <code>dmc settings</code>. It is organized into Appearance, Status Bars, Windows,
+        Enchanter Assist, ShowDMG, ItemTracker, and Utilities pages. Valid changes
+        are saved immediately.
+      </p>
+      <p>
+        Appearance includes pending Light/Dark theme mode, Full/Minimal UI mode, font size,
+        update channel, and safe screen-border percentages. Status Bars includes enabled state,
+        moveable mode, total height, and editable foreground/background RGBA colors. Windows includes Affects refresh and text lengths,
+        original-line deletion, Who original-line deletion, Chat History message limit, and
+        SkillUps history limit.
+      </p>
+      <p>
+        Enchanter Assist includes trial and timing controls. ShowDMG includes damage message
+        mode and color. ItemTracker includes dark/light mode link colors. Utilities includes
+        Spam Prevention, Stat Roller leniency and display settings, and MakeArmor sleeper,
+        container, and default threshold. Settings marked with <code>*</code> require
+        <code>Reload UI</code> before the change is applied.
       </p>
       <table>
         <thead><tr><th>Control group</th><th>Available settings</th></tr></thead>
         <tbody>
-          <tr><td>Enchanter Assist</td><td>Parts per trial, container, sleeper, recovery method, drain item, discovery sound, deterministic order</td></tr>
-          <tr><td>ShowDMG</td><td>Enabled state, average/range/range-plus-average mode, damage color</td></tr>
+          <tr><td>Appearance</td><td>Theme, UI mode, font size, update channel, border percentages</td></tr>
+          <tr><td>Status Bars</td><td>Enabled, moveable, total height, foreground/background RGBA colors</td></tr>
+          <tr><td>Windows</td><td>Affects, Who, Chat History, and SkillUps display limits</td></tr>
+          <tr><td>Enchanter Assist</td><td>Trial and timing controls</td></tr>
+          <tr><td>ShowDMG</td><td>Damage messages, mode, and color</td></tr>
+          <tr><td>ItemTracker</td><td>Dark/light mode link colors</td></tr>
+          <tr><td>Utilities</td><td>Spam Prevention, Stat Roller, MakeArmor</td></tr>
         </tbody>
       </table>
 
