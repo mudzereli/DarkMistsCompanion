@@ -73,8 +73,11 @@
 **Chat History Filters**: the Chat tab header now has filter toggles — single-letter buttons (A/S/Y/T/G/O/N/H) for All, Say, Yell, Tell, Group, OOC, Newbie, and House. Click to show or hide each channel; hover a letter to see the full channel list. Filters reset to All on reload.
 **Affects Window**: reordered the header action buttons (ignore, refresh, clear).
 
+**DMC Patch Notes: 1.5.13**
+
+**Settings Panel**: added a movable settings window available from the Button Bar and `dmc settings`, with immediate validation and persistence for Enchanter Assist and ShowDMG options.
+
 **Future Versions**
-- header for WHO window (like affects window)
-- REAL settings page and HELP pages
+- minimap startup performance improvements
 - backwards compatibility testing No newline at end of file
 - fix alert window > open alert window (walk list) > minimize it > trigger another alert window (es stats) > close first alert window > new window content is hidden = bug

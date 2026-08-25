@@ -319,6 +319,9 @@ local MODULE_MENU = {
 -- UI reload. Keep actions minimal; destructive operations request
 -- user confirmation via other helpers when necessary.
 local SETTINGS_MENU = {
+  {label = "🛠 Settings Panel", action = function()
+    if DMSettingsPanel and DMSettingsPanel.show then DMSettingsPanel.show() end
+  end},
   {label = "🔄 Reload UI", action = function() Darkmists.PromptSafeReload() end},
   {label = "📊 Toggle UI", action = function() Darkmists.ShowUIIntroMessage(true) end},
 

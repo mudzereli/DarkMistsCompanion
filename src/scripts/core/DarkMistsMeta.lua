@@ -73,6 +73,20 @@ Includes:
     ]],
   },
 
+  settings = {
+    title = "Settings Panel",
+    desc = "Open the movable settings panel.",
+    info = [[
+Open the shared settings panel.
+
+• dmc settings        - toggle the panel
+• dmc settings show   - show the panel
+• dmc settings hide   - hide the panel
+
+Changes made in the panel are validated and saved immediately.
+    ]],
+  },
+
   infobox = {
     title = "Profile Info Box",
     desc  = "Set the extra profile information shown on the Mudlet profile screen.",
@@ -97,7 +111,8 @@ Toggles inline damage estimates on combat hit messages.
 • dmc showdmg off          – disable
 • dmc showdmg color <name> – set damage number color (any Mudlet color)
 • dmc showdmg mode avg     – show average damage only (default)
-• dmc showdmg mode range   – show min-max range with average
+• dmc showdmg mode range   – show min-max range only
+• dmc showdmg mode both    – show min-max range with average
 • dmc showdmg status       – show current settings
 
 Color and mode settings are saved and persist across sessions.
@@ -582,6 +597,23 @@ function DarkMistsMeta.init()
     cecho("\n"..dm_muted.."[InfoBox] "..dm_text.."Profile information updated: "..dm_good..args.."\n")
   end)
 
+  -- Open the shared settings panel. The panel owns its own initialization so
+  -- this command remains available in minimal mode as well.
+  DarkmistsAlias.add([[^dmc\s+settings(?:\s+(show|hide|toggle))?$]], function()
+    local action = matches[2] or "toggle"
+    if not DMSettingsPanel then
+      cecho("\n" .. dm_bad .. "[Settings] Panel is not loaded.\n")
+      return
+    end
+    if action == "show" then
+      DMSettingsPanel.show()
+    elseif action == "hide" then
+      DMSettingsPanel.hide()
+    else
+      DMSettingsPanel.toggle()
+    end
+  end)
+
   -- =============================================================================
   -- DAMAGE MESSAGES TOGGLE
   -- =============================================================================
@@ -601,8 +633,8 @@ function DarkMistsMeta.init()
     -- MODE subcommand
     local modeArg = arg:match("^mode%s+(%S+)$")
     if modeArg then
-      if modeArg ~= "avg" and modeArg ~= "range" then
-        cecho("\n" .. dm_muted .. "[ShowDMG] " .. dm_bad .. "Unknown mode: " .. dm_text .. modeArg .. dm_muted .. " (use avg or range)\n")
+      if modeArg ~= "avg" and modeArg ~= "range" and modeArg ~= "both" then
+        cecho("\n" .. dm_muted .. "[ShowDMG] " .. dm_bad .. "Unknown mode: " .. dm_text .. modeArg .. dm_muted .. " (use avg, range, or both)\n")
         return
       end
       Darkmists.GlobalSettings.damageMessageMode = modeArg

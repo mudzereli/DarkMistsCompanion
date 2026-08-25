@@ -1,5 +1,11 @@
 [
        {
+              "name": "DMSettingsPanel",
+              "isActive": "yes",
+              "script": "",
+              "isFolder": "no"
+       },
+       {
               "name": "DMButtonBar",
               "isActive": "yes",
               "script": "",

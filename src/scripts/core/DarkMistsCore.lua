@@ -144,7 +144,7 @@ Darkmists.DefaultSettings = {
   updateChannel = "stable",
   -- Damage Message Color (any Mudlet color name; use lua showColors() to list options)
   damageMessageColor = "red",
-  -- Damage Message Mode: "avg" = average only, "range" = min-max range with average
+  -- Damage Message Mode: "avg", "range", or "both"
   damageMessageMode = "avg",
   -- Damage Message Enabled: whether inline damage estimates are shown (persisted)
   damageMessageEnabled = true,
@@ -500,7 +500,6 @@ function Darkmists.LoadSettings()
     local settings = {}
 ---@diagnostic disable-next-line: undefined-field
     table.load(saveFilePath, settings)
-    
     -- Override user saved settings with Defaults derived from mudlet settings
     settings.fontName = Darkmists.DefaultSettings.fontName
     settings.fontSize = Darkmists.DefaultSettings.fontSize
@@ -650,6 +649,7 @@ function Darkmists.CleanupUI(opts)
 
   if DMAlertWindow and DMAlertWindow.Hide then pcall(DMAlertWindow.Hide) end
   if DMAlertWindow and DMAlertWindow.destroy then pcall(DMAlertWindow.destroy) end
+  if DMSettingsPanel and DMSettingsPanel.destroy then pcall(DMSettingsPanel.destroy) end
   if AffectsWindow and AffectsWindow.destroy then pcall(AffectsWindow.destroy) end
   if ChatHistory and ChatHistory.destroy then pcall(ChatHistory.destroy) end
   if WhoWindow and WhoWindow.destroy then pcall(WhoWindow.destroy) end
@@ -680,6 +680,7 @@ function Darkmists.LoadUIScripts()
   ScorePanel.init()
   DarkMistsMiniMap.init()
   MapColors.init()
+  if DMSettingsPanel and DMSettingsPanel.init then DMSettingsPanel.init() end
   Darkmists.UI_LOADED = true
   log("UI Scripts Loaded")
 end

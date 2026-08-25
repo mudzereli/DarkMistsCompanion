@@ -231,13 +231,15 @@
           <tr><td><code>dmc ui</code></td><td>Toggle between full and minimal UI mode</td></tr>
           <tr><td><code>dmc ui on</code></td><td>Force full UI mode on</td></tr>
           <tr><td><code>dmc ui off</code></td><td>Switch to minimal UI mode</td></tr>
+          <tr><td><code>dmc settings</code></td><td>Toggle the movable settings panel</td></tr>
+          <tr><td><code>dmc settings show|hide</code></td><td>Show or hide the settings panel</td></tr>
           <tr><td><code>dmc infobox</code></td><td>Show, set, or clear the profile info box</td></tr>
           <tr><td><code>dmc spam</code></td><td>View or configure spam prevention settings</td></tr>
           <tr><td><code>dmc showdmg</code></td><td>Toggle inline damage estimates on combat messages</td></tr>
           <tr><td><code>dmc showdmg on</code></td><td>Enable damage estimates</td></tr>
           <tr><td><code>dmc showdmg off</code></td><td>Disable damage estimates</td></tr>
           <tr><td><code>dmc showdmg color &lt;color&gt;</code></td><td>Set the damage message highlight color</td></tr>
-          <tr><td><code>dmc showdmg mode &lt;avg|range&gt;</code></td><td>Set display to average only or min–max range</td></tr>
+          <tr><td><code>dmc showdmg mode &lt;avg|range|both&gt;</code></td><td>Set display to average, range, or both</td></tr>
         </tbody>
       </table>
     </section>
@@ -337,7 +339,7 @@
       <p>
         Appends an inline damage estimate to every combat hit line. The estimate is derived from the
         damage verb (e.g. <em>wounds</em>, <em>mauls</em>, <em>PULVERIZES</em>) and shows
-        either the average of that verb's range or the full min–max range depending on your mode.
+        either the average, the full min–max range, or both depending on your mode.
       </p>
       <p>Enabled by default. All options take effect immediately without reloading.</p>
 
@@ -349,7 +351,22 @@
           <tr><td><code>dmc showdmg off</code></td><td>Disable damage estimates</td></tr>
           <tr><td><code>dmc showdmg color &lt;color&gt;</code></td><td>Set the damage message highlight color</td></tr>
           <tr><td><code>dmc showdmg mode avg</code></td><td>Show only the average damage value</td></tr>
-          <tr><td><code>dmc showdmg mode range</code></td><td>Show min–max damage range with average</td></tr>
+          <tr><td><code>dmc showdmg mode range</code></td><td>Show only the min–max damage range</td></tr>
+          <tr><td><code>dmc showdmg mode both</code></td><td>Show min–max damage range with average</td></tr>
+        </tbody>
+      </table>
+
+      <h2 id="ui-settings">Settings Panel</h2>
+      <p>
+        The movable settings panel is available from the Button Bar &gt; Settings menu or with
+        <code>dmc settings</code>. It currently exposes Enchanter Assist and ShowDMG settings.
+        Valid changes are saved immediately to each module's existing persistence file.
+      </p>
+      <table>
+        <thead><tr><th>Control group</th><th>Available settings</th></tr></thead>
+        <tbody>
+          <tr><td>Enchanter Assist</td><td>Parts per trial, container, sleeper, recovery method, drain item, discovery sound, deterministic order</td></tr>
+          <tr><td>ShowDMG</td><td>Enabled state, average/range/range-plus-average mode, damage color</td></tr>
         </tbody>
       </table>
 
@@ -1409,7 +1426,8 @@
       <p>
         DMC stores its settings in <code>darkmists_global_settings.lua</code> inside your Mudlet
         profile directory. Most settings take effect on the next reload. You can also access
-        common settings through the <strong>Button Bar → Settings</strong> menu.
+        common settings through the <strong>Button Bar → Settings</strong> menu or the
+        <code>dmc settings</code> command.
       </p>
 
       <div class="tip">
