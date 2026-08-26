@@ -75,18 +75,6 @@ td:first-child {
 	color:#ffc36e;
 }
 
-td:nth-child(2){
-	color:#8cffb5;
-}
-
-td:nth-child(4){
-	color:#d6beff;
-}
-
-td:nth-child(5){
-	color:#7caeff;
-}
-
 #materialCheck,
 #itemPriority {
 	margin-bottom: 10px;
@@ -142,21 +130,29 @@ td:nth-child(5){
 	font-size: 0.9em;
 }
 
-#priorityTable {
+#table {
 	margin-top: 8px;
 }
 
-#priorityTable th {
+#table th {
 	position: static;
 }
 
-#priorityTable td:first-child {
+#table > tbody > tr.priority-row > td:first-child {
 	color: #ffc36e;
 	font-weight: bold;
 }
 
-#priorityTable td:nth-child(3) {
+#table > tbody > tr.priority-row > td:nth-child(3) {
 	color: #d6beff;
+}
+
+#table > tbody > tr.priority-row > td:nth-child(4) {
+	color: #7caeff;
+}
+
+#table > tbody > tr.priority-row > td:nth-child(5) {
+	color: #aaa;
 }
 
 .clear-materials {
@@ -192,33 +188,21 @@ font-family:monospace;">
 
 <div id="itemPriority">
 	<div class="planner-heading"><strong>Essence priority</strong><span id="prioritySummary"></span></div>
-	<table id="priorityTable">
+	<br>
+	<input id="search" placeholder="Search material, item, or location..." onkeyup="filterTable()">
+	<table id="table">
 		<thead>
 		<tr>
-			<th>Needed</th>
-			<th>Item</th>
-			<th>Materials still needed</th>
+			<th onclick="sortTable(0)"># Needed</th>
+			<th onclick="sortTable(1)">Item</th>
+			<th onclick="sortTable(2)">Materials</th>
+			<th onclick="sortTable(3)">Sources</th>
+			<th onclick="sortTable(4)">Notes</th>
 		</tr>
 		</thead>
 		<tbody></tbody>
 	</table>
 </div>
-
-<input id="search" placeholder="Search material, item, or location..." onkeyup="filterTable()">
-
-<table id="table">
-<thead>
-<tr>
-<th onclick="sortTable(0)">#</th>
-<th onclick="sortTable(1)">Material</th>
-<th onclick="sortTable(2)">Item</th>
-<th onclick="sortTable(3)">Materials</th>
-<th onclick="sortTable(4)">Source</th>
-<th onclick="sortTable(5)">Notes</th>
-</tr>
-</thead>
-<tbody></tbody>
-</table>
 
 <script>
 
@@ -460,16 +444,20 @@ const materials = [
 
 const itemMaterials = new Map()
 const ownedMaterials = new Set()
+let sortColumn = 0
+let sortAscending = false
 
 materials.forEach(m => {
 	if (!itemMaterials.has(m.item)) {
 		itemMaterials.set(m.item, {
 			materials: new Set(),
+			records: [],
 			searchText: ""
 		})
 	}
 	const item = itemMaterials.get(m.item)
 	item.materials.add(m.material)
+	item.records.push(m)
 	item.searchText += " " + [m.item, m.material, m.source, m.notes || ""].join(" ")
 })
 
@@ -492,7 +480,7 @@ function renderMaterialChecklist() {
 			if (checkbox.checked) ownedMaterials.add(material)
 			else ownedMaterials.delete(material)
 			label.classList.toggle("checked", checkbox.checked)
-			renderPriority()
+			renderTable()
 		})
 		label.appendChild(checkbox)
 		label.appendChild(document.createTextNode(material))
@@ -504,12 +492,13 @@ function clearOwnedMaterials() {
 	ownedMaterials.clear()
 	document.querySelectorAll("#materialOptions input[type='checkbox']").forEach(checkbox => {
 		checkbox.checked = false
+		checkbox.closest(".material-option")?.classList.remove("checked")
 	})
-	renderPriority()
+	renderTable()
 }
 
-function renderPriority() {
-	const tbody = document.querySelector("#priorityTable tbody")
+function renderTable() {
+	const tbody = document.querySelector("#table tbody")
 	const summary = document.querySelector("#prioritySummary")
 	if (!tbody || !summary) return
 
@@ -518,21 +507,48 @@ function renderPriority() {
 		const coveredMaterials = Array.from(details.materials).sort()
 		return {
 			item,
+			coveredMaterials,
+			sources: Array.from(new Set(details.records.map(record => record.source))).sort(),
+			notes: Array.from(new Set(details.records.map(record => record.notes).filter(Boolean))).sort(),
 			missing: coveredMaterials.filter(material => !ownedMaterials.has(material)),
 			searchText: details.searchText.toLowerCase()
 		}
 	})
 		.filter(priority => priority.missing.length > 0)
 		.filter(priority => !query || priority.searchText.includes(query))
-		.sort((a, b) => b.missing.length - a.missing.length || a.item.localeCompare(b.item))
 
-	tbody.innerHTML = priorities.map(priority => `
-		<tr>
+	priorities.sort((a, b) => {
+		const left = sortColumn === 0
+			? a.missing.length
+			: sortColumn === 1 ? a.item
+			: sortColumn === 2 ? a.missing.join(", ")
+			: sortColumn === 3 ? a.sources.join(", ")
+			: a.notes.join(", ")
+		const right = sortColumn === 0
+			? b.missing.length
+			: sortColumn === 1 ? b.item
+			: sortColumn === 2 ? b.missing.join(", ")
+			: sortColumn === 3 ? b.sources.join(", ")
+			: b.notes.join(", ")
+		const comparison = sortColumn === 0
+			? left - right
+			: left.localeCompare(right)
+		return (sortAscending ? 1 : -1) * (comparison || a.item.localeCompare(b.item))
+	})
+
+	tbody.innerHTML = ""
+	priorities.forEach(priority => {
+		const row = document.createElement("tr")
+		row.className = "priority-row"
+		row.innerHTML = `
 			<td>${priority.missing.length}</td>
 			<td>${priority.item}</td>
 			<td>${priority.missing.join(", ")}</td>
-		</tr>
-	`).join("")
+			<td>${priority.sources.join(", ")}</td>
+			<td>${priority.notes.join(", ")}</td>
+		`
+		tbody.appendChild(row)
+	})
 
 	const ownedCount = ownedMaterials.size
 	const totalCount = materialNames().length
@@ -544,37 +560,8 @@ function renderPriority() {
 		: "No matching items need unchecked materials"
 }
 
-function renderTable() {
-
-	const tbody = document.querySelector("#table tbody")
-	tbody.innerHTML = ""
-
-	materials.forEach(m => {
-
-		let row = document.createElement("tr")
-		const coveredMaterials = Array.from(itemMaterials.get(m.item)?.materials || []).sort()
-		row.dataset.item = (m.item || "").toLowerCase()
-		row.dataset.material = (m.material || "").toLowerCase()
-		row.dataset.source = (m.source || "").toLowerCase()
-
-		row.innerHTML = `
-<td>${m.id}</td>
-<td>${m.material}</td>
-<td>${m.item}</td>
-<td title="${coveredMaterials.join(", ")}">${coveredMaterials.length} (${coveredMaterials.join(", ")})</td>
-<td>${m.source}</td>
-<td>${m.notes || ""}</td>
-`
-
-		tbody.appendChild(row)
-
-	})
-
-}
-
 renderTable()
 renderMaterialChecklist()
-renderPriority()
 validateMaterials()
 
 function toggleMaterialCheck(){
@@ -593,90 +580,18 @@ function toggleMaterialCheck(){
 /* ---------- search ---------- */
 
 function filterTable(){
-
-const query =
-document.getElementById("search")
-.value
-.toLowerCase()
-
-const rows =
-document.querySelectorAll("#table tbody tr")
-
-const matchedItems = new Set()
-
-rows.forEach(row => {
-
-const text =
-row.innerText.toLowerCase()
-
-if (!query || text.includes(query)) {
-matchedItems.add(row.dataset.item || "")
-}
-
-})
-
-rows.forEach(row => {
-
-const text =
-row.innerText.toLowerCase()
-
-row.style.display =
-!query || text.includes(query) || matchedItems.has(row.dataset.item || "")
-? ""
-: "none"
-
-})
-
-renderPriority()
-
+	renderTable()
 }
 
 /* ---------- sorting ---------- */
 
 function sortTable(column){
-
-const table =
-document.getElementById("table")
-
-const tbody =
-table.tBodies[0]
-
-let rows =
-Array.from(tbody.rows)
-
-let asc =
-table.getAttribute("data-sort-dir") !== "asc"
-
-rows.sort((a,b)=>{
-
-let x =
-a.cells[column].innerText
-
-let y =
-b.cells[column].innerText
-
-let nx =
-Number(x)
-
-let ny =
-Number(y)
-
-if(!isNaN(nx) && !isNaN(ny))
-return asc ? nx-ny : ny-nx
-
-return asc
-? x.localeCompare(y)
-: y.localeCompare(x)
-
-})
-
-table.setAttribute(
-"data-sort-dir",
-asc ? "asc" : "desc"
-)
-
-rows.forEach(r => tbody.appendChild(r))
-
+	if (sortColumn === column) sortAscending = !sortAscending
+	else {
+		sortColumn = column
+		sortAscending = true
+	}
+	renderTable()
 }
 
 function validateMaterials(){
@@ -697,12 +612,12 @@ ids.filter((v,i,a)=>a.indexOf(v)!==i)
 	const div =
 	document.getElementById("validationSummary")
 
-div.innerHTML = `
-Total entries: ${materials.length}<br>
-Unique materials: ${unique.size}/50<br>
-Missing IDs: ${missing.length ? missing.join(", ") : "None"}<br>
-Duplicate IDs: ${duplicates.length ? duplicates.join(", ") : "None"}
-`
+//div.innerHTML = `
+//Total entries: ${materials.length}<br>
+//Unique materials: ${unique.size}/50<br>
+//Missing IDs: ${missing.length ? missing.join(", ") : "None"}<br>
+//Duplicate IDs: ${duplicates.length ? duplicates.join(", ") : "None"}
+//`
 }
 
 </script>
