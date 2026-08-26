@@ -200,6 +200,13 @@ function EnchanterAssist._ensureSleepTimer()
 
 end
 
+function EnchanterAssist._stopSleepRefreshTimer()
+  if EnchanterAssist.sleepRefreshTimer then
+    DarkmistsTimer.remove("EnchanterAssist.SleepRefresh")
+    EnchanterAssist.sleepRefreshTimer = nil
+  end
+end
+
 function EnchanterAssist._playDiscoverSound()
   if not EnchanterAssist.playSoundOnDiscover then return end
 
@@ -490,6 +497,29 @@ function EnchanterAssist.hardStop()
   DMLogger.notify(ea_plugin, ea_warn .. "Hard stop complete.")
 end
 
+function EnchanterAssist.setEnabled(value)
+  EnchanterAssist.enabled = value == true
+  if EnchanterAssist.enabled then
+    return true
+  end
+
+  EnchanterAssist.autoRun = false
+  EnchanterAssist._wakePending = false
+  EnchanterAssist._stopPotionRecoveryTimer()
+  EnchanterAssist._stopSleepRefreshTimer()
+  EnchanterAssist._abortAttempt("Enchanter Assist disabled.")
+  return true
+end
+
+function EnchanterAssist.setAutoRun(value)
+  EnchanterAssist.autoRun = value == true
+  if not EnchanterAssist.autoRun then
+    EnchanterAssist._wakePending = false
+    EnchanterAssist._stopPotionRecoveryTimer()
+  end
+  return true
+end
+
 -- ============================================================================
 -- PERSISTENCE
 -- ============================================================================
@@ -504,6 +534,8 @@ function EnchanterAssist.save()
       drainItem = EnchanterAssist.drainItem,
       playSoundOnDiscover = EnchanterAssist.playSoundOnDiscover,
       deterministicOrder = EnchanterAssist.deterministicOrder,
+      enabled = EnchanterAssist.enabled,
+      autoRun = EnchanterAssist.autoRun,
     },
     attempted = EnchanterAssist.attempted,
     missing   = EnchanterAssist.missing
@@ -528,7 +560,9 @@ function EnchanterAssist.load()
     EnchanterAssist.playSoundOnDiscover = data.config.playSoundOnDiscover ~= false
     EnchanterAssist.sleepType = data.config.sleepType or 1
     EnchanterAssist.drainItem = data.config.drainItem or "potion"
-    EnchanterAssist.deterministicOrder = data.config.deterministicOrder ~= false
+    EnchanterAssist.deterministicOrder = data.config.deterministicOrder == true
+    EnchanterAssist.enabled = data.config.enabled ~= false
+    EnchanterAssist.autoRun = data.config.autoRun == true
   end
 
   Darkmists.Log(ea_plugin, "Data loaded from: " .. ea_text .. EnchanterAssist._savePath)

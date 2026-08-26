@@ -1260,7 +1260,8 @@ function DarkMistsMeta.init()
       cecho(
         dm_header_color.."EnchanterAssist Module:\n\n"..
         dm_muted.."Automation helper for enchantment workflow management.\n"..
-                  "Controls resting, part counts, and execution flow.\n\n"..
+                  "Controls resting, part counts, and execution flow.\n"..
+                  "Use dmc settings for the complete configuration panel.\n\n"..
         dm_header_color.."EA Module Commands:\n"..
         "  "..c.."es auto    "..dm_muted.."Toggle automatic running mode. "..dm_muted.."["..dm_text.."AutoRun: "..dm_good..autoRun..dm_muted.."]\n"..
         "  "..c.."es <1-5>   "..dm_muted.."Set part count (1–5), save configuration, and run. "..dm_muted.."["..dm_text.."Part: "..dm_good..partCount..dm_muted.."]\n"..
@@ -1268,7 +1269,7 @@ function DarkMistsMeta.init()
         "  "..c.."es stop    "..dm_muted.."Stop after current attempt (or immediately if idle).\n"..
         "  "..c.."es stats   "..dm_muted.."Display session statistics.\n"..
         "  "..c.."es missing "..dm_muted.."Display missing material statistics.\n"..
-        "  "..c.."es reset   "..dm_muted.."Reset session statistics.\n\n"..
+        "  "..c.."es reset   "..dm_muted.."Reset session statistics and missing materials; preserve settings and attempts.\n\n"..
         dm_header_color.."Configuration Commands:\n"..
         "  "..c.."es set container <name>         "..dm_muted.."Set container holding enchantment items. "..dm_muted.."["..dm_text.."Container: "..dm_good..container..dm_muted.."]\n"..
         "  "..c.."es set sleeper <name>           "..dm_muted.."Set sleeper target. "..dm_muted.."["..dm_text.."Sleeper: "..dm_good..sleeper..dm_muted.."]\n"..
@@ -1289,7 +1290,11 @@ function DarkMistsMeta.init()
   DarkmistsAlias.add("^es stop$", function() EnchanterAssist.hardStop() end)
 
   DarkmistsAlias.add("^es auto$", function()
-    EnchanterAssist.autoRun = not EnchanterAssist.autoRun
+    local ok, message = DMSettings.set("enchanterAssist.autoRun", not EnchanterAssist.autoRun)
+    if not ok then
+      DMLogger.notify(EnchanterAssist.color.."EnchanterAssist", message or "Could not change AutoRun.")
+      return
+    end
     DMLogger.notify(EnchanterAssist.color.."EnchanterAssist","AutoRun: " .. tostring(EnchanterAssist.autoRun))
   end)
 
@@ -1363,10 +1368,10 @@ function DarkMistsMeta.init()
 
   -- es enable / disable
   DarkmistsAlias.add("^es (enable|disable)$", function()
-    if matches[2] == "enable" then
-      EnchanterAssist.enabled = true
-    else
-      EnchanterAssist.enabled = false
+    local ok, message = DMSettings.set("enchanterAssist.enabled", matches[2] == "enable")
+    if not ok then
+      DMLogger.notify(EnchanterAssist.color.."EnchanterAssist", message or "Could not change status.")
+      return
     end
     DMLogger.notify(EnchanterAssist.color.."EnchanterAssist","Status: " .. tostring(EnchanterAssist.enabled))
   end)

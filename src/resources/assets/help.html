@@ -364,14 +364,15 @@
         are saved immediately.
       </p>
       <p>
-        Appearance includes pending Light/Dark theme mode, Full/Minimal UI mode, font size,
-        update channel, and safe screen-border percentages. Status Bars includes enabled state,
+        Appearance includes pending Light/Dark theme mode, Full/Minimal UI mode, window font,
+        font size, update channel, and safe screen-border percentages. Status Bars includes enabled state,
         moveable mode, total height, and editable foreground/background RGBA colors. Windows includes Affects refresh and text lengths,
         original-line deletion, Who original-line deletion, Chat History message limit, and
         SkillUps history limit.
       </p>
       <p>
-        Enchanter Assist includes trial and timing controls. ShowDMG includes damage message
+        Enchanter Assist includes materials, recovery, enabled, and automatic-run controls, plus
+        a session reset action that preserves configuration and attempted history. ShowDMG includes damage message
         mode and color. ItemTracker includes dark/light mode link colors. Utilities includes
         Spam Prevention, Stat Roller leniency and display settings, and MakeArmor sleeper,
         container, and default threshold. Settings marked with <code>*</code> require
@@ -380,10 +381,10 @@
       <table>
         <thead><tr><th>Control group</th><th>Available settings</th></tr></thead>
         <tbody>
-          <tr><td>Appearance</td><td>Theme, UI mode, font size, update channel, border percentages</td></tr>
+          <tr><td>Appearance</td><td>Theme, UI mode, window font, font size, update channel, border percentages</td></tr>
           <tr><td>Status Bars</td><td>Enabled, moveable, total height, foreground/background RGBA colors</td></tr>
           <tr><td>Windows</td><td>Affects, Who, Chat History, and SkillUps display limits</td></tr>
-          <tr><td>Enchanter Assist</td><td>Trial and timing controls</td></tr>
+          <tr><td>Enchanter Assist</td><td>Materials, recovery, workflow controls, and session reset</td></tr>
           <tr><td>ShowDMG</td><td>Damage messages, mode, and color</td></tr>
           <tr><td>ItemTracker</td><td>Dark/light mode link colors</td></tr>
           <tr><td>Utilities</td><td>Spam Prevention, Stat Roller, MakeArmor</td></tr>
@@ -676,7 +677,7 @@
           <tr><td><code>es 1</code> – <code>es 5</code></td><td>Set the number of materials to use per attempt (1–5)</td></tr>
           <tr><td><code>es stats</code></td><td>Show discovery progress for all part counts plus session totals</td></tr>
           <tr><td><code>es missing</code></td><td>List materials for which you are missing the essence (excluded from trials)</td></tr>
-          <tr><td><code>es reset</code></td><td>Reset session statistics — attempted combinations and missing materials are preserved</td></tr>
+          <tr><td><code>es reset</code></td><td>Reset session statistics and missing materials — attempted combinations and configuration are preserved</td></tr>
           <tr><td><code>es set container &lt;name&gt;</code></td><td>Set the container to pull items from (default: <code>bag</code>)</td></tr>
           <tr><td><code>es set sleeper &lt;name&gt;</code></td><td>Set the sleep item name for bedroll rest mode (default: <code>bedroll</code>)</td></tr>
           <tr><td><code>es set sleepmode sleep|potion</code></td><td>Use a bedroll to sleep (<code>sleep</code>), or drain potions to restore (<code>potion</code>) — default: <code>sleep</code></td></tr>

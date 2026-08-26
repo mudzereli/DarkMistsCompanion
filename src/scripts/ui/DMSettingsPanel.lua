@@ -15,6 +15,7 @@ DMSettingsPanel.pages = {
   "ShowDMG", "ItemTracker", "Utilities",
 }
 DMSettingsPanel.pageContainers = {}
+DMSettingsPanel.pageHeights = {}
 DMSettingsPanel.activePage = "Appearance"
 DMSettingsPanel.visible = false
 
@@ -29,7 +30,7 @@ local integerButtonGap = 4
 local inputWidth = actionX + actionWidth - controlX
 local headerMargin = 0
 local headerY = 8
-local headerHeight = 94
+local headerHeight = 128
 local headerContentInset = 8
 local headerContentX = headerMargin + headerContentInset
 local headerContentY = headerY + headerContentInset
@@ -38,11 +39,19 @@ local headerPageWidth = 140
 local headerPageButtonWidth = 136
 local headerPageRowHeight = 27
 local headerStatusY = headerContentY + 54
-local headerStatusHeight = 24
+local headerStatusHeight = 26
 local headerActionGap = 6
 local headerActionWidth = 104
+local headerActionY = headerStatusY + headerStatusHeight + headerActionGap
+local headerActionX = "100%-" .. (headerActionWidth * 2 + headerActionGap + headerContentInset)
+local headerCancelX = "100%-" .. (headerActionWidth + headerContentInset)
+local headerStatusWidth = "100%-" .. (headerContentInset * 2)
 local headerPageGap = 8
 local pageY = headerY + headerHeight + headerPageGap
+local panelWidth = 605
+local panelMinHeight = 520
+local panelMaxHeight = 900
+local panelBottomPadding = 28
 local inputFontSize = math.max(8, ((Darkmists.GlobalSettings and Darkmists.GlobalSettings.fontSize) or 12) - 2)
 
 local labelStyle
@@ -60,6 +69,9 @@ local colorMenuStyle
 local containerStyle
 local headerControlStyle
 local notificationStyle
+local statusMutedTag
+local statusGoodTag
+local statusBadTag
 
 local function opaqueColor(color, fallback)
   local value = tostring(color or fallback or "")
@@ -83,9 +95,14 @@ end
 
 local function refreshThemeStyles()
   local panel = (DarkmistsTheme and DarkmistsTheme.panel) or {}
-  local textColor = (Darkmists and Darkmists.GlobalSettings and Darkmists.GlobalSettings.lightMode)
+  local lightMode = Darkmists and Darkmists.GlobalSettings and Darkmists.GlobalSettings.lightMode
+  local textColor = lightMode
     and "#202020" or "#e0d6ff"
+  statusMutedTag = lightMode and "<dark_gray>" or nil
+  statusGoodTag = lightMode and "<dark_green>" or nil
+  statusBadTag = lightMode and "<dark_red>" or nil
   local headerBg = opaqueColor(panel.headerBg, "#101418")
+  local sectionBg = opaqueColor(panel.sectionBg, headerBg)
   local headerBorder = opaqueColor(panel.headerBorder, "#536372")
   local headerAccent = opaqueColor(panel.headerAccent, headerBorder)
   local headerControlAccent = "#b8860b"
@@ -133,7 +150,7 @@ local function refreshThemeStyles()
     padding-left: 8px;
     font-weight: bold;
   }
-]], headerBg, textColor, headerBorder, headerAccent)
+]], sectionBg, textColor, headerBorder, headerAccent)
 
   notificationStyle = string.format([[
   QLabel {
@@ -204,7 +221,7 @@ local function refreshThemeStyles()
     border-bottom: 2px solid %s;
     border-radius: 0px;
   }
-]], headerBg, headerControlAccent, headerControlAccent, headerControlAccent)
+]], sectionBg, headerControlAccent, headerControlAccent, headerControlAccent)
 end
 
 local function themeTag(name, fallback)
@@ -251,7 +268,9 @@ end
 local function setStatus(message, isError)
   if not DMSettingsPanel.status then return end
   DMSettingsPanel.status:setStyleSheet(notificationStyle)
-  local tag = isError and themeTag("badTag", "<red>") or themeTag("goodTag", "<green>")
+  local tag = isError
+    and (statusBadTag or themeTag("badTag", "<red>"))
+    or (statusGoodTag or themeTag("goodTag", "<green>"))
   DMSettingsPanel.status:echo(tag .. tostring(message) .. "<r>")
 end
 
@@ -283,7 +302,7 @@ function DMSettingsPanel.apply(key, value)
   else
     setStatus("Saved.", false)
   end
-  DMSettingsPanel.refresh()
+  DMSettingsPanel.refresh(key)
   return true
 end
 
@@ -409,9 +428,12 @@ end
 local function makeRow(setting, y)
   local keyName = setting.key:gsub("[^%w]", "_")
   local parent = DMSettingsPanel.currentPageContainer
-  makeLabel("DMSettingsLabel_" .. keyName, 0, y, labelWidth, rowHeight - 6,
+  local label = makeLabel("DMSettingsLabel_" .. keyName, 0, y, labelWidth, rowHeight - 6,
     setting.label .. (DMSettings.reloadRequired(setting) and " *" or ""),
     parent, labelStyle, labelTextColor)
+  if setting.description and label.setToolTip then
+    label:setToolTip(setting.description)
+  end
 
   local control = {setting = setting, parent = parent}
   if setting.type == "text" or setting.type == "rgba" then
@@ -422,6 +444,9 @@ local function makeRow(setting, y)
     }, parent)
     input:setStyleSheet(inputStyle)
     input:setFontSize(inputFontSize)
+    if setting.description and input.setToolTip then
+      input:setToolTip(setting.description)
+    end
     input:setAction(function(settingKey, text)
       DMSettingsPanel.apply(settingKey, text)
     end, setting.key)
@@ -430,6 +455,9 @@ local function makeRow(setting, y)
     control.value = makeLabel("DMSettingsValue_" .. keyName, controlX, y,
       controlWidth, rowHeight - 6, "", parent, valueStyle, valueTextColor)
     control.value:setAlignment("center")
+    if setting.description and control.value.setToolTip then
+      control.value:setToolTip(setting.description)
+    end
 
     if setting.type == "integer" then
       makeButton("DMSettingsMinus_" .. keyName, actionX, y, integerButtonWidth, "-", function()
@@ -462,6 +490,99 @@ local function makeSection(title, y)
   return y + rowHeight
 end
 
+local function resetEnchanterSession()
+  if not EnchanterAssist or not EnchanterAssist.reset then
+    setStatus("Enchanter Assist is not loaded.", true)
+    return
+  end
+
+  setStatus("Resetting Enchanter session...", false)
+  local ok, message = pcall(EnchanterAssist.reset)
+  if not ok then
+    setStatus("Could not reset Enchanter session: " .. tostring(message), true)
+    return
+  end
+
+  setStatus("Session reset. Settings unchanged; attempted history preserved.", false)
+  DMSettingsPanel.refresh()
+end
+
+local function runEnchanterTrial()
+  if not EnchanterAssist or not EnchanterAssist.run then
+    setStatus("Enchanter Assist is not loaded.", true)
+    return
+  end
+  if not EnchanterAssist.enabled then
+    setStatus("Enchanter Assist is disabled.", true)
+    return
+  end
+
+  setStatus("Starting one Enchanter trial...", false)
+  local ok, message = pcall(EnchanterAssist.run)
+  if not ok then
+    setStatus("Could not start Enchanter trial: " .. tostring(message), true)
+    return
+  end
+
+  setStatus("One Enchanter trial requested. See module notifications for progress.", false)
+end
+
+local function stopEnchanterAssist()
+  if not EnchanterAssist or not EnchanterAssist.hardStop then
+    setStatus("Enchanter Assist is not loaded.", true)
+    return
+  end
+
+  local wasBrewing = EnchanterAssist.state == "brewing"
+  local ok, message = pcall(EnchanterAssist.hardStop)
+  if not ok then
+    setStatus("Could not stop Enchanter Assist: " .. tostring(message), true)
+    return
+  end
+
+  if wasBrewing then
+    setStatus("Stop requested; the current attempt will finish.", false)
+  else
+    setStatus("Enchanter Assist stopped.", false)
+  end
+  DMSettingsPanel.refresh()
+end
+
+local function resizeForPage(pageName)
+  local container = DMSettingsPanel.container
+  local pageHeight = DMSettingsPanel.pageHeights[pageName]
+  if not container or not pageHeight or not container.resize then return end
+
+  local maximumHeight = panelMaxHeight
+  if type(getMainWindowSize) == "function" then
+    local ok, _, mainHeight = pcall(getMainWindowSize)
+    if ok and type(mainHeight) == "number" then
+      local panelY = 0
+      if container.get_y then
+        local yOk, value = pcall(container.get_y, container)
+        if yOk and type(value) == "number" then panelY = value end
+      end
+      maximumHeight = math.max(panelMinHeight, mainHeight - panelY - 24)
+    end
+  end
+
+  local desiredHeight = math.max(panelMinHeight,
+    math.min(maximumHeight, pageY + pageHeight + panelBottomPadding))
+  local currentWidth = panelWidth
+  local currentHeight
+  if container.get_width then
+    local widthOk, width = pcall(container.get_width, container)
+    if widthOk and type(width) == "number" then currentWidth = width end
+  end
+  if container.get_height then
+    local heightOk, height = pcall(container.get_height, container)
+    if heightOk then currentHeight = height end
+  end
+  if currentHeight ~= desiredHeight then
+    container:resize(currentWidth, desiredHeight)
+  end
+end
+
 local function showPage(pageName)
   local page = DMSettingsPanel.pageContainers[pageName]
   if not page then return end
@@ -470,6 +591,7 @@ local function showPage(pageName)
     if name == pageName then container:show() else container:hide() end
   end
   DMSettingsPanel.activePage = pageName
+  resizeForPage(pageName)
 
   for name, button in pairs(DMSettingsPanel.pageButtons or {}) do
     local selected = name == pageName
@@ -493,29 +615,59 @@ local function buildPage(pageName)
   DMSettingsPanel.currentPageContainer = page
 
   local y = 0
-  local previousGroup = nil
+  local previousSection = nil
   for _, setting in ipairs(settingsForPage(pageName)) do
-    if setting.group ~= previousGroup then
-      if previousGroup then y = y + 4 end
-      y = makeSection(setting.group, y)
-      previousGroup = setting.group
+    local section = setting.section or setting.group
+    if section ~= previousSection then
+      if previousSection then y = y + 4 end
+      y = makeSection(section, y)
+      previousSection = section
     end
     y = makeRow(setting, y)
   end
+  if pageName == "Enchanter Assist" then
+    y = y + 4
+    y = makeSection("Session controls", y)
+    local sessionControlsWidth = controlX + inputWidth
+    local sessionActionWidth = math.floor((sessionControlsWidth - headerActionGap * 2) / 3)
+    makeButton("DMSettingsEnchanterRun", 0, y, sessionActionWidth,
+      "Run", runEnchanterTrial, page)
+    makeButton("DMSettingsEnchanterStop",
+      sessionActionWidth + headerActionGap, y, sessionActionWidth,
+      "Stop", stopEnchanterAssist, page)
+    makeButton("DMSettingsEnchanterReset",
+      (sessionActionWidth + headerActionGap) * 2, y,
+      sessionActionWidth, "Reset", resetEnchanterSession, page)
+    y = y + rowHeight
+  end
+  DMSettingsPanel.pageHeights[pageName] = y
 end
 
-function DMSettingsPanel.refresh()
-  for key, control in pairs(DMSettingsPanel.controls) do
-    local setting = control.setting
-    if control.value then
-      if setting.type == "color" then
-        refreshColorMenu(control)
-      else
-        control.value:echo(displayValue(setting))
-      end
-    elseif control.input then
-      control.input:print(tostring(DMSettings.value(key) or ""))
+local function refreshControl(key, control)
+  local setting = control.setting
+  if control.value then
+    if setting.type == "color" then
+      refreshColorMenu(control)
+    else
+      control.value:echo(displayValue(setting))
     end
+  elseif control.input then
+    local value = tostring(DMSettings.value(key) or "")
+    if not control.input.getText or control.input:getText() ~= value then
+      control.input:print(value)
+    end
+  end
+end
+
+function DMSettingsPanel.refresh(key)
+  if key then
+    local control = DMSettingsPanel.controls[key]
+    if control then refreshControl(key, control) end
+    return
+  end
+
+  for controlKey, control in pairs(DMSettingsPanel.controls) do
+    refreshControl(controlKey, control)
   end
 end
 
@@ -528,6 +680,7 @@ function DMSettingsPanel.destroy()
   DMSettingsPanel.status = nil
   DMSettingsPanel.controls = {}
   DMSettingsPanel.pageContainers = {}
+  DMSettingsPanel.pageHeights = {}
   DMSettingsPanel.pageButtons = {}
   DMSettingsPanel.currentPageContainer = nil
   DMSettingsPanel.visible = false
@@ -543,7 +696,7 @@ function DMSettingsPanel.init()
   DMSettingsPanel.container = Adjustable.Container:new({
     name = "DMSettingsPanel",
     x = "20%", y = "12%",
-    width = 605, height = 600,
+    width = panelWidth, height = panelMinHeight,
     titleText = "Dark Mists Settings",
     titleTxtColor = Darkmists.getDefaultTextColor(),
     padding = 14,
@@ -591,19 +744,18 @@ function DMSettingsPanel.init()
   end
 
   DMSettingsPanel.status = makeLabel("DMSettingsStatus", headerContentX, headerStatusY,
-    340, headerStatusHeight,
-    themeTag("mutedTag", "<gray>") .. "Changes save immediately.<r>",
+    headerStatusWidth, headerStatusHeight,
+    (statusMutedTag or themeTag("mutedTag", "<gray>")) .. "Changes save immediately.<r>",
     DMSettingsPanel.content, notificationStyle)
   DMSettingsPanel.status:setAlignment("left")
 
-  local headerReloadX = headerContentX + 340 + headerActionGap
-  makeButton("DMSettingsReload", headerReloadX, headerStatusY, headerActionWidth, "Reload UI", function()
+  makeButton("DMSettingsReload", headerActionX, headerActionY, headerActionWidth, "Reload UI", function()
     if Darkmists and Darkmists.PromptSafeReload then
       Darkmists.PromptSafeReload()
     end
   end, DMSettingsPanel.content)
-  makeButton("DMSettingsClose", headerReloadX + headerActionWidth + headerActionGap,
-    headerStatusY, headerActionWidth, "Close", function()
+  makeButton("DMSettingsClose", headerCancelX,
+    headerActionY, headerActionWidth, "Cancel", function()
     DMSettingsPanel.hide()
   end, DMSettingsPanel.content)
 

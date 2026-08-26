@@ -72,19 +72,8 @@
 **Alert Window**: added a minimize/restore button beside the close button; minimizing hides the alert content and leaves the title bar visible.
 **Chat History Filters**: the Chat tab header now has filter toggles — single-letter buttons (A/S/Y/T/G/O/N/H) for All, Say, Yell, Tell, Group, OOC, Newbie, and House. Click to show or hide each channel; hover a letter to see the full channel list. Filters reset to All on reload.
 **Affects Window**: reordered the header action buttons (ignore, refresh, clear).
-
-**DMC Patch Notes: 1.5.13**
-
-**Settings Panel**: added a movable settings window available from the Button Bar and `dmc settings`, with immediate validation and persistence for Enchanter Assist and ShowDMG options.
+**Settings Panel**: added one movable settings window available from the Button Bar and `dmc settings`, with immediate validation and persistence across Appearance, Status Bars, Windows, Enchanter Assist, ShowDMG, ItemTracker, and Utilities settings. Enchanter Assist now exposes clear Configuration, Recovery, and Workflow controls, including enabled, automatic-run, and session reset actions; the shared window font and update channel are also available. Utilities contains Spam Prevention, Stat Roller, and MakeArmor settings; legacy ShowDMG enabled, mode, and color keys migrate to the current persisted names, and editable status-bar RGBA colors plus dark/light ItemTracker link colors refresh at runtime. Changes that require a UI reload are marked in the panel.
 
 **Future Versions**
 - minimap startup performance improvements
 - backwards compatibility testing No newline at end of file
-- fix alert window > open alert window (walk list) > minimize it > trigger another alert window (es stats) > close first alert window > new window content is hidden = bug
-
-**DMC Patch Notes: 1.5.14**
-
-**Settings Panel**: expanded into Appearance, Status Bars, Windows, Utilities, and Advanced pages with immediate validation and persistence for supported UI, window, utility, and styling settings. Changes that require a UI reload are marked in the panel.
-**Settings Migration**: legacy ShowDMG enabled, mode, and color keys are migrated to the current persisted names when present.
-**Settings Panel**: added dedicated Enchanter Assist, ShowDMG, and ItemTracker pages; Utilities now contains only Spam Prevention, Stat Roller, and MakeArmor settings.
-**Settings Panel**: added editable status-bar foreground/background RGBA colors and dark/light ItemTracker link colors with immediate runtime refresh.

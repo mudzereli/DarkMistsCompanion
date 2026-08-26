@@ -21,7 +21,7 @@ h2 {
 	margin-bottom: 10px;
 }
 
-input {
+#search {
 	width: 100%;
 	padding: 8px;
 	background: #111;
@@ -29,6 +29,12 @@ input {
 	color: #ddd;
 	border-radius: 6px;
 	margin-bottom: 10px;
+}
+
+input[type="checkbox"] {
+	width: auto;
+	margin: 0 6px 0 0;
+	accent-color: #6aa8ff;
 }
 
 input:focus {
@@ -74,7 +80,92 @@ td:nth-child(2){
 }
 
 td:nth-child(4){
+	color:#d6beff;
+}
+
+td:nth-child(5){
 	color:#7caeff;
+}
+
+#materialCheck,
+#itemPriority {
+	margin-bottom: 10px;
+	padding: 10px;
+	background: #111;
+	border: 1px solid #333;
+	border-radius: 6px;
+}
+
+#materialOptions {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+	gap: 5px 12px;
+	margin: 8px 0;
+}
+
+.material-option {
+	display: flex;
+	align-items: center;
+	min-height: 28px;
+	padding: 3px 8px;
+	border: 1px solid transparent;
+	border-radius: 4px;
+	color: #ddd;
+}
+
+.material-option.checked {
+	background: #173d2b;
+	border-color: #3d9b67;
+	color: #9cffba;
+	font-weight: bold;
+}
+
+.material-option.checked::after {
+	content: "OK";
+	margin-left: auto;
+	padding-left: 8px;
+	color: #9cffba;
+	font-size: 0.8em;
+	letter-spacing: 0.05em;
+}
+
+.planner-heading {
+	display: flex;
+	justify-content: space-between;
+	gap: 12px;
+	color: #7fd4ff;
+}
+
+#prioritySummary,
+#validationSummary {
+	color: #aaa;
+	font-size: 0.9em;
+}
+
+#priorityTable {
+	margin-top: 8px;
+}
+
+#priorityTable th {
+	position: static;
+}
+
+#priorityTable td:first-child {
+	color: #ffc36e;
+	font-weight: bold;
+}
+
+#priorityTable td:nth-child(3) {
+	color: #d6beff;
+}
+
+.clear-materials {
+	padding: 6px 10px;
+	background: #1f1f1f;
+	border: 1px solid #333;
+	border-radius: 6px;
+	color: #7fd4ff;
+	cursor: pointer;
 }
 
 </style>
@@ -93,6 +184,24 @@ background:#111;
 border:1px solid #333;
 border-radius:6px;
 font-family:monospace;">
+	<div class="planner-heading"><strong>Materials I have</strong><span id="materialSummary"></span></div>
+	<div id="materialOptions"></div>
+	<button class="clear-materials" onclick="clearOwnedMaterials()">Clear checks</button>
+	<div id="validationSummary"></div>
+</div>
+
+<div id="itemPriority">
+	<div class="planner-heading"><strong>Essence priority</strong><span id="prioritySummary"></span></div>
+	<table id="priorityTable">
+		<thead>
+		<tr>
+			<th>Needed</th>
+			<th>Item</th>
+			<th>Materials still needed</th>
+		</tr>
+		</thead>
+		<tbody></tbody>
+	</table>
 </div>
 
 <input id="search" placeholder="Search material, item, or location..." onkeyup="filterTable()">
@@ -103,8 +212,9 @@ font-family:monospace;">
 <th onclick="sortTable(0)">#</th>
 <th onclick="sortTable(1)">Material</th>
 <th onclick="sortTable(2)">Item</th>
-<th onclick="sortTable(3)">Source</th>
-<th onclick="sortTable(4)">Notes</th>
+<th onclick="sortTable(3)">Materials</th>
+<th onclick="sortTable(4)">Source</th>
+<th onclick="sortTable(5)">Notes</th>
 </tr>
 </thead>
 <tbody></tbody>
@@ -172,7 +282,7 @@ const materials = [
 //{ id:11, material:"Crystal", item:"Chest jewels", source:"Sands of Sorrow", notes:"Sands of Sorrow brass dragon chest; Gate point: nanny or dwarf child" },
 //{ id:11, material:"Crystal", item:"Crystal claw", source:"Fungus Caves", notes:"Fungus Caves quadruped (crystal claw); Gate point: quadruped" },
 //{ id:11, material:"Crystal", item:"Jewel earring", source:"Arkham", notes:"Arkham - witch (jewel earring)" },
-{ id:11, material:"Crystal", item:"a swiftly swirling grey potion", source:"The City of Sudharma", notes:"City Harmacy" },
+{ id:11, material:"Crystal", item:"a crystal vial filled with a blue healing potion", source:"The City of Sudharma", notes:"City Harmacy" },
 //{ id:12, material:"Diamond", item:"Diamond-studded earring", source:"Arkham", notes:"Gate point: bluebeard (sold in Bluebeard's pub)" },
 //{ id:12, material:"Diamond", item:"Chest drop (diamond)", source:"Sands of Sorrow", notes:"Chest drop from Brass Dragon in Sands of Sorrow; Gate point: nanny or dwarf child" },
 //{ id:12, material:"Diamond", item:"Xorn (diamond)", source:"The Halls of Legion", notes:"Halls of Legion: Xorn (diamond)" },
@@ -348,6 +458,91 @@ const materials = [
 
 /* ---------- build table ---------- */
 
+const itemMaterials = new Map()
+const ownedMaterials = new Set()
+
+materials.forEach(m => {
+	if (!itemMaterials.has(m.item)) {
+		itemMaterials.set(m.item, {
+			materials: new Set(),
+			searchText: ""
+		})
+	}
+	const item = itemMaterials.get(m.item)
+	item.materials.add(m.material)
+	item.searchText += " " + [m.item, m.material, m.source, m.notes || ""].join(" ")
+})
+
+function materialNames() {
+	return Array.from(new Set(materials.map(m => m.material))).sort()
+}
+
+function renderMaterialChecklist() {
+	const options = document.querySelector("#materialOptions")
+	if (!options) return
+	options.innerHTML = ""
+
+	materialNames().forEach(material => {
+		const label = document.createElement("label")
+		label.className = "material-option"
+		const checkbox = document.createElement("input")
+		checkbox.type = "checkbox"
+		checkbox.value = material
+		checkbox.addEventListener("change", () => {
+			if (checkbox.checked) ownedMaterials.add(material)
+			else ownedMaterials.delete(material)
+			label.classList.toggle("checked", checkbox.checked)
+			renderPriority()
+		})
+		label.appendChild(checkbox)
+		label.appendChild(document.createTextNode(material))
+		options.appendChild(label)
+	})
+}
+
+function clearOwnedMaterials() {
+	ownedMaterials.clear()
+	document.querySelectorAll("#materialOptions input[type='checkbox']").forEach(checkbox => {
+		checkbox.checked = false
+	})
+	renderPriority()
+}
+
+function renderPriority() {
+	const tbody = document.querySelector("#priorityTable tbody")
+	const summary = document.querySelector("#prioritySummary")
+	if (!tbody || !summary) return
+
+	const query = (document.querySelector("#search")?.value || "").toLowerCase()
+	const priorities = Array.from(itemMaterials, ([item, details]) => {
+		const coveredMaterials = Array.from(details.materials).sort()
+		return {
+			item,
+			missing: coveredMaterials.filter(material => !ownedMaterials.has(material)),
+			searchText: details.searchText.toLowerCase()
+		}
+	})
+		.filter(priority => priority.missing.length > 0)
+		.filter(priority => !query || priority.searchText.includes(query))
+		.sort((a, b) => b.missing.length - a.missing.length || a.item.localeCompare(b.item))
+
+	tbody.innerHTML = priorities.map(priority => `
+		<tr>
+			<td>${priority.missing.length}</td>
+			<td>${priority.item}</td>
+			<td>${priority.missing.join(", ")}</td>
+		</tr>
+	`).join("")
+
+	const ownedCount = ownedMaterials.size
+	const totalCount = materialNames().length
+	const materialText = `${ownedCount}/${totalCount} materials checked`
+	const materialSummary = document.querySelector("#materialSummary")
+	if (materialSummary) materialSummary.textContent = materialText
+	summary.textContent = priorities.length
+		? `${priorities.length} items, ranked by materials still needed`
+		: "No matching items need unchecked materials"
+}
 
 function renderTable() {
 
@@ -357,6 +552,7 @@ function renderTable() {
 	materials.forEach(m => {
 
 		let row = document.createElement("tr")
+		const coveredMaterials = Array.from(itemMaterials.get(m.item)?.materials || []).sort()
 		row.dataset.item = (m.item || "").toLowerCase()
 		row.dataset.material = (m.material || "").toLowerCase()
 		row.dataset.source = (m.source || "").toLowerCase()
@@ -365,6 +561,7 @@ function renderTable() {
 <td>${m.id}</td>
 <td>${m.material}</td>
 <td>${m.item}</td>
+<td title="${coveredMaterials.join(", ")}">${coveredMaterials.length} (${coveredMaterials.join(", ")})</td>
 <td>${m.source}</td>
 <td>${m.notes || ""}</td>
 `
@@ -376,6 +573,8 @@ function renderTable() {
 }
 
 renderTable()
+renderMaterialChecklist()
+renderPriority()
 validateMaterials()
 
 function toggleMaterialCheck(){
@@ -427,6 +626,8 @@ row.style.display =
 : "none"
 
 })
+
+renderPriority()
 
 }
 
@@ -493,8 +694,8 @@ for(let i=1;i<=50;i++){
 const duplicates =
 ids.filter((v,i,a)=>a.indexOf(v)!==i)
 
-const div =
-document.getElementById("materialCheck")
+	const div =
+	document.getElementById("validationSummary")
 
 div.innerHTML = `
 Total entries: ${materials.length}<br>

@@ -62,6 +62,7 @@ function DarkmistsTheme.buildNeutralTheme()
   -- Retro-terminal palette: near-black purple-tinted bar with purple accent.
   t.panel = {
     headerBg            = "rgba(20,10,40,35%)",
+    sectionBg           = "rgba(8,4,18,60%)",
     headerBorder        = "rgba(150,120,255,22%)",
     headerAccent        = "rgba(150,120,255,45%)",
     buttonBg            = "rgba(20,10,40,30%)",
@@ -166,6 +167,7 @@ function DarkmistsTheme.buildTheme()
   if light then
     t.panel = {
       headerBg            = "rgb(244,241,250)",
+      sectionBg           = "rgb(229,224,240)",
       headerBorder        = "rgb(210,198,235)",
       headerAccent        = "rgb(100,70,190)",
       buttonBg            = "rgb(255,255,255)",
@@ -192,6 +194,7 @@ function DarkmistsTheme.buildTheme()
   else
     t.panel = {
       headerBg            = "rgba(12,6,26,55%)",
+      sectionBg           = "rgba(5,2,14,70%)",
       headerBorder        = "rgba(150,120,255,20%)",
       headerAccent        = "rgba(150,120,255,45%)",
       buttonBg            = "rgba(12,6,26,35%)",

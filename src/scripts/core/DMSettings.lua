@@ -234,6 +234,12 @@ local function setEnchanterAssist(field, value)
   if not EnchanterAssist then
     return false, "Enchanter Assist is not loaded."
   end
+  if field == "enabled" and EnchanterAssist.setEnabled then
+    return EnchanterAssist.setEnabled(value)
+  end
+  if field == "autoRun" and EnchanterAssist.setAutoRun then
+    return EnchanterAssist.setAutoRun(value)
+  end
   EnchanterAssist[field] = value
   if field == "partCount" then
     EnchanterAssist._comboIndices = nil
@@ -245,8 +251,9 @@ local function registerEnchanterAssist()
   local definitions = {
     {
       key = "enchanterAssist.partCount",
-      group = "Enchanter Assist",
-      label = "Parts per trial",
+      group = "Enchanter Assist", section = "Configuration",
+      label = "Materials per trial",
+      description = "How many different materials to combine in each trial.",
       type = "integer",
       default = 5,
       get = function() return EnchanterAssist.partCount end,
@@ -256,8 +263,9 @@ local function registerEnchanterAssist()
     },
     {
       key = "enchanterAssist.container",
-      group = "Enchanter Assist",
-      label = "Container",
+      group = "Enchanter Assist", section = "Configuration",
+      label = "Materials container",
+      description = "Container holding the key and alchemy materials, such as bag.",
       type = "text",
       default = "bag",
       get = function() return EnchanterAssist.container end,
@@ -267,8 +275,9 @@ local function registerEnchanterAssist()
     },
     {
       key = "enchanterAssist.sleeper",
-      group = "Enchanter Assist",
-      label = "Sleeper",
+      group = "Enchanter Assist", section = "Recovery",
+      label = "Resting item",
+      description = "Item used when resting to recover, such as bedroll.",
       type = "text",
       default = "bedroll",
       get = function() return EnchanterAssist.sleeper end,
@@ -278,8 +287,9 @@ local function registerEnchanterAssist()
     },
     {
       key = "enchanterAssist.sleepType",
-      group = "Enchanter Assist",
+      group = "Enchanter Assist", section = "Recovery",
       label = "Recovery method",
+      description = "Choose sleeping or consumables when mana and movement are low.",
       type = "enum",
       choices = {{value = 1, label = "Sleep"}, {value = 0, label = "Consumables"}},
       default = 1,
@@ -290,8 +300,9 @@ local function registerEnchanterAssist()
     },
     {
       key = "enchanterAssist.drainItem",
-      group = "Enchanter Assist",
-      label = "Drain item",
+      group = "Enchanter Assist", section = "Recovery",
+      label = "Mana-drain item",
+      description = "Potion or other item used to drain mana during consumable recovery.",
       type = "text",
       default = "potion",
       get = function() return EnchanterAssist.drainItem end,
@@ -301,8 +312,9 @@ local function registerEnchanterAssist()
     },
     {
       key = "enchanterAssist.playSoundOnDiscover",
-      group = "Enchanter Assist",
-      label = "Sound on discovery",
+      group = "Enchanter Assist", section = "Workflow",
+      label = "Play discovery sound",
+      description = "Play a sound when a new formula is discovered.",
       type = "boolean",
       default = true,
       get = function() return EnchanterAssist.playSoundOnDiscover end,
@@ -312,13 +324,38 @@ local function registerEnchanterAssist()
     },
     {
       key = "enchanterAssist.deterministicOrder",
-      group = "Enchanter Assist",
-      label = "Deterministic order",
+      group = "Enchanter Assist", section = "Workflow",
+      label = "Try combinations in sequence",
+      description = "Use repeatable sequential combinations instead of random selection.",
       type = "boolean",
       default = false,
       get = function() return EnchanterAssist.deterministicOrder end,
       validate = validateBoolean,
       set = function(value) return setEnchanterAssist("deterministicOrder", value) end,
+      save = saveEnchanterAssist,
+    },
+    {
+      key = "enchanterAssist.enabled",
+      group = "Enchanter Assist", section = "Workflow",
+      label = "Enchanter Assist enabled",
+      description = "Allow Enchanter Assist to process events and run trials.",
+      type = "boolean",
+      default = true,
+      get = function() return EnchanterAssist.enabled end,
+      validate = validateBoolean,
+      set = function(value) return setEnchanterAssist("enabled", value) end,
+      save = saveEnchanterAssist,
+    },
+    {
+      key = "enchanterAssist.autoRun",
+      group = "Enchanter Assist", section = "Workflow",
+      label = "Automatic run mode",
+      description = "Automatically begin another trial after recovery or completion.",
+      type = "boolean",
+      default = false,
+      get = function() return EnchanterAssist.autoRun end,
+      validate = validateBoolean,
+      set = function(value) return setEnchanterAssist("autoRun", value) end,
       save = saveEnchanterAssist,
     },
   }
@@ -487,6 +524,28 @@ local function registerDefinitions(definitions)
   end
 end
 
+local function refreshSharedFont(fontName)
+  if ChatHistory then
+    if ChatHistory.applyTheme then ChatHistory.applyTheme() end
+    if ChatHistory.console then ChatHistory.console:setFont(fontName) end
+  end
+  if WhoWindow then
+    WhoWindow.config.fontName = fontName
+    if WhoWindow.console then WhoWindow.console:setFont(fontName) end
+  end
+  if AffectsWindow then
+    if AffectsWindow.refreshConfig then AffectsWindow.refreshConfig() end
+    if AffectsWindow.console then AffectsWindow.console:setFont(fontName) end
+  end
+  if ScorePanel then
+    if ScorePanel.applyTheme then ScorePanel.applyTheme() end
+    if ScorePanel.console then ScorePanel.console:setFont(fontName) end
+  end
+  if DarkMistsMiniMap and DarkMistsMiniMap.header then
+    DarkMistsMiniMap.header:setFont(fontName)
+  end
+end
+
 local function registerAppearance()
   registerDefinitions({
     {
@@ -518,6 +577,34 @@ local function registerAppearance()
       validate = function(value) return validateInteger(value, 8, 24) end,
       set = function(value) return setGlobalValue("fontSize", value) end,
       save = saveGlobalSettings, reloadRequired = true,
+    },
+    {
+      key = "appearance.fontName", page = "Appearance", group = "Appearance",
+      label = "Window font",
+      description = "Font face used by the Chat, Who, Affects, and Player windows.",
+      type = "text", default = getFont(),
+      get = function() return globalValue("fontName", getFont()) end,
+      validate = validateText,
+      set = function(value)
+        setGlobalValue("fontName", value)
+        refreshSharedFont(value)
+        return true
+      end,
+      save = saveGlobalSettings,
+    },
+    {
+      key = "appearance.updateChannel", page = "Appearance", group = "Appearance",
+      label = "Update channel",
+      description = "Choose stable releases or beta builds when updating DMC.",
+      type = "enum",
+      choices = {{value = "stable", label = "Stable"}, {value = "beta", label = "Beta"}},
+      default = "stable",
+      get = function() return globalValue("updateChannel", "stable") end,
+      validate = function(value)
+        return validateEnum(value, {{value = "stable"}, {value = "beta"}})
+      end,
+      set = function(value) return setGlobalValue("updateChannel", value) end,
+      save = saveGlobalSettings,
     },
   })
 
