@@ -73,6 +73,7 @@
 **Chat History Filters**: the Chat tab header now has filter toggles — single-letter buttons (A/S/Y/T/G/O/N/H) for All, Say, Yell, Tell, Group, OOC, Newbie, and House. Click to show or hide each channel; hover a letter to see the full channel list. Filters reset to All on reload.
 **Affects Window**: reordered the header action buttons (ignore, refresh, clear).
 **Settings Panel**: added one movable settings window available from the Button Bar and `dmc settings`, with immediate validation and persistence across Appearance, Status Bars, Windows, Enchanter Assist, ShowDMG, ItemTracker, and Utilities settings. Enchanter Assist now exposes clear Configuration, Recovery, and Workflow controls, including enabled, automatic-run, and session reset actions; the shared window font and update channel are also available. Utilities contains Spam Prevention, Stat Roller, and MakeArmor settings; legacy ShowDMG enabled, mode, and color keys migrate to the current persisted names, and editable status-bar RGBA colors plus dark/light ItemTracker link colors refresh at runtime. Changes that require a UI reload are marked in the panel.
+**Alchemy Material List**: added an interactive material checklist with clear checked-state highlighting, item-level essence prioritization by remaining materials, search and sorting, and a consolidated item/source/notes table.
 
 **Future Versions**
 - minimap startup performance improvements

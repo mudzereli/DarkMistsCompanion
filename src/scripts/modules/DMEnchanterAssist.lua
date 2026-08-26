@@ -1044,6 +1044,8 @@ function EnchanterAssist.init()
 
         EnchanterAssist.state = "idle"
         dmapi.core.send("wake")
+        dmapi.core.send("get", EnchanterAssist.sleeper)
+        dmapi.core.send("put", EnchanterAssist.sleeper, EnchanterAssist.container)
 
         tempTimer(0.3, function()
           if EnchanterAssist.autoRun and EnchanterAssist.state == "idle" then

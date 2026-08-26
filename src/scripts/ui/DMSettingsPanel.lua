@@ -72,6 +72,7 @@ local notificationStyle
 local statusMutedTag
 local statusGoodTag
 local statusBadTag
+local statusTextColor
 
 local function opaqueColor(color, fallback)
   local value = tostring(color or fallback or "")
@@ -101,6 +102,7 @@ local function refreshThemeStyles()
   statusMutedTag = lightMode and "<dark_gray>" or nil
   statusGoodTag = lightMode and "<dark_green>" or nil
   statusBadTag = lightMode and "<dark_red>" or nil
+  statusTextColor = lightMode and "#202020" or nil
   local headerBg = opaqueColor(panel.headerBg, "#101418")
   local sectionBg = opaqueColor(panel.sectionBg, headerBg)
   local headerBorder = opaqueColor(panel.headerBorder, "#536372")
@@ -268,6 +270,9 @@ end
 local function setStatus(message, isError)
   if not DMSettingsPanel.status then return end
   DMSettingsPanel.status:setStyleSheet(notificationStyle)
+  if DMSettingsPanel.status.setFgColor and statusTextColor then
+    DMSettingsPanel.status:setFgColor(statusTextColor)
+  end
   local tag = isError
     and (statusBadTag or themeTag("badTag", "<red>"))
     or (statusGoodTag or themeTag("goodTag", "<green>"))
@@ -746,7 +751,7 @@ function DMSettingsPanel.init()
   DMSettingsPanel.status = makeLabel("DMSettingsStatus", headerContentX, headerStatusY,
     headerStatusWidth, headerStatusHeight,
     (statusMutedTag or themeTag("mutedTag", "<gray>")) .. "Changes save immediately.<r>",
-    DMSettingsPanel.content, notificationStyle)
+    DMSettingsPanel.content, notificationStyle, statusTextColor)
   DMSettingsPanel.status:setAlignment("left")
 
   makeButton("DMSettingsReload", headerActionX, headerActionY, headerActionWidth, "Reload UI", function()
