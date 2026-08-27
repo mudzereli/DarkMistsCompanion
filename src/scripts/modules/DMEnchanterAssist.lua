@@ -755,6 +755,27 @@ function EnchanterAssist.showSessionFormulasAlert()
   end, { width = estWidth, height = estHeight, scrollable = true })
 end
 
+function EnchanterAssist.showWeaponFormulaAlert(key)
+  if not key or key == "" then
+    return
+  end
+
+  local charW, charH = calcFontSize(DMAlertWindow.getBodyFontSize())
+  if not charW then charW = 8 end
+  if not charH then charH = 16 end
+
+  local formulaKey = tostring(key)
+  local estWidth = math.max(440, (#formulaKey + 44) * charW + DMAlertWindow.getBorderPx())
+  local estHeight = math.min(260, 9 * charH + DMAlertWindow.getChromeHeight())
+
+  DMAlertWindow.Show("Weapon Formula Key Found", function(win)
+    cecho(win, "\n" .. ea_text .. "Key: " .. ea_accent .. formulaKey .. "\n\n")
+    cecho(win, ea_warn .. "This key leads to a weapon formula.\n")
+    cecho(win, ea_warn .. "Apply it to a weapon before viewing its formula details.\n\n")
+    cecho(win, ea_muted .. "AutoRun stopped.")
+  end, { width = estWidth, height = estHeight })
+end
+
 function EnchanterAssist.finishAttempt()
   EnchanterAssist.sawFlare   = false
   EnchanterAssist.pendingKey = nil
@@ -1176,9 +1197,10 @@ function EnchanterAssist.init()
     end
 
     DMLogger.notify(ea_plugin,
-      ea_gold .. "Weapon Formula Found! " .. ea_text .. EnchanterAssist.pendingKey .. "\n"
+      ea_gold .. "Weapon Formula Key Found! " .. ea_text .. EnchanterAssist.pendingKey .. "\n"
       .. ea_warn .. "AutoRun stopped - apply this formula to a weapon."
     )
+    EnchanterAssist.showWeaponFormulaAlert(EnchanterAssist.pendingKey)
     EnchanterAssist._playDiscoverSound()
     EnchanterAssist._raiseTrialEvent("ea.trial.weapononly", { key = EnchanterAssist.pendingKey, line = data and data.line })
     EnchanterAssist.hardStop()
