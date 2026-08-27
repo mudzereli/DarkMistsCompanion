@@ -1717,6 +1717,7 @@ function dmapi.core.LineTrigger(line)
   if line:match(DMPatterns.REST_SIT) 
       or line:match(DMPatterns.REST_ENTER) then
     dmapi.player.status.resting = true
+    dmapi.player.updatePosition()
     dmapi.core.raiseEvent("dmapi.player.rest.enter", {line = line})
     return
   end
@@ -1724,6 +1725,7 @@ function dmapi.core.LineTrigger(line)
   if line:match(DMPatterns.REST_EXIT)
     or line:match(DMPatterns.STAND_UP) then
     dmapi.player.status.resting = false
+    dmapi.player.updatePosition()
     dmapi.core.raiseEvent("dmapi.player.rest.exit", {line = line})
     return
   end
@@ -1892,6 +1894,7 @@ function dmapi.core.LineTrigger(line)
       dmapi.player.combat.round = 0
       dmapi.player.combat.active = true
       dmapi.player.combat.target = mobState.target
+      dmapi.player.updatePosition()
       
       dmapi.core.raiseEvent("dmapi.player.combat.start", {
         target = mobState.target,
@@ -2018,10 +2021,24 @@ end
 -- PLAYER STATE FUNCTIONS
 -- ============================================================================
 
+--- Update the derived player position from the current state flags
+function dmapi.player.updatePosition()
+  if dmapi.player.status.sleeping then
+    dmapi.player.status.position = "sleeping"
+  elseif dmapi.player.status.resting then
+    dmapi.player.status.position = "resting"
+  elseif dmapi.player.combat.active then
+    dmapi.player.status.position = "fighting"
+  else
+    dmapi.player.status.position = "standing"
+  end
+end
+
 --- Set sleeping status
 -- @param sleeping boolean Sleep state
 function dmapi.player.setSleeping(sleeping)
   dmapi.player.status.sleeping = sleeping
+  dmapi.player.updatePosition()
   if dmapi.settings.debugLevel > 0 then
     dmapi.core.debug(string.format("Sleep status: %s", tostring(sleeping)))
   end
@@ -2284,6 +2301,7 @@ function dmapi.RegisterEvents()
           dmapi.player.combat.target = nil
           dmapi.player.combat.targetHpPct = 0
           dmapi.core.state.combatMissedPrompts = 0
+          dmapi.player.updatePosition()
           
           dmapi.core.raiseEvent("dmapi.player.combat.end", {
             target = target,
