@@ -140,8 +140,8 @@ Darkmists.DefaultSettings = {
   skillUpsMaxEntries = 50,
   -- Stat Roller Leniency (0 = Roll must be Max, 1 = Roll can be 1 lower than Max, etc)
   statRollerLeniency = 1,
+  statRollerCalibrationLines = 20,
   statRollerShowDetails = true,
-  statRollerBarWidth = 24,
   statRollerSparklineWidth = 16,
   -- First Run Flag (for Setting up default settings)
   hasInitializedUILayout = false,

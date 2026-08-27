@@ -800,19 +800,19 @@ local function registerUtilities()
       save = saveGlobalSettings,
     },
     {
+      key = "statRoller.calibrationLines", page = "Utilities", group = "Stat Roller",
+      label = "Calibration rolls", type = "integer", default = 20,
+      get = function() return globalValue("statRollerCalibrationLines", 20) end,
+      validate = function(value) return validateInteger(value, 4, 40) end,
+      set = function(value) return setStatRollerConfig("statRollerCalibrationLines", "nCalibrationLines", value) end,
+      save = saveGlobalSettings,
+    },
+    {
       key = "statRoller.showDetails", page = "Utilities", group = "Stat Roller",
       label = "Show stat details", type = "boolean", default = true,
       get = function() return globalValue("statRollerShowDetails", true) end,
       validate = validateBoolean,
       set = function(value) return setStatRollerConfig("statRollerShowDetails", "showDetails", value) end,
-      save = saveGlobalSettings,
-    },
-    {
-      key = "statRoller.barWidth", page = "Utilities", group = "Stat Roller",
-      label = "Bar width", type = "integer", default = 24,
-      get = function() return globalValue("statRollerBarWidth", 24) end,
-      validate = function(value) return validateInteger(value, 8, 60) end,
-      set = function(value) return setStatRollerConfig("statRollerBarWidth", "barWidth", value) end,
       save = saveGlobalSettings,
     },
     {

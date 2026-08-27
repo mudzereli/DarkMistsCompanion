@@ -1,4 +1,4 @@
--- file: scripts/statroller_update.lua
+-- file: scripts/modules/DMStatRoller.lua
 -- Engaging HUD with Trend scaled to recent min..max
 
 StatRoller = {}
@@ -9,7 +9,6 @@ StatRoller.maximum_stats = {}
 StatRoller.recent_totals = {}
 StatRoller.enabled = true
 StatRoller.best_total = 0
-StatRoller.best_stats = nil
 StatRoller._spin = 0
 
 -- ---------- utils ----------
@@ -30,7 +29,6 @@ local pluginName = pluginColor .. "StatRoller"
 local DEFAULT_SETTINGS = {
   nCalibrationLines = 20,
   showDetails = true,
-  barWidth = 24,
   sparklineWidth = 16,
   keepalive_interval = 20,
   keepalive_command = " ",
@@ -42,6 +40,7 @@ local DEFAULT_STATE = {
   last_ts = nil,
   leniency_prompt_shown = false,
   awaiting_leniency_choice = false,
+  done = false,
 }
 
 local function apply_defaults(target, defaults)
@@ -101,6 +100,27 @@ local function ensure_initialized()
   end
 end
 
+local function update_roll_progress()
+  local state = StatRoller.state
+  local calibrationLines = tonumber(getopt("nCalibrationLines", 20)) or 20
+  local leniency = tonumber(getopt("leniency", 0)) or 0
+  local minimumTotal = math.max(0, (StatRoller.maximum_stats.total or 0) - leniency)
+  local keep = StatRoller.current_stats.total >= minimumTotal
+
+  if state.nRollsCompleted < calibrationLines or not keep then
+    state.done = false
+    StatRoller._stop_keepalive()
+    send("N")
+    return false
+  end
+
+  if not state.done then
+    state.done = true
+    StatRoller._start_keepalive()
+  end
+  return true
+end
+
 function StatRoller.set_leniency(value)
   ensure_initialized()
 
@@ -116,20 +136,7 @@ function StatRoller.set_leniency(value)
   notify(infoTag .. "Leniency set to " .. goodTag .. tostring(value))
 
   if StatRoller.enabled and (StatRoller.state.nRollsCompleted or 0) > 0 then
-    local N = tonumber(getopt("nCalibrationLines", 20)) or 20
-    local L = tonumber(getopt("leniency", 0)) or 0
-    local keep = (StatRoller.current_stats.total >= math.max(0, (StatRoller.maximum_stats.total or 0) - L))
-
-    if (StatRoller.state.nRollsCompleted < N) or not keep then
-      StatRoller.state.done = false
-      StatRoller._stop_keepalive()
-      send("N")
-    else
-      if not StatRoller.state.done then
-        StatRoller.state.done = true
-        StatRoller._start_keepalive()
-      end
-    end
+    update_roll_progress()
   end
 end
 
@@ -156,18 +163,6 @@ function StatRoller.prompt_leniency()
       cecho("\n")
     end
   end
-end
-
-local function progress_bar(cur, maxv, width, fg, bg)
-  width = tonumber(width) or 1
-  if width < 1 then width = 1 end
-  cur  = tonumber(cur) or 0
-  maxv = tonumber(maxv) or 0
-  if maxv <= 0 then return mutedTag .. string.rep("░", width) .. textTag end
-  if cur < 0 then cur = 0 elseif cur > maxv then cur = maxv end
-  local filled = math.floor((cur / maxv) * width + 0.5); if filled > width then filled = width end
-  return (fg or goodTag) .. string.rep("█", filled) .. textTag
-    .. (bg or mutedTag) .. string.rep("░", width - filled) .. textTag
 end
 
 local function fmt_delta(delta, maxv)
@@ -253,7 +248,6 @@ end
 local function update_records(stats)
   if stats.total > (StatRoller.best_total or 0) then
     StatRoller.best_total = stats.total
-    StatRoller.best_stats = { str=stats.str, int=stats.int, wis=stats.wis, dex=stats.dex, con=stats.con, total=stats.total }
     notify(goodTag .. "New best total: " .. tostring(stats.total) .. "!")
   end
 end
@@ -263,6 +257,18 @@ local function push_recent(total)
   local buf = StatRoller.recent_totals
   buf[#buf+1] = total
   if #buf > w * 4 then table.remove(buf, 1) end
+end
+
+local function capture_roll(stats)
+  local state = StatRoller.state
+  state.nRollsCompleted = state.nRollsCompleted + 1
+  local timestamp = now()
+  if not state.first_ts then state.first_ts = timestamp end
+  state.last_ts = timestamp
+
+  StatRoller.update_current(stats)
+  StatRoller.update_maximum(stats)
+  push_recent(stats.total)
 end
 
 local function roll_rate()
@@ -286,15 +292,11 @@ function StatRoller.echo_hud()
   local spin = frames[StatRoller._spin]
 
   local status
-  local _bar
-  local bw = getopt("barWidth", 24)
   if calibrating then
-    status = warnTag .. ("CAL %d/%d"):format(rolls, N) .. textTag
-    _bar = progress_bar(rolls, N, bw, warnTag, mutedTag)
+    status = warnTag .. ("CALIBRATING: %d/%d"):format(rolls, N) .. textTag
   else
     local phase = (cs.total >= ms.total and ms.total > 0) and (goodTag .. "READY" .. textTag) or (warnTag .. "ROLLING" .. textTag)
     status = infoTag .. "LIVE " .. textTag .. mutedTag .. "• " .. textTag .. phase
-    _bar = progress_bar(cs.total, ms.total, bw, goodTag, mutedTag)
   end
 
   local totals = (cs.total >= ms.total and ms.total > 0)
@@ -399,7 +401,6 @@ function StatRoller.reset_session()
   reset_stat_block(StatRoller.maximum_stats)
 
   StatRoller.best_total = 0
-  StatRoller.best_stats = nil
   StatRoller.recent_totals = {}
   StatRoller._spin = 0
 end
@@ -416,11 +417,11 @@ function StatRoller.init()
   StatRoller.settings.leniency = tonumber(Darkmists.GlobalSettings.statRollerLeniency)
     or tonumber(StatRoller.settings.leniency)
     or 0
+  StatRoller.settings.nCalibrationLines = tonumber(Darkmists.GlobalSettings.statRollerCalibrationLines)
+    or StatRoller.settings.nCalibrationLines
   StatRoller.settings.showDetails = Darkmists.GlobalSettings.statRollerShowDetails ~= nil
     and Darkmists.GlobalSettings.statRollerShowDetails
     or StatRoller.settings.showDetails
-  StatRoller.settings.barWidth = tonumber(Darkmists.GlobalSettings.statRollerBarWidth)
-    or StatRoller.settings.barWidth
   StatRoller.settings.sparklineWidth = tonumber(Darkmists.GlobalSettings.statRollerSparklineWidth)
     or StatRoller.settings.sparklineWidth
 
@@ -463,17 +464,10 @@ function StatRoller.on_line(line)
   if StatRoller.state.awaiting_leniency_choice then
     if not StatRoller.state.leniency_prompt_shown then
       -- Capture first roll baseline silently; wait for user choice before showing HUD/output.
-      StatRoller.state.nRollsCompleted = StatRoller.state.nRollsCompleted + 1
-      if not StatRoller.state.first_ts then StatRoller.state.first_ts = now() end
-      StatRoller.state.last_ts = now()
-
-      StatRoller.update_current(stats)
-      StatRoller.update_maximum(stats)
-      push_recent(stats.total)
+      capture_roll(stats)
 
       if stats.total > (StatRoller.best_total or 0) then
         StatRoller.best_total = stats.total
-        StatRoller.best_stats = { str=stats.str, int=stats.int, wis=stats.wis, dex=stats.dex, con=stats.con, total=stats.total }
       end
 
       StatRoller.prompt_leniency()
@@ -482,35 +476,11 @@ function StatRoller.on_line(line)
     return true
   end
 
-  StatRoller.state.nRollsCompleted = StatRoller.state.nRollsCompleted + 1
-  if not StatRoller.state.first_ts then StatRoller.state.first_ts = now() end
-  StatRoller.state.last_ts = now()
-
-  StatRoller.update_current(stats)
-  StatRoller.update_maximum(stats)
+  capture_roll(stats)
   update_records(stats)
 
-  -- buffer last totals for trend
-  push_recent(stats.total)
-
   StatRoller.echo_hud()
-
-  local N = tonumber(getopt("nCalibrationLines", 20)) or 20
-  local L = tonumber(getopt("leniency", 0)) or 0
-  local keep = (StatRoller.current_stats.total >= math.max(0, (StatRoller.maximum_stats.total or 0) - L))
-
-  if (StatRoller.state.nRollsCompleted < N) or not keep then
-    -- still rolling
-    StatRoller.state.done = false
-    StatRoller._stop_keepalive()
-    send("N")
-  else
-    -- finished rolling
-    if not StatRoller.state.done then
-      StatRoller.state.done = true
-      StatRoller._start_keepalive()
-    end
-  end
+  update_roll_progress()
 
   return true
 end
