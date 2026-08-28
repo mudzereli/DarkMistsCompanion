@@ -35,6 +35,7 @@ EnchanterAssist._lastPotionRecovery = 0
 EnchanterAssist.potionRecoveryTimer = nil
 EnchanterAssist._comboIndices = nil
 EnchanterAssist._wakePending = false
+EnchanterAssist._sessionEnded = false
 EnchanterAssist._wrapped     = false
 EnchanterAssist._savePath    = getMudletHomeDir() .. "/ea_data.lua"
 EnchanterAssist.color = "<cyan>"
@@ -477,6 +478,19 @@ function EnchanterAssist._abortAttempt(reason)
   end
 end
 
+function EnchanterAssist._stopForSessionEnd()
+  EnchanterAssist._sessionEnded = true
+  EnchanterAssist.autoRun = false
+  EnchanterAssist._wakePending = false
+  EnchanterAssist._stopPotionRecoveryTimer()
+  EnchanterAssist._stopSleepRefreshTimer()
+  EnchanterAssist._hardStopRequested = false
+  EnchanterAssist.state = "idle"
+  EnchanterAssist.pendingKey = nil
+  EnchanterAssist.sawFlare = false
+  EnchanterAssist._attemptResolved = false
+end
+
 function EnchanterAssist.hardStop()
   EnchanterAssist.autoRun = false
   EnchanterAssist._wakePending = false
@@ -572,6 +586,7 @@ end
 -- CORE RUN
 -- ============================================================================
 function EnchanterAssist.run()
+  if EnchanterAssist._sessionEnded then return end
   if not EnchanterAssist.enabled then return end
 
   if EnchanterAssist.state ~= "idle" then
@@ -1235,11 +1250,16 @@ function EnchanterAssist.init()
   end)
 
   DarkmistsEvents.add("EnchanterAssist.WorldEnter", "dmapi.world.enter", function()
+    EnchanterAssist._sessionEnded = false
     EnchanterAssist._abortAttempt("reconnected")
   end)
 
+  DarkmistsEvents.add("EnchanterAssist.WorldExit", "dmapi.world.exit", function()
+    EnchanterAssist._stopForSessionEnd()
+  end)
+
   DarkmistsEvents.add("EnchanterAssist.Disconnect", "sysDisconnectionEvent", function()
-    EnchanterAssist._abortAttempt("disconnected")
+    EnchanterAssist._stopForSessionEnd()
   end)
 
   EnchanterAssist.load()
