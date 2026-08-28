@@ -750,7 +750,7 @@ function DMSettingsPanel.init()
 
   DMSettingsPanel.status = makeLabel("DMSettingsStatus", headerContentX, headerStatusY,
     headerStatusWidth, headerStatusHeight,
-    (statusMutedTag or themeTag("mutedTag", "<gray>")) .. "Changes save immediately.<r>",
+    (statusMutedTag or themeTag("mutedTag", "<gray>")) .. "Changes save immediately. * = Requires UI reload<r>",
     DMSettingsPanel.content, notificationStyle, statusTextColor)
   DMSettingsPanel.status:setAlignment("left")
 

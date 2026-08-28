@@ -4,10 +4,10 @@
 -- Coordinates settings owned by individual modules without changing their
 -- persistence formats. UI code should use this registry rather than mutating
 -- module state directly.
-DMSettings = DMSettings or {}
+DMSettings = {}
 
-DMSettings.registry = DMSettings.registry or {}
-DMSettings.order = DMSettings.order or {}
+DMSettings.registry = {}
+DMSettings.order = {}
 
 local function trim(value)
   return tostring(value or ""):gsub("^%s*(.-)%s*$", "%1")
@@ -163,6 +163,11 @@ function DMSettings.register(definition)
   end
   DMSettings.registry[definition.key] = definition
   return true
+end
+
+function DMSettings.clear()
+  DMSettings.registry = {}
+  DMSettings.order = {}
 end
 
 function DMSettings.get(key)
@@ -590,20 +595,6 @@ local function registerAppearance()
         refreshSharedFont(value)
         return true
       end,
-      save = saveGlobalSettings,
-    },
-    {
-      key = "appearance.updateChannel", page = "Appearance", group = "Appearance",
-      label = "Update channel",
-      description = "Choose stable releases or beta builds when updating DMC.",
-      type = "enum",
-      choices = {{value = "stable", label = "Stable"}, {value = "beta", label = "Beta"}},
-      default = "stable",
-      get = function() return globalValue("updateChannel", "stable") end,
-      validate = function(value)
-        return validateEnum(value, {{value = "stable"}, {value = "beta"}})
-      end,
-      set = function(value) return setGlobalValue("updateChannel", value) end,
       save = saveGlobalSettings,
     },
   })

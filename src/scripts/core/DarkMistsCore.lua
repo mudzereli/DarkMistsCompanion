@@ -669,6 +669,7 @@ function Darkmists.CleanupUI(opts)
   if DMAlertWindow and DMAlertWindow.Hide then pcall(DMAlertWindow.Hide) end
   if DMAlertWindow and DMAlertWindow.destroy then pcall(DMAlertWindow.destroy) end
   if DMSettingsPanel and DMSettingsPanel.destroy then pcall(DMSettingsPanel.destroy) end
+  if DMSettings and DMSettings.clear then pcall(DMSettings.clear) end
   if AffectsWindow and AffectsWindow.destroy then pcall(AffectsWindow.destroy) end
   if ChatHistory and ChatHistory.destroy then pcall(ChatHistory.destroy) end
   if WhoWindow and WhoWindow.destroy then pcall(WhoWindow.destroy) end
