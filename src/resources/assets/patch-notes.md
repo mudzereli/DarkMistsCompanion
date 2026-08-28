@@ -74,7 +74,12 @@
 **Affects Window**: reordered the header action buttons (ignore, refresh, clear).
 **Settings Panel**: added one movable settings window available from the Button Bar and `dmc settings`, with immediate validation and persistence across Appearance, Status Bars, Windows, Enchanter Assist, ShowDMG, ItemTracker, and Utilities settings. Enchanter Assist now exposes clear Configuration, Recovery, and Workflow controls, including enabled, automatic-run, and session reset actions; the shared window font and update channel are also available. Utilities contains Spam Prevention, Stat Roller, and MakeArmor settings; legacy ShowDMG enabled, mode, and color keys migrate to the current persisted names, and editable status-bar RGBA colors plus dark/light ItemTracker link colors refresh at runtime. Changes that require a UI reload are marked in the panel.
 **Alchemy Material List**: added an interactive material checklist with clear checked-state highlighting, item-level essence prioritization by remaining materials, search and sorting, and a consolidated item/source/notes table.
+**DMAPI**: player position now stays synchronized with sleep, rest, combat, and standing transitions instead of remaining stuck at `standing`.
+**Stat Roller**: removed the unused progress-bar setting and consolidated roll capture updates for a smaller, more efficient processing path.
+**Stat Roller**: added a persisted Calibration rolls setting for controlling how many rolls are collected before the HUD leaves calibration mode.
+**Enchanter Assist**: weapon-only formula keys now open a visible alert explaining that the key must be applied to a weapon before formula details can be viewed.
 
 **Future Versions**
+- remove update channel from Appearance options
 - minimap startup performance improvements
 - backwards compatibility testing No newline at end of file
