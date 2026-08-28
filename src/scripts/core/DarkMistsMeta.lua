@@ -73,6 +73,20 @@ Includes:
     ]],
   },
 
+  settings = {
+    title = "Settings Panel",
+    desc = "Open the movable settings panel.",
+    info = [[
+Open the shared settings panel.
+
+• dmc settings        - toggle the panel
+• dmc settings show   - show the panel
+• dmc settings hide   - hide the panel
+
+Changes made in the panel are validated and saved immediately.
+    ]],
+  },
+
   infobox = {
     title = "Profile Info Box",
     desc  = "Set the extra profile information shown on the Mudlet profile screen.",
@@ -97,7 +111,8 @@ Toggles inline damage estimates on combat hit messages.
 • dmc showdmg off          – disable
 • dmc showdmg color <name> – set damage number color (any Mudlet color)
 • dmc showdmg mode avg     – show average damage only (default)
-• dmc showdmg mode range   – show min-max range with average
+• dmc showdmg mode range   – show min-max range only
+• dmc showdmg mode both    – show min-max range with average
 • dmc showdmg status       – show current settings
 
 Color and mode settings are saved and persist across sessions.
@@ -582,6 +597,23 @@ function DarkMistsMeta.init()
     cecho("\n"..dm_muted.."[InfoBox] "..dm_text.."Profile information updated: "..dm_good..args.."\n")
   end)
 
+  -- Open the shared settings panel. The panel owns its own initialization so
+  -- this command remains available in minimal mode as well.
+  DarkmistsAlias.add([[^dmc\s+settings(?:\s+(show|hide|toggle))?$]], function()
+    local action = matches[2] or "toggle"
+    if not DMSettingsPanel then
+      cecho("\n" .. dm_bad .. "[Settings] Panel is not loaded.\n")
+      return
+    end
+    if action == "show" then
+      DMSettingsPanel.show()
+    elseif action == "hide" then
+      DMSettingsPanel.hide()
+    else
+      DMSettingsPanel.toggle()
+    end
+  end)
+
   -- =============================================================================
   -- DAMAGE MESSAGES TOGGLE
   -- =============================================================================
@@ -601,8 +633,8 @@ function DarkMistsMeta.init()
     -- MODE subcommand
     local modeArg = arg:match("^mode%s+(%S+)$")
     if modeArg then
-      if modeArg ~= "avg" and modeArg ~= "range" then
-        cecho("\n" .. dm_muted .. "[ShowDMG] " .. dm_bad .. "Unknown mode: " .. dm_text .. modeArg .. dm_muted .. " (use avg or range)\n")
+      if modeArg ~= "avg" and modeArg ~= "range" and modeArg ~= "both" then
+        cecho("\n" .. dm_muted .. "[ShowDMG] " .. dm_bad .. "Unknown mode: " .. dm_text .. modeArg .. dm_muted .. " (use avg, range, or both)\n")
         return
       end
       Darkmists.GlobalSettings.damageMessageMode = modeArg
@@ -721,7 +753,7 @@ function DarkMistsMeta.init()
       cecho("\n"..dm_muted.."["..dm_text.."ChatHistory"..dm_muted.."] "..dm_good.."Refreshed")
     else
       cecho("\n"..dm_header_color.."Chat History:\n")
-      cecho(dm_muted.."Chat History provides a separate chat window that contains recent \nmessages from various channels (All, OOC, Direct, Local).\n")
+      cecho(dm_muted.."Chat History provides a separate chat window that contains recent \nmessages from various channels. Use the header buttons \n(A/S/Y/T/G/O/N/H) to filter which channels are shown.\n")
       cecho("\n"..dm_header_color.."Chat History Commands:\n")
       cecho(dm_text.."ch refresh"..dm_muted.." – Refresh window\n")
     end
@@ -934,59 +966,7 @@ function DarkMistsMeta.init()
   -- WALK COMMAND
   -- =============================================================================
   local function renderWalkList(filter)
-    local c = dm_text
-
-    DMLogger.notify("WALK","Destinations by Area:")
-
-    local grouped = MapDestinations.getGroupedFiltered(filter)
-    if not next(grouped) then
-      cecho("\n  "..dm_muted.."(none)")
-      return
-    end
-
-    local areaNames = {}
-    for areaName in pairs(grouped) do
-      table.insert(areaNames, areaName)
-    end
-    table.sort(areaNames)
-
-    for _, areaName in ipairs(areaNames) do
-      for _, entry in ipairs(grouped[areaName]) do
-        local roomName = getRoomName(entry.room) or "UNKNOWN"
-        local destinationName = DMUtil.cap(entry.name, 24)
-        local namePadding = string.rep(" ", math.max(0, 24 - #destinationName))
-
-        cecho(string.format(
-          "\n%s[%s%-16s%s] %s",
-          dm_warn,
-          c,
-          DMUtil.cap(areaName, 16),
-          dm_warn,
-          c
-        ))
-
-        cechoLink(
-          ("%s<u>%s</u>"):format(c, destinationName),
-          function()
-            expandAlias(("walk %s"):format(entry.name))
-          end,
-          ("Click: walk %s"):format(entry.name),
-          true
-        )
-
-        cecho(string.format(
-          "%s%s → %s[%s%5d%s]%s%-27s",
-          namePadding,
-          dm_muted,
-          dm_muted,
-          c,
-          entry.room,
-          dm_muted,
-          c,
-          DMUtil.cap(roomName,27)
-        ))
-      end
-    end
+    DMWalkAlert.show(filter)
   end
 
   DarkmistsAlias.add("^walk(?:\\s+(.*))?$", function()
@@ -1003,7 +983,7 @@ function DarkMistsMeta.init()
         .. dm_muted .. "Speedwalk between known rooms using the map speedwalk system. \nDestinations must be discovered and routes clear.\n\n"
         .. dm_header_color .. "Walk Commands:\n"
         .. line(c .. "walk <name>", dm_muted .. "Navigate to a saved destination")
-        .. line(c .. "walk list <filter: optional>", dm_muted .. "Show saved destinations (optional filter)")
+        .. line(c .. "walk list <filter: optional>", dm_muted .. "Open movable destination list (optional filter)")
         .. line(c .. "walk add <name> <roomid: optional>", dm_muted .. "Add persistent destination (max 24 chars, room optional)")
         .. line(c .. "walk rem <name>", dm_muted .. "Remove a saved destination")
         .. line(c .. "walk area <name>", dm_muted .. "Navigate to first room in matching area")
@@ -1280,7 +1260,8 @@ function DarkMistsMeta.init()
       cecho(
         dm_header_color.."EnchanterAssist Module:\n\n"..
         dm_muted.."Automation helper for enchantment workflow management.\n"..
-                  "Controls resting, part counts, and execution flow.\n\n"..
+                  "Controls resting, part counts, and execution flow.\n"..
+                  "Use dmc settings for the complete configuration panel.\n\n"..
         dm_header_color.."EA Module Commands:\n"..
         "  "..c.."es auto    "..dm_muted.."Toggle automatic running mode. "..dm_muted.."["..dm_text.."AutoRun: "..dm_good..autoRun..dm_muted.."]\n"..
         "  "..c.."es <1-5>   "..dm_muted.."Set part count (1–5), save configuration, and run. "..dm_muted.."["..dm_text.."Part: "..dm_good..partCount..dm_muted.."]\n"..
@@ -1288,7 +1269,7 @@ function DarkMistsMeta.init()
         "  "..c.."es stop    "..dm_muted.."Stop after current attempt (or immediately if idle).\n"..
         "  "..c.."es stats   "..dm_muted.."Display session statistics.\n"..
         "  "..c.."es missing "..dm_muted.."Display missing material statistics.\n"..
-        "  "..c.."es reset   "..dm_muted.."Reset session statistics.\n\n"..
+        "  "..c.."es reset   "..dm_muted.."Reset session statistics and missing materials; preserve settings and attempts.\n\n"..
         dm_header_color.."Configuration Commands:\n"..
         "  "..c.."es set container <name>         "..dm_muted.."Set container holding enchantment items. "..dm_muted.."["..dm_text.."Container: "..dm_good..container..dm_muted.."]\n"..
         "  "..c.."es set sleeper <name>           "..dm_muted.."Set sleeper target. "..dm_muted.."["..dm_text.."Sleeper: "..dm_good..sleeper..dm_muted.."]\n"..
@@ -1309,7 +1290,11 @@ function DarkMistsMeta.init()
   DarkmistsAlias.add("^es stop$", function() EnchanterAssist.hardStop() end)
 
   DarkmistsAlias.add("^es auto$", function()
-    EnchanterAssist.autoRun = not EnchanterAssist.autoRun
+    local ok, message = DMSettings.set("enchanterAssist.autoRun", not EnchanterAssist.autoRun)
+    if not ok then
+      DMLogger.notify(EnchanterAssist.color.."EnchanterAssist", message or "Could not change AutoRun.")
+      return
+    end
     DMLogger.notify(EnchanterAssist.color.."EnchanterAssist","AutoRun: " .. tostring(EnchanterAssist.autoRun))
   end)
 
@@ -1383,10 +1368,10 @@ function DarkMistsMeta.init()
 
   -- es enable / disable
   DarkmistsAlias.add("^es (enable|disable)$", function()
-    if matches[2] == "enable" then
-      EnchanterAssist.enabled = true
-    else
-      EnchanterAssist.enabled = false
+    local ok, message = DMSettings.set("enchanterAssist.enabled", matches[2] == "enable")
+    if not ok then
+      DMLogger.notify(EnchanterAssist.color.."EnchanterAssist", message or "Could not change status.")
+      return
     end
     DMLogger.notify(EnchanterAssist.color.."EnchanterAssist","Status: " .. tostring(EnchanterAssist.enabled))
   end)

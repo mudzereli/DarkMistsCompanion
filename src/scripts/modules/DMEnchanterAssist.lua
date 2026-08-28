@@ -35,6 +35,7 @@ EnchanterAssist._lastPotionRecovery = 0
 EnchanterAssist.potionRecoveryTimer = nil
 EnchanterAssist._comboIndices = nil
 EnchanterAssist._wakePending = false
+EnchanterAssist._sessionEnded = false
 EnchanterAssist._wrapped     = false
 EnchanterAssist._savePath    = getMudletHomeDir() .. "/ea_data.lua"
 EnchanterAssist.color = "<cyan>"
@@ -198,6 +199,13 @@ function EnchanterAssist._ensureSleepTimer()
     end
   end, true)
 
+end
+
+function EnchanterAssist._stopSleepRefreshTimer()
+  if EnchanterAssist.sleepRefreshTimer then
+    DarkmistsTimer.remove("EnchanterAssist.SleepRefresh")
+    EnchanterAssist.sleepRefreshTimer = nil
+  end
 end
 
 function EnchanterAssist._playDiscoverSound()
@@ -470,6 +478,19 @@ function EnchanterAssist._abortAttempt(reason)
   end
 end
 
+function EnchanterAssist._stopForSessionEnd()
+  EnchanterAssist._sessionEnded = true
+  EnchanterAssist.autoRun = false
+  EnchanterAssist._wakePending = false
+  EnchanterAssist._stopPotionRecoveryTimer()
+  EnchanterAssist._stopSleepRefreshTimer()
+  EnchanterAssist._hardStopRequested = false
+  EnchanterAssist.state = "idle"
+  EnchanterAssist.pendingKey = nil
+  EnchanterAssist.sawFlare = false
+  EnchanterAssist._attemptResolved = false
+end
+
 function EnchanterAssist.hardStop()
   EnchanterAssist.autoRun = false
   EnchanterAssist._wakePending = false
@@ -490,6 +511,29 @@ function EnchanterAssist.hardStop()
   DMLogger.notify(ea_plugin, ea_warn .. "Hard stop complete.")
 end
 
+function EnchanterAssist.setEnabled(value)
+  EnchanterAssist.enabled = value == true
+  if EnchanterAssist.enabled then
+    return true
+  end
+
+  EnchanterAssist.autoRun = false
+  EnchanterAssist._wakePending = false
+  EnchanterAssist._stopPotionRecoveryTimer()
+  EnchanterAssist._stopSleepRefreshTimer()
+  EnchanterAssist._abortAttempt("Enchanter Assist disabled.")
+  return true
+end
+
+function EnchanterAssist.setAutoRun(value)
+  EnchanterAssist.autoRun = value == true
+  if not EnchanterAssist.autoRun then
+    EnchanterAssist._wakePending = false
+    EnchanterAssist._stopPotionRecoveryTimer()
+  end
+  return true
+end
+
 -- ============================================================================
 -- PERSISTENCE
 -- ============================================================================
@@ -504,6 +548,8 @@ function EnchanterAssist.save()
       drainItem = EnchanterAssist.drainItem,
       playSoundOnDiscover = EnchanterAssist.playSoundOnDiscover,
       deterministicOrder = EnchanterAssist.deterministicOrder,
+      enabled = EnchanterAssist.enabled,
+      autoRun = EnchanterAssist.autoRun,
     },
     attempted = EnchanterAssist.attempted,
     missing   = EnchanterAssist.missing
@@ -528,7 +574,9 @@ function EnchanterAssist.load()
     EnchanterAssist.playSoundOnDiscover = data.config.playSoundOnDiscover ~= false
     EnchanterAssist.sleepType = data.config.sleepType or 1
     EnchanterAssist.drainItem = data.config.drainItem or "potion"
-    EnchanterAssist.deterministicOrder = data.config.deterministicOrder ~= false
+    EnchanterAssist.deterministicOrder = data.config.deterministicOrder == true
+    EnchanterAssist.enabled = data.config.enabled ~= false
+    EnchanterAssist.autoRun = data.config.autoRun == true
   end
 
   Darkmists.Log(ea_plugin, "Data loaded from: " .. ea_text .. EnchanterAssist._savePath)
@@ -538,6 +586,7 @@ end
 -- CORE RUN
 -- ============================================================================
 function EnchanterAssist.run()
+  if EnchanterAssist._sessionEnded then return end
   if not EnchanterAssist.enabled then return end
 
   if EnchanterAssist.state ~= "idle" then
@@ -719,6 +768,27 @@ function EnchanterAssist.showSessionFormulasAlert()
   DMAlertWindow.Show("Session Formulas", function(win)
     EnchanterAssist.showSessionFormulas(win)
   end, { width = estWidth, height = estHeight, scrollable = true })
+end
+
+function EnchanterAssist.showWeaponFormulaAlert(key)
+  if not key or key == "" then
+    return
+  end
+
+  local charW, charH = calcFontSize(DMAlertWindow.getBodyFontSize())
+  if not charW then charW = 8 end
+  if not charH then charH = 16 end
+
+  local formulaKey = tostring(key)
+  local estWidth = math.max(440, (#formulaKey + 44) * charW + DMAlertWindow.getBorderPx())
+  local estHeight = math.min(260, 9 * charH + DMAlertWindow.getChromeHeight())
+
+  DMAlertWindow.Show("Weapon Formula Key Found", function(win)
+    cecho(win, "\n" .. ea_text .. "Key: " .. ea_accent .. formulaKey .. "\n\n")
+    cecho(win, ea_warn .. "This key leads to a weapon formula.\n")
+    cecho(win, ea_warn .. "Apply it to a weapon before viewing its formula details.\n\n")
+    cecho(win, ea_muted .. "AutoRun stopped.")
+  end, { width = estWidth, height = estHeight })
 end
 
 function EnchanterAssist.finishAttempt()
@@ -1010,6 +1080,8 @@ function EnchanterAssist.init()
 
         EnchanterAssist.state = "idle"
         dmapi.core.send("wake")
+        dmapi.core.send("get", EnchanterAssist.sleeper)
+        dmapi.core.send("put", EnchanterAssist.sleeper, EnchanterAssist.container)
 
         tempTimer(0.3, function()
           if EnchanterAssist.autoRun and EnchanterAssist.state == "idle" then
@@ -1140,9 +1212,10 @@ function EnchanterAssist.init()
     end
 
     DMLogger.notify(ea_plugin,
-      ea_gold .. "Weapon Formula Found! " .. ea_text .. EnchanterAssist.pendingKey .. "\n"
+      ea_gold .. "Weapon Formula Key Found! " .. ea_text .. EnchanterAssist.pendingKey .. "\n"
       .. ea_warn .. "AutoRun stopped - apply this formula to a weapon."
     )
+    EnchanterAssist.showWeaponFormulaAlert(EnchanterAssist.pendingKey)
     EnchanterAssist._playDiscoverSound()
     EnchanterAssist._raiseTrialEvent("ea.trial.weapononly", { key = EnchanterAssist.pendingKey, line = data and data.line })
     EnchanterAssist.hardStop()
@@ -1177,11 +1250,16 @@ function EnchanterAssist.init()
   end)
 
   DarkmistsEvents.add("EnchanterAssist.WorldEnter", "dmapi.world.enter", function()
+    EnchanterAssist._sessionEnded = false
     EnchanterAssist._abortAttempt("reconnected")
   end)
 
+  DarkmistsEvents.add("EnchanterAssist.WorldExit", "dmapi.world.exit", function()
+    EnchanterAssist._stopForSessionEnd()
+  end)
+
   DarkmistsEvents.add("EnchanterAssist.Disconnect", "sysDisconnectionEvent", function()
-    EnchanterAssist._abortAttempt("disconnected")
+    EnchanterAssist._stopForSessionEnd()
   end)
 
   EnchanterAssist.load()

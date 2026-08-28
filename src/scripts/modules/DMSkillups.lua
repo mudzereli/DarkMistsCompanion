@@ -119,6 +119,14 @@ function SkillUps.reset()
   DMLogger.notify("SkillUps",string.format("%sSkill improvement history reset.", DarkmistsTheme.warnTag))
 end
 
+function SkillUps.setMaxEntries(value)
+  value = math.max(1, math.floor(tonumber(value) or SkillUps.config.maxSkillUps or 50))
+  SkillUps.config.maxSkillUps = value
+  while #SkillUps.history > value do
+    table.remove(SkillUps.history)
+  end
+end
+
 
 function SkillUps.RegisterHandlers()
 -- ===================================================================
@@ -168,6 +176,8 @@ end
 -- ===================================================================
 
 function SkillUps.init()
+  SkillUps.config.maxSkillUps = tonumber(Darkmists.GlobalSettings.skillUpsMaxEntries)
+    or SkillUps.config.maxSkillUps
   SkillUps.RegisterHandlers()
   DMLogger.log("SkillUps",string.format("%sTracker initialized. Type '%sskillups%s' to view history.", DarkmistsTheme.goodTag, DarkmistsTheme.textTag, DarkmistsTheme.goodTag))
 end

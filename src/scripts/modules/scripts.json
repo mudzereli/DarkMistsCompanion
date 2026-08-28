@@ -24,6 +24,12 @@
               "isFolder": "no"
        },
        {
+              "name": "DMWalkAlert",
+              "isActive": "yes",
+              "script": "",
+              "isFolder": "no"
+       },
+       {
               "name": "DMSkillups",
               "isActive": "yes",
               "script": "",

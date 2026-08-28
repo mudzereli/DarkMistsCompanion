@@ -62,6 +62,7 @@ function DarkmistsTheme.buildNeutralTheme()
   -- Retro-terminal palette: near-black purple-tinted bar with purple accent.
   t.panel = {
     headerBg            = "rgba(20,10,40,35%)",
+    sectionBg           = "rgba(8,4,18,60%)",
     headerBorder        = "rgba(150,120,255,22%)",
     headerAccent        = "rgba(150,120,255,45%)",
     buttonBg            = "rgba(20,10,40,30%)",
@@ -166,6 +167,7 @@ function DarkmistsTheme.buildTheme()
   if light then
     t.panel = {
       headerBg            = "rgb(244,241,250)",
+      sectionBg           = "rgb(229,224,240)",
       headerBorder        = "rgb(210,198,235)",
       headerAccent        = "rgb(100,70,190)",
       buttonBg            = "rgb(255,255,255)",
@@ -179,10 +181,20 @@ function DarkmistsTheme.buildTheme()
       buttonRefreshColor  = "#5b3fd4",
       buttonClearColor    = "#c0392b",
       buttonIgnoreColor   = "#9a6a00",
+      -- Chat history filter buttons
+      buttonAllColor      = "#5b3fd4",
+      buttonSayColor      = "#a16207",
+      buttonYellColor     = "#0e7490",
+      buttonTellColor     = "#15803d",
+      buttonGroupColor    = "#7e22ce",
+      buttonOOCColor      = "#0369a1",
+      buttonNewbieColor   = "#4d7c0f",
+      buttonHouseColor    = "#4b5563",
     }
   else
     t.panel = {
       headerBg            = "rgba(12,6,26,55%)",
+      sectionBg           = "rgba(5,2,14,70%)",
       headerBorder        = "rgba(150,120,255,20%)",
       headerAccent        = "rgba(150,120,255,45%)",
       buttonBg            = "rgba(12,6,26,35%)",
@@ -196,6 +208,15 @@ function DarkmistsTheme.buildTheme()
       buttonRefreshColor  = "#a78bfa",
       buttonClearColor    = "#ff7b6b",
       buttonIgnoreColor   = "#ffd27a",
+      -- Chat history filter buttons
+      buttonAllColor      = "#a78bfa",
+      buttonSayColor      = "#fbbf24",
+      buttonYellColor     = "#7dd3fc",
+      buttonTellColor     = "#4ade80",
+      buttonGroupColor    = "#c084fc",
+      buttonOOCColor      = "#67e8f9",
+      buttonNewbieColor   = "#86efac",
+      buttonHouseColor    = "#d6dbe3",
     }
   end
 

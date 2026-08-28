@@ -10,6 +10,10 @@
 DamageMessages = {}
 
 local function onDamage(_, info)
+  if Darkmists and Darkmists.GlobalSettings
+      and Darkmists.GlobalSettings.damageMessageEnabled == false then
+    return
+  end
   if info.avgDamage <= 0 then return end
 
   local settings = Darkmists and Darkmists.GlobalSettings or {}
@@ -17,10 +21,15 @@ local function onDamage(_, info)
   local mode  = settings.damageMessageMode  or "avg"
 
   local message
-  if mode == "range" then
+  if mode == "both" then
     message = string.format(
       " <dim_gray>(<%s>%d<dim_gray>-<%s>%d<dim_gray>, avg: <%s>%d<dim_gray>)",
       color, info.minDamage, color, info.maxDamage, color, info.avgDamage
+    )
+  elseif mode == "range" then
+    message = string.format(
+      " <dim_gray>(<%s>%d<dim_gray>-<%s>%d<dim_gray>)",
+      color, info.minDamage, color, info.maxDamage
     )
   else
     message = string.format(

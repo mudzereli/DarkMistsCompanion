@@ -93,7 +93,7 @@ function MapDestinations.checkAreaArrival()
 
   local currentAreaId = getRoomArea(currentRoom)
   if currentAreaId and currentAreaId == target.areaId then
-    DMLogger.notify("WALK", ("<green>Arrived in area <white>%s<green>, stopping walk."):format(target.areaName or tostring(target.areaId)))
+    DMLogger.notify("WALK", (DarkmistsTheme.goodTag .. "Arrived in area " .. DarkmistsTheme.textTag .. "%s" .. DarkmistsTheme.goodTag .. ", stopping walk."):format(target.areaName or tostring(target.areaId)))
     MapDestinations.clearAreaWalkTarget()
     MapDestinations.stopCurrentSpeedwalk()
   end
@@ -132,7 +132,7 @@ local function handleNavigationBlocked()
   raiseEvent("onMoveFail")
   MapDestinations._navigationBlockCount = MapDestinations._navigationBlockCount + 1
   if MapDestinations._navigationBlockCount >= MapDestinations._navigationBlockTilStop then
-    DMLogger.notify("WALK", "<red>Navigation blocked multiple times, stopping walk.")
+    DMLogger.notify("WALK", DarkmistsTheme.badTag .. "Navigation blocked multiple times, stopping walk.")
     MapDestinations.stop()
     MapDestinations._navigationBlockCount = 0
   end
@@ -177,7 +177,7 @@ function MapDestinations.load()
   DarkmistsEvents.add("MapDestinations.navigationBlocked", "dmapi.player.navigation.blocked", handleNavigationBlocked)
   DarkmistsEvents.add("MapDestinations.disconnect", "sysDisconnectionEvent", function()
     if MapDestinations._isWalking then
-      DMLogger.notify("WALK", "<red>Disconnected. Stopping walk.")
+      DMLogger.notify("WALK", DarkmistsTheme.badTag .. "Disconnected. Stopping walk.")
       MapDestinations.stop()
     end
   end)

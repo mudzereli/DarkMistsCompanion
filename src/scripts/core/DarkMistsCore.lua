@@ -122,18 +122,27 @@ Darkmists.DefaultSettings = {
   affectsWindowAffectModLength = 16,
   -- Spam prevention threshold before fallback/deny triggers
   spamThreshold = 24,
+  -- Spam prevention settings
+  spamEnabled = true,
+  spamMinLength = 3,
   -- Optional fallback command sent when spam threshold is reached
   spamFallbackCommand = "save",
   -- Clickable Item Link Color (lua showColors(3) to see allowable colors)
-  itemTrackerLinkColorDarkMode = "pale_goldenrod",
+  itemTrackerLinkColorDarkMode = "PaleGoldenrod",
   -- Clickable Item Link Color (lua showColors(3) to see allowable colors)
-  itemTrackerLinkColorLightMode = "dark_slate_blue",
+  itemTrackerLinkColorLightMode = "DarkSlateBlue",
   -- Delete original Affect lines when running Score/Affect commands
   affectsWindowDeleteOriginalLines = false,
   -- Delete original Who lines when running Who command
   whoWindowDeleteOriginalLines = false,
+  -- Chat and skill history limits
+  chatHistoryMaxMessages = 100,
+  skillUpsMaxEntries = 50,
   -- Stat Roller Leniency (0 = Roll must be Max, 1 = Roll can be 1 lower than Max, etc)
   statRollerLeniency = 1,
+  statRollerCalibrationLines = 20,
+  statRollerShowDetails = true,
+  statRollerSparklineWidth = 16,
   -- First Run Flag (for Setting up default settings)
   hasInitializedUILayout = false,
   -- First Time Intro Message?
@@ -144,7 +153,7 @@ Darkmists.DefaultSettings = {
   updateChannel = "stable",
   -- Damage Message Color (any Mudlet color name; use lua showColors() to list options)
   damageMessageColor = "red",
-  -- Damage Message Mode: "avg" = average only, "range" = min-max range with average
+  -- Damage Message Mode: "avg", "range", or "both"
   damageMessageMode = "avg",
   -- Damage Message Enabled: whether inline damage estimates are shown (persisted)
   damageMessageEnabled = true,
@@ -226,8 +235,8 @@ function Darkmists.PromptSafeReload(opts)
   Darkmists._reloadConfirmed = false
   local title = opts.title or "Reload UI"
   local body = opts.body or (
-    "Reloading the UI will reset the Dark Mists interface and apply any pending layout or theme changes. If you have unsaved settings, save them first.\n\n" ..
-    DarkmistsTheme.goodTag .. "Reload Now<r>" .. " to proceed, or close this panel to cancel.\n  "
+    DarkmistsTheme.textTag .. "Reloading the UI will reset the Dark Mists interface and apply any pending layout or theme changes. If you have unsaved settings, save them first.\n\n" ..
+    DarkmistsTheme.goodTag .. "Reload Now" .. DarkmistsTheme.textTag .. " to proceed, or close this panel to cancel.\n  "
   )
 
   DMAlertWindow.Show(title, function(win)
@@ -500,10 +509,19 @@ function Darkmists.LoadSettings()
     local settings = {}
 ---@diagnostic disable-next-line: undefined-field
     table.load(saveFilePath, settings)
-    
-    -- Override user saved settings with Defaults derived from mudlet settings
-    settings.fontName = Darkmists.DefaultSettings.fontName
-    settings.fontSize = Darkmists.DefaultSettings.fontSize
+    -- Migrate older ShowDMG names once, without overwriting newer values.
+    if settings.damageMessageEnabled == nil and settings.showdmgEnabled ~= nil then
+      settings.damageMessageEnabled = settings.showdmgEnabled
+    end
+    if settings.damageMessageMode == nil and settings.showdmgMode ~= nil then
+      settings.damageMessageMode = settings.showdmgMode
+    end
+    if settings.damageMessageColor == nil and settings.showdmgColor ~= nil then
+      settings.damageMessageColor = settings.showdmgColor
+    end
+    -- Fill missing font settings from Mudlet without overwriting user values.
+    settings.fontName = settings.fontName or Darkmists.DefaultSettings.fontName
+    settings.fontSize = settings.fontSize or Darkmists.DefaultSettings.fontSize
 
     -- Merge settings (preserve values even if layoutCacheVersion missing)
     DMUtil.deep_copy_into(Darkmists.GlobalSettings, settings)
@@ -650,7 +668,10 @@ function Darkmists.CleanupUI(opts)
 
   if DMAlertWindow and DMAlertWindow.Hide then pcall(DMAlertWindow.Hide) end
   if DMAlertWindow and DMAlertWindow.destroy then pcall(DMAlertWindow.destroy) end
+  if DMSettingsPanel and DMSettingsPanel.destroy then pcall(DMSettingsPanel.destroy) end
+  if DMSettings and DMSettings.clear then pcall(DMSettings.clear) end
   if AffectsWindow and AffectsWindow.destroy then pcall(AffectsWindow.destroy) end
+  if ChatHistory and ChatHistory.destroy then pcall(ChatHistory.destroy) end
   if WhoWindow and WhoWindow.destroy then pcall(WhoWindow.destroy) end
   if ScorePanel and ScorePanel.destroy then pcall(ScorePanel.destroy) end
   if DarkMistsMiniMap and DarkMistsMiniMap.destroy then pcall(DarkMistsMiniMap.destroy) end
@@ -679,6 +700,7 @@ function Darkmists.LoadUIScripts()
   ScorePanel.init()
   DarkMistsMiniMap.init()
   MapColors.init()
+  if DMSettingsPanel and DMSettingsPanel.init then DMSettingsPanel.init() end
   Darkmists.UI_LOADED = true
   log("UI Scripts Loaded")
 end

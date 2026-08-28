@@ -22,6 +22,9 @@ WhoWindow.config = {}
 -- State
 WhoWindow.lines = {}                      -- array of formatted player lines
 WhoWindow.window = nil                    -- container tab panel
+WhoWindow.header = nil                    -- fixed header strip label
+WhoWindow.headerBox = nil                 -- header HBox (for reflow)
+WhoWindow.controls = nil                  -- header controls (age label, buttons)
 WhoWindow.console = nil                   -- Geyser.MiniConsole instance
 WhoWindow.playerCount = 0                 -- last captured player count
 
@@ -34,18 +37,28 @@ function WhoWindow.create()
   -- avoid recreating UI if already present
   if WhoWindow.window and WhoWindow.console then return end
 
-  -- create a tabbed panel that will host the mini console
-  WhoWindow.window = Darkmists.createTabPanel("WhoWindow", "Who List", "Who")
+  -- Fixed interactive header (live Players Online + Age label and a Refresh
+  -- button) above the scrollable player-list console, using the same
+  -- DMPanelHeader template as the Affects window.
+  local panelColors = DarkmistsTheme.panel or {}
 
-  -- MiniConsole is used for small read-only, scrollable text output
-  WhoWindow.console = Geyser.MiniConsole:new({
-      name   = "WhoWindowConsole",
-      x      = "1%",
-      y      = "1%",
-      width  = "98%",
-      height = "98%",
-      color  = Darkmists.getDefaultBackgroundColor(),
-    }, WhoWindow.window)
+  local ph = DMPanelHeader.create("WhoWindow", "Who List", "Who", {
+    consoleColor = Darkmists.getDefaultBackgroundColor(),
+    font = WhoWindow.config.fontName,
+    fontSize = WhoWindow.config.fontSize,
+    buttons = {
+      { key = "refresh", label = "Refresh", marginX = 1, marginR = 4,
+        color = panelColors.buttonRefreshColor or "#a78bfa",
+        tooltip = "Refresh player list",
+        onClick = function() send("who") end },
+    },
+  })
+
+  WhoWindow.window    = ph.panel
+  WhoWindow.header    = ph.header
+  WhoWindow.headerBox = ph.hbox
+  WhoWindow.controls  = ph.controls
+  WhoWindow.console   = ph.console
 
   -- configure fonts and behavior for readability
   WhoWindow.console:setFont(WhoWindow.config.fontName)
@@ -75,6 +88,9 @@ function WhoWindow.destroy()
     pcall(WhoWindow.window.delete, WhoWindow.window)
   end
   WhoWindow.window = nil
+  WhoWindow.header = nil
+  WhoWindow.headerBox = nil
+  WhoWindow.controls = nil
 
   WhoWindow.lines = {}
   WhoWindow.playerCount = 0
@@ -85,39 +101,30 @@ end
 -- DISPLAY FUNCTIONS
 -- ===================================================================
 
---- Display header with player count and age
--- @param age number Seconds since last update
-local function displayHeader(age)
-  -- choose colorized template based on global light/dark setting
-  WhoWindow.console:cecho(string.format(
-    "%sPlayers Online: %s%d %s| %sAge: %s%ds%s | ",
-    DarkmistsTheme.goodTag,
-    DarkmistsTheme.infoTag,
-    WhoWindow.playerCount,
-    DarkmistsTheme.textTag,
-    DarkmistsTheme.highlightTag,
-    DarkmistsTheme.infoTag,
-    age,
-    DarkmistsTheme.textTag
-  ))
-  resetFormat()
+--- Update the fixed header (live Players Online + Age label) without
+-- touching the console. Called after capture and on every prompt tick so
+-- the age stays current without rebuilding the whole player list.
+function WhoWindow.updateHeader()
+  if not WhoWindow.controls then return end
 
-  WhoWindow.console:cechoLink(
-    DarkmistsTheme.textTag .. "<u>[Refresh]",
-    function() send("who") end,
-    "Refresh player list",
-    true
-  )
+  local ageLabel = WhoWindow.controls.age
+  if not ageLabel then return end
 
-  -- spacing between header and entries
-  WhoWindow.console:cecho("\n\n")
+  local infoHex = cecho2hecho("<" .. DarkmistsTheme.info .. ">") or "#ffffff"
+  local goodHex = cecho2hecho("<" .. DarkmistsTheme.good .. ">") or "#7ee787"
+  local dimHex  = cecho2hecho("<" .. DarkmistsTheme.muted .. ">") or "#8a8a8a"
+
+  local age = os.time() - (WhoWindow.config.lastUpdated or os.time())
+  ageLabel:echo(
+    ("<span style='color:%s;'><b>Players Online: %d</b></span> <span style='color:%s;'>|</span> <span style='color:%s;'><b>Age: %ds</b></span>")
+    :format(infoHex, WhoWindow.playerCount or 0, dimHex, goodHex, age))
 end
 
 --- Update age display and refresh window
 -- Called by prompt / periodic events so the age shown stays current
 function WhoWindow.updateAge()
   if not WhoWindow.window or WhoWindow.config.lastUpdated == 0 then return end
-  WhoWindow.render()
+  WhoWindow.updateHeader()
 end
 
 --- Capture and display the player list
@@ -143,6 +150,7 @@ function WhoWindow.capturePlayerList()
   local current = getLineNumber()
   local headers = 0
   local i = 1
+  local capturedLineNumbers = {}
 
   -- iterate backwards until we've found `numPlayers` entries or a safety limit
   while headers < numPlayers and i < 999 do
@@ -156,6 +164,7 @@ function WhoWindow.capturePlayerList()
     -- detect player entry lines by their bracketed prefix (e.g. [rank])
     if text:match("^%[[^%]]+%]") then
       headers = headers + 1
+      table.insert(capturedLineNumbers, target)
 
       -- copy the formatted line (colors preserved) into our list
       selectCurrentLine()
@@ -165,7 +174,18 @@ function WhoWindow.capturePlayerList()
     i = i + 1
   end
 
+  if WhoWindow.config.deleteOriginalLines and type(deleteLine) == "function" then
+    -- Delete from the highest line number downward so earlier targets keep
+    -- their original cursor positions as lines are removed.
+    table.sort(capturedLineNumbers, function(a, b) return a > b end)
+    for _, target in ipairs(capturedLineNumbers) do
+      moveCursor(0, target)
+      deleteLine()
+    end
+  end
+
   -- refresh UI after capture
+  WhoWindow.updateHeader()
   WhoWindow.render()
 
 end
@@ -176,10 +196,6 @@ function WhoWindow.render()
   if WhoWindow.config.lastUpdated == 0 then return end
   
   WhoWindow.console:clear()
-
-  -- compute age (seconds since last capture) and render header
-  local age = os.time() - WhoWindow.config.lastUpdated
-  displayHeader(age)
 
   -- render each captured, formatted entry line
   for _, entry in ipairs(WhoWindow.lines) do
@@ -215,7 +231,7 @@ function WhoWindow.init()
   WhoWindow.config.fontName = Darkmists.GlobalSettings.fontName
 
   -- whether to delete the original who lines from the main window
-  WhoWindow.config.deleteOriginalLines = Darkmists.GlobalSettings.whoWindowDeleteOriginalLines
+  WhoWindow.refreshConfig()
 
   -- timestamp (os.time) of the last successful capture; 0 == never
   WhoWindow.config.lastUpdated = WhoWindow.config.lastUpdated or 0
@@ -233,4 +249,8 @@ function WhoWindow.init()
   )
 
   Darkmists.Log("WhoWindow", "Initialized")
+end
+
+function WhoWindow.refreshConfig()
+  WhoWindow.config.deleteOriginalLines = Darkmists.GlobalSettings.whoWindowDeleteOriginalLines == true
 end

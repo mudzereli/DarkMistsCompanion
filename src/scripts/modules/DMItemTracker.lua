@@ -19,7 +19,8 @@
 local WHO_HEADER_PATTERN = "^%[[^%]]*[A-Za-z][^%]]*%]"
 
 local function apply_theme_colors(target)
-  target.itemLinkColor = DarkmistsTheme.goldTag
+  local globalSettings = Darkmists and Darkmists.GlobalSettings or {}
+  target.itemLinkColor = globalSettings.itemTrackerLinkColorDarkMode or DarkmistsTheme.goldTag
   target.tooltipItemDetailsColor = "white"
   target.tooltipItemNameColor = "black"
   target.tooltipHeaderBGColor = {255, 255, 255, 255}
@@ -29,7 +30,7 @@ local function apply_theme_colors(target)
   target.tooltipEmptyColor = "slate_gray"
 
   if Darkmists.GlobalSettings.lightMode then
-    target.itemLinkColor = DarkmistsTheme.purpleTag
+    target.itemLinkColor = globalSettings.itemTrackerLinkColorLightMode or DarkmistsTheme.purpleTag
     target.tooltipItemDetailsColor = "black"
     target.tooltipItemNameColor = "white"
     target.tooltipHeaderBGColor = {0, 0, 0, 255}
@@ -38,7 +39,7 @@ local function apply_theme_colors(target)
     target.tooltipBorderColor = {0, 0, 0, 255}
   end
 
-  --target.itemLinkColor = string.format("<%s>", target.itemLinkColor)
+  target.itemLinkColor = string.format("<%s>", target.itemLinkColor)
   target.tooltipItemNameColor = string.format("<%s>", target.tooltipItemNameColor)
   target.tooltipItemDetailsColor = string.format("<%s>", target.tooltipItemDetailsColor)
   target.tooltipEmptyColor = string.format("<%s>", target.tooltipEmptyColor)
@@ -757,6 +758,10 @@ function ItemTracker.handleClick(name)
   end
 end
 
+function ItemTracker.refreshThemeColors()
+  apply_theme_colors(ItemTracker.settings)
+end
+
 -- ============================================================================
 -- Initialization
 -- ============================================================================
@@ -767,7 +772,7 @@ function ItemTracker.init()
     ItemTracker._capturingList = false
   end)
 
-  apply_theme_colors(ItemTracker.settings)
+  ItemTracker.refreshThemeColors()
   ItemTracker.loadFiles {
     getMudletHomeDir() .. "/DarkMistsCompanion/assets/darkmists_items.json",
     getMudletHomeDir() .. "/DarkMistsCompanion/assets/custom_items.json"

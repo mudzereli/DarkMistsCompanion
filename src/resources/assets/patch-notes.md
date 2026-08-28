@@ -65,8 +65,20 @@
 **Alert Window**: now a movable window - drag by the title bar, closes via the [X]; keeps the retro styling.
 **DMAPI**: centralized all line-matching patterns into a single `DMPatterns` module for easier maintenance.
 
+**DMC Patch Notes: 1.6.0**
+
+**Settings Panel**: added settings window (available from the Button Bar and `dmc settings`) to expose many settings which were previously command based or unavailable. no more digging through help for a bunch of commands! :)
+**Chat History**: Channel Filters added to header - single-letter buttons (A/S/Y/T/G/O/N/H) for All, Say, Yell, Tell, Group, OOC, Newbie, and House. Click to show or hide each channel.
+**Walker**: `walk list` had some formatting enhancements and now opens in a moveable alert window.
+**Enchanter Assist**: weapon-only formulas now open an alert window when it stops
+**Alchemy Material List**: added a material checklist which filters the material list based on remaining needed essences `Modules > Enchant Assist > EA Tools > Alchemy Mat List`
+**DMAPI**: fix some bugs with player state (would sometimes get stuck at `standing`)
+**Affects Window**: reordered the header buttons.
+**Walker**: walk status messages now adapt correctly to light/dark mode.
+**Stat Roller**: general code clean-up
+**Alert Window**: styling updates.
+
 **Future Versions**
-- header for WHO window (like affects window)
-- improved styling on alert window
-- REAL settings page and HELP pages
+- remove update channel from Appearance options
+- minimap startup performance improvements
 - backwards compatibility testing No newline at end of file

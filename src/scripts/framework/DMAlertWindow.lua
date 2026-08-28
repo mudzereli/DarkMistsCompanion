@@ -30,7 +30,7 @@ local function _applyTheme()
   local light = Darkmists and Darkmists.GlobalSettings and Darkmists.GlobalSettings.lightMode
   local p = (DarkmistsTheme and DarkmistsTheme.panel) or {}
 
-  local adjStyle, exitStyle, titleColor, bodyColor
+  local adjStyle, exitStyle, minimizeStyle, titleColor, bodyColor
   if light then
     adjStyle = [[
 QLabel {
@@ -42,6 +42,10 @@ QLabel {
     exitStyle = [[
 QLabel { color: #c22; background-color: rgba(255,230,230,70%); border: 1px solid rgba(200,60,60,50%); border-radius: 0px; font-weight: bold; qproperty-alignment: 'AlignVCenter | AlignCenter'; }
 QLabel:hover { background-color: rgb(255,215,215); border-color: rgb(180,50,50); }
+]]
+  minimizeStyle = [[
+QLabel { color: #a87500; background-color: rgba(255,245,200,70%); border: 1px solid rgba(200,160,40,50%); border-radius: 0px; font-weight: bold; qproperty-alignment: 'AlignVCenter | AlignCenter'; }
+QLabel:hover { background-color: rgb(255,235,160); border-color: rgb(180,130,30); }
 ]]
     titleColor = "#202020"
     bodyColor = { 235, 235, 235 }
@@ -57,15 +61,43 @@ QLabel {
 QLabel { color: #ff6b6b; background-color: rgba(40,10,10,80%); border: 1px solid rgba(255,90,90,40%); border-radius: 0px; font-weight: bold; qproperty-alignment: 'AlignVCenter | AlignCenter'; }
 QLabel:hover { background-color: rgba(255,90,90,25%); border-color: rgba(255,120,110,70%); }
 ]]
+  minimizeStyle = [[
+QLabel { color: #ffd166; background-color: rgba(70,55,10,80%); border: 1px solid rgba(255,210,70,40%); border-radius: 0px; font-weight: bold; qproperty-alignment: 'AlignVCenter | AlignCenter'; }
+QLabel:hover { background-color: rgba(255,210,70,25%); border-color: rgba(255,220,100,70%); }
+]]
     titleColor = "#e0d6ff"
     bodyColor = { 18, 18, 18 }
   end
 
   panel.container.adjLabel:setStyleSheet(adjStyle)
   panel.container.exitLabel:setStyleSheet(exitStyle)
-  panel.container.minimizeLabel:setStyleSheet(exitStyle)
+  panel.container.minimizeLabel:setStyleSheet(minimizeStyle)
   panel.container:setTitle(nil, titleColor)
   panel.body:setColor(unpack(bodyColor))
+end
+
+local function resizeBodyArea(width, height)
+  if not panel.container or not panel.container.Inside then return end
+
+  width = tonumber(width) or panel.container:get_width()
+  height = tonumber(height) or panel.container:get_height()
+
+  local titleBarH = (panel.container.buttonsize or 16) + 10
+  local pad = panel.container.padding or 0
+  local gap = panel.bodyGap
+  local bodyWidth = math.max(0, width - pad * 2)
+  local bodyHeight = math.max(0, height - titleBarH - gap - pad)
+
+  panel.container.Inside:move(pad, titleBarH + gap)
+  panel.container.Inside:resize(bodyWidth, bodyHeight)
+
+  if panel.body then
+    local bodyFontSize = panel.bodyFontSize
+    local charWidth = calcFontSize(bodyFontSize) or 8
+    if charWidth <= 0 then charWidth = 8 end
+    local wrapAt = math.max(20, math.floor(bodyWidth / charWidth) - 2)
+    setWindowWrap(panel.body.name, wrapAt)
+  end
 end
 
 local function ensure_init()
@@ -89,14 +121,17 @@ local function ensure_init()
     name = "dmalert_body",
     x = 0, y = 0,
     width = "100%", height = "100%",
-  }, panel.container)
+  }, panel.container.Inside)
   panel.body:setFont(getFont())
   panel.body:setFontSize(panel.bodyFontSize)
   panel.body:disableScrollBar()
   panel.body:disableScrolling()
 
-  -- Keep only the close button for a clean, alert-like title bar.
-  panel.container.minimizeLabel:hide()
+  -- Expose the native minimize/restore control beside the close button.
+  panel.container.minimizeLabel:show()
+  panel.container.minimizeLabel:setFontSize(12)
+  panel.container.minimizeLabel:setAlignment("c")
+  panel.container.minimizeLabel:echo("<center><span style='color:#ffd166;'><b>—</b></span></center>")
 
   -- Retro red close button. QSS color can't recolor rich-text labels, so the
   -- red comes from the echoed span; the stylesheet adds the border + hover.
@@ -108,6 +143,12 @@ local function ensure_init()
   -- on subsequent repositions.
   local btnW = panel.container.buttonsize + 8
   local btnH = panel.container.buttonsize + 10   -- title bar height
+  panel.container.minimizeLabel.width  = btnW
+  panel.container.minimizeLabel.height = btnH
+  panel.container.minimizeLabel.x = -((btnW * 2)+4)
+  panel.container.minimizeLabel.y = 0
+  panel.container.minimizeLabel:resize(btnW, btnH)
+  panel.container.minimizeLabel:move(panel.container.minimizeLabel.x, panel.container.minimizeLabel.y)
   panel.container.exitLabel.width  = btnW
   panel.container.exitLabel.height = btnH
   panel.container.exitLabel.x = -btnW   -- flush against the far right corner
@@ -115,6 +156,14 @@ local function ensure_init()
   panel.container.exitLabel:resize(btnW, btnH)
   panel.container.exitLabel:move(panel.container.exitLabel.x, panel.container.exitLabel.y)
   panel.container.exitLabel:setClickCallback(function() DMAlertWindow.Hide() end)
+
+  if DarkmistsEvents and DarkmistsEvents.add then
+    DarkmistsEvents.add("DMAlertWindow.reposition", "AdjustableContainerReposition", function(_, name, width, height)
+      if name == panel.container.name then
+        resizeBodyArea(width, height)
+      end
+    end)
+  end
 
   _applyTheme()
   panel.container:hide()
@@ -136,6 +185,10 @@ function DMAlertWindow.Show(title, renderFunc, opts)
   if _current then
     table.insert(_queue, { title = title, render = renderFunc, opts = opts })
     return
+  end
+
+  if panel.container.minimized then
+    panel.container:restore()
   end
 
   _current = opts
@@ -167,27 +220,14 @@ function DMAlertWindow.Show(title, renderFunc, opts)
   panel.container:resize(w, h)
   panel.container:move(px, py)
 
-  -- Fit the body to the content area: start below the title bar with a small
-  -- gap so the console doesn't sit flush against the title. The stored
-  -- geometry is updated too so Adjustable's reposition keeps this until the
-  -- next Show.
-  local titleBarH = panel.container.buttonsize + 10
-  local pad = panel.container.padding
-  local gap = panel.bodyGap
-  panel.container.Inside.x = pad
-  panel.container.Inside.y = titleBarH + gap
-  panel.container.Inside.width = w - pad * 2
-  panel.container.Inside.height = h - titleBarH - gap - pad
-  panel.container.Inside:move(pad, titleBarH + gap)
-  panel.container.Inside:resize(w - pad * 2, h - titleBarH - gap - pad)
+  -- Fit the body to the content area below the title bar.
+  resizeBodyArea(w, h)
 
   -- Body font + wrap computed from the actual pixel width
   local bodyFontSize = opts.bodyFontSize or panel.bodyFontSize
+  panel.bodyFontSize = bodyFontSize
   panel.body:setFontSize(bodyFontSize)
-  local charWidth = calcFontSize(bodyFontSize) or 8  -- calcFontSize returns charW, charH
-  if charWidth <= 0 then charWidth = 8 end
-  local wrapAt = math.max(20, math.floor((w - panel.container.padding * 2) / charWidth) - 2)
-  setWindowWrap(panel.body.name, wrapAt)
+  resizeBodyArea(w, h)
 
   if opts.scrollable then
     panel.body:enableScrollBar()
@@ -234,6 +274,9 @@ end
 
 -- Tear down the Geyser container on unload (reload safety)
 function DMAlertWindow.destroy()
+  if DarkmistsEvents and DarkmistsEvents.remove then
+    DarkmistsEvents.remove("DMAlertWindow.reposition")
+  end
   if panel.container and panel.container.delete then
     pcall(panel.container.delete, panel.container)
   end
