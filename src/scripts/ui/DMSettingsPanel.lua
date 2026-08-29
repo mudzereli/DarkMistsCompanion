@@ -28,6 +28,14 @@ local actionWidth = 92
 local integerButtonWidth = 44
 local integerButtonGap = 4
 local inputWidth = actionX + actionWidth - controlX
+local rgbaInputWidth = 160
+local rgbaSwatchX = controlX + rgbaInputWidth + 6
+local rgbaSwatchWidth = 38
+local rgbaPickerX = rgbaSwatchX + rgbaSwatchWidth + 6
+local rgbaPickerWidth = 70
+local rgbaChannelButtonWidth = 44
+local rgbaChannelValueX = 112
+local rgbaChannelPlusX = 164
 local headerMargin = 0
 local headerY = 8
 local headerHeight = 128
@@ -66,6 +74,7 @@ local selectedButtonStyle
 local selectedButtonTextColor
 local inputStyle
 local colorMenuStyle
+local rgbaPickerStyle
 local containerStyle
 local headerControlStyle
 local notificationStyle
@@ -213,6 +222,13 @@ local function refreshThemeStyles()
   }
 ]], headerBg, headerBorder)
 
+  rgbaPickerStyle = string.format([[
+  QLabel {
+    background-color: %s;
+    border: 1px solid %s;
+  }
+]], headerBg, headerBorder)
+
   containerStyle = string.format("QLabel { background-color: %s; }", buttonBg)
 
   headerControlStyle = string.format([[
@@ -347,6 +363,14 @@ local function closeColorMenu(control)
   control.menuOpen = false
 end
 
+local function closeOtherColorMenus(activeControl)
+  for _, control in pairs(DMSettingsPanel.controls) do
+    if control ~= activeControl and control.menuOpen then
+      closeColorMenu(control)
+    end
+  end
+end
+
 local function colorSwatchStyle(color, selected)
   local red, green, blue = Geyser.Color.parse(color)
   if not red then
@@ -363,6 +387,29 @@ local function colorSwatchStyle(color, selected)
     }
     QLabel::hover { border: 2px solid %s; }
   ]], red, green, blue, borderColor, hoverBorder)
+end
+
+local function parseRGBA(value)
+  local red, green, blue, alpha = tostring(value or ""):match(
+    "^(%d+),(%d+),(%d+),(%d+)$"
+  )
+  return tonumber(red) or 0, tonumber(green) or 0,
+    tonumber(blue) or 0, tonumber(alpha) or 255
+end
+
+local function rgbaSwatchStyle(value, selected)
+  local red, green, blue, alpha = parseRGBA(value)
+  local panel = (DarkmistsTheme and DarkmistsTheme.panel) or {}
+  local borderColor = selected and opaqueColor(panel.buttonActiveBorder, "#f0c674")
+    or opaqueColor(panel.buttonBorder, "#394550")
+  local hoverBorder = panel.buttonHoverFg or "#ffffff"
+  return string.format([[
+    QLabel {
+      background-color: rgba(%d, %d, %d, %d%%);
+      border: 2px solid %s;
+    }
+    QLabel::hover { border: 2px solid %s; }
+  ]], red, green, blue, math.floor(alpha * 100 / 255 + 0.5), borderColor, hoverBorder)
 end
 
 local function refreshColorMenu(control)
@@ -424,7 +471,83 @@ local function toggleColorMenu(control, y)
   if control.menuOpen then
     closeColorMenu(control)
   else
+    closeOtherColorMenus(control)
     refreshColorMenu(control)
+    control.menu:show()
+    control.menuOpen = true
+  end
+end
+
+local function refreshRGBAControl(control)
+  local current = tostring(DMSettings.value(control.setting.key) or "")
+  if control.input and control.input.getText and control.input:getText() ~= current then
+    control.input:print(current)
+  end
+  if control.swatch then
+    control.swatch:setStyleSheet(rgbaSwatchStyle(current, true))
+    if control.swatch.setToolTip then
+      control.swatch:setToolTip("Current color: " .. current)
+    end
+  end
+  if control.channelValues then
+    local red, green, blue, alpha = parseRGBA(current)
+    local values = {red, green, blue, alpha}
+    for index, value in ipairs(values) do
+      control.channelValues[index]:echo(tostring(value))
+    end
+  end
+end
+
+local function adjustRGBAChannel(control, index, delta)
+  local values = {parseRGBA(DMSettings.value(control.setting.key))}
+  values[index] = math.max(0, math.min(255, values[index] + delta))
+  DMSettingsPanel.apply(control.setting.key, table.concat(values, ","))
+end
+
+local function makeRGBAColorMenu(control, y)
+  local keyName = control.setting.key:gsub("[^%w]", "_")
+  local menuWidth = 220
+  local menuHeight = 140
+  control.menu = Geyser.Container:new({
+    name = "DMSettingsRGBAColorMenu_" .. keyName,
+    x = controlX, y = y + rowHeight - 2,
+    width = menuWidth, height = menuHeight,
+  }, control.parent)
+  makeLabel("DMSettingsRGBAColorMenuBackground_" .. keyName, 0, 0,
+    "100%", "100%", "", control.menu, rgbaPickerStyle)
+
+  local names = {"Red", "Green", "Blue", "Alpha"}
+  control.channelValues = {}
+  for index, name in ipairs(names) do
+    local channelY = 6 + (index - 1) * 31
+    makeLabel("DMSettingsRGBAColorName_" .. keyName .. "_" .. index,
+      8, channelY, 52, 24, name, control.menu, valueStyle, valueTextColor)
+    makeButton("DMSettingsRGBAMinus_" .. keyName .. "_" .. index,
+      64, channelY, rgbaChannelButtonWidth, "-16", function()
+        adjustRGBAChannel(control, index, -16)
+      end, control.menu)
+    local value = makeLabel("DMSettingsRGBAValue_" .. keyName .. "_" .. index,
+      rgbaChannelValueX, channelY, 48, 24, "", control.menu, valueStyle, valueTextColor)
+    value:setAlignment("center")
+    control.channelValues[index] = value
+    makeButton("DMSettingsRGBAPlus_" .. keyName .. "_" .. index,
+      rgbaChannelPlusX, channelY, rgbaChannelButtonWidth, "+16", function()
+        adjustRGBAChannel(control, index, 16)
+      end, control.menu)
+  end
+
+  refreshRGBAControl(control)
+  return control.menu
+end
+
+local function toggleRGBAColorMenu(control, y)
+  if not control.menu then makeRGBAColorMenu(control, y) end
+  if control.menuOpen then
+    control.menu:hide()
+    control.menuOpen = false
+  else
+    closeOtherColorMenus(control)
+    refreshRGBAControl(control)
     control.menu:show()
     control.menuOpen = true
   end
@@ -441,7 +564,7 @@ local function makeRow(setting, y)
   end
 
   local control = {setting = setting, parent = parent}
-  if setting.type == "text" or setting.type == "rgba" then
+  if setting.type == "text" then
     local input = Geyser.CommandLine:new({
       name = "DMSettingsInput_" .. keyName,
       x = controlX, y = y,
@@ -456,6 +579,32 @@ local function makeRow(setting, y)
       DMSettingsPanel.apply(settingKey, text)
     end, setting.key)
     control.input = input
+  elseif setting.type == "rgba" then
+    local input = Geyser.CommandLine:new({
+      name = "DMSettingsInput_" .. keyName,
+      x = controlX, y = y,
+      width = rgbaInputWidth, height = rowHeight - 6,
+    }, parent)
+    input:setStyleSheet(inputStyle)
+    input:setFontSize(inputFontSize)
+    if setting.description and input.setToolTip then
+      input:setToolTip(setting.description)
+    end
+    input:setAction(function(settingKey, text)
+      DMSettingsPanel.apply(settingKey, text)
+    end, setting.key)
+    control.input = input
+    control.swatch = makeLabel("DMSettingsRGBASwatch_" .. keyName,
+      rgbaSwatchX, y, rgbaSwatchWidth, rowHeight - 6, "", parent,
+      rgbaSwatchStyle(DMSettings.value(setting.key), true))
+    control.swatch:setClickCallback(function()
+      toggleRGBAColorMenu(control, y)
+    end)
+    control.swatch:setToolTip("Preview color and opacity")
+    control.selector = makeButton("DMSettingsRGBASelect_" .. keyName,
+      rgbaPickerX, y, rgbaPickerWidth, "Pick", function()
+        toggleRGBAColorMenu(control, y)
+      end, parent)
   else
     control.value = makeLabel("DMSettingsValue_" .. keyName, controlX, y,
       controlWidth, rowHeight - 6, "", parent, valueStyle, valueTextColor)
@@ -657,9 +806,13 @@ local function refreshControl(key, control)
       control.value:echo(displayValue(setting))
     end
   elseif control.input then
-    local value = tostring(DMSettings.value(key) or "")
-    if not control.input.getText or control.input:getText() ~= value then
-      control.input:print(value)
+    if control.swatch then
+      refreshRGBAControl(control)
+    else
+      local value = tostring(DMSettings.value(key) or "")
+      if not control.input.getText or control.input:getText() ~= value then
+        control.input:print(value)
+      end
     end
   end
 end
