@@ -78,7 +78,13 @@
 **Stat Roller**: general code clean-up
 **Alert Window**: styling updates.
 
+**DMC Patch Notes: 1.6.1**
+
+**Settings Panel**: status-bar color settings now include an RGBA picker with a live color preview and per-channel controls.
+**Player Window**: bank information now includes the clan account gold balance.
+
 **Future Versions**
 - remove update channel from Appearance options
+- remove rmdir and lfs commands if possible
 - minimap startup performance improvements
 - backwards compatibility testing No newline at end of file

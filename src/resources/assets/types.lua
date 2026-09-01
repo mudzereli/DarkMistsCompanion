@@ -72,6 +72,12 @@
 ---@field gold number
 ---@field silver number
 
+---@class dmapi.PlayerBank
+---@field gold number
+---@field silver number
+---@field house number
+---@field clan number
+
 ---@class dmapi.PlayerExperience
 ---@field total number
 ---@field tnl number
@@ -87,6 +93,7 @@
 ---@field online boolean
 ---@field age dmapi.PlayerAge
 ---@field currency dmapi.PlayerCurrency
+---@field bank dmapi.PlayerBank
 ---@field experience dmapi.PlayerExperience
 ---@field vitals dmapi.PlayerVitals
 ---@field status dmapi.PlayerStatus

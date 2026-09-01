@@ -320,6 +320,7 @@ const dmapi = {
         { name: "dmapi.player.bank.withdraw",      desc: "Bank withdrawal recorded",   dir: "in" },
         { name: "dmapi.player.bank.withdraw.fail", desc: "Bank withdrawal failed",     dir: "in" },
         { name: "dmapi.player.house.balance",      desc: "House balance updated",      dir: "in" },
+        { name: "dmapi.player.clan.balance",       desc: "Clan balance updated",       dir: "in" },
         { name: "dmapi.player.experience.gain",    desc: "Experience gained",          dir: "in" },
         { name: "dmapi.player.skill.improved",     desc: "Skill improved",             dir: "in" },
         { name: "dmapi.player.equipment.zapped",   desc: "Equipment zapped",           dir: "in" },
@@ -422,6 +423,7 @@ const eventPayloads = {
   "dmapi.player.bank.withdraw": "{\n  amount: number,\n  currency: string,\n  fee: number,\n  feeCurrency: string,\n  total: number,\n  line: string\n}",
   "dmapi.player.bank.withdraw.fail": "{\n  line: string\n}",
   "dmapi.player.house.balance": "{\n  gold: number,\n  line: string\n}",
+  "dmapi.player.clan.balance": "{\n  gold: number,\n  line: string\n}",
   "dmapi.player.experience.gain": "{\n  amount: number,\n  total: number,\n  tnl: number,\n  line: string\n}",
   "dmapi.player.skill.improved": "{\n  skill: string,\n  line: string\n}",
   "dmapi.player.equipment.zapped": "{\n  item: string,\n  line: string\n}"

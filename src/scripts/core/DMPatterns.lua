@@ -185,6 +185,7 @@ DMPatterns.BANK_BALANCE       = "^You have (%d+) gold coins and (%d+) silver in 
 DMPatterns.BANK_NO_ACCOUNT    = "You have no account here!"
 DMPatterns.HOUSE_BALANCE      = "^Your house's account has (%d+) gold in it%.$"
 DMPatterns.HOUSE_BALANCE_ALT  = "^Your house's balance is (%d+) gold%.$"
+DMPatterns.CLAN_BALANCE       = "^Your clan's account has (%d+) gold in it%.$"
 DMPatterns.BANK_DEPOSIT       = "^You deposit (%d+) (%a+)%."
 DMPatterns.BANK_WITHDRAW      = "^You withdraw (%d+) (%a+) and were charged an additional fee of (%d+) (%a+)%."
 DMPatterns.BANK_NO_FUNDS      = "^Sorry, but you do not have that much"
