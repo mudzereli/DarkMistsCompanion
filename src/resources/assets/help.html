@@ -309,7 +309,7 @@
       <!-- Status Bars -->
       <h2 id="ui-statusbars">Status Bars</h2>
       <p>
-        Horizontal gauges at the bottom of your Mudlet window showing your vitals at a glance.
+        Horizontal gauges initially positioned at the bottom of your Mudlet window showing your vitals at a glance.
         An enemy health bar appears automatically when you enter combat.
       </p>
 
@@ -366,7 +366,7 @@
       <p>
         Appearance includes pending Light/Dark theme mode, Full/Minimal UI mode, window font,
         font size, and safe screen-border percentages. Status Bars includes enabled state,
-        moveable mode, total height, and editable foreground/background RGBA colors. Windows includes Affects refresh and text lengths,
+        total height, and editable foreground/background RGBA colors. Status Bars are always movable. Windows includes Affects refresh and text lengths,
         original-line deletion, Who original-line deletion, Chat History message limit, and
         SkillUps history limit.
       </p>
@@ -382,7 +382,7 @@
         <thead><tr><th>Control group</th><th>Available settings</th></tr></thead>
         <tbody>
           <tr><td>Appearance</td><td>Theme, UI mode, window font, font size, border percentages</td></tr>
-          <tr><td>Status Bars</td><td>Enabled, moveable, total height, foreground/background RGBA colors</td></tr>
+          <tr><td>Status Bars</td><td>Enabled, total height, foreground/background RGBA colors</td></tr>
           <tr><td>Windows</td><td>Affects, Who, Chat History, and SkillUps display limits</td></tr>
           <tr><td>Enchanter Assist</td><td>Materials, recovery, workflow controls, and session reset</td></tr>
           <tr><td>ShowDMG</td><td>Damage messages, mode, and color</td></tr>
@@ -1492,11 +1492,6 @@
             <td><code>statusBarTotalHeightPercent</code></td>
             <td>number (0–100)</td>
             <td>Total vertical height of the status bar area as a percentage of the Mudlet window height.</td>
-          </tr>
-          <tr>
-            <td><code>statusBarsMoveable</code></td>
-            <td><code>true</code> / <code>false</code></td>
-            <td>Allow dragging the status bars to reposition them on screen.</td>
           </tr>
           <tr>
             <td><code>whoWindowDeleteOriginalLines</code></td>

@@ -425,14 +425,6 @@ local function setStatusBarEnabled(value)
   return true
 end
 
-local function setStatusBarMoveable(value)
-  setGlobalValue("statusBarsMoveable", value)
-  if StatusBar and StatusBar.container and StatusBar.setMoveable then
-    StatusBar.setMoveable(value)
-  end
-  return true
-end
-
 local function setStatusBarHeight(value)
   setGlobalValue("statusBarTotalHeightPercent", value)
   if StatusBar and StatusBar.container and StatusBar.setTotalHeightPercent then
@@ -621,15 +613,8 @@ local function registerStatusBars()
       reloadRequired = function() return not (StatusBar and StatusBar.container) end,
     },
     {
-      key = "statusBars.moveable", page = "Status Bars", group = "Status Bars",
-      label = "Moveable", type = "boolean", default = true,
-      get = function() return globalValue("statusBarsMoveable", true) end,
-      validate = validateBoolean, set = setStatusBarMoveable, save = saveGlobalSettings,
-      reloadRequired = function() return not (StatusBar and StatusBar.container) end,
-    },
-    {
       key = "statusBars.totalHeight", page = "Status Bars", group = "Status Bars",
-      label = "Total height %", type = "integer", default = 10,
+      label = "Height when attached %", type = "integer", default = 10,
       get = function() return globalValue("statusBarTotalHeightPercent", 10) end,
       validate = function(value) return validateInteger(value, 1, 40) end,
       set = setStatusBarHeight, save = saveGlobalSettings,

@@ -5,9 +5,9 @@
 -- - HP/MN/MV bars with enemy HP overlay
 -- - XP progress bar (auto-hides at level 51)
 -- - Auto-shows on login, hides on disconnect
--- - Persistent border height across reconnects
+-- - Persistent attached or floating layout across reconnects
 -- ===================================================================
-StatusBar = {}
+StatusBar = StatusBar or {}
 
 -- ===================================================================
 -- CONFIGURATION
@@ -15,7 +15,6 @@ StatusBar = {}
 -- Config is populated in StatusBar.init() so GlobalSettings is guaranteed
 -- to be loaded. A stub is kept here so pre-init guards (isEnabled) are safe.
 StatusBar.config = {}
-StatusBar._layoutLock = false
 
 -- ===================================================================
 -- UTILITY FUNCTIONS
@@ -160,6 +159,8 @@ end
 -- CLEANUP
 -- ===================================================================
 function StatusBar.cleanup()
+  StatusBar._recreateToken = (StatusBar._recreateToken or 0) + 1
+
   -- Destroy all gauges
   for _, name in ipairs({"hpGauge", "mnGauge", "mvGauge", "enemyGauge", "xpGauge"}) do
     local gauge = StatusBar[name]
@@ -170,6 +171,11 @@ function StatusBar.cleanup()
   end
 
   if StatusBar.container then
+    local saved, saveError = pcall(function() StatusBar.container:save() end)
+    if not saved then
+      Darkmists.Log(DarkmistsTheme.redTag.. "StatusBars",
+        "<yellow>Unable to save status-bar layout: " .. tostring(saveError))
+    end
     StatusBar.container:hide()
     StatusBar.container:delete()
     StatusBar.container = nil
@@ -177,8 +183,8 @@ function StatusBar.cleanup()
 
   -- Reset display-mode guard so the freshly-created gauge always gets styled.
   StatusBar._enemyGaugeDisplayMode = nil
-
-  Darkmists.SetWindowBorderPercent("bottom",0)
+  StatusBar.lastTnl = nil
+  StatusBar.maxTnl = nil
 end
 
 StatusBar.cleanup()  -- ensure reload safety
@@ -201,7 +207,6 @@ function StatusBar.create()
   local borders = Darkmists.GetBorderPercentages()
   local left   = borders.left
   local right  = borders.right
-  local bottom = borders.bottom
 
   local constraints = {
     name   = "StatusBarContainer",
@@ -211,19 +216,15 @@ function StatusBar.create()
     height = cfg.containerHeightPct .. "%",
   }
 
-  if cfg.moveable then
-    constraints.titleText = "Status Bars"
-    constraints.titleTxtColor = Darkmists.getDefaultTextColor()
-    constraints.padding = 10
-    constraints.adjLabelstyle = Darkmists.getDefaultAdjLabelstyle()
-    constraints.lockStyle = "border"
-    constraints.locked = false
-    constraints.autoSave = true
-    constraints.autoLoad = true
-    StatusBar.container = Adjustable.Container:new(constraints)
-  else
-    StatusBar.container = Geyser.Container:new(constraints)
-  end
+  constraints.titleText = "Status Bars"
+  constraints.titleTxtColor = Darkmists.getDefaultTextColor()
+  constraints.padding = 10
+  constraints.adjLabelstyle = Darkmists.getDefaultAdjLabelstyle()
+  constraints.lockStyle = "standard"
+  constraints.locked = true
+  constraints.autoSave = true
+  constraints.autoLoad = true
+  StatusBar.container = Adjustable.Container:new(constraints)
 
   StatusBar.container:show()
 
@@ -354,7 +355,7 @@ function StatusBar.updateEnemy(enemyData)
   if not isEnabled() then return end
   if not StatusBar.enemyGauge then return end
 
-  if StatusBar.config.moveable and not shouldShowEnemy() then
+  if not shouldShowEnemy() then
     setEnemyGaugeDisplayMode("status")
     StatusBar.enemyGauge:setValue(100, 100,
       ("<center><span style='font-size: 10pt; color: rgb(%s); font-weight: bold;'>%s</span></center>")
@@ -362,14 +363,6 @@ function StatusBar.updateEnemy(enemyData)
 
     if StatusBar.enemyGauge.hidden then
       StatusBar.enemyGauge:show()
-      StatusBar.reflow()
-    end
-    return
-  end
-
-  if not shouldShowEnemy() then
-    if StatusBar.enemyGauge and not StatusBar.enemyGauge.hidden then
-      StatusBar.enemyGauge:hide()
       StatusBar.reflow()
     end
     return
@@ -399,7 +392,9 @@ end
 
 function StatusBar.recreate()
   StatusBar.cleanup()
+  local recreateToken = StatusBar._recreateToken
   tempTimer(0, function()
+    if StatusBar._recreateToken ~= recreateToken then return end
     StatusBar.create()
     StatusBar.registerEvents()
     StatusBar.showAll()
@@ -407,42 +402,31 @@ function StatusBar.recreate()
   Darkmists.Log(DarkmistsTheme.redTag.. "StatusBars","Status Bars Recreated")
 end
 
+-- Refresh attached horizontal geometry after the main window changes size.
 function StatusBar.syncToBorders()
   if not StatusBar.container then return end
 
-  local borders = Darkmists.GetBorderPercentages()
-  local left = borders.left or 0
-  local right = borders.right or 0
-
-  if StatusBar.config.moveable then
-    -- For moveable containers: update width/position to follow the window,
-    -- but skip re-pinning (attachToBorder/lockContainer) to avoid dismissing
-    -- any open context menus.
+  local attached = StatusBar.container.attached
+  if attached == "top" or attached == "bottom" then
+    local borders = Darkmists.GetBorderPercentages()
+    local left = borders.left or 0
+    local right = borders.right or 0
     StatusBar.container:move(left .. "%", nil)
     StatusBar.container:resize((100 - left - right) .. "%", nil)
-    StatusBar.reflow(true)
-    return
   end
 
-  StatusBar.container:move(left .. "%", nil)
-  StatusBar.container:resize((100 - left - right) .. "%", nil)
   StatusBar.reflow()
   StatusBar.update()
   StatusBar.updateXP()
 end
 
-function StatusBar.reflow(skipPin)
+function StatusBar.reflow()
   if not StatusBar.container then return end
   if not isEnabled() then
-    Darkmists.SetWindowBorderPercent("bottom", 0)
     return
   end
 
-  local cfg = StatusBar.config
-  local container = StatusBar.container
-
-  -- In moveable mode, reserve the top lane to avoid vertical resize jitter.
-  local showEnemy = StatusBar.enemyGauge and (cfg.moveable or not StatusBar.enemyGauge.hidden)
+  local showEnemy = StatusBar.enemyGauge and not StatusBar.enemyGauge.hidden
   local showXP = StatusBar.xpGauge and not StatusBar.xpGauge.hidden and shouldShowXP()
 
   -- Unit weights (enemy=2, vitals=2, xp=1)
@@ -452,29 +436,12 @@ function StatusBar.reflow(skipPin)
 
   local totalUnits = enemyUnits + vitalUnits + xpUnits
   if totalUnits == 0 then
-    Darkmists.SetWindowBorderPercent("bottom", 0)
     return
   end
 
   local enemyHeight = (enemyUnits / totalUnits) * 100
   local vitalHeight = (vitalUnits / totalUnits) * 100
   local xpHeight = (xpUnits / totalUnits) * 100
-
-  if not cfg.moveable then
-    StatusBar._layoutLock = true   -- START LOCK
-
-    local baseHeight = cfg.containerHeightPct
-    local newHeight = baseHeight * (totalUnits / 5)
-    local newY = 100 - newHeight
-
-    container:move(nil, newY .. "%")
-    container:resize(nil, newHeight .. "%")
-    Darkmists.SetWindowBorderPercent("bottom", newHeight)
-
-    tempTimer(0.1, function()
-      StatusBar._layoutLock = false -- RELEASE LOCK
-    end)
-  end
 
   local yOffset = 0
 
@@ -504,15 +471,6 @@ function StatusBar.reflow(skipPin)
     StatusBar.xpGauge:hide()
   end
 
-  if cfg.moveable and not skipPin then
-    tempTimer(0, function()
-      if StatusBar.container and StatusBar.config.moveable then
-        StatusBar.container:attachToBorder("bottom")
-        StatusBar.container:lockContainer("normal")
-      end
-    end)
-  end
-
 end
 
 -- ===================================================================
@@ -524,6 +482,17 @@ function StatusBar.showAll()
     return
   end
   if not shouldShowVitals() then return end
+
+  if StatusBar.container then
+    StatusBar.container:attachToBorder("bottom")
+    StatusBar.applyAttachedHeight()
+    local saved, saveError = pcall(function() StatusBar.container:save() end)
+    if not saved then
+      Darkmists.Log(DarkmistsTheme.redTag.. "StatusBars",
+        "<yellow>Unable to save attached status-bar layout: " .. tostring(saveError))
+    end
+  end
+
   StatusBar.reflow()
 
   if StatusBar.container then
@@ -554,10 +523,10 @@ function StatusBar.hideAll()
   StatusBar.updateXP()
 
   if StatusBar.container then
+    StatusBar.container:attachToBorder("none")
     StatusBar.container:hide()
   end
 
-  Darkmists.SetWindowBorderPercent("bottom", 0)
   Darkmists.Log(DarkmistsTheme.redTag.. "StatusBars","Bars hidden")
 end
 
@@ -575,26 +544,6 @@ function StatusBar.toggle()
   end
 end
 
-function StatusBar.setMoveable(enabled)
-  local moveable = not not enabled
-
-  StatusBar.config.moveable = moveable
-  Darkmists.GlobalSettings.statusBarsMoveable = moveable
-  Darkmists.SaveSettings()
-
-  StatusBar.recreate()
-
-  -- Non-moveable bars should respect border anchoring after recreate.
-  if not moveable then
-    tempTimer(0.05, function()
-      StatusBar.syncToBorders()
-      StatusBar.reflow()
-    end)
-  end
-
-  Darkmists.Log(DarkmistsTheme.redTag.. "StatusBars", string.format("Moveable mode: %s", tostring(moveable)))
-end
-
 function StatusBar.setTotalHeightPercent(value)
   value = math.max(1, math.min(40, math.floor(tonumber(value) or 10)))
   StatusBar.config.containerHeightPct = value
@@ -602,14 +551,29 @@ function StatusBar.setTotalHeightPercent(value)
   Darkmists.SaveSettings()
 
   if StatusBar.container then
-    StatusBar.container:move(nil, (100 - value) .. "%")
-    StatusBar.container:resize(nil, value .. "%")
-    StatusBar.reflow()
+    local attached = StatusBar.container.attached
+    if attached == "top" or attached == "bottom" then
+      StatusBar.applyAttachedHeight()
+      StatusBar.syncToBorders()
+    else
+      StatusBar.reflow()
+    end
   end
 end
 
-function StatusBar.toggleMoveable()
-  StatusBar.setMoveable(not StatusBar.config.moveable)
+function StatusBar.applyAttachedHeight()
+  if not StatusBar.container then return end
+
+  local attached = StatusBar.container.attached
+  if attached ~= "top" and attached ~= "bottom" then return end
+
+  local value = StatusBar.config.containerHeightPct
+  local y = attached == "bottom" and ("-" .. value .. "%") or "0%"
+
+  StatusBar.container:attachToBorder("none")
+  StatusBar.container:move(nil, y)
+  StatusBar.container:resize(nil, value .. "%")
+  StatusBar.container:attachToBorder(attached)
 end
 
 function StatusBar.enable()
@@ -621,9 +585,6 @@ function StatusBar.enable()
   if not StatusBar.container then
     StatusBar.create()
     StatusBar.registerEvents()
-    if StatusBar.config.moveable then
-      StatusBar.setMoveable(true)
-    end
   end
 
   StatusBar.showAll()
@@ -637,9 +598,6 @@ function StatusBar.disable()
   Darkmists.GlobalSettings.statusBarsEnabled = false
   Darkmists.SaveSettings()
 
-  if StatusBar.container then
-    StatusBar.container:attachToBorder("none")
-  end
   StatusBar.hideAll()
 
   Darkmists.Log(DarkmistsTheme.redTag.. "StatusBars", "<red>Status bars disabled")
@@ -716,7 +674,6 @@ function StatusBar.init()
     colors = Darkmists.GlobalSettings.statusBarColors,
     containerHeightPct = Darkmists.GlobalSettings.statusBarTotalHeightPercent,
     fontColor = Darkmists.GlobalSettings.statusBarFontColor,
-    moveable = Darkmists.GlobalSettings.statusBarsMoveable,
     enabled = Darkmists.GlobalSettings.statusBarsEnabled ~= false, -- default true if nil
     maxLevel = 51,
   }
@@ -728,8 +685,5 @@ function StatusBar.init()
 
   StatusBar.create()
   StatusBar.registerEvents()
-  if StatusBar.config.moveable then
-    StatusBar.setMoveable(true)  -- enforce moveable mode on init
-  end
   Darkmists.Log(DarkmistsTheme.redTag.. "StatusBars","Status Bar Loaded (UI Ready)")
 end

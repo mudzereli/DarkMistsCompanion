@@ -81,6 +81,7 @@
 **DMC Patch Notes: 1.6.1**
 
 **Settings Panel**: status-bar color settings now include an RGBA picker with a live color preview and per-channel controls.
+**Status Bars**: now always use a movable container with persistent position and size; removed the obsolete Moveable setting and toggle.
 **Player Window**: bank information now includes the clan account gold balance.
 
 **Future Versions**

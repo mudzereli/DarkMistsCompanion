@@ -349,9 +349,6 @@ local SETTINGS_MENU = {
     {label = "👁️ Show", action = function() StatusBar.enable() end},
     {label = "❌ Hide", action = function() StatusBar.disable() end},
     {label = "🔄 Reload", action = function() StatusBar.recreate() end},
-    --{label = "↔️ Moveable Bar Toggle", action = function()
-    --  StatusBar.toggleMoveable()
-    --end},
   }},
 
   {label = "📝 Advanced", children = {

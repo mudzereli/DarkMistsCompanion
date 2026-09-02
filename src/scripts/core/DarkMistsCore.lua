@@ -112,8 +112,6 @@ Darkmists.DefaultSettings = {
   statusBarFontColor = "255,255,255",
   -- Maximum Percentage of Screen Height to use for Status Bars
   statusBarTotalHeightPercent = 10,
-  -- Place status bars inside an adjustable container
-  statusBarsMoveable = true,
   -- How often Affects Window is Updated
   affectsWindowUpdateIntervalSeconds = 2,
   -- How many characters to cut off Affect Name At
