@@ -171,15 +171,19 @@ function StatusBar.cleanup()
   end
 
   if StatusBar.container then
-    local saved, saveError = pcall(function() StatusBar.container:save() end)
-    if not saved then
-      Darkmists.Log(DarkmistsTheme.redTag.. "StatusBars",
-        "<yellow>Unable to save status-bar layout: " .. tostring(saveError))
+    if not StatusBar._skipSave then
+      local saved, saveError = pcall(function() StatusBar.container:save() end)
+      if not saved then
+        Darkmists.Log(DarkmistsTheme.redTag.. "StatusBars",
+          "<yellow>Unable to save status-bar layout: " .. tostring(saveError))
+      end
     end
     StatusBar.container:hide()
     StatusBar.container:delete()
     StatusBar.container = nil
   end
+
+  StatusBar._skipSave = nil
 
   -- Reset display-mode guard so the freshly-created gauge always gets styled.
   StatusBar._enemyGaugeDisplayMode = nil
@@ -523,7 +527,7 @@ function StatusBar.hideAll()
   StatusBar.updateXP()
 
   if StatusBar.container then
-    StatusBar.container:attachToBorder("none")
+    StatusBar.container:detach()
     StatusBar.container:hide()
   end
 
@@ -570,10 +574,14 @@ function StatusBar.applyAttachedHeight()
   local value = StatusBar.config.containerHeightPct
   local y = attached == "bottom" and ("-" .. value .. "%") or "0%"
 
-  StatusBar.container:attachToBorder("none")
+  local previousLayoutLock = StatusBar._layoutLock
+  StatusBar._layoutLock = true
+  StatusBar.container:detach()
   StatusBar.container:move(nil, y)
   StatusBar.container:resize(nil, value .. "%")
   StatusBar.container:attachToBorder(attached)
+  Darkmists.SetWindowBorderPercent(attached, value, true)
+  StatusBar._layoutLock = previousLayoutLock
 end
 
 function StatusBar.enable()
@@ -685,5 +693,10 @@ function StatusBar.init()
 
   StatusBar.create()
   StatusBar.registerEvents()
+
+  if shouldShowVitals() then
+    StatusBar.showAll()
+  end
+
   Darkmists.Log(DarkmistsTheme.redTag.. "StatusBars","Status Bar Loaded (UI Ready)")
 end

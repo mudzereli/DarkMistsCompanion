@@ -61,8 +61,8 @@
 -- • Darkmists.LAYOUT_CACHE_VERSION = "1.5.1" must be bumped on layout-breaking
 --   changes to force old saved settings/Ui cache to be wiped.
 -- • On version mismatch: save file deleted → defaults applied → saved with new
---   version → ResetUILayoutCache() clears AdjustableContainer/ + AdjustableTabWindow/
---   dirs → tempTimer(1, resetProfile) reloads the profile.
+--   version → ResetUILayoutCache() resets container layouts + TabWindow state
+--   → tempTimer(1, resetProfile) reloads the profile.
 -- • ⚠ resetProfile() mid-game disconnects the user. This path is intended for
 --   version upgrades only, not routine reconnects.
 --
@@ -353,27 +353,20 @@ end
 function Darkmists.ResetUILayoutCache()
   log(DarkmistsTheme.badTag .. "Resetting incompatible UI layout cache...")
 
-  local home = getMudletHomeDir()
-
-  local targets = {
-    home .. "/AdjustableContainer",
-    home .. "/AdjustableTabWindow",
-  }
-
-  for _, path in ipairs(targets) do
-    if io.exists(path) then
-      local attr = lfs.attributes(path)
-      if attr and attr.mode == "directory" then
-        for file in lfs.dir(path) do
-          if file ~= "." and file ~= ".." then
-            os.remove(path .. "/" .. file)
-          end
+  if Adjustable and Adjustable.Container and Adjustable.Container.doAll then
+    pcall(function()
+      Adjustable.Container:doAll(function(container)
+        if container.deleteSaveFile then
+          container:deleteSaveFile()
         end
-        lfs.rmdir(path)
-      else
-        os.remove(path)
-      end
-    end
+      end)
+    end)
+  end
+
+  if DMTabs and DMTabs.resetSaveFile then
+    pcall(DMTabs.resetSaveFile, DMTabs)
+  elseif Adjustable and Adjustable.TabWindow and Adjustable.TabWindow.resetSaveFile then
+    pcall(Adjustable.TabWindow.resetSaveFile, Adjustable.TabWindow)
   end
 
   setBorderTop(0); setBorderBottom(0); setBorderLeft(0); setBorderRight(0);
@@ -538,7 +531,7 @@ function Darkmists.ApplyDefaultSettings()
   log(DarkmistsTheme.mutedTag .. "Default Settings Applied!")
 end
 
-function Darkmists.SetWindowBorderPercent(region, percent)
+function Darkmists.SetWindowBorderPercent(region, percent, force)
   local mainWidth, mainHeight = getMainWindowSize()
   -- Determine whether we're working with height or width
   local isVertical = (region == "top" or region == "bottom")
@@ -546,7 +539,7 @@ function Darkmists.SetWindowBorderPercent(region, percent)
   local scaledSize = (percent / 100) * baseSize
   -- Only apply and log if the stored percent actually changed
   local prev = (Darkmists.GlobalSettings.borders and Darkmists.GlobalSettings.borders[region]) or 0
-  if prev == percent then
+  if prev == percent and not force then
     return
   end
 
@@ -659,6 +652,11 @@ end
 
 function Darkmists.CleanupUI(opts)
   opts = opts or {}
+  if opts.uninstall and StatusBar then
+    StatusBar._skipSave = true
+    Darkmists.ResetUILayoutCache()
+  end
+
   if DarkmistsAlias and DarkmistsAlias.clearAll then pcall(DarkmistsAlias.clearAll) end
   if DarkmistsEvents and DarkmistsEvents.clearAll then pcall(DarkmistsEvents.clearAll) end
   if DarkmistsTrigger and DarkmistsTrigger.clearAll then pcall(DarkmistsTrigger.clearAll) end
@@ -680,7 +678,6 @@ function Darkmists.CleanupUI(opts)
 
   if opts.uninstall then
     log("Resetting window borders to default...")
-    Darkmists.ResetUILayoutCache()
   end
 end
 
