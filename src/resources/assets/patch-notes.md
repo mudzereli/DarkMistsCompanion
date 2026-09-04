@@ -80,12 +80,14 @@
 
 **DMC Patch Notes: 1.6.1**
 
+**CMudWrapper**: added `CMudWrapper.getVariable(name, fallback)` for reading stored variables from Lua with an optional fallback.
+**Settings Panel**: CMudWrapper output colors are now customizable by role, with theme defaults and a reset option.
 **Settings Panel**: status-bar color settings now include an RGBA picker with a live color preview and per-channel controls.
 **Status Bars**: now always use a movable container with persistent position and size; removed the obsolete Moveable setting and toggle.
 **Player Window**: bank information now includes the clan account gold balance.
 
 **Future Versions**
-- remove update channel from Appearance options
+- add a help system that pops up in a separate window with real working links and pages
 - remove rmdir and lfs commands if possible
 - minimap startup performance improvements
 - backwards compatibility testing No newline at end of file

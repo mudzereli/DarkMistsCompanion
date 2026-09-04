@@ -12,7 +12,7 @@ DMSettingsPanel.status = nil
 DMSettingsPanel.controls = {}
 DMSettingsPanel.pages = {
   "Appearance", "Status Bars", "Windows", "Enchanter Assist",
-  "ShowDMG", "ItemTracker", "Utilities",
+  "ShowDMG", "ItemTracker", "CMud", "Utilities",
 }
 DMSettingsPanel.pageContainers = {}
 DMSettingsPanel.pageHeights = {}
@@ -264,9 +264,30 @@ local function makeLabel(name, x, y, width, height, message, parent, style, fore
   return label
 end
 
+local function themeDefaultColor(setting)
+  if setting.themeColor and DarkmistsTheme and DarkmistsTheme[setting.themeColor] then
+    return DarkmistsTheme[setting.themeColor]
+  end
+  return setting.defaultColor
+end
+
+local function resolvedColor(setting, value)
+  if value == "theme" then
+    return themeDefaultColor(setting)
+  end
+  return value
+end
+
 local function choiceLabel(setting, value)
   for _, choice in ipairs(setting.choices or {}) do
-    if choice.value == value then return choice.label or tostring(choice.value) end
+    if choice.value == value then
+      local label = choice.label or tostring(choice.value)
+      if value == "theme" then
+        local defaultColor = themeDefaultColor(setting)
+        if defaultColor then label = label .. " (" .. tostring(defaultColor) .. ")" end
+      end
+      return label
+    end
   end
   return tostring(value)
 end
@@ -416,14 +437,15 @@ local function refreshColorMenu(control)
   local current = DMSettings.value(control.setting.key)
   if control.value then
     control.value:echo("")
-    control.value:setStyleSheet(colorSwatchStyle(current, true))
+    control.value:setStyleSheet(colorSwatchStyle(resolvedColor(control.setting, current), true))
   end
   if control.selector and control.selector.setToolTip then
     control.selector:setToolTip("Change " .. control.setting.label:lower() .. ": " .. choiceLabel(control.setting, current))
   end
   if control.menuItems then
     for value, item in pairs(control.menuItems) do
-      item:setStyleSheet(colorSwatchStyle(value, value == current))
+      item:setStyleSheet(colorSwatchStyle(
+        resolvedColor(control.setting, value), value == current))
     end
   end
 end
@@ -449,12 +471,17 @@ local function makeColorMenu(control, y)
   for index, choice in ipairs(choices) do
     local column = (index - 1) % columns
     local row = math.floor((index - 1) / columns)
+    local isThemeDefault = choice.value == "theme"
     local item = makeLabel("DMSettingsColorOption_" .. keyName .. "_" .. index,
       4 + column * itemWidth, 4 + row * itemHeight,
       itemWidth - 4, itemHeight - 4,
-      "", control.menu, colorSwatchStyle(choice.value, false))
+      isThemeDefault and "Default" or "",
+      control.menu,
+      isThemeDefault and buttonStyle or colorSwatchStyle(choice.value, false))
     item:setAlignment("center")
-    if item.setToolTip then item:setToolTip(tostring(choice.value)) end
+    if item.setToolTip then
+      item:setToolTip(isThemeDefault and "Theme default" or tostring(choice.value))
+    end
     item:setClickCallback(function()
       DMSettingsPanel.apply(control.setting.key, choice.value)
       closeColorMenu(control)
@@ -553,9 +580,9 @@ local function toggleRGBAColorMenu(control, y)
   end
 end
 
-local function makeRow(setting, y)
+local function makeRow(setting, y, pageOverride)
   local keyName = setting.key:gsub("[^%w]", "_")
-  local parent = DMSettingsPanel.currentPageContainer
+  local parent = pageOverride or DMSettingsPanel.currentPageContainer
   local label = makeLabel("DMSettingsLabel_" .. keyName, 0, y, labelWidth, rowHeight - 6,
     setting.label .. (DMSettings.reloadRequired(setting) and " *" or ""),
     parent, labelStyle, labelTextColor)
@@ -636,9 +663,10 @@ local function makeRow(setting, y)
   return y + rowHeight
 end
 
-local function makeSection(title, y)
+local function makeSection(title, y, pageOverride)
   local heading = makeLabel("DMSettingsSection_" .. title:gsub("%s", "_"), 0, y,
-    "100%", rowHeight - 6, "<b>" .. title .. "</b>", DMSettingsPanel.currentPageContainer,
+    "100%", rowHeight - 6, "<b>" .. title .. "</b>",
+    pageOverride or DMSettingsPanel.currentPageContainer,
     sectionStyle, sectionTextColor)
   heading:setAlignment("left")
   return y + rowHeight
@@ -699,6 +727,18 @@ local function stopEnchanterAssist()
   else
     setStatus("Enchanter Assist stopped.", false)
   end
+  DMSettingsPanel.refresh()
+end
+
+local function resetCMudColors()
+  if Darkmists and Darkmists.GlobalSettings then
+    Darkmists.GlobalSettings.cmudColors = {}
+    if Darkmists.SaveSettings then Darkmists.SaveSettings() end
+  end
+  if CMudWrapper and CMudWrapper.applyColorSettings then
+    CMudWrapper.applyColorSettings()
+  end
+  setStatus("CMud colors reset to theme defaults.", false)
   DMSettingsPanel.refresh()
 end
 
@@ -774,14 +814,14 @@ local function buildPage(pageName)
     local section = setting.section or setting.group
     if section ~= previousSection then
       if previousSection then y = y + 4 end
-      y = makeSection(section, y)
+      y = makeSection(section, y, page)
       previousSection = section
     end
-    y = makeRow(setting, y)
+    y = makeRow(setting, y, page)
   end
   if pageName == "Enchanter Assist" then
     y = y + 4
-    y = makeSection("Session controls", y)
+    y = makeSection("Session controls", y, page)
     local sessionControlsWidth = controlX + inputWidth
     local sessionActionWidth = math.floor((sessionControlsWidth - headerActionGap * 2) / 3)
     makeButton("DMSettingsEnchanterRun", 0, y, sessionActionWidth,
@@ -792,6 +832,13 @@ local function buildPage(pageName)
     makeButton("DMSettingsEnchanterReset",
       (sessionActionWidth + headerActionGap) * 2, y,
       sessionActionWidth, "Reset", resetEnchanterSession, page)
+    y = y + rowHeight
+  end
+  if pageName == "CMud" then
+    y = y + 4
+    local cmudControlsWidth = controlX + inputWidth
+    makeButton("DMSettingsCMudReset", 0, y, cmudControlsWidth,
+      "Reset colors to theme defaults", resetCMudColors, page)
     y = y + rowHeight
   end
   DMSettingsPanel.pageHeights[pageName] = y

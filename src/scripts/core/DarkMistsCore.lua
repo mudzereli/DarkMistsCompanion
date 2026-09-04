@@ -681,9 +681,6 @@ function Darkmists.CleanupUI(opts)
   if opts.uninstall then
     log("Resetting window borders to default...")
     Darkmists.ResetUILayoutCache()
-    tempTimer(0.5, function()
-      setBorderTop(0); setBorderBottom(0); setBorderLeft(0); setBorderRight(0)
-    end)
   end
 end
 
