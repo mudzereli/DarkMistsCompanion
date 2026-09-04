@@ -1,6 +1,7 @@
 -- ===================================================================
 -- ElvUI-Style Status Bar for Dark Mists using Geyser and dmapi
 -- ===================================================================
+-- Updated / Refactored 9/4/2026
 -- Features:
 -- - HP/MN/MV bars with enemy HP overlay
 -- - XP progress bar (auto-hides at level 51)
@@ -33,6 +34,13 @@ local function createBarStyle(colorConfig)
 
   return string.format(template, barColor.r, barColor.g, barColor.b, barColor.a),
          string.format(template, backdropColor.r, backdropColor.g, backdropColor.b, backdropColor.a)
+end
+
+-- Wrap a bar label in the centered, bold, colored HTML used by every gauge.
+-- Only the font size and inner text differ per gauge; the markup does not.
+local function gaugeText(pt, inner)
+  return ("<center><span style='font-size: %dpt; color: rgb(%s); font-weight: bold;'>%s</span></center>")
+    :format(pt, StatusBar.config.fontColor, inner)
 end
 
 -- Check if XP bar should be visible (below max level)
@@ -102,23 +110,20 @@ local function setEnemyGaugeDisplayMode(mode)
   if not StatusBar.enemyGauge then return end
   if StatusBar._enemyGaugeDisplayMode == mode then return end
 
+  local colors = StatusBar.config.colors.enemy
   if mode == "status" then
     local isLightMode = Darkmists and Darkmists.GlobalSettings and Darkmists.GlobalSettings.lightMode
-    local neutralColors = isLightMode and {
+    colors = isLightMode and {
       bar = "255,255,255,45",
       backdrop = "240,240,240,25"
     } or {
       bar = "0,0,0,55",
       backdrop = "0,0,0,30"
     }
-    local front, back = createBarStyle(neutralColors)
-    StatusBar.enemyGauge.front:setStyleSheet(front)
-    StatusBar.enemyGauge.back:setStyleSheet(back)
-  else
-    local front, back = createBarStyle(StatusBar.config.colors.enemy)
-    StatusBar.enemyGauge.front:setStyleSheet(front)
-    StatusBar.enemyGauge.back:setStyleSheet(back)
   end
+  local front, back = createBarStyle(colors)
+  StatusBar.enemyGauge.front:setStyleSheet(front)
+  StatusBar.enemyGauge.back:setStyleSheet(back)
 
   StatusBar._enemyGaugeDisplayMode = mode
 end
@@ -138,6 +143,17 @@ end
 
 local function isEnabled()
   return StatusBar.config and StatusBar.config.enabled
+end
+
+-- The three player-vitals gauges, in display order.
+local VITAL_GAUGE_NAMES = { "hpGauge", "mnGauge", "mvGauge" }
+
+-- Run fn on every existing player-vitals gauge.
+local function eachVitalGauge(fn)
+  for _, name in ipairs(VITAL_GAUGE_NAMES) do
+    local gauge = StatusBar[name]
+    if gauge then fn(gauge) end
+  end
 end
 
 -- One-shot handler that waits for the first valid vitals packet
@@ -312,9 +328,7 @@ function StatusBar.update()
       and ("%d%%%s"):format(pct or 100, adir)
       or ("%d/%d%s"):format(cur or 0, safeMax(max), adir)
 
-    gauge:setValue(cur or 0, safeMax(max),
-      ("<center><span style='font-size: 11pt; color: rgb(%s); font-weight: bold;'>%s</span></center>")
-        :format(StatusBar.config.fontColor, text))
+    gauge:setValue(cur or 0, safeMax(max), gaugeText(11, text))
   end
 
   setVital(StatusBar.hpGauge, vitals.hp, vitals.hpMax, vitals.hpPct, vitals.hpRegen)
@@ -350,8 +364,7 @@ function StatusBar.updateXP()
   local xpPct = math.floor((xpCurrent / xpMax) * 100)
 
   StatusBar.xpGauge:setValue(xpCurrent, xpMax,
-    ("<center><span style='font-size: 8pt; color: rgb(%s); font-weight: bold;'>%d XP to level (%d%%)</span></center>")
-      :format(StatusBar.config.fontColor, xpTnl, xpPct))
+    gaugeText(8, ("%d XP to level (%d%%)"):format(xpTnl, xpPct)))
 end
 
 -- Update enemy HP bar during combat
@@ -361,32 +374,23 @@ function StatusBar.updateEnemy(enemyData)
 
   if not shouldShowEnemy() then
     setEnemyGaugeDisplayMode("status")
-    StatusBar.enemyGauge:setValue(100, 100,
-      ("<center><span style='font-size: 10pt; color: rgb(%s); font-weight: bold;'>%s</span></center>")
-        :format(StatusBar.config.fontColor, getStatusSummary()))
-
-    if StatusBar.enemyGauge.hidden then
-      StatusBar.enemyGauge:show()
-      StatusBar.reflow()
+    StatusBar.enemyGauge:setValue(100, 100, gaugeText(10, getStatusSummary()))
+  else
+    local targetName = (enemyData and enemyData.target)
+      or dmapi.player.combat.target
+      or "Enemy"
+    if #targetName > 40 then
+      targetName = targetName:sub(1, 37) .. "..."
     end
-    return
+
+    local hpPct = (enemyData and enemyData.hpPct)
+      or dmapi.player.combat.targetHpPct
+      or 100
+
+    setEnemyGaugeDisplayMode("enemy")
+    StatusBar.enemyGauge:setValue(hpPct, 100,
+      gaugeText(11, ("%s - %d%%"):format(targetName, hpPct)))
   end
-
-  local targetName = (enemyData and enemyData.target)
-    or dmapi.player.combat.target
-    or "Enemy"
-  if #targetName > 40 then
-    targetName = targetName:sub(1, 37) .. "..."
-  end
-
-  local hpPct = (enemyData and enemyData.hpPct)
-    or dmapi.player.combat.targetHpPct
-    or 100
-
-  setEnemyGaugeDisplayMode("enemy")
-  StatusBar.enemyGauge:setValue(hpPct, 100,
-    ("<center><span style='font-size: 11pt; color: rgb(%s); font-weight: bold;'>%s - %d%%</span></center>")
-      :format(StatusBar.config.fontColor, targetName, hpPct))
 
   if StatusBar.enemyGauge.hidden then
     StatusBar.enemyGauge:show()
@@ -458,12 +462,10 @@ function StatusBar.reflow()
     StatusBar.enemyGauge:hide()
   end
 
-  for _, gauge in ipairs({StatusBar.hpGauge, StatusBar.mnGauge, StatusBar.mvGauge}) do
-    if gauge then
-      gauge:move(gauge.x, yOffset .. "%")
-      gauge:resize(gauge.width, vitalHeight .. "%")
-    end
-  end
+  eachVitalGauge(function(gauge)
+    gauge:move(gauge.x, yOffset .. "%")
+    gauge:resize(gauge.width, vitalHeight .. "%")
+  end)
 
   yOffset = yOffset + vitalHeight
 
@@ -488,6 +490,10 @@ function StatusBar.showAll()
   if not shouldShowVitals() then return end
 
   if StatusBar.container then
+    -- Attaching requires a visible container: Adjustable.Container's
+    -- adjustBorder() detaches any container that is hidden, which would leave
+    -- the bars drawn without reserving the bottom border.
+    StatusBar.container:show()
     StatusBar.container:attachToBorder("bottom")
     StatusBar.applyAttachedHeight()
     local saved, saveError = pcall(function() StatusBar.container:save() end)
@@ -499,17 +505,7 @@ function StatusBar.showAll()
 
   StatusBar.reflow()
 
-  if StatusBar.container then
-    StatusBar.container:show()
-  end
-
-  for _, gauge in ipairs({
-    StatusBar.hpGauge,
-    StatusBar.mnGauge,
-    StatusBar.mvGauge
-  }) do
-    if gauge then gauge:show() end
-  end
+  eachVitalGauge(function(gauge) gauge:show() end)
 
   StatusBar.update()
   StatusBar.updateXP()
@@ -520,9 +516,7 @@ end
 
 function StatusBar.hideAll()
   StatusBar.reflow()
-  if StatusBar.hpGauge then StatusBar.hpGauge:hide() end
-  if StatusBar.mnGauge then StatusBar.mnGauge:hide() end
-  if StatusBar.mvGauge then StatusBar.mvGauge:hide() end
+  eachVitalGauge(function(gauge) gauge:hide() end)
   StatusBar.hideEnemy()
   StatusBar.updateXP()
 

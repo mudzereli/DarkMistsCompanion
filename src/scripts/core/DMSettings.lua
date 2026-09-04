@@ -422,7 +422,10 @@ end
 
 local function setStatusBarEnabled(value)
   setGlobalValue("statusBarsEnabled", value)
-  if StatusBar and StatusBar.container then
+  -- StatusBar.enable()/disable() handle a missing container themselves, so a
+  -- toggle from the settings panel always takes effect even when the bars were
+  -- never created (e.g. disabled at startup).
+  if StatusBar then
     if value and StatusBar.enable then StatusBar.enable() end
     if not value and StatusBar.disable then StatusBar.disable() end
   end
