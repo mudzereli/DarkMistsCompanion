@@ -12,7 +12,7 @@ DMSettingsPanel.status = nil
 DMSettingsPanel.controls = {}
 DMSettingsPanel.pages = {
   "Appearance", "Status Bars", "Windows", "Enchanter Assist",
-  "ShowDMG", "ItemTracker", "Utilities",
+  "ShowDMG", "ItemTracker", "CMud", "Utilities",
 }
 DMSettingsPanel.pageContainers = {}
 DMSettingsPanel.pageHeights = {}
@@ -28,6 +28,14 @@ local actionWidth = 92
 local integerButtonWidth = 44
 local integerButtonGap = 4
 local inputWidth = actionX + actionWidth - controlX
+local rgbaInputWidth = 160
+local rgbaSwatchX = controlX + rgbaInputWidth + 6
+local rgbaSwatchWidth = 38
+local rgbaPickerX = rgbaSwatchX + rgbaSwatchWidth + 6
+local rgbaPickerWidth = 70
+local rgbaChannelButtonWidth = 44
+local rgbaChannelValueX = 112
+local rgbaChannelPlusX = 164
 local headerMargin = 0
 local headerY = 8
 local headerHeight = 128
@@ -66,6 +74,7 @@ local selectedButtonStyle
 local selectedButtonTextColor
 local inputStyle
 local colorMenuStyle
+local rgbaPickerStyle
 local containerStyle
 local headerControlStyle
 local notificationStyle
@@ -213,6 +222,13 @@ local function refreshThemeStyles()
   }
 ]], headerBg, headerBorder)
 
+  rgbaPickerStyle = string.format([[
+  QLabel {
+    background-color: %s;
+    border: 1px solid %s;
+  }
+]], headerBg, headerBorder)
+
   containerStyle = string.format("QLabel { background-color: %s; }", buttonBg)
 
   headerControlStyle = string.format([[
@@ -248,9 +264,30 @@ local function makeLabel(name, x, y, width, height, message, parent, style, fore
   return label
 end
 
+local function themeDefaultColor(setting)
+  if setting.themeColor and DarkmistsTheme and DarkmistsTheme[setting.themeColor] then
+    return DarkmistsTheme[setting.themeColor]
+  end
+  return setting.defaultColor
+end
+
+local function resolvedColor(setting, value)
+  if value == "theme" then
+    return themeDefaultColor(setting)
+  end
+  return value
+end
+
 local function choiceLabel(setting, value)
   for _, choice in ipairs(setting.choices or {}) do
-    if choice.value == value then return choice.label or tostring(choice.value) end
+    if choice.value == value then
+      local label = choice.label or tostring(choice.value)
+      if value == "theme" then
+        local defaultColor = themeDefaultColor(setting)
+        if defaultColor then label = label .. " (" .. tostring(defaultColor) .. ")" end
+      end
+      return label
+    end
   end
   return tostring(value)
 end
@@ -347,6 +384,14 @@ local function closeColorMenu(control)
   control.menuOpen = false
 end
 
+local function closeOtherColorMenus(activeControl)
+  for _, control in pairs(DMSettingsPanel.controls) do
+    if control ~= activeControl and control.menuOpen then
+      closeColorMenu(control)
+    end
+  end
+end
+
 local function colorSwatchStyle(color, selected)
   local red, green, blue = Geyser.Color.parse(color)
   if not red then
@@ -365,18 +410,42 @@ local function colorSwatchStyle(color, selected)
   ]], red, green, blue, borderColor, hoverBorder)
 end
 
+local function parseRGBA(value)
+  local red, green, blue, alpha = tostring(value or ""):match(
+    "^(%d+),(%d+),(%d+),(%d+)$"
+  )
+  return tonumber(red) or 0, tonumber(green) or 0,
+    tonumber(blue) or 0, tonumber(alpha) or 255
+end
+
+local function rgbaSwatchStyle(value, selected)
+  local red, green, blue, alpha = parseRGBA(value)
+  local panel = (DarkmistsTheme and DarkmistsTheme.panel) or {}
+  local borderColor = selected and opaqueColor(panel.buttonActiveBorder, "#f0c674")
+    or opaqueColor(panel.buttonBorder, "#394550")
+  local hoverBorder = panel.buttonHoverFg or "#ffffff"
+  return string.format([[
+    QLabel {
+      background-color: rgba(%d, %d, %d, %d%%);
+      border: 2px solid %s;
+    }
+    QLabel::hover { border: 2px solid %s; }
+  ]], red, green, blue, math.floor(alpha * 100 / 255 + 0.5), borderColor, hoverBorder)
+end
+
 local function refreshColorMenu(control)
   local current = DMSettings.value(control.setting.key)
   if control.value then
     control.value:echo("")
-    control.value:setStyleSheet(colorSwatchStyle(current, true))
+    control.value:setStyleSheet(colorSwatchStyle(resolvedColor(control.setting, current), true))
   end
   if control.selector and control.selector.setToolTip then
     control.selector:setToolTip("Change " .. control.setting.label:lower() .. ": " .. choiceLabel(control.setting, current))
   end
   if control.menuItems then
     for value, item in pairs(control.menuItems) do
-      item:setStyleSheet(colorSwatchStyle(value, value == current))
+      item:setStyleSheet(colorSwatchStyle(
+        resolvedColor(control.setting, value), value == current))
     end
   end
 end
@@ -402,12 +471,17 @@ local function makeColorMenu(control, y)
   for index, choice in ipairs(choices) do
     local column = (index - 1) % columns
     local row = math.floor((index - 1) / columns)
+    local isThemeDefault = choice.value == "theme"
     local item = makeLabel("DMSettingsColorOption_" .. keyName .. "_" .. index,
       4 + column * itemWidth, 4 + row * itemHeight,
       itemWidth - 4, itemHeight - 4,
-      "", control.menu, colorSwatchStyle(choice.value, false))
+      isThemeDefault and "Default" or "",
+      control.menu,
+      isThemeDefault and buttonStyle or colorSwatchStyle(choice.value, false))
     item:setAlignment("center")
-    if item.setToolTip then item:setToolTip(tostring(choice.value)) end
+    if item.setToolTip then
+      item:setToolTip(isThemeDefault and "Theme default" or tostring(choice.value))
+    end
     item:setClickCallback(function()
       DMSettingsPanel.apply(control.setting.key, choice.value)
       closeColorMenu(control)
@@ -424,15 +498,91 @@ local function toggleColorMenu(control, y)
   if control.menuOpen then
     closeColorMenu(control)
   else
+    closeOtherColorMenus(control)
     refreshColorMenu(control)
     control.menu:show()
     control.menuOpen = true
   end
 end
 
-local function makeRow(setting, y)
+local function refreshRGBAControl(control)
+  local current = tostring(DMSettings.value(control.setting.key) or "")
+  if control.input and control.input.getText and control.input:getText() ~= current then
+    control.input:print(current)
+  end
+  if control.swatch then
+    control.swatch:setStyleSheet(rgbaSwatchStyle(current, true))
+    if control.swatch.setToolTip then
+      control.swatch:setToolTip("Current color: " .. current)
+    end
+  end
+  if control.channelValues then
+    local red, green, blue, alpha = parseRGBA(current)
+    local values = {red, green, blue, alpha}
+    for index, value in ipairs(values) do
+      control.channelValues[index]:echo(tostring(value))
+    end
+  end
+end
+
+local function adjustRGBAChannel(control, index, delta)
+  local values = {parseRGBA(DMSettings.value(control.setting.key))}
+  values[index] = math.max(0, math.min(255, values[index] + delta))
+  DMSettingsPanel.apply(control.setting.key, table.concat(values, ","))
+end
+
+local function makeRGBAColorMenu(control, y)
+  local keyName = control.setting.key:gsub("[^%w]", "_")
+  local menuWidth = 220
+  local menuHeight = 140
+  control.menu = Geyser.Container:new({
+    name = "DMSettingsRGBAColorMenu_" .. keyName,
+    x = controlX, y = y + rowHeight - 2,
+    width = menuWidth, height = menuHeight,
+  }, control.parent)
+  makeLabel("DMSettingsRGBAColorMenuBackground_" .. keyName, 0, 0,
+    "100%", "100%", "", control.menu, rgbaPickerStyle)
+
+  local names = {"Red", "Green", "Blue", "Alpha"}
+  control.channelValues = {}
+  for index, name in ipairs(names) do
+    local channelY = 6 + (index - 1) * 31
+    makeLabel("DMSettingsRGBAColorName_" .. keyName .. "_" .. index,
+      8, channelY, 52, 24, name, control.menu, valueStyle, valueTextColor)
+    makeButton("DMSettingsRGBAMinus_" .. keyName .. "_" .. index,
+      64, channelY, rgbaChannelButtonWidth, "-16", function()
+        adjustRGBAChannel(control, index, -16)
+      end, control.menu)
+    local value = makeLabel("DMSettingsRGBAValue_" .. keyName .. "_" .. index,
+      rgbaChannelValueX, channelY, 48, 24, "", control.menu, valueStyle, valueTextColor)
+    value:setAlignment("center")
+    control.channelValues[index] = value
+    makeButton("DMSettingsRGBAPlus_" .. keyName .. "_" .. index,
+      rgbaChannelPlusX, channelY, rgbaChannelButtonWidth, "+16", function()
+        adjustRGBAChannel(control, index, 16)
+      end, control.menu)
+  end
+
+  refreshRGBAControl(control)
+  return control.menu
+end
+
+local function toggleRGBAColorMenu(control, y)
+  if not control.menu then makeRGBAColorMenu(control, y) end
+  if control.menuOpen then
+    control.menu:hide()
+    control.menuOpen = false
+  else
+    closeOtherColorMenus(control)
+    refreshRGBAControl(control)
+    control.menu:show()
+    control.menuOpen = true
+  end
+end
+
+local function makeRow(setting, y, pageOverride)
   local keyName = setting.key:gsub("[^%w]", "_")
-  local parent = DMSettingsPanel.currentPageContainer
+  local parent = pageOverride or DMSettingsPanel.currentPageContainer
   local label = makeLabel("DMSettingsLabel_" .. keyName, 0, y, labelWidth, rowHeight - 6,
     setting.label .. (DMSettings.reloadRequired(setting) and " *" or ""),
     parent, labelStyle, labelTextColor)
@@ -441,7 +591,7 @@ local function makeRow(setting, y)
   end
 
   local control = {setting = setting, parent = parent}
-  if setting.type == "text" or setting.type == "rgba" then
+  if setting.type == "text" then
     local input = Geyser.CommandLine:new({
       name = "DMSettingsInput_" .. keyName,
       x = controlX, y = y,
@@ -456,6 +606,32 @@ local function makeRow(setting, y)
       DMSettingsPanel.apply(settingKey, text)
     end, setting.key)
     control.input = input
+  elseif setting.type == "rgba" then
+    local input = Geyser.CommandLine:new({
+      name = "DMSettingsInput_" .. keyName,
+      x = controlX, y = y,
+      width = rgbaInputWidth, height = rowHeight - 6,
+    }, parent)
+    input:setStyleSheet(inputStyle)
+    input:setFontSize(inputFontSize)
+    if setting.description and input.setToolTip then
+      input:setToolTip(setting.description)
+    end
+    input:setAction(function(settingKey, text)
+      DMSettingsPanel.apply(settingKey, text)
+    end, setting.key)
+    control.input = input
+    control.swatch = makeLabel("DMSettingsRGBASwatch_" .. keyName,
+      rgbaSwatchX, y, rgbaSwatchWidth, rowHeight - 6, "", parent,
+      rgbaSwatchStyle(DMSettings.value(setting.key), true))
+    control.swatch:setClickCallback(function()
+      toggleRGBAColorMenu(control, y)
+    end)
+    control.swatch:setToolTip("Preview color and opacity")
+    control.selector = makeButton("DMSettingsRGBASelect_" .. keyName,
+      rgbaPickerX, y, rgbaPickerWidth, "Pick", function()
+        toggleRGBAColorMenu(control, y)
+      end, parent)
   else
     control.value = makeLabel("DMSettingsValue_" .. keyName, controlX, y,
       controlWidth, rowHeight - 6, "", parent, valueStyle, valueTextColor)
@@ -487,9 +663,10 @@ local function makeRow(setting, y)
   return y + rowHeight
 end
 
-local function makeSection(title, y)
+local function makeSection(title, y, pageOverride)
   local heading = makeLabel("DMSettingsSection_" .. title:gsub("%s", "_"), 0, y,
-    "100%", rowHeight - 6, "<b>" .. title .. "</b>", DMSettingsPanel.currentPageContainer,
+    "100%", rowHeight - 6, "<b>" .. title .. "</b>",
+    pageOverride or DMSettingsPanel.currentPageContainer,
     sectionStyle, sectionTextColor)
   heading:setAlignment("left")
   return y + rowHeight
@@ -550,6 +727,18 @@ local function stopEnchanterAssist()
   else
     setStatus("Enchanter Assist stopped.", false)
   end
+  DMSettingsPanel.refresh()
+end
+
+local function resetCMudColors()
+  if Darkmists and Darkmists.GlobalSettings then
+    Darkmists.GlobalSettings.cmudColors = {}
+    if Darkmists.SaveSettings then Darkmists.SaveSettings() end
+  end
+  if CMudWrapper and CMudWrapper.applyColorSettings then
+    CMudWrapper.applyColorSettings()
+  end
+  setStatus("CMud colors reset to theme defaults.", false)
   DMSettingsPanel.refresh()
 end
 
@@ -625,14 +814,14 @@ local function buildPage(pageName)
     local section = setting.section or setting.group
     if section ~= previousSection then
       if previousSection then y = y + 4 end
-      y = makeSection(section, y)
+      y = makeSection(section, y, page)
       previousSection = section
     end
-    y = makeRow(setting, y)
+    y = makeRow(setting, y, page)
   end
   if pageName == "Enchanter Assist" then
     y = y + 4
-    y = makeSection("Session controls", y)
+    y = makeSection("Session controls", y, page)
     local sessionControlsWidth = controlX + inputWidth
     local sessionActionWidth = math.floor((sessionControlsWidth - headerActionGap * 2) / 3)
     makeButton("DMSettingsEnchanterRun", 0, y, sessionActionWidth,
@@ -643,6 +832,13 @@ local function buildPage(pageName)
     makeButton("DMSettingsEnchanterReset",
       (sessionActionWidth + headerActionGap) * 2, y,
       sessionActionWidth, "Reset", resetEnchanterSession, page)
+    y = y + rowHeight
+  end
+  if pageName == "CMud" then
+    y = y + 4
+    local cmudControlsWidth = controlX + inputWidth
+    makeButton("DMSettingsCMudReset", 0, y, cmudControlsWidth,
+      "Reset colors to theme defaults", resetCMudColors, page)
     y = y + rowHeight
   end
   DMSettingsPanel.pageHeights[pageName] = y
@@ -657,9 +853,13 @@ local function refreshControl(key, control)
       control.value:echo(displayValue(setting))
     end
   elseif control.input then
-    local value = tostring(DMSettings.value(key) or "")
-    if not control.input.getText or control.input:getText() ~= value then
-      control.input:print(value)
+    if control.swatch then
+      refreshRGBAControl(control)
+    else
+      local value = tostring(DMSettings.value(key) or "")
+      if not control.input.getText or control.input:getText() ~= value then
+        control.input:print(value)
+      end
     end
   end
 end

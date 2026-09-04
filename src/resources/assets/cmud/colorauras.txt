@@ -1,0 +1,45 @@
+;; Aura colorizer preset — import with: #IMPORT colorauras
+;;
+;; Dark Mists prints aura tags in parentheses, e.g. "(Blue Aura)", "(Hide)",
+;; "(Charmed)". This preset watches for each known aura tag and recolors just
+;; that tag in a readable color so aura states stand out from normal text.
+;;
+;; How it works:
+;;   - Patterns like ~(Amber Aura~) match the literal text "(Amber Aura)" —
+;;     ~x escapes the next character in CMUD wildcard syntax.
+;;   - Each trigger body runs the one-argument #cw {color}, which colors the
+;;     matched tag text on that line with the given Mudlet color name.
+;;   - The class is hidden (kept out of #trigger listings) but stays active.
+;;
+;; To change a color, edit the color name in that row's #cw argument (any
+;; Mudlet color name; run lua showColors() in Mudlet to list them).
+;;
+;; Remove with: #CLASS {color:auras} {remove}
+#CLASS {color:auras} {enable, hidden}
+#TRIGGER {aura:amber} {~(Amber Aura~)} {#cw navajo_white} {color:auras}
+#TRIGGER {aura:animated} {~(Animated~)} {#cw royal_blue} {color:auras}
+#TRIGGER {aura:blue} {~(Blue Aura~)} {#cw royal_blue} {color:auras}
+#TRIGGER {aura:bluegreen} {~(Blue-Green Aura~)} {#cw ansiCyan} {color:auras}
+#TRIGGER {aura:camouflage} {~(Camouflage~)} {#cw dark_green} {color:auras}
+#TRIGGER {aura:charmed} {~(Charmed~)} {#cw slate_blue} {color:auras}
+#TRIGGER {aura:chromatic} {~(Chromatic Aura~)} {#cw dark_sea_green} {color:auras}
+#TRIGGER {aura:companion} {~(Companion~)} {#cw dodger_blue} {color:auras}
+#TRIGGER {aura:construct} {~(Construct~)} {#cw steel_blue} {color:auras}
+#TRIGGER {aura:enlisted} {~(Enlisted~)} {#cw salmon} {color:auras}
+#TRIGGER {aura:faeriefire} {~(Pink Aura~)} {#cw deep_pink} {color:auras}
+#TRIGGER {aura:faeriefog} {~(Purple Aura~)} {#cw purple} {color:auras}
+#TRIGGER {aura:glowing} {~(Glowing~)} {#cw gold} {color:auras}
+#TRIGGER {aura:golden} {~(Golden Aura~)} {#cw goldenrod} {color:auras}
+#TRIGGER {aura:hellforged} {~(hellforged~)} {#cw ansi_red} {color:auras}
+#TRIGGER {aura:hide} {~(Hide~)} {#cw dim_gray} {color:auras}
+#TRIGGER {aura:holy} {~(Holy Aura~)} {#cw dark_sea_green} {color:auras}
+#TRIGGER {aura:humming} {~(Humming~)} {#cw medium_turquoise} {color:auras}
+#TRIGGER {aura:invis} {~(Invis~)} {#cw slate_gray} {color:auras}
+#TRIGGER {aura:purified} {~(Purified~)} {#cw mint_cream} {color:auras}
+#TRIGGER {aura:putrid} {~(Putrid Aura~)} {#cw olive_drab} {color:auras}
+#TRIGGER {aura:red} {~(Red Aura~)} {#cw firebrick} {color:auras}
+#TRIGGER {aura:seized} {~(Seized~)} {#cw dark_slate_blue} {color:auras}
+#TRIGGER {aura:steadfast} {~(Steadfast~)} {#cw pale_turquoise} {color:auras}
+#TRIGGER {aura:summoned} {~(Summoned~)} {#cw cornflower_blue} {color:auras}
+#TRIGGER {aura:translucent} {~(Translucent~)} {#cw lemon_chiffon} {color:auras}
+#TRIGGER {aura:warband} {~(Warband~)} {#cw chocolate} {color:auras}

@@ -1,0 +1,80 @@
+;; Ranger war-paint / stance reminder preset.
+;;
+;; When you list your known war-paint designs or stances, the MUD prints a
+;; header line followed by one plain animal name per line (e.g. "bear",
+;; "crocodile"). This preset watches for the two header lines and appends an
+;; effect summary to each name, so you can see what a paint or stance grants
+;; without opening help.
+;;
+;; Load with:   #IMPORT warpaints
+;; Remove with: #CLASS {echo:warpaints} {remove}
+;;              #CLASS {echo:stances} {remove}
+;;
+;; Two hidden (still fully active) classes are defined. The plain animal-name
+;; lines are identical for designs and stances, so the header triggers switch
+;; between the two sets, leaving only the matching class enabled:
+;;   echo:warpaints - "You know the following stances:" header trigger, then
+;;                    one trigger per war-paint design.
+;;   echo:stances   - one trigger per stance, then the
+;;                    "You know the following designs:" header trigger that
+;;                    switches back to the paint set.
+#CLASS {echo:warpaints} {enable, hidden}
+;; When a stance listing starts, disable the paint triggers and enable the
+;; stance triggers below, so bare animal names get stance annotations.
+#TRIGGER {stance:list} {^You know the following stances:$} {#class echo:warpaints 0|#class echo:stances 1} {echo:warpaints}
+;; War-paint design effects: each animal name is annotated with its paint
+;; bonuses. Only active while a designs listing is on screen.
+#TRIGGER {wp:bear} {^bear$} {#show (STR +3, Damroll +2)} {echo:warpaints}
+#TRIGGER {wp:boar} {^boar$} {#show (HP +20)} {echo:warpaints}
+#TRIGGER {wp:cobra} {^cobra$} {#show (Resist Poison)} {echo:warpaints}
+#TRIGGER {wp:crocodile} {^crocodile$} {#show (Damroll +3)} {echo:warpaints}
+#TRIGGER {wp:eagle} {^eagle$} {#show (Hitroll +5)} {echo:warpaints}
+#TRIGGER {wp:earth} {^earth$} {#show (AC -50, Resist Bash)} {echo:warpaints}
+#TRIGGER {wp:elephant} {^elephant$} {#show (STR +10)} {echo:warpaints}
+#TRIGGER {wp:falcon} {^falcon$} {#show (DEX +1)} {echo:warpaints}
+#TRIGGER {wp:golden unicorn} {^golden unicorn$} {#show (INT +10, WIS +10, Damroll +2)} {echo:warpaints}
+#TRIGGER {wp:gorilla} {^gorilla$} {#show (STR +2, Damroll +4, Hitroll +4)} {echo:warpaints}
+#TRIGGER {wp:lion} {^lion$} {#show (Damroll +5, DEX +3, STR +3)} {echo:warpaints}
+#TRIGGER {wp:monkey} {^monkey$} {#show (DEX +8, Saves -3)} {echo:warpaints}
+#TRIGGER {wp:panther} {^panther$} {#show (DEX +10, STR +10)} {echo:warpaints}
+#TRIGGER {wp:parrot} {^parrot$} {#show (Mana +30)} {echo:warpaints}
+#TRIGGER {wp:python} {^python$} {#show (DEX +2, Damroll +2, Hitroll +2)} {echo:warpaints}
+#TRIGGER {wp:rat} {^rat$} {#show (CON +1)} {echo:warpaints}
+#TRIGGER {wp:rhino} {^rhino$} {#show (Damroll +5, STR +5, HP +50, Resist Pierce)} {echo:warpaints}
+#TRIGGER {wp:sun} {^sun$} {#show (Damroll +5, Resist Fire)} {echo:warpaints}
+#TRIGGER {wp:tiger} {^tiger$} {#show (Damroll +5)} {echo:warpaints}
+#TRIGGER {wp:unicorn} {^unicorn$} {#show (Saves -10, WIS +5, INT +5)} {echo:warpaints}
+#TRIGGER {wp:viper} {^viper$} {#show (INT +2)} {echo:warpaints}
+#TRIGGER {wp:water} {^water$} {#show (HP +50, Immune Drowning, Resist Cold)} {echo:warpaints}
+#TRIGGER {wp:wind} {^wind$} {#show (DEX +10, Saves -5, Resist Slash, Resist Lightning)} {echo:warpaints}
+#TRIGGER {wp:wolf} {^wolf$} {#show (DEX +3, Mana +30)} {echo:warpaints}
+;; ---------------------------------------------------------------
+;; Stance effects. This class is enabled (and echo:warpaints disabled)
+;; whenever the "You know the following stances:" header is matched.
+#CLASS {echo:stances} {enable, hidden}
+#TRIGGER {stance:bear} {^bear$} {#show (HP +60)} {echo:stances}
+#TRIGGER {stance:boar} {^boar$} {#show (AC -35)} {echo:stances}
+#TRIGGER {stance:cobra} {^cobra$} {#show (Hitroll +10)} {echo:stances}
+#TRIGGER {stance:crocodile} {^crocodile$} {#show (Damroll +5)} {echo:stances}
+#TRIGGER {stance:eagle} {^eagle$} {#show (DEX +4, Flying)} {echo:stances}
+#TRIGGER {stance:elephant} {^elephant$} {#show (Damroll +15, Slow)} {echo:stances}
+#TRIGGER {stance:falcon} {^falcon$} {#show (Mana +50)} {echo:stances}
+#TRIGGER {stance:golden unicorn} {^golden unicorn$} {#show (AC -50, Protect Good, Protect Evil)} {echo:stances}
+#TRIGGER {stance:gorilla} {^gorilla$} {#show (Damroll +6)} {echo:stances}
+#TRIGGER {stance:hounds} {^hounds$} {#show (CON +5)} {echo:stances}
+#TRIGGER {stance:lion} {^lion$} {#show (STR +10)} {echo:stances}
+#TRIGGER {stance:monkey} {^monkey$} {#show (Damroll +4)} {echo:stances}
+#TRIGGER {stance:panther} {^panther$} {#show (DEX +5, Haste)} {echo:stances}
+#TRIGGER {stance:parrot} {^parrot$} {#show (INT +5)} {echo:stances}
+#TRIGGER {stance:python} {^python$} {#show (Damroll +5)} {echo:stances}
+#TRIGGER {stance:rat} {^rat$} {#show (STR +1, Sneak)} {echo:stances}
+#TRIGGER {stance:rhino} {^rhino$} {#show (HP +100)} {echo:stances}
+#TRIGGER {stance:spider} {^spider$} {#show (STR +10)} {echo:stances}
+#TRIGGER {stance:tiger} {^tiger$} {#show (Damroll +12)} {echo:stances}
+#TRIGGER {stance:unicorn} {^unicorn$} {#show (Saves -5, Detect Invis)} {echo:stances}
+#TRIGGER {stance:viper} {^viper$} {#show (DEX +3)} {echo:stances}
+#TRIGGER {stance:wolf} {^wolf$} {#show (DEX +6)} {echo:stances}
+;; Designs header trigger (kept in the stances class so it stays armed while
+;; stance triggers are live): re-enables the war-paint set and disables the
+;; stance set, ready for the next "You know the following designs:" listing.
+#TRIGGER {wp:list} {^You know the following designs:$} {#class echo:warpaints 1|#class echo:stances 0} {echo:stances}

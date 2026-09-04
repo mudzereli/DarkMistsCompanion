@@ -106,7 +106,8 @@ dmapi.player = {
   bank = {
     gold = 0,
     silver = 0,
-    house = 0
+    house = 0,
+    clan = 0
   },
 
   experience = {
@@ -771,6 +772,20 @@ function dmapi.parsers.houseBalance(line)
   if not gold then
     gold = line:match(DMPatterns.HOUSE_BALANCE_ALT)
   end
+
+  if gold then
+    return {
+      gold = tonumber(gold),
+      line = line
+    }
+  end
+
+  return nil
+end
+
+-- Parse Clan Balance
+function dmapi.parsers.clanBalance(line)
+  local gold = line:match(DMPatterns.CLAN_BALANCE)
 
   if gold then
     return {
@@ -1646,6 +1661,15 @@ function dmapi.core.LineTrigger(line)
     return
   end
 
+  -- Clan Balance Updates
+  local clanBal = dmapi.parsers.clanBalance(line)
+  if clanBal then
+    dmapi.player.bank.clan = clanBal.gold
+
+    dmapi.core.raiseEvent("dmapi.player.clan.balance", clanBal)
+    return
+  end
+
   -- Bank Deposits
   local deposit = dmapi.parsers.bankDeposit(line)
   if deposit then
@@ -2058,7 +2082,8 @@ function dmapi.player.reset()
   dmapi.player.bank = {
     gold = 0,
     silver = 0,
-    house = 0
+    house = 0,
+    clan = 0
   }
   dmapi.player.experience = {
     total = 0,

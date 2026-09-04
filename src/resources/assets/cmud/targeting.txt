@@ -1,0 +1,60 @@
+;; Targeting script preset — import with: #IMPORT targeting
+;;
+;; Lightweight targeting helper for Dark Mists. Stores up to nine attack
+;; "slots" (commands) plus a current target, then fires them with short
+;; single-key aliases — no mouse needed.
+;;
+;; Workflow:
+;;   1. Pick an attack for each slot:   a1 "cast 'lightning bolt'"   (a2..a9)
+;;   2. Choose a target:                t rat
+;;   3. Attack:                         3          → slot 3 at @target
+;;                                     33 rat      → slot 3 at a one-off target
+;;
+;; The class is ENABLED but NOT hidden (unlike the echo/color presets), so
+;; these single-key aliases are quick to type. Remove with:
+;;   #CLASS {targeting} {remove}
+#CLASS {targeting} {enable}
+;; ATTACKS: single digit fires that slot's command at the current @target;
+;; double digit fires it at a specific target typed after it.
+;;   e.g.  3        → @attack3 @target
+;;         33 rat   → @attack3 rat
+#ALIAS {1} {@attack1 @target} {targeting}
+#ALIAS {11} {@attack1 %-1} {targeting}
+#ALIAS {2} {@attack2 @target} {targeting}
+#ALIAS {22} {@attack2 %-1} {targeting}
+#ALIAS {3} {@attack3 @target} {targeting}
+#ALIAS {33} {@attack3 %-1} {targeting}
+#ALIAS {4} {@attack4 @target} {targeting}
+#ALIAS {44} {@attack4 %-1} {targeting}
+#ALIAS {5} {@attack5 @target} {targeting}
+#ALIAS {55} {@attack5 %-1} {targeting}
+#ALIAS {6} {@attack6 @target} {targeting}
+#ALIAS {66} {@attack6 %-1} {targeting}
+#ALIAS {7} {@attack7 @target} {targeting}
+#ALIAS {77} {@attack7 %-1} {targeting}
+#ALIAS {8} {@attack8 @target} {targeting}
+#ALIAS {88} {@attack8 %-1} {targeting}
+#ALIAS {9} {@attack9 @target} {targeting}
+#ALIAS {99} {@attack9 %-1} {targeting}
+;; SET ATTACK SLOTS: "a" is shorthand for a1; a2..a9 set the other slots.
+;; The command is whatever you type after the letter (multi-word safe, so
+;; wrap spaces/braces as needed).
+;;   e.g.  a2 "cast 'lightning bolt'"  → attack2 = cast 'lightning bolt'
+;;         9 kill                      → attack9 = kill
+#ALIAS {a} {#var attack1 %-1} {targeting}
+#ALIAS {a1} {#var attack1 %-1} {targeting}
+#ALIAS {a2} {#var attack2 %-1} {targeting}
+#ALIAS {a3} {#var attack3 %-1} {targeting}
+#ALIAS {a4} {#var attack4 %-1} {targeting}
+#ALIAS {a5} {#var attack5 %-1} {targeting}
+#ALIAS {a6} {#var attack6 %-1} {targeting}
+#ALIAS {a7} {#var attack7 %-1} {targeting}
+#ALIAS {a8} {#var attack8 %-1} {targeting}
+#ALIAS {a9} {#var attack9 %-1} {targeting}
+;; SET TARGET: "t <name>" stores the current target in @target and creates a
+;; temporary trigger (ctarget) that highlights the name in indian_red
+;; whenever it appears on screen.
+;;   e.g.  t rat   → @target = rat, and "rat" is highlighted when seen
+#ALIAS {t} {#var target %1|#tr ctarget %1 {#cw {indian_red}}} {targeting}
+;; INFO: prints a short banner for this targeting helper.
+#ALIAS {tinfo} {#show CMW Targeting Script v1.1 by Mudzereli} {targeting}

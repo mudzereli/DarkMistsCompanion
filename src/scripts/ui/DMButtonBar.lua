@@ -323,36 +323,33 @@ local SETTINGS_MENU = {
     if DMSettingsPanel and DMSettingsPanel.show then DMSettingsPanel.show() end
   end},
   {label = "🔄 Reload UI", action = function() Darkmists.PromptSafeReload() end},
-  {label = "📊 Toggle UI", action = function() Darkmists.ShowUIIntroMessage(true) end},
+  --{label = "📊 Toggle UI", action = function() Darkmists.ShowUIIntroMessage(true) end},
 
-  {label = "🌞 Light Mode", action = function()
-    -- Defer the switch: queue it and apply only on the next UI reload/startup,
-    -- so nothing re-themes before the user confirms.
-    Darkmists.GlobalSettings.pendingThemeMode = true
-    DMLogger.notify("Settings", "Light Mode queued - Reload UI to apply")
-    Darkmists.SaveSettings()
-    Darkmists.PromptSafeReload()
-  end},
+  --{label = "🌞 Light Mode", action = function()
+  --  -- Defer the switch: queue it and apply only on the next UI reload/startup,
+  --  -- so nothing re-themes before the user confirms.
+  --  Darkmists.GlobalSettings.pendingThemeMode = true
+  --  DMLogger.notify("Settings", "Light Mode queued - Reload UI to apply")
+  --  Darkmists.SaveSettings()
+  --  Darkmists.PromptSafeReload()
+  --end},
 
-  {label = "🌚 Dark Mode", action = function()
-    Darkmists.GlobalSettings.pendingThemeMode = false
-    DMLogger.notify("Settings", "Dark Mode queued - Reload UI to apply")
-    Darkmists.SaveSettings()
-    Darkmists.PromptSafeReload()
-  end},
+  --{label = "🌚 Dark Mode", action = function()
+  --  Darkmists.GlobalSettings.pendingThemeMode = false
+  --  DMLogger.notify("Settings", "Dark Mode queued - Reload UI to apply")
+  --  Darkmists.SaveSettings()
+  --  Darkmists.PromptSafeReload()
+  --end},
 
   {label = "🗺️ Load Map", action = function()
     Darkmists.PromptLoadMap()
   end},
 
-  {label = "📊 Status Bars", children = {
-    {label = "👁️ Show", action = function() StatusBar.enable() end},
-    {label = "❌ Hide", action = function() StatusBar.disable() end},
-    {label = "🔄 Reload", action = function() StatusBar.recreate() end},
-    --{label = "↔️ Moveable Bar Toggle", action = function()
-    --  StatusBar.toggleMoveable()
-    --end},
-  }},
+  --{label = "📊 Status Bars", children = {
+  --  {label = "👁️ Show", action = function() StatusBar.enable() end},
+  --  {label = "❌ Hide", action = function() StatusBar.disable() end},
+  --  {label = "🔄 Reload", action = function() StatusBar.recreate() end},
+  --}},
 
   {label = "📝 Advanced", children = {
     {label = "📜 Log Console", action = function()

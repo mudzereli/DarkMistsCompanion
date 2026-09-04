@@ -196,11 +196,12 @@ ScorePanel.refresh = function()
     goldColor,   P.currency.gold,
     silverColor, P.currency.silver
   )
-  line("%sBank     %s%6dg  %s%6ds  %s(House %s%dg%s)\n",
+  line("%sBank     %s%6dg  %s%6ds  %s(House %s%dg%s / Clan %s%dg%s)\n",
     label,
     goldColor,   P.bank.gold,
     silverColor, P.bank.silver,
-    label, goldColor, P.bank.house, label
+    label, goldColor, P.bank.house, label,
+    goldColor, P.bank.clan, label
   )
 
   section("Location")

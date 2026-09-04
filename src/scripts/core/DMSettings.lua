@@ -119,9 +119,13 @@ local colorChoices = {
   {value = "ansiCyan"},
   {value = "ansiLightCyan"},
   {value = "PaleTurquoise"},
+  {value = "MidnightBlue"},
+  {value = "navy"},
   {value = "ansiBlue"},
   {value = "ansiLightBlue"},
+  {value = "RoyalBlue"},
   {value = "SteelBlue"},
+  {value = "DodgerBlue"},
   {value = "LightSkyBlue"},
   {value = "DarkSlateBlue"},
   {value = "SlateBlue"},
@@ -418,17 +422,12 @@ end
 
 local function setStatusBarEnabled(value)
   setGlobalValue("statusBarsEnabled", value)
-  if StatusBar and StatusBar.container then
+  -- StatusBar.enable()/disable() handle a missing container themselves, so a
+  -- toggle from the settings panel always takes effect even when the bars were
+  -- never created (e.g. disabled at startup).
+  if StatusBar then
     if value and StatusBar.enable then StatusBar.enable() end
     if not value and StatusBar.disable then StatusBar.disable() end
-  end
-  return true
-end
-
-local function setStatusBarMoveable(value)
-  setGlobalValue("statusBarsMoveable", value)
-  if StatusBar and StatusBar.container and StatusBar.setMoveable then
-    StatusBar.setMoveable(value)
   end
   return true
 end
@@ -621,15 +620,8 @@ local function registerStatusBars()
       reloadRequired = function() return not (StatusBar and StatusBar.container) end,
     },
     {
-      key = "statusBars.moveable", page = "Status Bars", group = "Status Bars",
-      label = "Moveable", type = "boolean", default = true,
-      get = function() return globalValue("statusBarsMoveable", true) end,
-      validate = validateBoolean, set = setStatusBarMoveable, save = saveGlobalSettings,
-      reloadRequired = function() return not (StatusBar and StatusBar.container) end,
-    },
-    {
       key = "statusBars.totalHeight", page = "Status Bars", group = "Status Bars",
-      label = "Total height %", type = "integer", default = 10,
+      label = "Height when attached %", type = "integer", default = 10,
       get = function() return globalValue("statusBarTotalHeightPercent", 10) end,
       validate = function(value) return validateInteger(value, 1, 40) end,
       set = setStatusBarHeight, save = saveGlobalSettings,
@@ -914,8 +906,79 @@ local function registerShowDamage()
   end
 end
 
+-- CMud print-color roles: per-role overrides for CMudWrapper's export/list output.
+-- Stored under Darkmists.GlobalSettings.cmudColors.<role>; "theme" (default) means
+-- follow the current DarkmistsTheme token. Uses the same chooser as ShowDMG.
+local function getCMudColor(role)
+  local colors = getGlobalSetting("cmudColors", nil)
+  if colors and colors[role] ~= nil then return colors[role] end
+  return "theme"
+end
+
+local function setCMudColor(role, value)
+  local colors = Darkmists.GlobalSettings.cmudColors or {}
+  colors[role] = value
+  Darkmists.GlobalSettings.cmudColors = colors
+  if CMudWrapper and CMudWrapper.applyColorSettings then
+    CMudWrapper.applyColorSettings()
+  end
+  return true
+end
+
+local function validateCMudColor(value)
+  if value == "theme" then return true end
+  return validateColor(value)
+end
+
+local function cmudColorChoices()
+  local choices = {}
+  for _, choice in ipairs(colorChoices) do
+    choices[#choices + 1] = { value = choice.value }
+  end
+  choices[#choices + 1] = { value = "theme", label = "Theme default" }
+  return choices
+end
+
+local function registerCMud()
+  local roles = {
+    { role = "keyword",          label = "Command keyword color",     themeColor = "blue",   description = "CMudWrapper directives such as #ALIAS, #TRIGGER, #VARIABLE, and #CLASS. Default: theme blue." },
+    { role = "variablePrefix",   label = "Variable prefix color",     themeColor = "red",  description = "The @ marker before variable names in command bodies. Default: theme green." },
+    { role = "variable",         label = "Enabled item name color",   themeColor = "gold",  description = "Enabled alias, trigger, and variable names in lists and exports. Default: theme green." },
+    { role = "disabledVariable", label = "Disabled item name color",  themeColor = "orange", description = "Disabled alias, trigger, and variable names in lists and exports. Default: theme orange." },
+    { role = "placeholder",      label = "Argument placeholder color", themeColor = "purple", description = "%1 and %-1 argument markers in command bodies. Default: theme yellow." },
+    { role = "class",            label = "Enabled class name color",   themeColor = "cyan",  description = "Enabled class names shown in [class] tags and #CLASS lists. Default: theme green." },
+    { role = "disabledclass",    label = "Disabled class name color",  themeColor = "blue", description = "Disabled class names shown in [class] tags and #CLASS lists. Default: theme orange." },
+  }
+  for _, roleDef in ipairs(roles) do
+    -- Capture the role in a fresh local: Mudlet runs Lua 5.1, where closures
+    -- over the loop variable would otherwise all share the final iteration's
+    -- value, making every CMud picker read/write the same slot.
+    local role = roleDef.role
+    local label = roleDef.label
+    local themeColor = roleDef.themeColor
+    local description = roleDef.description
+    DMSettings.register({
+      key = "cmud." .. role,
+      page = "CMud",
+      group = "CMud",
+      label = label,
+      description = description,
+      themeColor = themeColor,
+      defaultColor = themeColor,
+      type = "color",
+      choices = cmudColorChoices(),
+      default = "theme",
+      get = function() return getCMudColor(role) end,
+      validate = validateCMudColor,
+      set = function(value) return setCMudColor(role, value) end,
+      save = saveGlobalSettings,
+    })
+  end
+end
+
 registerEnchanterAssist()
 registerShowDamage()
+registerCMud()
 registerAppearance()
 registerStatusBars()
 registerItemTracker()

@@ -78,7 +78,17 @@
 **Stat Roller**: general code clean-up
 **Alert Window**: styling updates.
 
+**DMC Patch Notes: 1.6.1**
+
+**CMudWrapper**: Lua can now read your saved CMud variables with `CMudWrapper.getVariable(name, fallback)`.
+**CMudWrapper**: new `#IMPORT` loads ready-made CMud script packs shipped with DMC - `#IMPORT {name}` to load one, `#IMPORT LIST` to browse what's available. `currently available script packs: colorauras, eyeshields, warpaints, and targeting`
+**CMudWrapper**: `#CLASS {name} {remove}` now deletes a class along with all its triggers and aliases, so removing an imported pack is one step.
+**Settings Panel**: CMud output colors are customizable per element (commands, names, classes) - or leave them on the theme and reset any time.
+**Settings Panel**: status-bar colors get a full picker with live preview and individual R/G/B/A channels.
+**Status Bars**: use a movable, resizable container that remembers its position; the old "Moveable" setting was removed.
+**Player Window**: shows the clan account's gold balance.
+
 **Future Versions**
-- remove update channel from Appearance options
+- add a help system that pops up in a separate window with real working links and pages
 - minimap startup performance improvements
 - backwards compatibility testing No newline at end of file

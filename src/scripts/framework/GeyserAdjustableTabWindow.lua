@@ -16,6 +16,13 @@ function Adjustable.TabWindow:saveLayout()
   if DMTabs and DMTabs.queueLayoutSave then DMTabs:queueLayoutSave() end
 end
 
+-- Reset the aggregate tab layout without deleting its save file.
+function Adjustable.TabWindow:resetSaveFile()
+        local directory = getMudletHomeDir().."/AdjustableTabWindow/"
+        if not io.exists(directory) then lfs.mkdir(directory) end
+        table.save(directory.."TabWindowTabs.lua", {})
+end
+
 function Adjustable.TabWindow:createBaseContainers()
     self.header = self.header or Geyser.HBox:new({
         name = self.name.."header",

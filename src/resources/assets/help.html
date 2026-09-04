@@ -309,7 +309,7 @@
       <!-- Status Bars -->
       <h2 id="ui-statusbars">Status Bars</h2>
       <p>
-        Horizontal gauges at the bottom of your Mudlet window showing your vitals at a glance.
+        Horizontal gauges initially positioned at the bottom of your Mudlet window showing your vitals at a glance.
         An enemy health bar appears automatically when you enter combat.
       </p>
 
@@ -366,7 +366,7 @@
       <p>
         Appearance includes pending Light/Dark theme mode, Full/Minimal UI mode, window font,
         font size, and safe screen-border percentages. Status Bars includes enabled state,
-        moveable mode, total height, and editable foreground/background RGBA colors. Windows includes Affects refresh and text lengths,
+        total height, and editable foreground/background RGBA colors. Status Bars are always movable. Windows includes Affects refresh and text lengths,
         original-line deletion, Who original-line deletion, Chat History message limit, and
         SkillUps history limit.
       </p>
@@ -382,7 +382,7 @@
         <thead><tr><th>Control group</th><th>Available settings</th></tr></thead>
         <tbody>
           <tr><td>Appearance</td><td>Theme, UI mode, window font, font size, border percentages</td></tr>
-          <tr><td>Status Bars</td><td>Enabled, moveable, total height, foreground/background RGBA colors</td></tr>
+          <tr><td>Status Bars</td><td>Enabled, total height, foreground/background RGBA colors</td></tr>
           <tr><td>Windows</td><td>Affects, Who, Chat History, and SkillUps display limits</td></tr>
           <tr><td>Enchanter Assist</td><td>Materials, recovery, workflow controls, and session reset</td></tr>
           <tr><td>ShowDMG</td><td>Damage messages, mode, and color</td></tr>
@@ -990,7 +990,7 @@
           <tr><td><code>#class {name} {disable}</code></td><td>Disable class</td></tr>
           <tr><td><code>#class {name} {hidden}</code></td><td>Hide class members from <code>#alias</code> / <code>#trigger</code> listings</td></tr>
           <tr><td><code>#class {name} {unhide}</code></td><td>Unhide a hidden class</td></tr>
-          <tr><td><code>#class {name} {remove}</code></td><td>Delete the class record (members are not removed)</td></tr>
+          <tr><td><code>#class {name} {remove}</code></td><td>Delete the class record <em>and</em> all of its member aliases/triggers</td></tr>
         </tbody>
       </table>
       <div class="tip">
@@ -1105,6 +1105,26 @@
           <tr><td><code>#export variable {name}</code></td><td>Export a specific variable by name</td></tr>
         </tbody>
       </table>
+
+      <h3>Import &mdash; <code>#IMPORT</code></h3>
+      <p>
+        <code>#IMPORT</code> loads a bundled <em>preset</em>: a text file of CMud command lines
+        (the same format <code>#export</code> produces). Presets ship with the package and are read
+        from <code>&lt;mudlet home&gt;/DarkMistsCompanion/assets/cmud/{name}.txt</code>.
+      </p>
+      <table>
+        <thead><tr><th>Command</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>#import {name}</code></td><td>Load preset <em>name</em> (adds or overwrites its definitions)</td></tr>
+          <tr><td><code>#import list</code></td><td>List the available bundled presets</td></tr>
+        </tbody>
+      </table>
+      <ul>
+        <li>Preset files contain one <code>#</code>-command per line; blank lines and lines starting with <code>;;</code> are ignored.</li>
+        <li>A <code>#class {name} {options}</code> header also sets the <em>current class</em> for the lines that follow it (CMUD behavior).</li>
+        <li>Import is <strong>idempotent</strong> &mdash; re-running it overwrites same-named definitions rather than duplicating them.</li>
+        <li>To uninstall a preset, remove its class: <code>#class {name} {remove}</code> deletes the class and all member aliases/triggers.</li>
+      </ul>
 
       <h3>Cross-Invocation</h3>
       <p>
@@ -1348,7 +1368,7 @@
           <tr><td><code>#class {name} {enable/disable}</code></td><td>Enable or disable class (text form)</td><td>CMud</td></tr>
           <tr><td><code>#class {name} {hidden}</code></td><td>Hide class members from listings</td><td>CMud</td></tr>
           <tr><td><code>#class {name} {unhide}</code></td><td>Unhide a hidden class</td><td>CMud</td></tr>
-          <tr><td><code>#class {name} {remove}</code></td><td>Delete the class record</td><td>CMud</td></tr>
+          <tr><td><code>#class {name} {remove}</code></td><td>Delete the class and purge its member aliases/triggers</td><td>CMud</td></tr>
           <tr><td><code>#T+ {name}</code></td><td>Enable alias / trigger / variable</td><td>CMud</td></tr>
           <tr><td><code>#T- {name}</code></td><td>Disable alias / trigger / variable</td><td>CMud</td></tr>
           <tr><td><code>#CW {pattern} {fg bg}</code></td><td>Persistent trigger: color matching word (one or two colors)</td><td>CMud</td></tr>
@@ -1363,6 +1383,8 @@
           <tr><td><code>#sep [char]</code></td><td>Get or set command separator</td><td>CMud</td></tr>
           <tr><td><code>#killall</code></td><td>Erase all aliases, triggers, variables, and classes</td><td>CMud</td></tr>
           <tr><td><code>#export</code></td><td>Export class declarations + all stored items</td><td>CMud</td></tr>
+          <tr><td><code>#import {name}</code></td><td>Load a bundled preset (adds/overwrites definitions)</td><td>CMud</td></tr>
+          <tr><td><code>#import list</code></td><td>List available bundled presets</td><td>CMud</td></tr>
           <tr><td><code>#export {classname}</code></td><td>Export all members of a class</td><td>CMud</td></tr>
           <tr><td><code>#export alias/trigger/variable {name}</code></td><td>Export a specific item by kind and name</td><td>CMud</td></tr>
           <tr><td><code>#help</code></td><td>Show CMud help in-game</td><td>CMud</td></tr>
@@ -1492,11 +1514,6 @@
             <td><code>statusBarTotalHeightPercent</code></td>
             <td>number (0–100)</td>
             <td>Total vertical height of the status bar area as a percentage of the Mudlet window height.</td>
-          </tr>
-          <tr>
-            <td><code>statusBarsMoveable</code></td>
-            <td><code>true</code> / <code>false</code></td>
-            <td>Allow dragging the status bars to reposition them on screen.</td>
           </tr>
           <tr>
             <td><code>whoWindowDeleteOriginalLines</code></td>

@@ -312,7 +312,7 @@ Prefix every command with # (e.g. #alias, #trigger).
   #class {name} {disable}        – disable class
   #class {name} {hidden}         – hide class members from listings
   #class {name} {unhide}         – unhide class members
-  #class {name} {remove}         – delete the class record entirely
+  #class {name} {remove}         – delete class and purge its member aliases/triggers
 
   The default class is set per session and is never persisted.
   Inline class args on #alias/#trigger/#var override the default.
@@ -368,6 +368,16 @@ Prefix every command with # (e.g. #alias, #trigger).
 
   Exported output includes #class declarations and trailing class
   args on each definition, so the full setup can be re-imported.
+
+──── IMPORT ────────────────────────────────────────────────────
+  #import {name}                – load bundled preset (assets/cmud/{name}.txt)
+  #import list                  – list available bundled presets
+
+  Preset files hold one #-command per line; blank lines and lines
+  starting with ;; are skipped. A #class {name} {options} header
+  also sets the current class for the lines that follow it.
+  Import is idempotent – re-running overwrites same-named items.
+  To remove a preset, run: #class {name} {remove} (purges members).
 
 ──── CROSS-INVOCATION ───────────────────────────────────────────
   Alias bodies can call other aliases by name (cross-invocation).
