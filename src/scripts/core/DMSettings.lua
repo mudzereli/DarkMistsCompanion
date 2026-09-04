@@ -942,12 +942,12 @@ end
 local function registerCMud()
   local roles = {
     { role = "keyword",          label = "Command keyword color",     themeColor = "blue",   description = "CMudWrapper directives such as #ALIAS, #TRIGGER, #VARIABLE, and #CLASS. Default: theme blue." },
-    { role = "variablePrefix",   label = "Variable prefix color",     themeColor = "green",  description = "The @ marker before variable names in command bodies. Default: theme green." },
-    { role = "variable",         label = "Enabled item name color",   themeColor = "green",  description = "Enabled alias, trigger, and variable names in lists and exports. Default: theme green." },
+    { role = "variablePrefix",   label = "Variable prefix color",     themeColor = "red",  description = "The @ marker before variable names in command bodies. Default: theme green." },
+    { role = "variable",         label = "Enabled item name color",   themeColor = "gold",  description = "Enabled alias, trigger, and variable names in lists and exports. Default: theme green." },
     { role = "disabledVariable", label = "Disabled item name color",  themeColor = "orange", description = "Disabled alias, trigger, and variable names in lists and exports. Default: theme orange." },
-    { role = "placeholder",      label = "Argument placeholder color", themeColor = "yellow", description = "%1 and %-1 argument markers in command bodies. Default: theme yellow." },
-    { role = "class",            label = "Enabled class name color",   themeColor = "green",  description = "Enabled class names shown in [class] tags and #CLASS lists. Default: theme green." },
-    { role = "disabledclass",    label = "Disabled class name color",  themeColor = "orange", description = "Disabled class names shown in [class] tags and #CLASS lists. Default: theme orange." },
+    { role = "placeholder",      label = "Argument placeholder color", themeColor = "purple", description = "%1 and %-1 argument markers in command bodies. Default: theme yellow." },
+    { role = "class",            label = "Enabled class name color",   themeColor = "cyan",  description = "Enabled class names shown in [class] tags and #CLASS lists. Default: theme green." },
+    { role = "disabledclass",    label = "Disabled class name color",  themeColor = "blue", description = "Disabled class names shown in [class] tags and #CLASS lists. Default: theme orange." },
   }
   for _, roleDef in ipairs(roles) do
     -- Capture the role in a fresh local: Mudlet runs Lua 5.1, where closures

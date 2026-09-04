@@ -80,14 +80,15 @@
 
 **DMC Patch Notes: 1.6.1**
 
-**CMudWrapper**: added `CMudWrapper.getVariable(name, fallback)` for reading stored variables from Lua with an optional fallback.
-**Settings Panel**: CMudWrapper output colors are now customizable by role, with theme defaults and a reset option.
-**Settings Panel**: status-bar color settings now include an RGBA picker with a live color preview and per-channel controls.
-**Status Bars**: now always use a movable container with persistent position and size; removed the obsolete Moveable setting and toggle.
-**Player Window**: bank information now includes the clan account gold balance.
+**CMudWrapper**: Lua can now read your saved CMud variables with `CMudWrapper.getVariable(name, fallback)`.
+**CMudWrapper**: new `#IMPORT` loads ready-made CMud script packs shipped with DMC - `#IMPORT {name}` to load one, `#IMPORT LIST` to browse what's available. `currently available script packs: colorauras, eyeshields, warpaints, and targeting`
+**CMudWrapper**: `#CLASS {name} {remove}` now deletes a class along with all its triggers and aliases, so removing an imported pack is one step.
+**Settings Panel**: CMud output colors are customizable per element (commands, names, classes) - or leave them on the theme and reset any time.
+**Settings Panel**: status-bar colors get a full picker with live preview and individual R/G/B/A channels.
+**Status Bars**: use a movable, resizable container that remembers its position; the old "Moveable" setting was removed.
+**Player Window**: shows the clan account's gold balance.
 
 **Future Versions**
 - add a help system that pops up in a separate window with real working links and pages
-- remove rmdir and lfs commands if possible
 - minimap startup performance improvements
 - backwards compatibility testing No newline at end of file

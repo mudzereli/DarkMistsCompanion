@@ -52,12 +52,12 @@ CMudWrapper.colors = CMudWrapper.colors or {}
 
 local COLOR_ROLE_TAGS = {
   keyword          = "blueTag",
-  variablePrefix   = "goodTag",
-  variable         = "goodTag",
-  disabledVariable = "warnTag",
-  placeholder      = "yellowTag",
-  class            = "goodTag",
-  disabledclass    = "warnTag",
+  variablePrefix   = "redTag",
+  variable         = "goldTag",
+  disabledVariable = "orangeTag",
+  placeholder      = "purpleTag",
+  class            = "cyanTag",
+  disabledclass    = "blueTag",
 }
 
 -- Return the cecho tag string for an output role.
@@ -1825,9 +1825,36 @@ function CMudWrapper.exec(cmd)
         opts[opt] = true
       end
       if opts["remove"] then
+        -- Purge every alias/trigger that belongs to this class so a preset class
+        -- (e.g. one loaded via #IMPORT) can be removed cleanly in one step.
+        local aliasNames, triggerNames = {}, {}
+        for aname, spec in pairs(CMudWrapper.state.aliases) do
+          if spec.class == classname then aliasNames[#aliasNames + 1] = aname end
+        end
+        for tname, spec in pairs(CMudWrapper.state.triggers) do
+          if spec.class == classname then triggerNames[#triggerNames + 1] = tname end
+        end
+        for _, aname in ipairs(aliasNames) do
+          if CMudWrapper.handles.aliases[aname] then
+            pcall(killAlias, CMudWrapper.handles.aliases[aname])
+            CMudWrapper.handles.aliases[aname] = nil
+          end
+          CMudWrapper.state.aliases[aname] = nil
+        end
+        for _, tname in ipairs(triggerNames) do
+          if CMudWrapper.handles.triggers[tname] then
+            pcall(killTrigger, CMudWrapper.handles.triggers[tname])
+            CMudWrapper.handles.triggers[tname] = nil
+          end
+          if CMudWrapper._patternDeps then CMudWrapper._patternDeps[tname] = nil end
+          CMudWrapper.state.triggers[tname] = nil
+        end
         CMudWrapper.state.classes[classname] = nil
+        if CMudWrapper.defaultClass == classname then
+          CMudWrapper.defaultClass = nil
+        end
         CMudWrapper.save()
-        CMudWrapper.notify(DarkmistsTheme.goodTag .. ("class removed: %s"):format(classname))
+        CMudWrapper.notify(DarkmistsTheme.goodTag .. ("class removed: %s (%d aliases, %d triggers purged)"):format(classname, #aliasNames, #triggerNames))
         return true
       end
       local cls = CMudWrapper.state.classes[classname] or { enabled = true }
@@ -1836,6 +1863,13 @@ function CMudWrapper.exec(cmd)
       if opts["hidden"]  then cls.hidden  = true  end
       if opts["unhide"] or opts["show"] then cls.hidden = nil end
       CMudWrapper.state.classes[classname] = cls
+      -- During an #IMPORT, a class header also sets the current class so that
+      -- following triggers/aliases without an explicit class join it (CMud files
+      -- rely on this "current class" behavior). Outside imports, only a bare
+      -- `#CLASS name` sets the default, as before.
+      if CMudWrapper._importing then
+        CMudWrapper.defaultClass = classname
+      end
       CMudWrapper.save()
       -- Apply enable/disable to live handles so triggers/aliases start or stop firing.
       if opts["enable"] or opts["disable"] then
@@ -1916,10 +1950,130 @@ function CMudWrapper.exec(cmd)
       cls.enabled and "enabled" or "disabled", classname))
     return true
 
+  elseif isPrefix(verb, "IMPORT") then
+    -- #IMPORT {name} — load a bundled preset from assets/cmud/{name}.txt
+    -- #IMPORT LIST — list the bundled presets
+    local target = args[1]
+    if not target or target == "" then
+      CMudWrapper.notify(DarkmistsTheme.infoTag .. "Usage: #IMPORT {preset}   |   #IMPORT LIST")
+      return true
+    end
+    if tostring(target):upper() == "LIST" then
+      CMudWrapper.notify(CMudWrapper.listPresets())
+      return true
+    end
+    local ok, err = CMudWrapper.importPreset(target)
+    if not ok then
+      CMudWrapper.notify(DarkmistsTheme.badTag .. ("preset import failed: %s (%s)"):format(target, tostring(err or "unknown error")))
+    end
+    return true
+
   else
     CMudWrapper.notify(DarkmistsTheme.warnTag .. ("unsupported command: %s"):format(verb))
   end
 
+  return true
+end
+
+-- ===================================================================
+-- PRESET IMPORT
+-- ===================================================================
+-- Presets are plain CMud-syntax text files shipped with the package under
+-- <mudlet home>/DarkMistsCompanion/assets/cmud/.
+
+-- Resolve a preset name to a safe file path. Only simple identifiers are
+-- allowed so preset names can never escape the preset directory.
+local function presetPath(name)
+  if type(name) ~= "string" or not name:match("^[%w_%-]+$") then
+    return nil
+  end
+  return getMudletHomeDir() .. "/DarkMistsCompanion/assets/cmud/" .. name .. ".txt"
+end
+
+-- Enumerate bundled presets (files ending in .txt or .cmud) as a message body.
+function CMudWrapper.listPresets()
+  local dir = getMudletHomeDir() .. "/DarkMistsCompanion/assets/cmud/"
+  local names = {}
+  -- lfs.dir(dir) returns (iterator, dir_obj); a generic for must use BOTH, so
+  -- iterate directly instead of stashing the iterator in a local (that drops
+  -- dir_obj and makes every iteration error with "directory metatable
+  -- expected"). lfs.dir raises if the folder is missing, so the scan is
+  -- pcall-guarded.
+  pcall(function()
+    for entry in lfs.dir(dir) do
+      local base = entry:match("^(.*)%.txt$") or entry:match("^(.*)%.cmud$")
+      if base and base ~= "" then names[#names + 1] = base end
+    end
+  end)
+  table.sort(names, function(a, b) return a:lower() < b:lower() end)
+  if #names == 0 then
+    return DarkmistsTheme.mutedTag .. "No presets found in " .. DarkmistsTheme.textTag .. dir
+  end
+  local msg = DarkmistsTheme.infoTag .. "Available presets:\n"
+  for _, n in ipairs(names) do
+    msg = msg .. "  " .. DarkmistsTheme.textTag .. n .. "\n"
+  end
+  return msg
+end
+
+-- Replay a preset file through exec(). Each non-blank, non-comment (;;) line is
+-- a single CMud command. Import is idempotent: definitions overwrite by name.
+function CMudWrapper.importPreset(name)
+  local path = presetPath(name)
+  if not path then
+    return false, "invalid preset name (letters, digits, _ and - only)"
+  end
+
+  local f, err = io.open(path, "r")
+  if not f then
+    return false, "could not open preset: " .. tostring(err or path)
+  end
+
+  -- Suppress exec()'s per-definition chatter ("trigger saved: …") while
+  -- importing and report a single summary instead. Restored on every path.
+  local realNotify = CMudWrapper.notify
+  CMudWrapper.notify = function() end
+
+  local imported, failed = 0, 0
+  local failureMsgs = {}
+  local previousDefault = CMudWrapper.defaultClass
+  CMudWrapper._importing = true
+
+  for line in f:lines() do
+    local trimmed = line:gsub("^%s+", ""):gsub("%s+$", "")
+    if trimmed ~= "" and trimmed:sub(1, 2) ~= ";;" then
+      local ok, perr = pcall(CMudWrapper.exec, trimmed)
+      if ok then
+        imported = imported + 1
+      else
+        failed = failed + 1
+        failureMsgs[#failureMsgs + 1] = DarkmistsTheme.badTag .. trimmed .. DarkmistsTheme.mutedTag .. " — " .. tostring(perr)
+      end
+    end
+  end
+
+  f:close()
+  CMudWrapper.notify = realNotify
+  CMudWrapper._importing = nil
+  CMudWrapper.defaultClass = previousDefault
+
+  if imported > 0 then
+    CMudWrapper.save()
+  end
+
+  if failed > 0 then
+    local msg = DarkmistsTheme.warnTag .. ("Imported %d line(s) from '%s' with %d error(s):"):format(imported, name, failed)
+    for i = 1, math.min(#failureMsgs, 5) do
+      msg = msg .. "\n" .. failureMsgs[i]
+    end
+    if #failureMsgs > 5 then
+      msg = msg .. "\n" .. DarkmistsTheme.mutedTag .. ("  … and %d more"):format(#failureMsgs - 5)
+    end
+    CMudWrapper.notify(msg)
+    return false, ("%d error(s) while importing"):format(failed)
+  end
+
+  CMudWrapper.notify(DarkmistsTheme.goodTag .. ("Imported %d line(s) from preset '%s'"):format(imported, name))
   return true
 end
 

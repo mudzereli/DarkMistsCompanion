@@ -1,0 +1,30 @@
+;; Eyeshield reminder triggers — import with: #IMPORT eyeshields
+;; When an eyeshield shows up (e.g. in a worn or "look" listing), appends the
+;; resistance that eyeshield grants — each eyeshield resists one damage type.
+;; Remove with: #CLASS {echo:eyeshields} {remove}
+#CLASS {echo:eyeshields} {enable, hidden}
+#TRIGGER {eyeshield:acid} {a yellow eyeshield of Protection} {#show (acid)} {echo:eyeshields}
+#TRIGGER {eyeshield:bash} {a diffusive eyeshield of Resistance} {#show (bash)} {echo:eyeshields}
+#TRIGGER {eyeshield:cold} {a white eyeshield of Protection} {#show (cold)} {echo:eyeshields}
+#TRIGGER {eyeshield:disease} {a grey eyeshield of Protection} {#show (disease)} {echo:eyeshields}
+#TRIGGER {eyeshield:drowning} {an aquamarine eyeshield of Protection} {#show (drowning)} {echo:eyeshields}
+#TRIGGER {eyeshield:energy} {a crackling eyeshield of Protection} {#show (energy)} {echo:eyeshields}
+#TRIGGER {eyeshield:fire} {a red eyeshield of Protection} {#show (fire)} {echo:eyeshields}
+#TRIGGER {eyeshield:holy} {a celestial eyeshield of Protection} {#show (holy)} {echo:eyeshields}
+#TRIGGER {eyeshield:iron} {a rusty iron eyeshield of Protection} {#show (iron)} {echo:eyeshields}
+#TRIGGER {eyeshield:light} {a glowing eyeshield of Protection} {#show (light)} {echo:eyeshields}
+#TRIGGER {eyeshield:lightning} {a blue eyeshield of Protection} {#show (lightning)} {echo:eyeshields}
+#TRIGGER {eyeshield:magic} {a translucent eyeshield of Protection} {#show (magic)} {echo:eyeshields}
+#TRIGGER {eyeshield:mental} {a humming eyeshield of Protection} {#show (mental)} {echo:eyeshields}
+#TRIGGER {eyeshield:metal} {a metallic eyeshield of Protection} {#show (metal)} {echo:eyeshields}
+#TRIGGER {eyeshield:nature} {an organic eyeshield of Protection} {#show (nature)} {echo:eyeshields}
+#TRIGGER {eyeshield:negative} {an obscure eyeshield of Protection} {#show (negative)} {echo:eyeshields}
+#TRIGGER {eyeshield:pierce} {a refractive eyeshield of Resistance} {#show (pierce)} {echo:eyeshields}
+#TRIGGER {eyeshield:poison} {a green eyeshield of Protection} {#show (poison)} {echo:eyeshields}
+#TRIGGER {eyeshield:silver} {a polished eyeshield of Protection} {#show (silver)} {echo:eyeshields}
+#TRIGGER {eyeshield:slash} {a deflective eyeshield of Resistance} {#show (slash)} {echo:eyeshields}
+#TRIGGER {eyeshield:sound} {a droning eyeshield of Protection} {#show (sound)} {echo:eyeshields}
+#TRIGGER {eyeshield:spells} {a spellbinding eyeshield of Resistance} {#show (spells)} {echo:eyeshields}
+#TRIGGER {eyeshield:supplications} {a faithless eyeshield of Resistance} {#show (supplications)} {echo:eyeshields}
+#TRIGGER {eyeshield:weapon} {a durable eyeshield of Protection} {#show (weapon)} {echo:eyeshields}
+#TRIGGER {eyeshield:wood} {a bark-lined eyeshield of Protection} {#show (wood)} {echo:eyeshields}
