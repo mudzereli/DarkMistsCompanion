@@ -16,6 +16,12 @@ local function clamp(v, minv, maxv)
   return math.max(minv, math.min(maxv, v))
 end
 
+-- Delete a Geyser object if it exposes delete(), tolerating teardown errors:
+-- UI objects may already be gone or mid-callback during a reload.
+local function safe_delete(obj)
+  if obj and obj.delete then pcall(obj.delete, obj) end
+end
+
 -- Returns the configured tab label font size and the tab bar height that fits it.
 -- The glyph height is measured rather than assumed: a flat fontPx + constant
 -- allowance starts clipping the moment the font outgrows the label's padding.
@@ -39,7 +45,6 @@ end
 
 local function build_tab_styles()
   local p = (DarkmistsTheme and DarkmistsTheme.panel) or {}
-  local paddingPx = TAB_LABEL_PADDING_PX
 
   -- Tab chrome mirrors DMPanelHeader: inactive tabs read like panel buttons,
   -- the active tab is the solid panel purple with a gold accent line.
@@ -50,32 +55,31 @@ local function build_tab_styles()
   local activeBg       = p.buttonActiveBg or "#7a5cff"
   local accent         = p.tabAccent or "#ffd27a"
 
+  -- Rules shared by both states: 1px side gaps, a padded box, centred label.
   -- NOTE: no `color` here. Rich-text labels ignore the QSS colour property, so
   -- activate/deactivate push the text colour through the label's fgColor
   -- instead - the same reason DMPanelHeader.applyButtonStyle calls setFgColor.
+  local chrome = string.format(
+    "    margin-left: 1px; margin-right: 1px;\n    padding: %dpx;\n    qproperty-alignment: 'AlignCenter';\n",
+    TAB_LABEL_PADDING_PX)
+
   local inactiveStyle = string.format([[
   QLabel {
     background-color: %s;
     border: 1px solid %s;
-    margin-left: 1px; margin-right: 1px;
-    padding: %dpx;
-    qproperty-alignment: 'AlignCenter';
-  }
+%s  }
   QLabel:hover {
     background-color: %s;
     border: 1px solid %s;
   }
-]], inactiveBg, inactiveBorder, paddingPx, hoverBg, hoverBorder)
+]], inactiveBg, inactiveBorder, chrome, hoverBg, hoverBorder)
   local activeStyle = string.format([[
   QLabel {
     background-color: %s;
     border-top: 3px solid %s;
-    margin-left: 1px; margin-right: 1px;
-    padding: %dpx;
     font-weight: bold;
-    qproperty-alignment: 'AlignCenter';
-  }
-]], activeBg, accent, paddingPx)
+%s  }
+]], activeBg, accent, chrome)
   return inactiveStyle, activeStyle
 end
 
@@ -97,8 +101,12 @@ function DMTabFrame.applyTabFont()
 
   tabs.header:resize("100%", barHeight)
   tabs.overlay:resize("100%", barHeight)
+  -- Re-anchor the body under the strip so the tab pages follow it, and let it
+  -- fill to the bottom. Must use the explicit "100%-Npx" form: a bare negative
+  -- height ("-N") is read as an offset from the bottom edge, which leaves an
+  -- N px strip below the body instead of a height of (parent - N).
   tabs.footer:move(0, barHeight)
-  tabs.footer:resize("100%", "-" .. barHeight)
+  tabs.footer:resize("100%", "100%-" .. barHeight .. "px")
   -- HBox:resize only re-lays its children out when it holds fixed-size ones, so
   -- the strip has to be organised explicitly for the tabs to take the new height.
   tabs.header:organize()
@@ -205,7 +213,7 @@ function DMTabFrame.startAutosave()
   if not tabs then return end
 
   local currentTabs = tabs
-  tabs._autosaveTimer = DarkmistsTimer.add("DMTabFrame.Autosave", 120, function()
+  DarkmistsTimer.add("DMTabFrame.Autosave", 120, function()
     if DMTabFrame.tabs == currentTabs then
       currentTabs:save()
     end
@@ -261,10 +269,7 @@ function DMTabFrame.destroy()
     -- else. The docked containers are deleted here too rather than through the
     -- strip's cascade below, so that nothing below gets deleted twice.
     for tabName, owner in pairs(Adjustable.TabWindow.allTabs) do
-      pcall(function()
-        local container = owner[tabName .. "tab"]
-        if container and container.delete then container:delete() end
-      end)
+      pcall(function() safe_delete(owner[tabName .. "tab"]) end)
       owner[tabName .. "tab"] = nil
     end
 
@@ -272,9 +277,9 @@ function DMTabFrame.destroy()
     -- the docked tab pages (and their content); the containers are already gone.
     for _, win in pairs(Adjustable.TabWindow.all) do
       pcall(function()
-        if win.footer and win.footer.delete then win.footer:delete() end
-        if win.overlay and win.overlay.delete then win.overlay:delete() end
-        if win.header and win.header.delete then win.header:delete() end
+        safe_delete(win.footer)
+        safe_delete(win.overlay)
+        safe_delete(win.header)
       end)
     end
 
@@ -285,9 +290,7 @@ function DMTabFrame.destroy()
     Adjustable.TabWindow.all_windows = {}
   end
 
-  if DMTabFrame.container and DMTabFrame.container.delete then
-    pcall(DMTabFrame.container.delete, DMTabFrame.container)
-  end
+  safe_delete(DMTabFrame.container)
   DMTabFrame.container = nil
 
   -- Stop the repeating autosave timer. Removing by name is a no-op when it was
