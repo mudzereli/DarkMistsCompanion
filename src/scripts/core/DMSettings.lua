@@ -583,6 +583,22 @@ local function registerAppearance()
       save = saveGlobalSettings, reloadRequired = true,
     },
     {
+      key = "appearance.tabFontSize", page = "Appearance", group = "Appearance",
+      label = "Tab font size",
+      description = "Font size for the tab labels in the tab frame.",
+      type = "integer", default = DMConstants.TAB_FONT_DEFAULT_PX,
+      get = function() return globalValue("tabFontSize", DMConstants.TAB_FONT_DEFAULT_PX) end,
+      validate = function(value)
+        return validateInteger(value, DMConstants.TAB_FONT_MIN_PX, DMConstants.TAB_FONT_MAX_PX)
+      end,
+      set = function(value)
+        setGlobalValue("tabFontSize", value)
+        if DMTabFrame and DMTabFrame.applyTabFont then DMTabFrame.applyTabFont() end
+        return true
+      end,
+      save = saveGlobalSettings,
+    },
+    {
       key = "appearance.fontName", page = "Appearance", group = "Appearance",
       label = "Window font",
       description = "Font face used by the Chat, Who, Affects, and Player windows.",

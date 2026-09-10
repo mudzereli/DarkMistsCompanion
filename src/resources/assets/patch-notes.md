@@ -88,7 +88,17 @@
 **Status Bars**: use a movable, resizable container that remembers its position; the old "Moveable" setting was removed.
 **Player Window**: shows the clan account's gold balance.
 
+**DMC Patch Notes: 1.6.2**
+
+**Settings Panel**: tab label font size is now a setting (Appearance -> Tab font size) and applies live. The tab bar grows with the font so labels always fit.
+**Tab Frame**: removed the automatic tab font scaling that guessed a size from the window height; the tab strip now keeps a stable height when the frame is resized.
+**Tab Frame**: tab styling now follows the panel header palette - panel purple for the active tab with a gold accent line, panel button chrome for the inactive tabs.
+
 **Future Versions**
+- itemtracker not matching:
+  - Baargh gives you an iron-plate chest guard.
+  - 
+- default CMW colors dont show up properly in settings in Light Mode
 - add a help system that pops up in a separate window with real working links and pages
 - minimap startup performance improvements
 - backwards compatibility testing No newline at end of file

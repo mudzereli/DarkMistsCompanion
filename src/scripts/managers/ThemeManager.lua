@@ -76,6 +76,8 @@ function DarkmistsTheme.buildNeutralTheme()
     buttonRefreshColor  = "#a78bfa",
     buttonClearColor    = "#ff7b6b",
     buttonIgnoreColor   = "#ffd27a",
+    -- Gold accent line on the active DMTabFrame tab
+    tabAccent           = "#ffd27a",
   }
   buildTags(t)
 end
@@ -181,6 +183,8 @@ function DarkmistsTheme.buildTheme()
       buttonRefreshColor  = "#5b3fd4",
       buttonClearColor    = "#c0392b",
       buttonIgnoreColor   = "#9a6a00",
+      -- Gold accent line on the active DMTabFrame tab
+      tabAccent           = "#d69e2e",
       -- Chat history filter buttons
       buttonAllColor      = "#5b3fd4",
       buttonSayColor      = "#a16207",
@@ -208,6 +212,8 @@ function DarkmistsTheme.buildTheme()
       buttonRefreshColor  = "#a78bfa",
       buttonClearColor    = "#ff7b6b",
       buttonIgnoreColor   = "#ffd27a",
+      -- Gold accent line on the active DMTabFrame tab
+      tabAccent           = "#ffd27a",
       -- Chat history filter buttons
       buttonAllColor      = "#a78bfa",
       buttonSayColor      = "#fbbf24",

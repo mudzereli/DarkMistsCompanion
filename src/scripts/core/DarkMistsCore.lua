@@ -98,6 +98,8 @@ Darkmists.DefaultSettings = {
   borders = { top = 0, bottom = 0, left = 0, right = 0 },
   -- Font Size for additional Information Windows (Chat History, Who List, Affects)
   fontSize = math.ceil(getFontSize()*0.75),--11,
+  -- Font Size for the DMTabFrame tab labels (px)
+  tabFontSize = DMConstants.TAB_FONT_DEFAULT_PX,
   -- Font Face for additional Information Windows (Chat History, Who List, Affects)
   fontName = getFont(),
   -- Colors for Status Bars (these are expressed in RGBA format which allows a wider variety of colors)

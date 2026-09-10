@@ -3,6 +3,11 @@
 -- ----------------------------------------------------------------------------
 -- Shared constant/enum lookup tables used across the framework.
 -- Keeps data separate from logic so any module can reference the same values.
+--
+-- Mostly game data (combat conditions, damage verbs). It also carries the
+-- cross-cutting defaults that core scripts need at LOAD time - DMSettings while
+-- registering a setting, DarkMistsCore while building DefaultSettings - because
+-- this is the earliest-loading shared constants module.
 -- ============================================================================
 
 DMConstants = {}
@@ -83,3 +88,15 @@ DMConstants.DAMAGE_VERBS = {
   ["does UNGODLY things to"]        = {700, 899},
   ["DOES UNSPEAKABLE THINGS TO"]    = {900, 999},
 }
+
+-- ============================================================================
+-- UI / Setting Defaults
+-- ----------------------------------------------------------------------------
+-- DMTabFrame tab label font: default size and the accepted range. Read by
+-- Darkmists.DefaultSettings, the DMSettings registry entry, and DMTabFrame's
+-- own clamp, so the default and the range cannot drift apart.
+-- ============================================================================
+
+DMConstants.TAB_FONT_DEFAULT_PX = 11
+DMConstants.TAB_FONT_MIN_PX     = 8
+DMConstants.TAB_FONT_MAX_PX     = 24
