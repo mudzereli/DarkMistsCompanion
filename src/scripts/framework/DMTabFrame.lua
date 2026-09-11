@@ -307,8 +307,10 @@ function DMTabFrame.postLoadSetup()
       end
     end
 
-    -- Activate first non-floating tab (only our own window)
-    if #tabs.tabs > 0 then
+    -- Activate the first non-floating tab only when nothing selected one yet.
+    -- A command can open a lazily-created tab before this delayed setup runs;
+    -- never overwrite that user-selected tab when the timer fires.
+    if not tabs.current and #tabs.tabs > 0 then
       tabs:deactivateTab()
       tabs.current = nil
       for _, tabName in ipairs(tabs.tabs) do

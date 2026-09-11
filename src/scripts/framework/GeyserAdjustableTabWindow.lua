@@ -58,11 +58,29 @@ local function applyFloatTitle(container, title, topBand)
         label:setFontSize(math.min(label.__dockFontSize, math.max(8,
             (topBand or DMConstants.TAB_FLOAT_TOP_BAND_PX) - FLOAT_TITLE_BAND_SLACK_PX)))
     end
-    local style = (container.adjLabelstyle or "")
+    -- Derive the float style from the docked one, kept aside: this runs again on
+    -- every load and on every lock/unlock, and the padding rule rewrites only the
+    -- first length it finds, so re-transforming an already-transformed style would
+    -- append to what that pass wrote.
+    container.__dockAdjLabelstyle = container.__dockAdjLabelstyle or container.adjLabelstyle
+    local style = (container.__dockAdjLabelstyle or "")
         :gsub("qproperty%-alignment:%s*'[^']*'", "qproperty-alignment: 'AlignLeft | AlignTop'")
         :gsub("padding:%s*%d+px", "padding: 0px 3px 3px 3px")
     label:setStyleSheet(style)
-    label:echo(title, panel.buttonActiveFg or "#ffffff")
+
+    -- Store the float chrome back on the container as well as the label, because
+    -- the framework's own unlockContainer() re-runs setStyleSheet(self.adjLabelstyle)
+    -- and then setTitle(), which re-echoes self.titleText. Left alone, a lock/unlock
+    -- cycle therefore restores the docked, centred tab-button style and the tab's own
+    -- "<center>" title: centred across the whole float window it lands behind the
+    -- page, which is the title "disappearing" again. titleTxtColor goes with them so
+    -- the re-echoed title keeps the float's colour. createTabs() resets all three
+    -- when the tab is re-docked.
+    local titleColor = panel.buttonActiveFg or "#ffffff"
+    container.adjLabelstyle = style
+    container.titleText = title
+    container.titleTxtColor = titleColor
+    label:echo(title, titleColor)
 end
 
 -- Give a floated tab its title back. A method so the same text is applied to a
@@ -427,14 +445,34 @@ function Adjustable.TabWindow:transformTabContainer(tab)
     -- label from adjLabelstyle, which clears a float's title. Every load of this
     -- container has to put the float chrome back, and it is not only the UI reload
     -- that loads: the container's own right-click Load item does too.
-    if not container.__floatLoadHooked then
-        container.__floatLoadHooked = true
-        local baseLoad = container.load
+    --
+    -- unlockContainer() needs the same treatment: it re-runs the docked chrome
+    -- (adjLabelstyle and titleText - see applyFloatTitle) and puts Inside back at
+    -- padding * 2, which is not where this float's title band sits, so the frame
+    -- and title have to go back on after it.
+    if not container.__floatChromeHooked then
+        container.__floatChromeHooked = true
         local tabs, tabName = self, tab
+
+        local baseLoad = container.load
         container.load = function(c, ...)
             baseLoad(c, ...)
             if tabs[tabName] and tabs[tabName].floating then
                 tabs:applyFloatChrome(tabName)
+            end
+        end
+
+        local baseUnlock = container.unlockContainer
+        container.unlockContainer = function(c, ...)
+            baseUnlock(c, ...)
+            -- applyFloatFrame() below calls setPadding(), which calls this again:
+            -- the guard keeps that one pass from re-entering here.
+            if not c.__inFloatChrome
+                and tabs.__dockingTab ~= tabName
+                and tabs[tabName] and tabs[tabName].floating then
+                c.__inFloatChrome = true
+                tabs:applyFloatChrome(tabName)
+                c.__inFloatChrome = nil
             end
         end
     end
@@ -484,6 +522,12 @@ function Adjustable.TabWindow:transformTabContainer(tab)
     else 
         myWindow.current = nil
     end
+    -- Remember which docked style this float's chrome is derived from. The label is
+    -- about to be given the float rules, and load/lock/unlock re-derive them later,
+    -- so the pristine style has to be kept aside - re-transforming the derived style
+    -- would append to the padding it already rewrote. Captured here, after the
+    -- activation above, so a fresh float keeps the colour language it had before.
+    container.__dockAdjLabelstyle = container.adjLabelstyle
     -- Last, so the activation above cannot restyle the label afterwards.
     self:applyFloatTitle(tab)
     self:saveLayout()
@@ -508,6 +552,10 @@ function Adjustable.TabWindow:restoreTab(tab, myWindow)
         end
     end
     local container = self[tn]
+    -- Marks this tab as on its way into the strip. setPadding(0) below reaches the
+    -- unlock guard in transformTabContainer, which would otherwise put the float's
+    -- frame and title back on a container that is being re-docked.
+    self.__dockingTab = tab
     container:attachToBorder("none")
     container:setPadding(0)
     container:lockContainer()
@@ -520,8 +568,11 @@ function Adjustable.TabWindow:restoreTab(tab, myWindow)
         container.adjLabel:setFontSize(container.adjLabel.__dockFontSize)
         container.adjLabel.__dockFontSize = nil
     end
+    -- The saved docked style belongs to the float; the next float captures its own.
+    container.__dockAdjLabelstyle = nil
     container.adjLabel:echo(self[tab].tabText)
     self:changeTabContainer(tab, myWindow)
+    self.__dockingTab = nil
     self[tab].floating = false
     container.raiseOnClick = false
     self[tab]:show()
