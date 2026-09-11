@@ -96,6 +96,18 @@
     padding-bottom: 0.4rem;
   }
 
+  h3 {
+    color: var(--text);
+    font-size: 1rem;
+    margin: 1.5rem 0 0.25rem;
+  }
+
+  .section-intro {
+    color: var(--muted);
+    font-size: 0.9rem;
+    margin-top: 0.25rem;
+  }
+
   .event {
     background: var(--panel);
     border: 1px solid var(--border);
@@ -143,6 +155,66 @@
   .event-dir.in  { background: rgba(74,222,128,0.1);  color: var(--dir-in);  border: 1px solid rgba(74,222,128,0.25); }
   .event-dir.out { background: rgba(251,146,60,0.1);  color: var(--dir-out); border: 1px solid rgba(251,146,60,0.25); }
   .event-dir.sys { background: rgba(167,139,250,0.1); color: var(--dir-sys); border: 1px solid rgba(167,139,250,0.25); }
+
+  .obj {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    margin: 0.75rem 0;
+  }
+
+  .obj-name {
+    color: var(--accent);
+    font-weight: 600;
+    font-family: ui-monospace, monospace;
+  }
+
+  .obj-desc {
+    color: var(--muted);
+    margin-top: 0.25rem;
+    font-size: 0.9rem;
+  }
+
+  .fields {
+    margin-top: 0.7rem;
+    display: grid;
+    grid-template-columns: max-content minmax(0, 1fr);
+    gap: 0.2rem 1rem;
+    font-size: 0.8rem;
+  }
+
+  .field-name {
+    font-family: ui-monospace, monospace;
+    color: var(--text);
+    white-space: nowrap;
+  }
+
+  .field-name .obj-base {
+    color: var(--muted);
+  }
+
+  .field-type {
+    color: var(--dir-sys);
+    font-family: ui-monospace, monospace;
+    font-size: 0.72rem;
+  }
+
+  .field-desc {
+    color: var(--muted);
+  }
+
+  .field-group {
+    grid-column: 1 / -1;
+    margin-top: 0.5rem;
+    padding-top: 0.35rem;
+    border-top: 1px dashed var(--border);
+    color: var(--muted);
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
 
   code {
     background: var(--code);
@@ -430,6 +502,120 @@ const eventPayloads = {
 };
 
 /* ============================================================================
+   STATE OBJECTS – tables maintained by dmapi and updated as events fire
+   ----------------------------------------------------------------------------
+   These are live references, not copies. Read them directly (e.g.
+   dmapi.player.vitals.hp). Treat them as read-only: dmapi owns the writes.
+   ============================================================================ */
+
+const dmapiObjects = [
+  {
+    base: "dmapi.player",
+    desc: "Live player state. Updated automatically as the corresponding events fire.",
+    fields: [
+      { group: "Identity" },
+      { n: "level", t: "number", d: "Character level (0 until revealed)" },
+      { n: "online", t: "boolean", d: "true while in-world" },
+      { n: "age.years", t: "number", d: "Character age, years part" },
+      { n: "age.hours", t: "number", d: "Character age, hours part" },
+      { group: "Money" },
+      { n: "currency.gold", t: "number", d: "Gold on hand" },
+      { n: "currency.silver", t: "number", d: "Silver on hand" },
+      { n: "bank.gold", t: "number", d: "Gold stored in the bank" },
+      { n: "bank.silver", t: "number", d: "Silver stored in the bank" },
+      { n: "bank.house", t: "number", d: "House balance" },
+      { n: "bank.clan", t: "number", d: "Clan balance" },
+      { group: "Experience" },
+      { n: "experience.total", t: "number", d: "Total experience" },
+      { n: "experience.tnl", t: "number", d: "Experience to next level" },
+      { n: "experience.lastGain", t: "number", d: "Most recent single gain" },
+      { n: "experience.totalGained", t: "number", d: "Cumulative gain this session" },
+      { group: "Vitals" },
+      { n: "vitals.hp", t: "number", d: "Current hit points" },
+      { n: "vitals.mn", t: "number", d: "Current mana" },
+      { n: "vitals.mv", t: "number", d: "Current movement" },
+      { n: "vitals.hpMax", t: "number", d: "Max hit points (1 until known)" },
+      { n: "vitals.mnMax", t: "number", d: "Max mana (1 until known)" },
+      { n: "vitals.mvMax", t: "number", d: "Max movement (1 until known)" },
+      { n: "vitals.rg", t: "number", d: "Rage percentage" },
+      { n: "vitals.hpRegen", t: "number", d: "HP regen per tick from prompt" },
+      { n: "vitals.mnRegen", t: "number", d: "Mana regen per tick from prompt" },
+      { n: "vitals.mvRegen", t: "number", d: "Move regen per tick from prompt" },
+      { n: "vitals.practices", t: "number", d: "Unused practices" },
+      { n: "vitals.estimated", t: "boolean", d: "true when values are derived from a % prompt" },
+      { n: "vitals.hpPct", t: "number", d: "Computed HP % (getter)" },
+      { n: "vitals.mnPct", t: "number", d: "Computed mana % (getter)" },
+      { n: "vitals.mvPct", t: "number", d: "Computed move % (getter)" },
+      { group: "Attributes" },
+      { n: "stats.attributes.str", t: "{ base, mod }", d: "Strength" },
+      { n: "stats.attributes.int", t: "{ base, mod }", d: "Intelligence" },
+      { n: "stats.attributes.wis", t: "{ base, mod }", d: "Wisdom" },
+      { n: "stats.attributes.dex", t: "{ base, mod }", d: "Dexterity" },
+      { n: "stats.attributes.con", t: "{ base, mod }", d: "Constitution" },
+      { group: "Status" },
+      { n: "status.sleeping", t: "boolean", d: "Currently sleeping" },
+      { n: "status.resting", t: "boolean", d: "Currently resting" },
+      { n: "status.hungry", t: "number", d: "-1 = full, 0 = fine, 1–4 = increasing hunger" },
+      { n: "status.thirsty", t: "number", d: "0 = fine, 1–4 = increasing thirst" },
+      { n: "status.stunned", t: "boolean", d: "Currently stunned" },
+      { n: "status.position", t: "string", d: "standing · resting · sleeping · fighting" },
+      { group: "Combat" },
+      { n: "combat.active", t: "boolean", d: "Combat in progress" },
+      { n: "combat.round", t: "number", d: "Current combat round" },
+      { n: "combat.target", t: "string|nil", d: "Current target name" },
+      { n: "combat.targetHpPct", t: "number", d: "Estimated target HP %" },
+      { n: "combat.lastActivity", t: "number", d: "Epoch of last combat activity" },
+      { n: "combat.kills", t: "number", d: "Session kills" },
+      { n: "combat.deaths", t: "number", d: "Session deaths" },
+      { n: "combat.damageDealt", t: "number", d: "Accumulated outgoing damage" },
+      { n: "combat.damageTaken", t: "number", d: "Accumulated incoming damage" },
+      { group: "Extension points" },
+      { n: "state", t: "table", d: "Free-form slot for custom modules" },
+      { n: "actions", t: "table", d: "Free-form action registry" }
+    ]
+  },
+  {
+    base: "dmapi.world",
+    desc: "Live world state for the current room, weather, and time.",
+    fields: [
+      { n: "room.seenAt", t: "number", d: "Epoch of the last room update" },
+      { n: "room.name", t: "string|nil", d: "Room name" },
+      { n: "room.exits", t: "string[]", d: "Exit directions from the last exits line" },
+      { n: "room.vnum", t: "string|nil", d: "Room vnum — reserved for external modules" },
+      { n: "room.description", t: "string|nil", d: "Room description — reserved for external modules" },
+      { n: "room.mobiles", t: "table", d: "Mobiles present — reserved for external modules" },
+      { n: "room.items", t: "table", d: "Items present — reserved for external modules" },
+      { n: "time.isDay", t: "boolean", d: "Day/night flag" },
+      { n: "time.weather", t: "string", d: "Current weather" },
+      { n: "time.weatherDetail", t: "string", d: "Detailed weather text" }
+    ]
+  },
+  {
+    base: "dmapi.core",
+    desc: "Internal runtime state and the one-line event lookup table.",
+    fields: [
+      { n: "state.initialized", t: "boolean", d: "API finished init()" },
+      { n: "state.lastCommand", t: "string|nil", d: "Last command sent (see getLastCommand)" },
+      { n: "state.combatMissedPrompts", t: "number", d: "Prompts missed since last combat round" },
+      { n: "state.lastCombatRoundFired", t: "number", d: "Epoch of last combat round event" },
+      { n: "state.capturingRoom", t: "boolean", d: "Room-capture in progress" },
+      { n: "state.exitLineMarker", t: "number", d: "Line marker used for exit capture" },
+      { n: "oneLineEvents", t: "table", d: "Exact literal → event name(s) mapping" }
+    ]
+  },
+  {
+    base: "dmapi.settings",
+    desc: "Runtime configuration. Safe to adjust from other scripts.",
+    fields: [
+      { n: "themeColor", t: "string", d: "Mudlet colour tag used for output" },
+      { n: "debugLevel", t: "number", d: "0 = off, 1 = events, 2 = events + payloads" },
+      { n: "combatRoundInterval", t: "number", d: "Seconds between timed combat rounds" },
+      { n: "promptTimeout", t: "number", d: "Seconds before a prompt is considered stale" }
+    ]
+  }
+];
+
+/* ============================================================================
    RENDERING
    ============================================================================ */
 
@@ -482,6 +668,78 @@ for (const [key, domain] of Object.entries(dmapi.domains)) {
 
     section.appendChild(div);
   });
+
+  content.appendChild(section);
+}
+
+/* ---------------------------------------------------------------------------
+   State object reference (dmapi.player, dmapi.world, …)
+   --------------------------------------------------------------------------- */
+
+{
+  const id = "section-objects";
+
+  const li = document.createElement("li");
+  li.innerHTML = `<a href="#${id}">State Objects</a>`;
+  toc.appendChild(li);
+
+  const section = document.createElement("section");
+  section.id = id;
+  section.innerHTML =
+    "<h2>State Objects</h2>" +
+    '<p class="section-intro">Live tables that dmapi maintains and updates as events fire. ' +
+    "Read them directly, e.g. <code>dmapi.player.vitals.hp</code>. Treat them as read-only — dmapi owns the writes.</p>";
+
+  for (const obj of dmapiObjects) {
+    const div = document.createElement("div");
+    div.className = "obj";
+
+    const name = document.createElement("div");
+    name.className = "obj-name";
+    name.textContent = obj.base;
+    div.appendChild(name);
+
+    if (obj.desc) {
+      const desc = document.createElement("div");
+      desc.className = "obj-desc";
+      desc.textContent = obj.desc;
+      div.appendChild(desc);
+    }
+
+    const fields = document.createElement("div");
+    fields.className = "fields";
+
+    for (const f of obj.fields) {
+      if (f.group) {
+        const g = document.createElement("div");
+        g.className = "field-group";
+        g.textContent = f.group;
+        fields.appendChild(g);
+        continue;
+      }
+
+      const fieldName = document.createElement("div");
+      fieldName.className = "field-name";
+      fieldName.innerHTML = `<span class="obj-base">${obj.base}.</span>${f.n}`;
+
+      if (f.t) {
+        const type = document.createElement("span");
+        type.className = "field-type";
+        type.textContent = ` ${f.t}`;
+        fieldName.appendChild(type);
+      }
+
+      const fieldDesc = document.createElement("div");
+      fieldDesc.className = "field-desc";
+      fieldDesc.textContent = f.d;
+
+      fields.appendChild(fieldName);
+      fields.appendChild(fieldDesc);
+    }
+
+    div.appendChild(fields);
+    section.appendChild(div);
+  }
 
   content.appendChild(section);
 }
