@@ -29,12 +29,11 @@
 **Tab Frame**: tab styling updated to match panel header palette.
 **Tab Frame**: tab header font is sizeable: **Settings -> Appearance -> Tab font size**
 **Tab Frame**: undocked tabs now have a smaller outer-frame profile
+**DMAPI**: API reference page now documents the referenceable state objects - `dmapi.player`, `dmapi.world`, `dmapi.core`, and `dmapi.settings` - with every field and its meaning, so you can see what's available to read without digging through the source.
+**Item Tracker**: item names now link on give lines in either direction.
 
 
 **Future Versions**
-- itemtracker not matching:
-  - Baargh gives you an iron-plate chest guard.
-- when i close destinations undocked tab with x - walk list never shows it again
-- default CMW colors dont show up properly in settings in Light Mode
+- disconnect / reconnect may lead to a path where default GUI is shown - creating confusion
 - add a help system that pops up in a separate window with real working links and pages
 - tab layout saves are debounced, so reloading the UI right after undocking/docking a tab can restore the previous arrangement - the container right-click "Save" only writes that window's geometry and does not record the tab as undocked
