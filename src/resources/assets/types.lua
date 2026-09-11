@@ -229,6 +229,7 @@
 ---@field buildNeutralTheme fun()
 ---@field checkBackgroundContrast fun()
 ---@field buildHeaderStyle fun(): string
+---@field buildInputStyle fun(fontSize?: number): string
 ---@field buildButtonStyle fun(active: boolean, color?: string): string
 ---@field panel table
 ---@field test fun()

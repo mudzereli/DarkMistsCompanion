@@ -93,6 +93,7 @@
 **Settings Panel**: tab label font size is now a setting (Appearance -> Tab font size) and applies live. The tab bar grows with the font so labels always fit.
 **Tab Frame**: removed the automatic tab font scaling that guessed a size from the window height; the tab strip now keeps a stable height when the frame is resized.
 **Tab Frame**: tab styling now follows the panel header palette - panel purple for the active tab with a gold accent line, panel button chrome for the inactive tabs.
+**Walker**: `walk list` now opens an on-demand, dockable Destinations tab with clickable destinations, an Enter-to-apply filter, and the existing movable alert as a fallback when the dock is unavailable.
 
 **Future Versions**
 - itemtracker not matching:

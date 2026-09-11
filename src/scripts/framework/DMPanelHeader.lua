@@ -29,6 +29,8 @@ DMPanelHeader = {}
 --   headerHeight  (px, default 26)
 --   consoleColor  (Geyser color for the body console)
 --   age           (default true) — add a stretchy live label slot at the left
+--   filter        { width, height, gapLeft, fontSize, toolTip, onSubmit, styleSheet }
+--                 — header text input (height/gapLeft are px)
 --   buttons       array of { key, label, width (px), tooltip, onClick }
 -- Returns handle:
 --   { panel, layout, header, hbox, controls = { age?, <key> = btn... }, console }
@@ -75,23 +77,50 @@ function DMPanelHeader.create(id, title, tabName, opts)
 
   if opts.filter then
     local filter = opts.filter
-    controls.filter = Geyser.CommandLine:new({
-      name = id .. "Filter",
+    local headerHeight = opts.headerHeight or 26
+    -- An HBox stretches its own children to the full strip height, so the input
+    -- goes in a transparent slot: the slot takes the strip's height and the
+    -- field inside it is centred, which stops it reading as a full-height slab.
+    local fieldHeight = math.max(12, math.min(headerHeight, filter.height or (headerHeight - 8)))
+    -- Optional nudge in from the left edge of the strip (transparent spacer).
+    if filter.gapLeft and filter.gapLeft > 0 then
+      local gap = Geyser.Label:new({
+        name = id .. "FilterGap",
+        width = filter.gapLeft,
+        height = "100%",
+        h_policy = Geyser.Fixed,
+        v_policy = Geyser.Dynamic,
+      }, hbox)
+      gap:setStyleSheet("background-color: rgba(0,0,0,0%);")
+    end
+    local slot = Geyser.Label:new({
+      name = id .. "FilterSlot",
       width = filter.width or 180,
       height = "100%",
       h_policy = Geyser.Fixed,
       v_policy = Geyser.Dynamic,
+    }, hbox)
+    slot:setStyleSheet("background-color: rgba(0,0,0,0%);")
+
+    controls.filter = Geyser.CommandLine:new({
+      name = id .. "Filter",
+      x = 0,
+      y = math.floor((headerHeight - fieldHeight) / 2),
+      width = "100%",
+      height = fieldHeight,
       font = opts.font or "",
       fontSize = opts.fontSize or 10,
-    }, hbox)
-    controls.filter:setStyleSheet(filter.styleSheet or [[
-QLineEdit {
-  background-color: rgba(0,0,0,35%);
-  border: 1px solid rgba(150,120,255,35%);
-  padding: 2px 6px;
-  color: #dddddd;
-}
-]])
+    }, slot)
+    -- Inset, bordered field so the input reads as a control rather than a
+    -- full-height slab. `filter.fontSize` (px) overrides the panel font size;
+    -- callers can replace the whole QSS with filter.styleSheet.
+    local filterFontSize = filter.fontSize or opts.fontSize
+    local filterStyle = filter.styleSheet
+      or (DarkmistsTheme and DarkmistsTheme.buildInputStyle
+          and DarkmistsTheme.buildInputStyle(filterFontSize))
+    if filterStyle then
+      controls.filter:setStyleSheet(filterStyle)
+    end
     if filter.toolTip and controls.filter.setToolTip then
       controls.filter:setToolTip(filter.toolTip)
     end
@@ -216,7 +245,8 @@ function DMPanelHeader.restyle(handle)
   if not handle then return end
   handle.header:setStyleSheet(DarkmistsTheme.buildHeaderStyle())
   for _, btn in pairs(handle.controls) do
-    if btn and btn.setStyleSheet then
+    -- Only real buttons carry defLabel; the filter is styled from the theme.
+    if btn and btn.defLabel and btn.setStyleSheet then
       DMPanelHeader.applyButtonStyle(btn, false)
     end
   end

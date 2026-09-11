@@ -76,6 +76,12 @@ function DarkmistsTheme.buildNeutralTheme()
     buttonRefreshColor  = "#a78bfa",
     buttonClearColor    = "#ff7b6b",
     buttonIgnoreColor   = "#ffd27a",
+    -- Panel header text input (filter box)
+    inputBg             = "rgba(0,0,0,45%)",
+    inputBorder         = "rgba(150,120,255,35%)",
+    inputFocusBorder    = "rgba(167,139,250,85%)",
+    inputText           = "#e8e6f0",
+    inputSelection      = "rgba(150,120,255,55%)",
     -- Gold accent line on the active DMTabFrame tab
     tabAccent           = "#ffd27a",
   }
@@ -183,6 +189,12 @@ function DarkmistsTheme.buildTheme()
       buttonRefreshColor  = "#5b3fd4",
       buttonClearColor    = "#c0392b",
       buttonIgnoreColor   = "#9a6a00",
+      -- Panel header text input (filter box)
+      inputBg             = "rgb(255,255,255)",
+      inputBorder         = "rgb(200,188,235)",
+      inputFocusBorder    = "rgb(100,70,190)",
+      inputText           = "rgb(32,26,54)",
+      inputSelection      = "rgba(122,92,255,35%)",
       -- Gold accent line on the active DMTabFrame tab
       tabAccent           = "#d69e2e",
       -- Chat history filter buttons
@@ -212,6 +224,12 @@ function DarkmistsTheme.buildTheme()
       buttonRefreshColor  = "#a78bfa",
       buttonClearColor    = "#ff7b6b",
       buttonIgnoreColor   = "#ffd27a",
+      -- Panel header text input (filter box)
+      inputBg             = "rgba(8,4,18,70%)",
+      inputBorder         = "rgba(150,120,255,30%)",
+      inputFocusBorder    = "rgba(167,139,250,85%)",
+      inputText           = "#e8e6f0",
+      inputSelection      = "rgba(150,120,255,50%)",
       -- Gold accent line on the active DMTabFrame tab
       tabAccent           = "#ffd27a",
       -- Chat history filter buttons
@@ -264,6 +282,37 @@ QLabel {
   border-radius: 0px;
 }
 ]], p.headerBg, p.headerBorder, p.headerAccent)
+end
+
+-- QSS for a panel header text input (the filter box). Mudlet's sub-command-lines
+-- are QPlainTextEdit widgets whose built-in stylesheet paints them with the
+-- command-line background colour - hence the selector, and why a QLineEdit rule
+-- silently does nothing. The field's height/position come from DMPanelHeader;
+-- `fontSize` (px) comes from the caller because neither Geyser's `fontSize`
+-- option nor setFont() reach a sub-command-line. Tune padding/radius/border here.
+function DarkmistsTheme.buildInputStyle(fontSize)
+  local p = DarkmistsTheme.panel or {}
+  local fontRule = ""
+  if type(fontSize) == "number" and fontSize > 0 then
+    fontRule = string.format("  font-size: %dpx;\n", math.floor(fontSize))
+  end
+  return string.format([[
+QPlainTextEdit {
+  background-color: %s;
+  border: 1px solid %s;
+  border-radius: 3px;
+  padding: 0px 6px;
+%s  color: %s;
+  selection-background-color: %s;
+}
+QPlainTextEdit:hover {
+  border: 1px solid %s;
+}
+QPlainTextEdit:focus {
+  border: 1px solid %s;
+}
+]], p.inputBg, p.inputBorder, fontRule, p.inputText, p.inputSelection,
+     p.inputFocusBorder, p.inputFocusBorder)
 end
 
 -- QSS for a header button. Retro-terminal: `color` is the button's accent

@@ -11,6 +11,19 @@ local tab_pos = nil
 -- Shorthand: TN(tab) → tab.."tab", used everywhere for the tab-header container key
 local function TN(tab) return tab.."tab" end
 
+-- Keep a container fully inside its parent. A saved position can come from a
+-- differently sized window, and a float can be larger than the window it opens
+-- in; either would otherwise leave it hanging off an edge.
+local function clampToParent(container)
+    local parent = container.container
+    if not parent then return end
+    local w, h = container:get_width(), container:get_height()
+    local winw, winh = parent:get_width(), parent:get_height()
+    local x = math.max(0, math.min(container:get_x() - parent:get_x(), winw - w))
+    local y = math.max(0, math.min(container:get_y() - parent:get_y(), winh - h))
+    container:move(x, y)
+end
+
 -- Queue a layout save through DMTabs (no-op if DMTabs isn't available)
 function Adjustable.TabWindow:saveLayout()
   if DMTabs and DMTabs.queueLayoutSave then DMTabs:queueLayoutSave() end
@@ -335,7 +348,16 @@ function Adjustable.TabWindow:transformTabContainer(tab)
         Geyser.windowList[container.windowname.."Container"].windowList[container.windowname]:add(container)
     end
     container:unlockContainer()
-    container:resize(self.get_width(), self.get_height())
+    local floatW, floatH = self:get_width(), self:get_height()
+    container:resize(floatW, floatH)
+    -- Open the float centred in its window, so it lands fully on-screen instead
+    -- of inheriting the tab button's position in the strip (% of the strip, but
+    -- resolved against the whole window once reparented).
+    local parent = container.container
+    local centerX = math.floor((parent:get_width() - floatW) / 2)
+    local centerY = math.floor((parent:get_height() - floatH) / 2)
+    container:move(centerX, centerY)
+    clampToParent(container)
     container:add(self[tab])
     myWindow:removeTab(tab)
     myWindow:createTabs()
@@ -657,6 +679,9 @@ function Adjustable.TabWindow:load()
                         end
                         -- load Adjustable Container settings
                         myTab:load()
+                        -- a position saved while the window was a different
+                        -- size can be off-screen; bring it back in
+                        clampToParent(myTab)
                     end
                 end
             end

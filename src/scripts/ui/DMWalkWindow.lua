@@ -12,6 +12,9 @@ WalkDestinations.header = nil
 WalkDestinations.controls = nil
 WalkDestinations.console = nil
 WalkDestinations.activeFilter = ""
+WalkDestinations._watchedText = ""
+WalkDestinations.FILTER_POLL_INTERVAL = 0.2
+WalkDestinations.FILTER_TIMER_KEY = "WalkDestinations.filterWatch"
 
 local function normalizeFilter(filter)
   return tostring(filter or ""):gsub("^%s*(.-)%s*$", "%1")
@@ -103,13 +106,17 @@ function WalkDestinations.create()
     fontSize = Darkmists.GlobalSettings.fontSize,
     age = false,
     filter = {
-      width = 190,
-      toolTip = "Filter destinations by name, room, or area; press Enter to apply",
+      width = 210,
+      height = 20,
+      gapLeft = 2,
+      toolTip = "Filter destinations by name, room, or area (applies as you type)",
       onSubmit = function(text)
         WalkDestinations.setFilter(text)
       end,
     },
     buttons = {
+      -- Stretchy spacer: keeps the filter on the left, buttons anchored right.
+      { key = "spacer", stretch = true },
       { key = "clear", label = "clear", marginX = 1,
         color = panelColors.buttonClearColor or "#ff7b6b",
         tooltip = "Clear destination filter",
@@ -133,6 +140,7 @@ function WalkDestinations.create()
 
   WalkDestinations.window:show()
   WalkDestinations.window:raiseAll()
+  WalkDestinations.startFilterWatch()
   Darkmists.Log("WalkDestinations", "Dockable destinations window created")
   return true
 end
@@ -146,16 +154,49 @@ function WalkDestinations.refresh()
   return true
 end
 
+-- Applies a filter programmatically (clear button, walk command, reopen) by
+-- syncing the input box first, then re-rendering.
 function WalkDestinations.setFilter(filter)
-  WalkDestinations.activeFilter = normalizeFilter(filter)
+  filter = normalizeFilter(filter)
+  WalkDestinations.activeFilter = filter
+  WalkDestinations._watchedText = filter
   if WalkDestinations.controls and WalkDestinations.controls.filter then
     local input = WalkDestinations.controls.filter
     input:clear()
-    if WalkDestinations.activeFilter ~= "" then
-      input:append(WalkDestinations.activeFilter)
+    if filter ~= "" then
+      input:append(filter)
     end
   end
   return WalkDestinations.refresh()
+end
+
+-- Geyser.CommandLine exposes no text-changed signal, so a lightweight repeating
+-- timer polls the box and re-renders live as the player types. Created with the
+-- panel and torn down in destroy(), so reloads never leak the timer.
+function WalkDestinations.startFilterWatch()
+  DarkmistsTimer.add(WalkDestinations.FILTER_TIMER_KEY, WalkDestinations.FILTER_POLL_INTERVAL, function()
+    WalkDestinations.pollFilterInput()
+  end, true)
+end
+
+function WalkDestinations.pollFilterInput()
+  local input = WalkDestinations.controls and WalkDestinations.controls.filter
+  if not input then
+    DarkmistsTimer.remove(WalkDestinations.FILTER_TIMER_KEY)
+    return
+  end
+
+  local text = input:getText() or ""
+  if text == WalkDestinations._watchedText then return end
+
+  -- Track the raw text, not the trimmed filter, so a trailing space mid-typing
+  -- does not retrigger a refresh on every tick.
+  WalkDestinations._watchedText = text
+  local normalized = normalizeFilter(text)
+  if normalized == WalkDestinations.activeFilter then return end
+
+  WalkDestinations.activeFilter = normalized
+  WalkDestinations.refresh()
 end
 
 function WalkDestinations.open(filter)
@@ -188,11 +229,14 @@ function WalkDestinations.destroy()
     pcall(WalkDestinations.window.delete, WalkDestinations.window)
   end
 
+  DarkmistsTimer.remove(WalkDestinations.FILTER_TIMER_KEY)
+
   WalkDestinations.window = nil
   WalkDestinations.header = nil
   WalkDestinations.controls = nil
   WalkDestinations.console = nil
   WalkDestinations.activeFilter = ""
+  WalkDestinations._watchedText = ""
 end
 
 return WalkDestinations
