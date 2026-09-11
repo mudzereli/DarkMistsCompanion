@@ -346,8 +346,8 @@ function DMClickables.ClickableEssences()
   -- ignore everything outside block
   if not DMClickables.essence.active then return end
 
-  -- skip pager
-  if raw:match("^%[Hit Return to continue%]") then return end
+  -- skip pager (plain find: EXACT_HIT_RETURN is a literal, not a Lua pattern)
+  if raw:find(DMPatterns.EXACT_HIT_RETURN, 1, true) == 1 then return end
 
   -- if line doesn't contain essence pairs, block was interrupted
   if not raw:match("([%a]+)%s+(%d+)") then
