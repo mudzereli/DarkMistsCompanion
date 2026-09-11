@@ -339,21 +339,37 @@ end
 -- @see Adjustable.TabWindow:deactivateTab()
 function Adjustable.TabWindow:activateTab(tab)
     self.current = tab
-    if self.current then
-        local tn = TN(tab)
-        self[tn].adjLabelstyle = self.activeTabStyle
-        self[tn].adjLabel:setStyleSheet(self.activeTabStyle)
-        self[self.current]:show()
+    if not self.current then return end
+
+    local tn = TN(tab)
+    self[tn].adjLabelstyle = self.activeTabStyle
+    self[tn].adjLabel:setStyleSheet(self.activeTabStyle)
+
+    -- Hide the other docked pages, then show the activated one. activateTab alone
+    -- never hid the previous page - the caller's deactivateTab did - so whenever
+    -- `current` drifted out of step with what was on screen the stale page stayed
+    -- visible on top and the strip looked stuck on one tab. The activated page is
+    -- shown separately, not by the loop: it may be a pulled-out tab's page, which
+    -- is no longer in self.tabs (transformTabContainer removes the tab first) and
+    -- so would never be reached.
+    for _, name in ipairs(self.tabs) do
+        local page = self[name]
+        if page and name ~= self.current then page:hide() end
     end
+    local page = self[self.current]
+    if page then page:show() end
 end
 
 -- deactivates and hides the current active tab
 function Adjustable.TabWindow:deactivateTab()
-    if self.current and self[self.current] then
+    local page = self.current and self[self.current]
+    -- A pulled-out tab is skipped: its label is that window's title bar and its
+    -- page is that window's content, so neither may be reset here.
+    if page and not page.floating then
         local tn = TN(self.current)
         self[tn].adjLabelstyle = self.inactiveTabStyle
         self[tn].adjLabel:setStyleSheet(self.inactiveTabStyle)
-        self[self.current]:hide()
+        page:hide()
     end
 end
 

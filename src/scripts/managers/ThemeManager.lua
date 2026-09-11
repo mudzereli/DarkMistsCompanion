@@ -76,6 +76,7 @@ function DarkmistsTheme.buildNeutralTheme()
     buttonRefreshColor  = "#a78bfa",
     buttonClearColor    = "#ff7b6b",
     buttonIgnoreColor   = "#ffd27a",
+    buttonAddColor      = "#4ade80",
     -- Panel header text input (filter box)
     inputBg             = "rgba(0,0,0,45%)",
     inputBorder         = "rgba(150,120,255,35%)",
@@ -189,6 +190,7 @@ function DarkmistsTheme.buildTheme()
       buttonRefreshColor  = "#5b3fd4",
       buttonClearColor    = "#c0392b",
       buttonIgnoreColor   = "#9a6a00",
+      buttonAddColor      = "#15803d",
       -- Panel header text input (filter box)
       inputBg             = "rgb(255,255,255)",
       inputBorder         = "rgb(200,188,235)",
@@ -224,6 +226,7 @@ function DarkmistsTheme.buildTheme()
       buttonRefreshColor  = "#a78bfa",
       buttonClearColor    = "#ff7b6b",
       buttonIgnoreColor   = "#ffd27a",
+      buttonAddColor      = "#4ade80",
       -- Panel header text input (filter box)
       inputBg             = "rgba(8,4,18,70%)",
       inputBorder         = "rgba(150,120,255,30%)",

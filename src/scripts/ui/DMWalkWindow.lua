@@ -115,6 +115,17 @@ function WalkDestinations.create()
       end,
     },
     buttons = {
+      -- Sits next to the filter box: saves its text as a destination at the
+      -- current room, the same as `walk add <name>`.
+      { key = "add", label = "add", marginX = 1,
+        color = panelColors.buttonAddColor or "#4ade80",
+        tooltip = "Add the filter box text as a destination at your current room",
+        onClick = function() WalkDestinations.addFromFilter() end },
+      -- Next to add, and destructive like the palette's other red button.
+      { key = "del", label = "del", marginX = 1,
+        color = panelColors.buttonClearColor or "#ff7b6b",
+        tooltip = "Remove the destination named in the filter box",
+        onClick = function() WalkDestinations.removeFromFilter() end },
       -- Stretchy spacer: keeps the filter on the left, buttons anchored right.
       { key = "spacer", stretch = true },
       { key = "clear", label = "clear", marginX = 1,
@@ -168,6 +179,70 @@ function WalkDestinations.setFilter(filter)
     end
   end
   return WalkDestinations.refresh()
+end
+
+-- "add" button: save what is typed in the filter box as a destination at the
+-- current room, which is what `walk add <name>` does. The box keeps its text, so
+-- the new destination is then what the filtered list shows.
+function WalkDestinations.addFromFilter()
+  local input = WalkDestinations.controls and WalkDestinations.controls.filter
+  local name = input and normalizeFilter(input:getText()) or ""
+  if name == "" then
+    DMLogger.notify("WALK", DarkmistsTheme.badTag
+      .. "Type a name in the filter box to add it as a destination")
+    return false
+  end
+
+  local ok, a, b, c = MapDestinations.addDestination(name)
+  if not ok then
+    if a == "NO_CURRENT_ROOM" then
+      DMLogger.notify("WALK", DarkmistsTheme.badTag .. "No Current Room found on Map")
+    elseif a == "NAME_TOO_LONG" then
+      DMLogger.notify("WALK", ("%sDestination names must be %d characters or fewer")
+        :format(DarkmistsTheme.badTag, b))
+    elseif a == "ROOM_MISSING" then
+      DMLogger.notify("WALK", ("%sRoom does not exist: %s%d")
+        :format(DarkmistsTheme.badTag, DarkmistsTheme.textTag, b))
+    else
+      DMLogger.notify("WALK", DarkmistsTheme.badTag .. "Invalid destination name")
+    end
+    return false
+  end
+
+  DMLogger.notify("WALK", ("Added destination: %s%s%s → %s[%s%d%s] %s%s"):format(
+    DarkmistsTheme.textTag, a, DarkmistsTheme.goodTag, DarkmistsTheme.mutedTag,
+    DarkmistsTheme.textTag, b, DarkmistsTheme.mutedTag, DarkmistsTheme.textTag, c))
+  WalkDestinations.refresh()
+  return true
+end
+
+-- "del" button: delete the destination named in the filter box, which is what
+-- `walk rem <name>` does. The box keeps its text, so the list simply drops that
+-- entry once the filter is re-applied.
+function WalkDestinations.removeFromFilter()
+  local input = WalkDestinations.controls and WalkDestinations.controls.filter
+  local name = input and normalizeFilter(input:getText()) or ""
+  if name == "" then
+    DMLogger.notify("WALK", DarkmistsTheme.badTag
+      .. "Type a name in the filter box to remove that destination")
+    return false
+  end
+
+  local ok, code, removed = MapDestinations.remove(name)
+  if not ok then
+    if code == "NOT_FOUND" then
+      DMLogger.notify("WALK", ("%sNo destination named %s%s")
+        :format(DarkmistsTheme.badTag, DarkmistsTheme.textTag, removed))
+    else
+      DMLogger.notify("WALK", DarkmistsTheme.badTag .. "Invalid destination name")
+    end
+    return false
+  end
+
+  DMLogger.notify("WALK", ("%sRemoved destination %s%s")
+    :format(DarkmistsTheme.warnTag, DarkmistsTheme.textTag, removed))
+  WalkDestinations.refresh()
+  return true
 end
 
 -- Geyser.CommandLine exposes no text-changed signal, so a lightweight repeating

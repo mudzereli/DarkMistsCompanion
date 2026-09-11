@@ -254,6 +254,9 @@ function DMTabFrame.setTabVisible(tabName, visible)
 
     tabs:removeTab(tabName)
     tab.container = nil
+    -- Keep `current` honest: it is the tab the strip shows as active, so hiding
+    -- that tab has to leave nothing selected rather than a tab that is gone.
+    if tabs and tabs.current == tabName then tabs.current = nil end
   end
   return true
 end
