@@ -261,6 +261,24 @@ function DMTabFrame.setTabVisible(tabName, visible)
   return true
 end
 
+-- Bring an undocked tab back on screen, leaving it undocked.
+-- The x on a float's title bar is Adjustable's own close button, which runs
+-- hideObj(): it hides the container but leaves the tab registered as floating and
+-- out of the strip. raiseAll() only restacks windows, it never clears a hide, so
+-- nothing else can bring such a tab back - showing it is the missing half.
+-- @param tabName string The tab to bring back
+-- @return boolean True if the tab was floating and is now shown
+function DMTabFrame.showFloatingTab(tabName)
+  local tabs = DMTabFrame.tabs
+  local page = tabs and tabs[tabName]
+  local container = tabs and tabs[tabName .. "tab"]
+  if not (page and page.floating and container) then return false end
+
+  container:show()
+  container:raiseAll()
+  return true
+end
+
 function DMTabFrame.postLoadSetup()
   tempTimer(0.2, function()
     local tabs = DMTabFrame.tabs

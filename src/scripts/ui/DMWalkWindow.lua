@@ -298,13 +298,15 @@ function WalkDestinations.open(filter)
 
   WalkDestinations.setFilter(filter)
 
-  -- A pulled-out Destinations tab is its own window: raise that instead of going
+  -- A pulled-out Destinations tab is its own window: show that instead of going
   -- through setTabVisible, which restores (re-docks) a floating tab, and instead
   -- of activateTab, which would restyle it as the active docked tab.
   local tabs = DMTabs
   if tabs and tabs.Destinations and tabs.Destinations.floating then
-    local outer = tabs["Destinationstab"]
-    if outer and outer.raiseAll then outer:raiseAll() end
+    -- showFloatingTab, not raiseAll: the float's own x button hides its window
+    -- without un-floating the tab, so raising alone leaves a closed one invisible
+    -- and `walk list` looking like it did nothing.
+    DMTabFrame.showFloatingTab("Destinations")
     return true
   end
 
