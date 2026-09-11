@@ -3,6 +3,11 @@
 -- ----------------------------------------------------------------------------
 -- Shared constant/enum lookup tables used across the framework.
 -- Keeps data separate from logic so any module can reference the same values.
+--
+-- Mostly game data (combat conditions, damage verbs). It also carries the
+-- cross-cutting defaults that core scripts need at LOAD time - DMSettings while
+-- registering a setting, DarkMistsCore while building DefaultSettings - because
+-- this is the earliest-loading shared constants module.
 -- ============================================================================
 
 DMConstants = {}
@@ -83,3 +88,24 @@ DMConstants.DAMAGE_VERBS = {
   ["does UNGODLY things to"]        = {700, 899},
   ["DOES UNSPEAKABLE THINGS TO"]    = {900, 999},
 }
+
+-- ============================================================================
+-- UI / Setting Defaults
+-- ----------------------------------------------------------------------------
+-- DMTabFrame tab label font: default size and the accepted range. Read by
+-- Darkmists.DefaultSettings, the DMSettings registry entry, and DMTabFrame's
+-- own clamp, so the default and the range cannot drift apart.
+-- ============================================================================
+
+DMConstants.TAB_FONT_DEFAULT_PX = 11
+DMConstants.TAB_FONT_MIN_PX     = 8
+DMConstants.TAB_FONT_MAX_PX     = 24
+
+-- Undocked (floated) TabWindow tabs: the frame around a pulled-out tab.
+-- The top band is sized so the window's own - / x buttons (native createLabels
+-- places them at y=4 with buttonsize 15, so they end at 19px) and the title
+-- text stay clear of the panel content. The side/bottom inset is half the
+-- Adjustable resize hot-zone, which is measured 10px in from the label edge -
+-- a 5px strip is still enough of a target to grab for a resize.
+DMConstants.TAB_FLOAT_SIDE_PX     = 5
+DMConstants.TAB_FLOAT_TOP_BAND_PX = 20

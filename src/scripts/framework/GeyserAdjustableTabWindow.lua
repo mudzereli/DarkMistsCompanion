@@ -11,6 +11,98 @@ local tab_pos = nil
 -- Shorthand: TN(tab) → tab.."tab", used everywhere for the tab-header container key
 local function TN(tab) return tab.."tab" end
 
+-- Keep a container fully inside its parent. A saved position can come from a
+-- differently sized window, and a float can be larger than the window it opens
+-- in; either would otherwise leave it hanging off an edge.
+local function clampToParent(container)
+    local parent = container.container
+    if not parent then return end
+    local w, h = container:get_width(), container:get_height()
+    local winw, winh = parent:get_width(), parent:get_height()
+    local x = math.max(0, math.min(container:get_x() - parent:get_x(), winw - w))
+    local y = math.max(0, math.min(container:get_y() - parent:get_y(), winh - h))
+    container:move(x, y)
+end
+
+-- Frame around an undocked tab: thin sides/bottom, with a taller top band so
+-- the window's own title text and - / x buttons stay clear of the content.
+-- setPadding() alone cannot express that shape - it ties the top offset to
+-- padding * 2 - so Inside is moved explicitly afterwards. Every
+-- unlockContainer() (which setPadding() itself calls) recomputes Inside from
+-- the padding, so this has to be the last thing to touch it.
+local function applyFloatFrame(container, sideInset, topBand)
+    container:setPadding(sideInset)
+    container.Inside:move(sideInset, topBand)
+end
+
+-- Slack left between a floated tab's top band and its title text. The band is
+-- only as tall as the - / x buttons, so the tab's own font is capped to fit it
+-- (band - slack = a 9px title at the current 20px band).
+local FLOAT_TITLE_BAND_SLACK_PX = 12
+
+-- Put the title back on a floated tab's top band. The tab-button stylesheets
+-- centre their text inside the label, and a float's label is the whole window,
+-- which puts the title behind the panel content. Two declarations are rewritten
+-- in place rather than appended: appended after the rule's closing brace they
+-- would be outside it (Qt drops them), and the style's own alignment comes last,
+-- so it would win over anything inserted earlier in the rule. The top padding
+-- goes because the band is only as tall as the - / x buttons, and the echoed text
+-- is the plain name: the label's own "<center>" tag would re-centre it.
+local function applyFloatTitle(container, title, topBand)
+    local panel = (DarkmistsTheme and DarkmistsTheme.panel) or {}
+    -- The band is shorter than a tab button, so shrink the tab's own font to fit
+    -- it and remember the original: re-docking puts it back (see restoreTab).
+    local label = container.adjLabel
+    label.__dockFontSize = label.__dockFontSize or label.fontSize
+    if type(label.__dockFontSize) == "number" then
+        label:setFontSize(math.min(label.__dockFontSize, math.max(8,
+            (topBand or DMConstants.TAB_FLOAT_TOP_BAND_PX) - FLOAT_TITLE_BAND_SLACK_PX)))
+    end
+    -- Derive the float style from the docked one, kept aside: this runs again on
+    -- every load and on every lock/unlock, and the padding rule rewrites only the
+    -- first length it finds, so re-transforming an already-transformed style would
+    -- append to what that pass wrote.
+    container.__dockAdjLabelstyle = container.__dockAdjLabelstyle or container.adjLabelstyle
+    local style = (container.__dockAdjLabelstyle or "")
+        :gsub("qproperty%-alignment:%s*'[^']*'", "qproperty-alignment: 'AlignLeft | AlignTop'")
+        :gsub("padding:%s*%d+px", "padding: 0px 3px 3px 3px")
+    label:setStyleSheet(style)
+
+    -- Store the float chrome back on the container as well as the label, because
+    -- the framework's own unlockContainer() re-runs setStyleSheet(self.adjLabelstyle)
+    -- and then setTitle(), which re-echoes self.titleText. Left alone, a lock/unlock
+    -- cycle therefore restores the docked, centred tab-button style and the tab's own
+    -- "<center>" title: centred across the whole float window it lands behind the
+    -- page, which is the title "disappearing" again. titleTxtColor goes with them so
+    -- the re-echoed title keeps the float's colour. createTabs() resets all three
+    -- when the tab is re-docked.
+    local titleColor = panel.buttonActiveFg or "#ffffff"
+    container.adjLabelstyle = style
+    container.titleText = title
+    container.titleTxtColor = titleColor
+    label:echo(title, titleColor)
+end
+
+-- Give a floated tab its title back. A method so the same text is applied to a
+-- layout loaded with the tab already pulled out, not just on the float action.
+function Adjustable.TabWindow:applyFloatTitle(tab)
+    local container = self[TN(tab)]
+    local page = self[tab]
+    if not container or not page then return end
+    applyFloatTitle(container, ((page.tabText or tab):gsub("^<center>", "")), self.tabTopBand)
+end
+
+-- Frame and title together, for a float that is being set up rather than one just
+-- pulled out: loading a saved float restores its padding, and the title band is
+-- derived from that padding (padding * 2), so a saved 5px side inset leaves a band
+-- too short and the page content covers the title. Both go back on together.
+function Adjustable.TabWindow:applyFloatChrome(tab)
+    local container = self[TN(tab)]
+    if not container then return end
+    applyFloatFrame(container, self.tabPadding, self.tabTopBand)
+    self:applyFloatTitle(tab)
+end
+
 -- Queue a layout save through DMTabs (no-op if DMTabs isn't available)
 function Adjustable.TabWindow:saveLayout()
   if DMTabs and DMTabs.queueLayoutSave then DMTabs:queueLayoutSave() end
@@ -169,7 +261,11 @@ end
 function Adjustable.TabWindow:onMove(tab, event)
     local tn = TN(tab)
     self[tn]:onMove(self[tn].adjLabel, event)
-    self[tn].adjLabel:echo(self[tab].tabText)
+    -- Docked labels only: a float's label carries the float title, so re-echoing
+    -- the tab's own "<center>" text here would re-centre it on every mouse move.
+    if not self[tab].floating then
+        self[tn].adjLabel:echo(self[tab].tabText)
+    end
     if self[tab].floating then
         return
     end
@@ -261,21 +357,37 @@ end
 -- @see Adjustable.TabWindow:deactivateTab()
 function Adjustable.TabWindow:activateTab(tab)
     self.current = tab
-    if self.current then
-        local tn = TN(tab)
-        self[tn].adjLabelstyle = self.activeTabStyle
-        self[tn].adjLabel:setStyleSheet(self.activeTabStyle)
-        self[self.current]:show()
+    if not self.current then return end
+
+    local tn = TN(tab)
+    self[tn].adjLabelstyle = self.activeTabStyle
+    self[tn].adjLabel:setStyleSheet(self.activeTabStyle)
+
+    -- Hide the other docked pages, then show the activated one. activateTab alone
+    -- never hid the previous page - the caller's deactivateTab did - so whenever
+    -- `current` drifted out of step with what was on screen the stale page stayed
+    -- visible on top and the strip looked stuck on one tab. The activated page is
+    -- shown separately, not by the loop: it may be a pulled-out tab's page, which
+    -- is no longer in self.tabs (transformTabContainer removes the tab first) and
+    -- so would never be reached.
+    for _, name in ipairs(self.tabs) do
+        local page = self[name]
+        if page and name ~= self.current then page:hide() end
     end
+    local page = self[self.current]
+    if page then page:show() end
 end
 
 -- deactivates and hides the current active tab
 function Adjustable.TabWindow:deactivateTab()
-    if self.current and self[self.current] then
+    local page = self.current and self[self.current]
+    -- A pulled-out tab is skipped: its label is that window's title bar and its
+    -- page is that window's content, so neither may be reset here.
+    if page and not page.floating then
         local tn = TN(self.current)
         self[tn].adjLabelstyle = self.inactiveTabStyle
         self[tn].adjLabel:setStyleSheet(self.inactiveTabStyle)
-        self[self.current]:hide()
+        page:hide()
     end
 end
 
@@ -328,25 +440,75 @@ function Adjustable.TabWindow:transformTabContainer(tab)
     local tn = TN(tab)
     local myWindow = Adjustable.TabWindow.allTabs[tab] or self
     local container = self[tn]
+
+    -- `Adjustable.Container:load()` restores the saved geometry and re-derives the
+    -- label from adjLabelstyle, which clears a float's title. Every load of this
+    -- container has to put the float chrome back, and it is not only the UI reload
+    -- that loads: the container's own right-click Load item does too.
+    --
+    -- unlockContainer() needs the same treatment: it re-runs the docked chrome
+    -- (adjLabelstyle and titleText - see applyFloatTitle) and puts Inside back at
+    -- padding * 2, which is not where this float's title band sits, so the frame
+    -- and title have to go back on after it.
+    if not container.__floatChromeHooked then
+        container.__floatChromeHooked = true
+        local tabs, tabName = self, tab
+
+        local baseLoad = container.load
+        container.load = function(c, ...)
+            baseLoad(c, ...)
+            if tabs[tabName] and tabs[tabName].floating then
+                tabs:applyFloatChrome(tabName)
+            end
+        end
+
+        local baseUnlock = container.unlockContainer
+        container.unlockContainer = function(c, ...)
+            baseUnlock(c, ...)
+            -- applyFloatFrame() below calls setPadding(), which calls this again:
+            -- the guard keeps that one pass from re-entering here.
+            if not c.__inFloatChrome
+                and tabs.__dockingTab ~= tabName
+                and tabs[tabName] and tabs[tabName].floating then
+                c.__inFloatChrome = true
+                tabs:applyFloatChrome(tabName)
+                c.__inFloatChrome = nil
+            end
+        end
+    end
+
+    myWindow:deactivateTab()
     if container.windowname == "main" then
         Geyser:add(container)
     else
         Geyser.windowList[container.windowname.."Container"].windowList[container.windowname]:add(container)
     end
     container:unlockContainer()
-    container:resize(self.get_width(), self.get_height())
+    local floatW, floatH = self:get_width(), self:get_height()
+    container:resize(floatW, floatH)
+    -- Open the float centred in its window, so it lands fully on-screen instead
+    -- of inheriting the tab button's position in the strip (% of the strip, but
+    -- resolved against the whole window once reparented).
+    local parent = container.container
+    local centerX = math.floor((parent:get_width() - floatW) / 2)
+    local centerY = math.floor((parent:get_height() - floatH) / 2)
+    container:move(centerX, centerY)
+    clampToParent(container)
     container:add(self[tab])
     myWindow:removeTab(tab)
     myWindow:createTabs()
-    container:setPadding(self.tabPadding)
+    applyFloatFrame(container, self.tabPadding, self.tabTopBand)
     container:show()
     container:raiseAll()
     myWindow[tab].floating = true
+    -- Lock the pages "full" rather than "light": the frame applied above is the
+    -- only border the content should have, so the panels must not add the
+    -- padding inset the light style keeps.
     local center = self[tab .. "center"]
     if center and center.windowList then
         for _, obj in pairs(center.windowList) do
             if obj.type == "adjustablecontainer" then
-            obj:lockContainer(nil, "light")
+            obj:lockContainer(nil, "full")
             end
         end
     end
@@ -360,6 +522,14 @@ function Adjustable.TabWindow:transformTabContainer(tab)
     else 
         myWindow.current = nil
     end
+    -- Remember which docked style this float's chrome is derived from. The label is
+    -- about to be given the float rules, and load/lock/unlock re-derive them later,
+    -- so the pristine style has to be kept aside - re-transforming the derived style
+    -- would append to the padding it already rewrote. Captured here, after the
+    -- activation above, so a fresh float keeps the colour language it had before.
+    container.__dockAdjLabelstyle = container.adjLabelstyle
+    -- Last, so the activation above cannot restyle the label afterwards.
+    self:applyFloatTitle(tab)
     self:saveLayout()
 end
 
@@ -369,6 +539,11 @@ function Adjustable.TabWindow:restoreTab(tab, myWindow)
     local tn = TN(tab)
     local center = self[tab .. "center"]
 
+    -- A floating tab leaves the tab window's previous page visible when the
+    -- framework activates the replacement tab. Hide that page before the
+    -- floating tab is restored, otherwise it can cover the restored page.
+    myWindow:deactivateTab()
+
     if center and center.windowList then
         for _, obj in pairs(center.windowList) do
             if obj.type == "adjustablecontainer" then
@@ -377,15 +552,30 @@ function Adjustable.TabWindow:restoreTab(tab, myWindow)
         end
     end
     local container = self[tn]
+    -- Marks this tab as on its way into the strip. setPadding(0) below reaches the
+    -- unlock guard in transformTabContainer, which would otherwise put the float's
+    -- frame and title back on a container that is being re-docked.
+    self.__dockingTab = tab
     container:attachToBorder("none")
-    container.container:remove(container)
-    container:remove(self[tab])
     container:setPadding(0)
     container:lockContainer()
+    container.hidden = nil
+    container.auto_hidden = nil
+    self[tab].hidden = nil
+    self[tab].auto_hidden = nil
+    -- Back to the tab font: the float title shrinks it to fit the top band.
+    if container.adjLabel.__dockFontSize then
+        container.adjLabel:setFontSize(container.adjLabel.__dockFontSize)
+        container.adjLabel.__dockFontSize = nil
+    end
+    -- The saved docked style belongs to the float; the next float captures its own.
+    container.__dockAdjLabelstyle = nil
     container.adjLabel:echo(self[tab].tabText)
     self:changeTabContainer(tab, myWindow)
+    self.__dockingTab = nil
     self[tab].floating = false
     container.raiseOnClick = false
+    self[tab]:show()
     scrollTo(-10)
     tempTimer(0,function() scrollTo() end)
     self:saveLayout()
@@ -429,7 +619,6 @@ function Adjustable.TabWindow:changeTabContainer(tab, myWindow, position)
     myWindow[tab] = self[tab]
     myWindow[tn] = self[tn]
     myWindow[tab .. "center"] = self[tab .. "center"]
-    self[tn].container = not(self[tab].floating) and self.header or Geyser 
     self[tab]:changeContainer(myWindow.footer)
     self[tn]:changeContainer(myWindow.header)
     if not (self[tab].floating) then
@@ -439,6 +628,7 @@ function Adjustable.TabWindow:changeTabContainer(tab, myWindow, position)
     myWindow:createTabs()
     myWindow[tn]:show()
     myWindow:addTab(tab, position)
+    myWindow[tn]:lockContainer()
     if self.current then
         self[self.current]:show()
     end
@@ -646,8 +836,13 @@ function Adjustable.TabWindow:load()
                         if v1 ~= "main" then
                             myTab:changeContainer(Geyser.windowList[v1.."Container"].windowList[v1])
                         end
-                        -- load Adjustable Container settings
+                        -- load Adjustable Container settings. The container's own
+                        -- load wrapper re-applies the float chrome (see
+                        -- transformTabContainer), so the title survives this.
                         myTab:load()
+                        -- a position saved while the window was a different
+                        -- size can be off-screen; bring it back in
+                        clampToParent(myTab)
                     end
                 end
             end
@@ -672,7 +867,8 @@ function Adjustable.TabWindow:new(cons, container)
     me.type = "adjustabletabwindow"
     me.tabs = me.tabs or {}
     me.tabTxtColor = me.tabTxtColor or "white"
-    me.tabPadding = me.tabPadding or 12
+    me.tabPadding = me.tabPadding or DMConstants.TAB_FLOAT_SIDE_PX
+    me.tabTopBand = me.tabTopBand or DMConstants.TAB_FLOAT_TOP_BAND_PX
     me.color1 = me.color1 or "rgb(0,0,100)"
     me.color2 = me.color2 or "rgb(0,0,70)"
     me.tabBarHeight = me.tabBarHeight or "10%"

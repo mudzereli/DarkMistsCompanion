@@ -59,30 +59,34 @@ dmapi.core = {
     exitLineMarker = 0
   },
   
-  -- One-line event mappings
+  -- One-line event mappings.
+  -- Keys are the DMPatterns EXACT_* literals (DMPatterns loads before DMAPI:
+  -- core/ precedes api/ in scripts.json). Looked up by exact string equality
+  -- in dmapi.core.LineTrigger, so these must stay plain literals.
   oneLineEvents = {
-    ["You wake and stand up."] = {
+    [DMPatterns.EXACT_WAKE] = {
       "dmapi.player.sleep.exit",
       "dmapi.player.rest.exit"
     },
-    ["In your dreams, or what?"] = "dmapi.player.sleep.blocked",
-    ["You do not have that item."] = "dmapi.player.inventory.itemnotfound",
-    ["You cannot find it."] = "dmapi.player.inventory.itemnotfound",
-    ["Alas, you cannot go that way."] = "dmapi.player.navigation.blocked",
-    ["You are too exhausted."] = "dmapi.player.navigation.exhausted",
-    ["You are not allowed in there."] = "dmapi.player.navigation.blocked",
-    ["Nah... You feel too relaxed..."] = "dmapi.player.navigation.blocked",
-    ["Better stand up first."] = "dmapi.player.navigation.blocked",
-    ["It is pitch black ... "] = "dmapi.player.navigation.darkness",
-    ["You cannot see a thing!"] = "dmapi.player.navigation.blinded",
-    ["It is already empty."] = "dmapi.player.drink.empty",
-    ["[Hit Return to continue]"] = "dmapi.world.pendingreturn",
-    ["Welcome to Dark Mists.  Please do not feed the mobiles."] = "dmapi.world.enter",
-    ["Welcome to the Dark Mists, a medieval fantasy role-playing and PK MUD!"] = "dmapi.world.connect",
-    ["Reconnecting."] = "dmapi.world.enter",
-    ["You choose a direction at random and begin to run..."] = "dmapi.player.combat.flee",
-    ["Your stun wears off."] = "dmapi.player.affect.stunoff",
-    ["You regain your senses."] = "dmapi.player.affect.stunoff",
+    [DMPatterns.EXACT_DREAMS] = "dmapi.player.sleep.blocked",
+    [DMPatterns.EXACT_NO_ITEM] = "dmapi.player.inventory.itemnotfound",
+    [DMPatterns.EXACT_CANT_FIND] = "dmapi.player.inventory.itemnotfound",
+    [DMPatterns.EXACT_CANT_GO] = "dmapi.player.navigation.blocked",
+    [DMPatterns.EXACT_NEED_BOAT] = "dmapi.player.navigation.blocked",
+    [DMPatterns.EXACT_EXHAUSTED] = "dmapi.player.navigation.exhausted",
+    [DMPatterns.EXACT_NOT_ALLOWED] = "dmapi.player.navigation.blocked",
+    [DMPatterns.EXACT_TOO_RELAXED] = "dmapi.player.navigation.blocked",
+    [DMPatterns.EXACT_STAND_FIRST] = "dmapi.player.navigation.blocked",
+    [DMPatterns.EXACT_PITCH_BLACK] = "dmapi.player.navigation.darkness",
+    [DMPatterns.EXACT_CANT_SEE] = "dmapi.player.navigation.blinded",
+    [DMPatterns.EXACT_ALREADY_EMPTY] = "dmapi.player.drink.empty",
+    [DMPatterns.EXACT_HIT_RETURN] = "dmapi.world.pendingreturn",
+    [DMPatterns.EXACT_WELCOME] = "dmapi.world.enter",
+    [DMPatterns.EXACT_CONNECT] = "dmapi.world.connect",
+    [DMPatterns.EXACT_RECONNECT] = "dmapi.world.enter",
+    [DMPatterns.EXACT_FLEE] = "dmapi.player.combat.flee",
+    [DMPatterns.EXACT_STUN_OFF] = "dmapi.player.affect.stunoff",
+    [DMPatterns.EXACT_SENSES] = "dmapi.player.affect.stunoff",
   }
 }
 

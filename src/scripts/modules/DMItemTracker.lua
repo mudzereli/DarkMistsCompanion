@@ -538,6 +538,7 @@ function ItemTracker.findFirstItemInLine(line, allowFallback)
     {"^you get (.-) from ", 8},
     {"^you get (.-)%.?$", 8},
     {"^you drop (.-)%.?$", 9},
+    {"^you give (.+) to ", 9},
     {"^you stop using (.-)%.?$", 15},
     {"^you cannot remove (.-)%.?$", 18},
     {"^you hold (.-) in your hands%.?$", 9},
@@ -566,6 +567,18 @@ function ItemTracker.findFirstItemInLine(line, allowFallback)
     if gpos and fpos then
       phrase = lower:sub(gpos + 6, fpos - 1)
       offset = gpos + 5
+    end
+  end
+
+  if not phrase then
+    -- <mob> gives you <item>. The giver's name is any length, so the offset is
+    -- measured from the phrase's position rather than counted by hand (unlike
+    -- the fixed-prefix patterns above). Item names in the database keep their
+    -- article, so the trailing full stop is all that needs stripping.
+    local gpos = lower:find(" gives you ", 1, true)
+    if gpos then
+      phrase = lower:sub(gpos + 11):gsub("%.$", "")
+      offset = gpos + 10
     end
   end
 

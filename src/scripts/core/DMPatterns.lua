@@ -269,8 +269,14 @@ DMPatterns.COMM_HOUSE_CHANNEL      = "^%[(.*)%] (.*)%: (.*)$"
 -- ONE-LINE EXACT MATCHES
 -- ----------------------------------------------------------------------------
 -- These convert exact MUD lines to events without Lua pattern matching.
--- They live in dmapi.core.oneLineEvents, but the list of known exact lines
--- is maintained here for discoverability.
+-- They are the authoritative keys for dmapi.core.oneLineEvents, consumed by
+-- dmapi.core.LineTrigger as an exact string lookup.
+--
+-- NOTE: these are plain literals, NOT Lua patterns - never pass them to
+-- line:match(). DMPatterns.identify() does exactly that when it scans every
+-- string in this table, so entries containing Lua magic characters (e.g. the
+-- brackets in EXACT_HIT_RETURN) can report misleading results.
+-- EXACT_LOGIN_PROMPT currently has no oneLineEvents consumer.
 -- ============================================================================
 
 DMPatterns.EXACT_WAKE           = "You wake and stand up."
@@ -278,6 +284,7 @@ DMPatterns.EXACT_DREAMS         = "In your dreams, or what?"
 DMPatterns.EXACT_NO_ITEM        = "You do not have that item."
 DMPatterns.EXACT_CANT_FIND      = "You cannot find it."
 DMPatterns.EXACT_CANT_GO        = "Alas, you cannot go that way."
+DMPatterns.EXACT_NEED_BOAT      = "You need a boat to go there."
 DMPatterns.EXACT_EXHAUSTED      = "You are too exhausted."
 DMPatterns.EXACT_NOT_ALLOWED    = "You are not allowed in there."
 DMPatterns.EXACT_TOO_RELAXED    = "Nah... You feel too relaxed..."
