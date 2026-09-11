@@ -392,8 +392,26 @@ local function closeOtherColorMenus(activeControl)
   end
 end
 
-local function colorSwatchStyle(color, selected)
+-- Turn a setting's colour into RGB.
+-- Geyser.Color.parse() lowercases and strips the underscores from the name it looks
+-- up but compares against the table's own spellings, so "ansi_004" resolves to
+-- nothing. color_table is that same global and Mudlet fills it with ansi_000..ansi_255
+-- for the profile's palette, so fall back to an exact-key lookup. The light theme's
+-- hue tokens are ansi_NNN names, which is why every "Theme default" swatch came out
+-- as the plain button style in light mode while the CSS-named dark tokens were fine.
+local function colorToRGB(color)
   local red, green, blue = Geyser.Color.parse(color)
+  if red then return red, green, blue end
+
+  local colors = rawget(_G, "color_table")
+  local entry = type(colors) == "table" and type(color) == "string" and colors[color]
+  if entry then return entry[1], entry[2], entry[3] end
+
+  return nil
+end
+
+local function colorSwatchStyle(color, selected)
+  local red, green, blue = colorToRGB(color)
   if not red then
     return buttonStyle
   end
