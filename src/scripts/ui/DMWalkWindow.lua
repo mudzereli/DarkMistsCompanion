@@ -292,17 +292,16 @@ function WalkDestinations.open(filter)
     return DMWalkAlert.show(filter)
   end
 
-  if not WalkDestinations.create() then
-    return DMWalkAlert.show(filter)
-  end
-
-  WalkDestinations.setFilter(filter)
-
   -- A pulled-out Destinations tab is its own window: show that instead of going
   -- through setTabVisible, which restores (re-docks) a floating tab, and instead
   -- of activateTab, which would restyle it as the active docked tab.
   local tabs = DMTabs
   if tabs and tabs.Destinations and tabs.Destinations.floating then
+    if not WalkDestinations.create() then
+      return DMWalkAlert.show(filter)
+    end
+    WalkDestinations.setFilter(filter)
+
     -- showFloatingTab, not raiseAll: the float's own x button hides its window
     -- without un-floating the tab, so raising alone leaves a closed one invisible
     -- and `walk list` looking like it did nothing.
@@ -315,6 +314,14 @@ function WalkDestinations.open(filter)
   end
   DMTabs:deactivateTab()
   DMTabs:activateTab("Destinations")
+
+  -- Build the panel only after its tab has become visible. Creating it while
+  -- the initial hidden page is still attached makes its nested layout inherit
+  -- that hidden state on the first open.
+  if not WalkDestinations.create() then
+    return DMWalkAlert.show(filter)
+  end
+  WalkDestinations.setFilter(filter)
   WalkDestinations.window:show()
   WalkDestinations.window:raiseAll()
   return true
