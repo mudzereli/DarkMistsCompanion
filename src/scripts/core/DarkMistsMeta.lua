@@ -455,7 +455,7 @@ local helpSections = {
   },
   {
     title = "Interface",
-    keys  = {"ui", "ch", "sb", "dmid", "who", "affects"},
+    keys  = {"ui", "settings", "ch", "sb", "dmid", "who", "affects"},
   },
   {
     title = "Travel & Map",
@@ -993,7 +993,7 @@ function DarkMistsMeta.init()
         .. dm_muted .. "Speedwalk between known rooms using the map speedwalk system. \nDestinations must be discovered and routes clear.\n\n"
         .. dm_header_color .. "Walk Commands:\n"
         .. line(c .. "walk <name>", dm_muted .. "Navigate to a saved destination")
-        .. line(c .. "walk list <filter: optional>", dm_muted .. "Open dockable destination list; use the panel filter or an optional filter")
+        .. line(c .. "walk list <filter: optional>", dm_muted .. "Open the dockable destination list (its add / del buttons act on the filter box)")
         .. line(c .. "walk add <name> <roomid: optional>", dm_muted .. "Add persistent destination (max 24 chars, room optional)")
         .. line(c .. "walk rem <name>", dm_muted .. "Remove a saved destination")
         .. line(c .. "walk area <name>", dm_muted .. "Navigate to first room in matching area")

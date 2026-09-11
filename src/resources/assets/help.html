@@ -255,6 +255,38 @@
         to switch between them.
       </p>
 
+      <!-- Tabbed Windows -->
+      <h2 id="ui-tabs">Tabbed Windows</h2>
+      <p>
+        The main tabs — <strong>Chat</strong>, <strong>Affects</strong>, <strong>Who</strong>,
+        <strong>Player</strong> and <strong>Destinations</strong> — share one tabbed container
+        with a fixed header strip. Click a tab label to switch pages, or drag a label along the
+        strip to reorder the tabs.
+      </p>
+
+      <h3>Pulling a tab out</h3>
+      <p>
+        Drag a tab label out of the strip to give it its own movable window; double-click a
+        pulled-out tab to put it back in the strip.
+      </p>
+      <ul>
+        <li>The window has a thin frame with a taller top band. Drag the top band to move it,
+            drag a side or the bottom edge to resize it, and use the <code>-</code> /
+            <code>x</code> buttons to minimise or close it.</li>
+        <li>The tab's title is shown at the left of the top band.</li>
+        <li>Pulled-out tabs are remembered: they come back undocked after a reload, with their
+            frame and title restored.</li>
+        <li>The container's right-click menu offers Save / Load for its geometry and lock styles,
+            if you want to lock the frame in place.</li>
+      </ul>
+
+      <h3>Tab font</h3>
+      <p>
+        The tab label size is a setting: <strong>Appearance → Tab font size</strong> in the
+        Settings Panel (<code>dmc settings</code>). It applies immediately, and the tab strip
+        grows with the font so labels always fit.
+      </p>
+
       <!-- Score Panel -->
       <h2 id="ui-scorepanel">Score Panel</h2>
       <p>
@@ -365,7 +397,7 @@
       </p>
       <p>
         Appearance includes pending Light/Dark theme mode, Full/Minimal UI mode, window font,
-        font size, and safe screen-border percentages. Status Bars includes enabled state,
+        font size, tab font size, and safe screen-border percentages. Status Bars includes enabled state,
         total height, and editable foreground/background RGBA colors. Status Bars are always movable. Windows includes Affects refresh and text lengths,
         original-line deletion, Who original-line deletion, Chat History message limit, and
         SkillUps history limit.
@@ -381,7 +413,7 @@
       <table>
         <thead><tr><th>Control group</th><th>Available settings</th></tr></thead>
         <tbody>
-          <tr><td>Appearance</td><td>Theme, UI mode, window font, font size, border percentages</td></tr>
+          <tr><td>Appearance</td><td>Theme, UI mode, window font, font size, tab font size, border percentages</td></tr>
           <tr><td>Status Bars</td><td>Enabled, total height, foreground/background RGBA colors</td></tr>
           <tr><td>Windows</td><td>Affects, Who, Chat History, and SkillUps display limits</td></tr>
           <tr><td>Enchanter Assist</td><td>Materials, recovery, workflow controls, and session reset</td></tr>
@@ -609,6 +641,16 @@
         apply a search, or click an underlined destination name to start walking there. If the
         dock is unavailable, the list opens in the movable alert instead. Closing either window
         does not cancel an active walk.
+      </div>
+
+      <div class="tip">
+        <strong>Adding and deleting from the panel:</strong> the Destinations header has
+        <code>add</code> and <code>del</code> buttons beside the filter box. They act on the text
+        in the box — <code>add</code> saves it as a destination at your current room and
+        <code>del</code> deletes that destination — with the same rules and messages as
+        <code>walk add</code> / <code>walk rem</code>. The list refreshes straight away, so
+        <code>add</code> leaves the new destination as the only match while the filter still
+        holds its name.
       </div>
     </section>
 
@@ -1302,6 +1344,7 @@
           <tr><td><code>dmc</code></td><td>Show the main DMC help index</td><td>Core</td></tr>
           <tr><td><code>dmc help &lt;topic&gt;</code></td><td>In-depth help for a module</td><td>Core</td></tr>
           <tr><td><code>dmc ui [on|off]</code></td><td>Toggle or set full / minimal UI mode</td><td>Core</td></tr>
+          <tr><td><code>dmc settings [show|hide]</code></td><td>Open the movable Settings Panel</td><td>Core</td></tr>
           <tr><td><code>dmc infobox [text|clear]</code></td><td>Set or clear the Mudlet profile info box</td><td>Core</td></tr>
           <tr><td><code>dmc showdmg [on|off]</code></td><td>Toggle or set inline damage estimates on combat messages</td><td>Core</td></tr>
           <!-- Status Bars -->
@@ -1312,7 +1355,7 @@
           <tr><td><code>sb recreate</code></td><td>Recreate bars after layout changes</td><td>Status Bars</td></tr>
           <!-- Navigation -->
           <tr><td><code>walk &lt;name&gt;</code></td><td>Speedwalk to a saved destination</td><td>Navigation</td></tr>
-          <tr><td><code>walk list [filter]</code></td><td>List saved destinations (optionally filtered)</td><td>Navigation</td></tr>
+          <tr><td><code>walk list [filter]</code></td><td>Open the Destinations tab, optionally filtered</td><td>Navigation</td></tr>
           <tr><td><code>walk add &lt;name&gt; [roomid]</code></td><td>Save current (or specified) room</td><td>Navigation</td></tr>
           <tr><td><code>walk rem &lt;name&gt;</code></td><td>Delete a destination</td><td>Navigation</td></tr>
           <tr><td><code>walk area &lt;search&gt;</code></td><td>Walk to any area matching search</td><td>Navigation</td></tr>
