@@ -328,6 +328,7 @@ function Adjustable.TabWindow:transformTabContainer(tab)
     local tn = TN(tab)
     local myWindow = Adjustable.TabWindow.allTabs[tab] or self
     local container = self[tn]
+    myWindow:deactivateTab()
     if container.windowname == "main" then
         Geyser:add(container)
     else
@@ -369,6 +370,11 @@ function Adjustable.TabWindow:restoreTab(tab, myWindow)
     local tn = TN(tab)
     local center = self[tab .. "center"]
 
+    -- A floating tab leaves the tab window's previous page visible when the
+    -- framework activates the replacement tab. Hide that page before the
+    -- floating tab is restored, otherwise it can cover the restored page.
+    myWindow:deactivateTab()
+
     if center and center.windowList then
         for _, obj in pairs(center.windowList) do
             if obj.type == "adjustablecontainer" then
@@ -378,14 +384,17 @@ function Adjustable.TabWindow:restoreTab(tab, myWindow)
     end
     local container = self[tn]
     container:attachToBorder("none")
-    container.container:remove(container)
-    container:remove(self[tab])
     container:setPadding(0)
     container:lockContainer()
+    container.hidden = nil
+    container.auto_hidden = nil
+    self[tab].hidden = nil
+    self[tab].auto_hidden = nil
     container.adjLabel:echo(self[tab].tabText)
     self:changeTabContainer(tab, myWindow)
     self[tab].floating = false
     container.raiseOnClick = false
+    self[tab]:show()
     scrollTo(-10)
     tempTimer(0,function() scrollTo() end)
     self:saveLayout()
@@ -429,7 +438,6 @@ function Adjustable.TabWindow:changeTabContainer(tab, myWindow, position)
     myWindow[tab] = self[tab]
     myWindow[tn] = self[tn]
     myWindow[tab .. "center"] = self[tab .. "center"]
-    self[tn].container = not(self[tab].floating) and self.header or Geyser 
     self[tab]:changeContainer(myWindow.footer)
     self[tn]:changeContainer(myWindow.header)
     if not (self[tab].floating) then
@@ -439,6 +447,7 @@ function Adjustable.TabWindow:changeTabContainer(tab, myWindow, position)
     myWindow:createTabs()
     myWindow[tn]:show()
     myWindow:addTab(tab, position)
+    myWindow[tn]:lockContainer()
     if self.current then
         self[self.current]:show()
     end

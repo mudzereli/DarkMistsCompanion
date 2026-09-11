@@ -671,6 +671,7 @@ function Darkmists.CleanupUI(opts)
   if AffectsWindow and AffectsWindow.destroy then pcall(AffectsWindow.destroy) end
   if ChatHistory and ChatHistory.destroy then pcall(ChatHistory.destroy) end
   if WhoWindow and WhoWindow.destroy then pcall(WhoWindow.destroy) end
+  if WalkDestinations and WalkDestinations.destroy then pcall(WalkDestinations.destroy) end
   if ScorePanel and ScorePanel.destroy then pcall(ScorePanel.destroy) end
   if DarkMistsMiniMap and DarkMistsMiniMap.destroy then pcall(DarkMistsMiniMap.destroy) end
   if ButtonBar and ButtonBar.destroy then pcall(ButtonBar.destroy) end

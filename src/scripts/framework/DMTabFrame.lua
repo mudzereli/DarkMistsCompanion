@@ -192,7 +192,7 @@ function DMTabFrame.create()
     x = 0, y = 0,
     width = "100%", height = "100%",
 
-    tabs = {"Chat","Affects","Who","Player"},
+    tabs = {"Chat","Affects","Who","Player","Destinations"},
 
     color1 = Darkmists.getDefaultBackgroundColor(),
     color2 = Darkmists.getDefaultBackgroundColor(),
@@ -218,6 +218,36 @@ function DMTabFrame.startAutosave()
       currentTabs:save()
     end
   end, true)
+end
+
+function DMTabFrame.setTabVisible(tabName, visible)
+  local tabs = DMTabFrame.tabs
+  local tab = tabs and tabs[tabName .. "tab"]
+  if not tab then return false end
+
+  if visible then
+    if tabs[tabName] and tabs[tabName].floating then
+      local owner = Adjustable.TabWindow.allTabs[tabName] or tabs
+      owner:restoreTab(tabName, tabs)
+      return true
+    end
+
+    if table.index_of(tabs.tabs, tabName) then return true end
+
+    -- removeTab() removes the header bookkeeping but leaves the old parent
+    -- pointer on the tab container. Clear it before adding the existing
+    -- object back so HBox:add2() rebuilds both parent indexes.
+    tab.container = nil
+    tabs.header:add2(tab, nil, false)
+    tabs:addTab(tabName, #tabs.tabs + 1)
+    tab:show()
+  else
+    if not table.index_of(tabs.tabs, tabName) then return true end
+
+    tabs:removeTab(tabName)
+    tab.container = nil
+  end
+  return true
 end
 
 function DMTabFrame.postLoadSetup()
@@ -317,6 +347,7 @@ function DMTabFrame.init()
   local tabs = DMTabFrame.create()
   if not tabs then return nil end
   tabs:load()
+  DMTabFrame.setTabVisible("Destinations", false)
   DMTabFrame.startAutosave()
   DMTabFrame.postLoadSetup()
   return tabs

@@ -976,7 +976,7 @@ function DarkMistsMeta.init()
   -- WALK COMMAND
   -- =============================================================================
   local function renderWalkList(filter)
-    DMWalkAlert.show(filter)
+    WalkDestinations.open(filter)
   end
 
   DarkmistsAlias.add("^walk(?:\\s+(.*))?$", function()
@@ -993,7 +993,7 @@ function DarkMistsMeta.init()
         .. dm_muted .. "Speedwalk between known rooms using the map speedwalk system. \nDestinations must be discovered and routes clear.\n\n"
         .. dm_header_color .. "Walk Commands:\n"
         .. line(c .. "walk <name>", dm_muted .. "Navigate to a saved destination")
-        .. line(c .. "walk list <filter: optional>", dm_muted .. "Open movable destination list (optional filter)")
+        .. line(c .. "walk list <filter: optional>", dm_muted .. "Open dockable destination list; use the panel filter or an optional filter")
         .. line(c .. "walk add <name> <roomid: optional>", dm_muted .. "Add persistent destination (max 24 chars, room optional)")
         .. line(c .. "walk rem <name>", dm_muted .. "Remove a saved destination")
         .. line(c .. "walk area <name>", dm_muted .. "Navigate to first room in matching area")
@@ -1039,6 +1039,7 @@ function DarkMistsMeta.init()
           ("Added destination: %s%s%s → %s[%s%d%s] %s%s")
             :format(c, destName, dm_good, dm_muted, c, roomId, dm_muted, c, cRoomName)
         )
+        if WalkDestinations then WalkDestinations.refresh() end
 
         return
       end
@@ -1068,6 +1069,7 @@ function DarkMistsMeta.init()
           ("Added destination: %s%s%s → %s[%s%d%s] %s%s")
             :format(c, destName, dm_good, dm_muted, c, roomId, dm_muted, c, roomName)
         )
+        if WalkDestinations then WalkDestinations.refresh() end
 
         return
       end
@@ -1088,6 +1090,7 @@ function DarkMistsMeta.init()
         DMLogger.notify("WALK",
           ("%sRemoved destination %s%s"):format(dm_warn, c, data)
         )
+        if WalkDestinations then WalkDestinations.refresh() end
       end
       return
     end

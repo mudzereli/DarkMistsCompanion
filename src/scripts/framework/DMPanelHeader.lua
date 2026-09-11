@@ -73,6 +73,33 @@ function DMPanelHeader.create(id, title, tabName, opts)
       "background-color: rgba(0,0,0,0%); padding-left: 6px; qproperty-alignment: 'AlignVCenter | AlignLeft';")
   end
 
+  if opts.filter then
+    local filter = opts.filter
+    controls.filter = Geyser.CommandLine:new({
+      name = id .. "Filter",
+      width = filter.width or 180,
+      height = "100%",
+      h_policy = Geyser.Fixed,
+      v_policy = Geyser.Dynamic,
+      font = opts.font or "",
+      fontSize = opts.fontSize or 10,
+    }, hbox)
+    controls.filter:setStyleSheet(filter.styleSheet or [[
+QLineEdit {
+  background-color: rgba(0,0,0,35%);
+  border: 1px solid rgba(150,120,255,35%);
+  padding: 2px 6px;
+  color: #dddddd;
+}
+]])
+    if filter.toolTip and controls.filter.setToolTip then
+      controls.filter:setToolTip(filter.toolTip)
+    end
+    if filter.onSubmit then
+      controls.filter:setAction(filter.onSubmit)
+    end
+  end
+
   for _, b in ipairs(opts.buttons or {}) do
     if b.stretch then
       -- Transparent stretchy spacer: absorbs leftover width so buttons after
