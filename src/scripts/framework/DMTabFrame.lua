@@ -120,6 +120,9 @@ local function set_tab_text_color(tabs, tabName, active)
   local tab = tabs[tabName .. "tab"]
   local label = tab and tab.adjLabel
   if not label or not label.message then return end
+  -- A floated tab's label is its own window's title bar, styled by the float
+  -- chrome; re-echoing the docked label text here would re-centre its title.
+  if tabs[tabName] and tabs[tabName].floating then return end
   local panel = (DarkmistsTheme and DarkmistsTheme.panel) or {}
   label:echo(label.message,
     active and (panel.buttonActiveFg or "#ffffff") or Darkmists.getDefaultTextColor())
@@ -198,6 +201,11 @@ function DMTabFrame.create()
     color2 = Darkmists.getDefaultBackgroundColor(),
     tabTxtColor = Darkmists.getDefaultTextColor(),
 
+    -- Frame for pulled-out tabs: thin sides/bottom with a taller top band so
+    -- the window's title text and - / x buttons stay clear of the content.
+    tabPadding = DMConstants.TAB_FLOAT_SIDE_PX,
+    tabTopBand = DMConstants.TAB_FLOAT_TOP_BAND_PX,
+
     inactiveTabStyle = inactiveStyle,
     activeTabStyle   = activeStyle,
   }, DMTabFrame.container)
@@ -261,14 +269,17 @@ function DMTabFrame.postLoadSetup()
 
         local outer = owner[tabName.."tab"]
         if outer and outer.type == "adjustablecontainer" then
-          outer:unlockContainer()
+          -- Frame as well as title: loading re-derives the band from the saved
+          -- padding (padding * 2), so a saved side inset leaves a band too short
+          -- for the title and the page content hides it.
+          if owner.applyFloatChrome then owner:applyFloatChrome(tabName) end
         end
 
         local center = owner[tabName.."center"]
         if center and center.windowList then
           for _, obj in pairs(center.windowList) do
             if obj.type == "adjustablecontainer" then
-              obj:lockContainer(nil, "light")
+              obj:lockContainer(nil, "full")
             end
           end
         end

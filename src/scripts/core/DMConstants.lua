@@ -100,3 +100,12 @@ DMConstants.DAMAGE_VERBS = {
 DMConstants.TAB_FONT_DEFAULT_PX = 11
 DMConstants.TAB_FONT_MIN_PX     = 8
 DMConstants.TAB_FONT_MAX_PX     = 24
+
+-- Undocked (floated) TabWindow tabs: the frame around a pulled-out tab.
+-- The top band is sized so the window's own - / x buttons (native createLabels
+-- places them at y=4 with buttonsize 15, so they end at 19px) and the title
+-- text stay clear of the panel content. The side/bottom inset is half the
+-- Adjustable resize hot-zone, which is measured 10px in from the label edge -
+-- a 5px strip is still enough of a target to grab for a resize.
+DMConstants.TAB_FLOAT_SIDE_PX     = 5
+DMConstants.TAB_FLOAT_TOP_BAND_PX = 20

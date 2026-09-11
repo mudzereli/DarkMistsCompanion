@@ -471,10 +471,12 @@ function Darkmists.createTabPanel(id, title, tabName)
     width = "100%", height = "100%",
     titleText = title,
     titleTxtColor = Darkmists.getDefaultTextColor(),
-    -- When a tab window is undocked, Adjustable shows its own title bar
-    -- (height ~buttonsize+10) and offsets the content down by padding*2.
-    -- padding must be >= half that height so the header panel doesn't
-    -- overlap the window title bar. Docked (locked "full") it is ignored.
+    -- This panel is locked "full" both docked and undocked, so the padding is
+    -- ignored in normal use and the frame around a pulled-out tab comes from
+    -- the tab window's own container (see applyFloatFrame in
+    -- GeyserAdjustableTabWindow, and the DMConstants.TAB_FLOAT_* constants).
+    -- It only matters if the panel is unlocked by hand, where keeping it at
+    -- least half the title bar height stops the header overlapping that bar.
     padding = 14,
     adjLabelstyle = Darkmists.getDefaultAdjLabelstyle(),
     lockStyle = "full",
@@ -697,6 +699,9 @@ function Darkmists.LoadUIScripts()
   MapColors.init()
   if DMSettingsPanel and DMSettingsPanel.init then DMSettingsPanel.init() end
   Darkmists.UI_LOADED = true
+  -- Now UI_LOADED is set: the walk window's canUseDock() checks it, and a
+  -- restored float needs its panel rebuilt here or the window comes back empty.
+  if WalkDestinations and WalkDestinations.init then WalkDestinations.init() end
   log("UI Scripts Loaded")
 end
 

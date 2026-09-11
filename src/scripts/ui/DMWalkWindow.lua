@@ -199,6 +199,17 @@ function WalkDestinations.pollFilterInput()
   WalkDestinations.refresh()
 end
 
+-- Restored on load: a pulled-out Destinations tab comes back as an empty window,
+-- because the panel is only ever built on demand. Rebuild it so the float has its
+-- content - and render it, since create() alone does not draw the list.
+function WalkDestinations.init()
+  local tabs = DMTabs
+  if not (tabs and tabs.Destinations and tabs.Destinations.floating) then return end
+  if WalkDestinations.create() then
+    WalkDestinations.setFilter(WalkDestinations.activeFilter)
+  end
+end
+
 function WalkDestinations.open(filter)
   filter = normalizeFilter(filter)
 
@@ -211,6 +222,17 @@ function WalkDestinations.open(filter)
   end
 
   WalkDestinations.setFilter(filter)
+
+  -- A pulled-out Destinations tab is its own window: raise that instead of going
+  -- through setTabVisible, which restores (re-docks) a floating tab, and instead
+  -- of activateTab, which would restyle it as the active docked tab.
+  local tabs = DMTabs
+  if tabs and tabs.Destinations and tabs.Destinations.floating then
+    local outer = tabs["Destinationstab"]
+    if outer and outer.raiseAll then outer:raiseAll() end
+    return true
+  end
+
   if DMTabFrame.setTabVisible then
     DMTabFrame.setTabVisible("Destinations", true)
   end
