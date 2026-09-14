@@ -16,9 +16,8 @@ local function sortedAreaNames(grouped)
   return names
 end
 
-local function collectEntries(grouped)
+local function estimateDimensions(grouped)
   local areas = sortedAreaNames(grouped)
-  local entries = {}
   local lineCount = 2
   local maxLineLength = 34
 
@@ -33,19 +32,12 @@ local function collectEntries(grouped)
       local displayRoomName = DMUtil.cap(roomName, 27)
       local lineLength = #destinationName + #displayRoomName + 5
 
-      entries[#entries + 1] = {
-        areaName = areaName,
-        destinationName = destinationName,
-        name = entry.name,
-        room = entry.room,
-        roomName = displayRoomName,
-      }
       lineCount = lineCount + 1
       maxLineLength = math.max(maxLineLength, lineLength)
     end
   end
 
-  return areas, entries, lineCount, maxLineLength
+  return lineCount, maxLineLength
 end
 
 local function renderEmpty(win, filter)
@@ -95,7 +87,7 @@ end
 
 function DMWalkAlert.show(filter)
   local grouped = MapDestinations.getGroupedFiltered(filter)
-  local _, _, lineCount, maxLineLength = collectEntries(grouped)
+  local lineCount, maxLineLength = estimateDimensions(grouped)
   local charW, charH = calcFontSize(DMAlertWindow.getBodyFontSize())
 
   if not charW then charW = 8 end

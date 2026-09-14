@@ -22,7 +22,7 @@
 **Player Window**: shows the clan account's gold balance.
 
 **DMC Patch Notes: 1.6.2**
-*Tab Frame improvements and Destinations (walk command) enhancements*
+*Tab Frame improvements and Destinations (walk command) Enhancements*
 
 **Destinations**: `walk list` now opens a dockable Destinations tab. Click a destination to walk there, and narrow the list with its filter box - by name, room name, or area - which applies as you type. If UI is disabled then it falls back to moveable alert.
   - **add / del buttons**: the panel header has `add` and `del` beside the filter box. They act on whatever is in the box: `add` saves it as a destination at your current room and `del` deletes any destination matching that name, with the same rules and messages as `walk add` / `walk rem`. The list refreshes straight away.
