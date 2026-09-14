@@ -134,7 +134,7 @@ end
 function WhoWindow.capturePlayerList()
 
   -- match the trigger context for the players found count
-  local numPlayers = line:match("^Players found:%s*(%d+)")
+  local numPlayers = line:match(DMPatterns.WHO_PLAYERS_FOUND)
   if not numPlayers then return end
 
   numPlayers = tonumber(numPlayers)
