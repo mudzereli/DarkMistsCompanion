@@ -19,7 +19,7 @@ CMudWrapper = {
   savePath = getMudletHomeDir() .. "/cmudwrapper_data.lua",
   -- Full state shape including varmeta for per-variable enabled/disabled tracking.
   state = { aliases = {}, triggers = {}, vars = {}, defaults = {}, varmeta = {}, classes = {} },
-  handles = { aliases = {}, triggers = {} },
+  handles = { aliases = {}, triggers = {}, eventTriggers = {} },
   commandHandle = nil,
   -- Runtime-only default class. Set with `#CLASS name`, reset with `#CLASS 0`.
   defaultClass = nil,
@@ -40,6 +40,17 @@ function CMudWrapper.notify(msg)
   end
   local prefix = DarkmistsTheme and (DarkmistsTheme.blueTag .. "CMudWrapper") or "CMudWrapper"
   DMLogger.notify(prefix, msg)
+end
+
+local function clearTriggerHandle(name)
+  if CMudWrapper.handles.triggers[name] then
+    pcall(killTrigger, CMudWrapper.handles.triggers[name])
+    CMudWrapper.handles.triggers[name] = nil
+  end
+  if CMudWrapper.handles.eventTriggers[name] then
+    pcall(killAnonymousEventHandler, CMudWrapper.handles.eventTriggers[name])
+    CMudWrapper.handles.eventTriggers[name] = nil
+  end
 end
 
 -- ---------------------------------------------------------------------------
@@ -133,10 +144,36 @@ local function parseArgs(s)
 end
 
 local function applyVars(text)
+  local event = CMudWrapper._currentEvent
+  if event then
+    text = text:gsub("@event%.([%a_][%w_%.]*)", function(path)
+      local value = event.payload
+      for field in path:gmatch("[%a_][%w_]*") do
+        if type(value) ~= "table" then return "" end
+        value = value[field]
+      end
+      return value == nil and "" or tostring(value)
+    end)
+    text = text:gsub("%$(%d+)", function(index)
+      local value = event.args[tonumber(index)]
+      return value == nil and "" or tostring(value)
+    end)
+  end
   for k, v in pairs(CMudWrapper.state.vars) do
     text = text:gsub("@" .. k, tostring(v))
   end
   return text
+end
+
+local function isDmapiEvent(pattern)
+  return tostring(pattern or ""):match("^dmapi%.[%w_%.]+$") ~= nil
+end
+
+local function triggerKind(spec)
+  if spec and (spec.event or (spec.cmud and isDmapiEvent(spec.pattern))) then
+    return "[event]"
+  end
+  return spec and spec.cmud and "[wildcard]" or "[regex]"
 end
 
 -- Match token expansion is deliberately ordered: protect delayed literals first,
@@ -1028,6 +1065,25 @@ function CMudWrapper.installAlias(name, spec)
   end
 end
 
+local function runEventTriggerBody(name, spec, event, matchTable)
+  if CMudWrapper._callStack[name] then
+    CMudWrapper.notify(DarkmistsTheme.warnTag .. ("recursion blocked: trigger '%s'"):format(name))
+    return
+  end
+  CMudWrapper._callStack[name] = true
+  local previousMatches = CMudWrapper._currentMatches
+  local previousEvent = CMudWrapper._currentEvent
+  CMudWrapper._currentMatches = matchTable
+  CMudWrapper._currentEvent = event
+  local ok, err = pcall(CMudWrapper.runBody, spec.body, matchTable)
+  CMudWrapper._currentMatches = previousMatches
+  CMudWrapper._currentEvent = previousEvent
+  CMudWrapper._callStack[name] = nil
+  if not ok then
+    CMudWrapper.notify(DarkmistsTheme.badTag .. ("trigger '%s' error: %s"):format(name, tostring(err)))
+  end
+end
+
 function CMudWrapper.installTrigger(name, spec)
   -- Disabled triggers stay defined but do not get runtime handles until re-enabled.
   if spec and spec.enabled == false then
@@ -1038,8 +1094,39 @@ function CMudWrapper.installTrigger(name, spec)
     local cls = CMudWrapper.state.classes and CMudWrapper.state.classes[spec.class]
     if cls and cls.enabled == false then return end
   end
-  if CMudWrapper.handles.triggers[name] then
-    pcall(killTrigger, CMudWrapper.handles.triggers[name])
+  clearTriggerHandle(name)
+
+  if spec.event or (spec.cmud and isDmapiEvent(spec.pattern)) then
+    spec.event = true
+    local handle
+    local ok, idOrError = pcall(function()
+      return registerAnonymousEventHandler(spec.pattern, function(firedEvent, ...)
+        local args = {...}
+        local payload
+        local scalarArgs = {}
+        for _, value in ipairs(args) do
+          if type(value) == "table" and payload == nil then
+            payload = value
+          elseif type(value) ~= "table" then
+            scalarArgs[#scalarArgs + 1] = value
+          end
+        end
+        payload = payload or {}
+
+        runEventTriggerBody(name, spec, {
+          name = firedEvent or spec.pattern,
+          payload = payload,
+          args = scalarArgs,
+        })
+      end)
+    end)
+    handle = ok and idOrError or nil
+    if handle then
+      CMudWrapper.handles.eventTriggers[name] = handle
+    else
+      CMudWrapper.notify(DarkmistsTheme.badTag .. ("failed to register event trigger '%s' event=%s error=%s"):format(tostring(name), tostring(spec.pattern), tostring(idOrError)))
+    end
+    return
   end
 
   -- Capture pattern-side @vars so we can recompile this trigger when those variables change.
@@ -1064,19 +1151,7 @@ function CMudWrapper.installTrigger(name, spec)
         end
       end
     end
-    -- Block trigger re-entry while the body is executing.
-    if CMudWrapper._callStack[name] then
-      CMudWrapper.notify(DarkmistsTheme.warnTag .. ("recursion blocked: trigger '%s'"):format(name))
-      return
-    end
-    CMudWrapper._callStack[name] = true
-    CMudWrapper._currentMatches = matches
-    local ok, err = pcall(CMudWrapper.runBody, spec.body, matches)
-    CMudWrapper._currentMatches = nil
-    CMudWrapper._callStack[name] = nil
-    if not ok then
-      CMudWrapper.notify(DarkmistsTheme.badTag .. ("trigger '%s' error: %s"):format(name, tostring(err)))
-    end
+    runEventTriggerBody(name, spec, nil, matches)
   end)
 
   if handle then
@@ -1087,10 +1162,7 @@ function CMudWrapper.installTrigger(name, spec)
 end
 
 function CMudWrapper.replaceTrigger(name, spec)
-  if CMudWrapper.handles.triggers[name] then
-    pcall(killTrigger, CMudWrapper.handles.triggers[name])
-    CMudWrapper.handles.triggers[name] = nil
-  end
+  clearTriggerHandle(name)
 
   CMudWrapper.state.triggers[name] = spec
   CMudWrapper.installTrigger(name, spec)
@@ -1107,10 +1179,7 @@ function CMudWrapper.removeAlias(name)
 end
 
 function CMudWrapper.removeTrigger(name)
-  if CMudWrapper.handles.triggers[name] then
-    pcall(killTrigger, CMudWrapper.handles.triggers[name])
-    CMudWrapper.handles.triggers[name] = nil
-  end
+  clearTriggerHandle(name)
   if CMudWrapper._patternDeps then
     CMudWrapper._patternDeps[name] = nil
   end
@@ -1140,8 +1209,11 @@ function CMudWrapper.unload()
   for _, id in pairs(CMudWrapper.handles.triggers or {}) do
     pcall(killTrigger, id)
   end
+  for _, id in pairs(CMudWrapper.handles.eventTriggers or {}) do
+    pcall(killAnonymousEventHandler, id)
+  end
 
-  CMudWrapper.handles = { aliases = {}, triggers = {} }
+  CMudWrapper.handles = { aliases = {}, triggers = {}, eventTriggers = {} }
   CMudWrapper._patternDeps = {}
   -- Clear any suspended #WAIT state so reloads do not resume stale bodies.
   if CMudWrapper._wait then
@@ -1421,10 +1493,7 @@ function CMudWrapper.exec(cmd)
         return true
       end
       -- disable trigger
-      if CMudWrapper.handles.triggers[tname] then
-        pcall(killTrigger, CMudWrapper.handles.triggers[tname])
-        CMudWrapper.handles.triggers[tname] = nil
-      end
+      clearTriggerHandle(tname)
       if CMudWrapper.state.triggers[tname] then
         CMudWrapper.state.triggers[tname].enabled = false
         CMudWrapper.save()
@@ -1474,7 +1543,7 @@ function CMudWrapper.exec(cmd)
           if classFilter or not (_cls and _cls.hidden) then
             local pat  = tostring((v or {}).pattern or "")
             local bod  = tostring((v or {}).body or "")
-            local kind = (v and v.cmud) and "[wildcard]" or "[regex]"
+            local kind = triggerKind(v)
             local enabled = not (v and v.enabled == false)
             local nameColor = CMudWrapper.roleNameColor(enabled)
             local nameDisplay = nameColor .. tostring(k) .. DarkmistsTheme.mutedTag
@@ -1500,7 +1569,7 @@ function CMudWrapper.exec(cmd)
       if def then
         local pat  = tostring(def.pattern or "")
         local bod  = tostring(def.body or "")
-        local kind = def.cmud and "[wildcard]" or "[regex]"
+        local kind = triggerKind(def)
         local enabled = not (def and def.enabled == false)
         local nameColor = CMudWrapper.roleNameColor(enabled)
         local nameDisplay = nameColor .. name .. DarkmistsTheme.mutedTag
@@ -1522,7 +1591,13 @@ function CMudWrapper.exec(cmd)
 
     assert(name and pattern and body, "#TRIGGER {name} {wildcard-pattern} {body} [{class}]")
     local inlineClass = args[4]  -- optional trailing {ClassName}
-    CMudWrapper.replaceTrigger(name, { pattern = pattern, body = body, cmud = true, class = inlineClass or CMudWrapper.defaultClass })
+    CMudWrapper.replaceTrigger(name, {
+      pattern = pattern,
+      body = body,
+      cmud = true,
+      event = isDmapiEvent(pattern),
+      class = inlineClass or CMudWrapper.defaultClass,
+    })
     CMudWrapper.save()
     CMudWrapper.notify(DarkmistsTheme.goodTag .. ("trigger saved: %s"):format(name))
 
@@ -1753,7 +1828,10 @@ function CMudWrapper.exec(cmd)
     for tname, id in pairs(CMudWrapper.handles.triggers) do
       pcall(killTrigger, id)
     end
-    CMudWrapper.handles = { aliases = {}, triggers = {} }
+    for ename, id in pairs(CMudWrapper.handles.eventTriggers) do
+      pcall(killAnonymousEventHandler, id)
+    end
+    CMudWrapper.handles = { aliases = {}, triggers = {}, eventTriggers = {} }
     CMudWrapper.state = { aliases = {}, triggers = {}, vars = {}, defaults = {}, varmeta = {}, classes = {} }
     CMudWrapper.defaultClass = nil
     CMudWrapper.save()
@@ -1842,10 +1920,7 @@ function CMudWrapper.exec(cmd)
           CMudWrapper.state.aliases[aname] = nil
         end
         for _, tname in ipairs(triggerNames) do
-          if CMudWrapper.handles.triggers[tname] then
-            pcall(killTrigger, CMudWrapper.handles.triggers[tname])
-            CMudWrapper.handles.triggers[tname] = nil
-          end
+          clearTriggerHandle(tname)
           if CMudWrapper._patternDeps then CMudWrapper._patternDeps[tname] = nil end
           CMudWrapper.state.triggers[tname] = nil
         end
@@ -1890,10 +1965,7 @@ function CMudWrapper.exec(cmd)
             if cls.enabled then
               if spec.enabled ~= false then CMudWrapper.installTrigger(tname, spec) end
             else
-              if CMudWrapper.handles.triggers[tname] then
-                pcall(killTrigger, CMudWrapper.handles.triggers[tname])
-                CMudWrapper.handles.triggers[tname] = nil
-              end
+              clearTriggerHandle(tname)
             end
           end
         end
@@ -1938,10 +2010,7 @@ function CMudWrapper.exec(cmd)
             CMudWrapper.installTrigger(tname, spec)
           end
         else
-          if CMudWrapper.handles.triggers[tname] then
-            pcall(killTrigger, CMudWrapper.handles.triggers[tname])
-            CMudWrapper.handles.triggers[tname] = nil
-          end
+          clearTriggerHandle(tname)
         end
       end
     end
