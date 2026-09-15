@@ -145,6 +145,10 @@ local function indent_extra_flags(details)
   return details:gsub(",%s*extra flags%s+", ",\n  extra flags ")
 end
 
+local function format_tooltip_details(details, needsIndent)
+  return needsIndent and indent_extra_flags(details) or details
+end
+
 local function get_longest_line_chars(lines)
   local longest = 0
   for _, line in ipairs(lines) do
@@ -227,7 +231,7 @@ function ItemTracker.showTooltip(name)
   local preview = {}
   for idx, item in ipairs(list) do
     if item.details then
-      local text = needsIndent and indent_extra_flags(item.details) or item.details
+      local text = format_tooltip_details(item.details, needsIndent)
       for line in text:gmatch("[^\n]+") do
         preview[#preview+1] = line
       end
@@ -255,7 +259,7 @@ function ItemTracker.showTooltip(name)
     cecho(t.header, s.tooltipItemNameColor .. item.name)
 
     if item.details then
-      local text = needsIndent and indent_extra_flags(item.details) or item.details
+      local text = format_tooltip_details(item.details, needsIndent)
       cecho(t.win, s.tooltipItemDetailsColor .. text .. "\n")
     end
 
@@ -312,6 +316,33 @@ end
 -- Data Loading and Indexing
 -- ============================================================================
 
+local function index_item(item)
+  local key = item.name:lower()
+
+  ItemTracker.items[#ItemTracker.items+1] = item
+
+  if item.vnum then
+    ItemTracker.by_vnum[item.vnum] = item
+  end
+
+  local nameList = ItemTracker.by_name[key]
+  if not nameList then
+    nameList = {}
+    ItemTracker.by_name[key] = nameList
+    ItemTracker.sorted_names[#ItemTracker.sorted_names+1] = key
+  end
+  nameList[#nameList+1] = item
+
+  local area = extract_area(item.details)
+  if area then
+    item.area = area
+    local akey = area:lower()
+    local areaList = ItemTracker.by_area[akey] or {}
+    areaList[#areaList+1] = item
+    ItemTracker.by_area[akey] = areaList
+  end
+end
+
 function ItemTracker.load(path)
   Darkmists.Log(DarkmistsTheme.yellowTag .. "ItemTracker",
     string.format("%sLoading %s v%s by %s%s",
@@ -344,30 +375,7 @@ function ItemTracker.load(path)
     if is_valid_item_name(item.name) then
       item.name = trim(item.name)
       item.details = decode_html_entities(item.details)
-      local key = item.name:lower()
-
-      ItemTracker.items[#ItemTracker.items+1] = item
-
-      if item.vnum then
-        ItemTracker.by_vnum[item.vnum] = item
-      end
-
-      local nameList = ItemTracker.by_name[key]
-      if not nameList then
-        nameList = {}
-        ItemTracker.by_name[key] = nameList
-        ItemTracker.sorted_names[#ItemTracker.sorted_names+1] = key
-      end
-      nameList[#nameList+1] = item
-
-      local area = extract_area(item.details)
-      if area then
-        item.area = area
-        local akey = area:lower()
-        local areaList = ItemTracker.by_area[akey] or {}
-        areaList[#areaList+1] = item
-        ItemTracker.by_area[akey] = areaList
-      end
+      index_item(item)
     else
       dropped = dropped + 1
     end
@@ -416,28 +424,7 @@ function ItemTracker.appendItems(data)
       end
 
       if not duplicate then
-        ItemTracker.items[#ItemTracker.items+1] = item
-
-        if item.vnum then
-          ItemTracker.by_vnum[item.vnum] = item
-        end
-
-        local nameList = ItemTracker.by_name[key]
-        if not nameList then
-          nameList = {}
-          ItemTracker.by_name[key] = nameList
-          ItemTracker.sorted_names[#ItemTracker.sorted_names+1] = key
-        end
-        nameList[#nameList+1] = item
-
-        local area = extract_area(item.details)
-        if area then
-          item.area = area
-          local akey = area:lower()
-          ItemTracker.by_area[akey] = ItemTracker.by_area[akey] or {}
-          ItemTracker.by_area[akey][#ItemTracker.by_area[akey]+1] = item
-        end
-
+        index_item(item)
         added = added + 1
       end
     end
@@ -623,6 +610,17 @@ end
 -- Line Rendering
 -- ============================================================================
 
+local function isListHeader(line)
+  return line:find("are using:%s*$")
+    or line:find("is using:%s*$")
+    or line:find("^You are carrying:%s*$")
+    or line:find("holds:%s*$")
+    or line:find("shows you his inventory:%s*$")
+    or line:find("shows you her inventory:%s*$")
+    or line:find("^%[Lv%s+Price%s+Qty%]%s+Item%s*$")
+    or line:find("^=== VAULT")
+end
+
 -- Convert item names in line to clickable links.
 -- Detects "You are using:" equipment listing and processes subsequent
 -- lines in mass-capture mode until the prompt terminates the block.
@@ -632,48 +630,12 @@ function ItemTracker.renderLineWithLinks(line)
   -- Listing capture mode (equipment "You are using:" / shop "[Lv Price Qty]")
   -- -------------------------------------------------------------------------
 
-  -- Equipment listing header ("You are using:" / "<name> is using:")
-  if line:find("are using:%s*$") or line:find("is using:%s*$") then
+  if isListHeader(line) then
     ItemTracker._capturingList = true
     return false
   end
 
-  -- Inventory listing header
-  if line:find("^You are carrying:%s*$") then
-    ItemTracker._capturingList = true
-    return false
-  end
-
-  -- Container contents header (e.g. "A leather backpack holds:")
-  if line:find("holds:%s*$") then
-    ItemTracker._capturingList = true
-    return false
-  end
-
-  -- Pet/mob inventory header (e.g. "The malamute shows you his inventory:")
-  if line:find("shows you his inventory:%s*$") or line:find("shows you her inventory:%s*$") then
-    ItemTracker._capturingList = true
-    return false
-  end
-
-  -- Shop listing header
-  if line:find("^%[Lv%s+Price%s+Qty%]%s+Item%s*$") then
-    ItemTracker._capturingList = true
-    return false
-  end
-
-  -- Vault contents header ("=== VAULT CONTENTS ... ===")
-  if line:find("^=== VAULT") then
-    ItemTracker._capturingList = true
-    return false
-  end
-
-  if ItemTracker._capturingList then
-    -- Route into the same rendering pipeline. Capture is cleared
-    -- by the dmapi.world.prompt event handler in init().
-    return ItemTracker._renderItemOnLine(line)
-  end
-
+  -- Capture is cleared by the dmapi.world.prompt event handler in init().
   return ItemTracker._renderItemOnLine(line)
 end
 
