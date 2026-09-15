@@ -37,8 +37,9 @@
 --       - Darkmists handler: sets _pendingMapPrompt = true
 --    • "score" response parsed → dmapi.player.vitals.updated fired
 --       - If _pendingMapPrompt, UI_LOADED, !minimalMode, hasSeenUIIntroMessage
---         → tempTimer(2, PromptLoadMap) → shows "Load Packaged Map?" alert
---       - If user clicks "Load Packaged Map" → LoadMapDat() → loadMap() + 2s timer → send("look")
+--         → tempTimer(2, PromptLoadMap) → shows the bundled-map choice alert
+--       - Load choice → LoadMapDat() → loadMap() + 2s timer → send("look")
+--       - Keep / Ask Later / close leave the current map untouched
 --
 -- 4. Event-driven thereafter
 --    • sysWindowResizeEvent → debounced RefreshUILayout
@@ -218,15 +219,44 @@ function Darkmists.LoadMapDat()
 end
 
 function Darkmists.PromptLoadMap()
-  DMAlertWindow.Show("Warning: Load Packaged Map", function(win)
+  local function rememberMapChoice()
+    Darkmists.GlobalSettings.hasSeenMapPrompt = true
+    Darkmists.SaveSettings()
+  end
+
+  local function chooseLoadMap()
+    rememberMapChoice()
+    DMAlertWindow.Hide()
+    tempTimer(0, Darkmists.LoadMapDat)
+  end
+
+  local function chooseKeepMap()
+    rememberMapChoice()
+    DMAlertWindow.Hide()
+  end
+
+  local _, mapCharHeight = calcFontSize(DMAlertWindow.getBodyFontSize())
+  local mapPromptHeight = math.min(360, math.max(220,
+    10 * (mapCharHeight or 16) + DMAlertWindow.getChromeHeight()))
+
+  DMAlertWindow.Show("Install Dark Mists Map?", function(win)
     cecho(win, "\n")
-    cecho(win, DarkmistsTheme.badTag .. "Loading the packaged map will overwrite your current map in Mudlet.\n\n")
-    cechoLink(win, DarkmistsTheme.mutedTag .. "<u>[" .. DarkmistsTheme.goodTag .. "Load Packaged Map" .. DarkmistsTheme.mutedTag .. "]",
-      [[DMAlertWindow.Hide(); Darkmists.LoadMapDat()]],
-      "Load the packaged map (may overwrite existing map)", true)
-  end, { width = 560, height = 160 })
-  Darkmists.GlobalSettings.hasSeenMapPrompt = true
-  Darkmists.SaveSettings()
+    cecho(win, DarkmistsTheme.infoTag .. "Would you like to install the bundled Dark Mists world map?\n")
+    cecho(win, DarkmistsTheme.infoTag .. "It covers most of the game's rooms and areas.\n")
+    cecho(win, DarkmistsTheme.warnTag .. "Installing it will replace your current Mudlet map.\n\n")
+    cecho(win, DarkmistsTheme.mutedTag .. "Choose how to continue:\n\n")
+    cechoLink(win, DarkmistsTheme.mutedTag .. "<u>[" .. DarkmistsTheme.goodTag .. "Yes, install map" .. DarkmistsTheme.mutedTag .. "]",
+      chooseLoadMap,
+      "Install the bundled Dark Mists map and replace the current map", true)
+    cecho(win, "\n")
+    cechoLink(win, DarkmistsTheme.mutedTag .. "<u>[" .. DarkmistsTheme.infoTag .. "No, keep current map" .. DarkmistsTheme.mutedTag .. "]",
+      chooseKeepMap,
+      "Keep the current Mudlet map and do not load the bundled map", true)
+    cecho(win, "\n")
+    cechoLink(win, DarkmistsTheme.mutedTag .. "<u>[" .. DarkmistsTheme.warnTag .. "Ask me later" .. DarkmistsTheme.mutedTag .. "]",
+      function() DMAlertWindow.Hide() end,
+      "Dismiss this prompt without choosing a map", true)
+  end, { height = mapPromptHeight })
 end
 
 -- Prompt the user before performing a UI reload (safe pathway)
@@ -286,6 +316,10 @@ end
 
 function Darkmists.OpenWebsite()
   openUrl("https://darkmists.org")
+end
+
+function Darkmists.OpenWiki()
+  openUrl("https://wiki.darkmists.org/en/mudlet")
 end
 
 function Darkmists.getGithubUrl(channel)
@@ -392,6 +426,9 @@ function Darkmists.ShowUIIntroMessage(force)
   -- slight delay so login text finishes first
   tempTimer(force and 0 or 1.5, function()
     local isMinimal = Darkmists.GlobalSettings and Darkmists.GlobalSettings.minimalMode
+    local _, introCharHeight = calcFontSize(DMAlertWindow.getBodyFontSize())
+    local introHeight = math.min(520, math.max(300,
+      21 * (introCharHeight or 16) + DMAlertWindow.getChromeHeight()))
     local title = ("🔮 DARK MISTS COMPANION — v%s"):format(tostring(Darkmists.VERSION or "unknown"))
     DMAlertWindow.Show(title, function(win)
       cecho(win, "\n")
@@ -420,7 +457,15 @@ function Darkmists.ShowUIIntroMessage(force)
             [[Darkmists.GlobalSettings.hasSeenUIIntroMessage = true; Darkmists.SaveSettings(); Darkmists.DisableUI()]],
             "Switch to minimal UI", true)
         end
-    end, { width = 640, height = 300,
+
+        cecho(win, "\n\n" .. DarkmistsTheme.infoTag .. "Getting Started:\n")
+        cechoLink(win, DarkmistsTheme.mutedTag .. "<u>[" .. DarkmistsTheme.accentTag .. "DarkMists Companion Wiki" .. DarkmistsTheme.mutedTag .. "]",
+          function() Darkmists.OpenWiki() end,
+          "Open the Dark Mists Mudlet Wiki", true)
+        cecho(win, "\n\n" .. DarkmistsTheme.mutedTag .. "In Mudlet, type:\n")
+        cecho(win, "  " .. DarkmistsTheme.goodTag .. "dmc help" .. DarkmistsTheme.mutedTag .. "     for in-game help\n")
+        cecho(win, "  " .. DarkmistsTheme.goodTag .. "dmc settings" .. DarkmistsTheme.mutedTag .. " for the settings panel\n")
+    end, { height = introHeight,
       onClose = function()
         Darkmists.GlobalSettings.hasSeenUIIntroMessage = true
         Darkmists.SaveSettings()
