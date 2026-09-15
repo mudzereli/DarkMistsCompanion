@@ -158,6 +158,9 @@ Darkmists.DefaultSettings = {
   damageMessageMode = "avg",
   -- Damage Message Enabled: whether inline damage estimates are shown (persisted)
   damageMessageEnabled = true,
+  -- DMSounds ambience is opt-in and uses the full volume range
+  dmsoundsEnabled = false,
+  dmsoundsVolume = 100,
   -- MakeArmor defaults
   makearmorSleeper = "bedroll",
   makearmorContainer = "bag",
@@ -706,6 +709,7 @@ function Darkmists.CleanupUI(opts)
     Darkmists.ResetUILayoutCache()
   end
 
+  if DMSounds and DMSounds.cleanup then pcall(DMSounds.cleanup) end
   if DarkmistsAlias and DarkmistsAlias.clearAll then pcall(DarkmistsAlias.clearAll) end
   if DarkmistsEvents and DarkmistsEvents.clearAll then pcall(DarkmistsEvents.clearAll) end
   if DarkmistsTrigger and DarkmistsTrigger.clearAll then pcall(DarkmistsTrigger.clearAll) end
@@ -859,6 +863,7 @@ function Darkmists.Init()
   SessionTime.init()
   MakeArmor.init()
   DamageMessages.init()
+  DMSounds.init()
 
   -- CMud compatibility wrapper: persistent aliases/triggers/vars
   if CMudWrapper and CMudWrapper.load then

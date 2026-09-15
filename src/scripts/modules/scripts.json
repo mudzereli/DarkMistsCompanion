@@ -1,5 +1,23 @@
 [
        {
+              "name": "DMSoundsCatalogue",
+              "isActive": "yes",
+              "script": "",
+              "isFolder": "no"
+       },
+       {
+              "name": "DMSoundsAreaMap",
+              "isActive": "yes",
+              "script": "",
+              "isFolder": "no"
+       },
+       {
+              "name": "DMSounds",
+              "isActive": "yes",
+              "script": "",
+              "isFolder": "no"
+       },
+       {
               "name": "DMItemTracker",
               "isActive": "yes",
               "script": "",

@@ -120,6 +120,27 @@ Use lua showColors() in Mudlet to list all available color names.
     ]],
   },
 
+  dmsounds = {
+    title = "DMSounds",
+    desc = "Optional area ambience with on-demand TableTopAudio playback.",
+    info = [[
+Optional environmental ambience for mapped Dark Mists areas. DMSounds is
+disabled by default and never sends gameplay commands.
+
+• dmsounds on/off/toggle  - enable or disable ambience
+• dmsounds status         - show the current area, track, and volume
+• dmsounds volume <0-100> - set playback volume
+• dmsounds update         - apply the current area immediately
+• dmsounds stop           - stop active ambience
+• dmsounds check          - run the playback watchdog
+• dmsounds silence        - play the transition silence
+
+Tracks are downloaded and cached by Mudlet when needed. A loaded map provides
+the most useful area detection, while prompt detection remains available in
+Minimal UI mode. Audio is provided by TableTopAudio under its license.
+    ]],
+  },
+
   map = {
     title = "World Map",
     desc = "Fully interactable Mudlet world map with ~15,000 rooms.",
@@ -451,7 +472,7 @@ Prefix every command with # (e.g. #alias, #trigger).
 local helpSections = {
   {
     title = "Misc",
-    keys  = { "dmc", "spam", "infobox", "showdmg" },
+    keys  = { "dmc", "spam", "infobox", "showdmg", "dmsounds" },
   },
   {
     title = "Interface",

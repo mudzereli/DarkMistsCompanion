@@ -289,6 +289,15 @@ local MODULE_MENU = {
     end},
   }},
 
+  {label = "🎧 DMSounds", children = {
+    {label = "▶ Enable", action = function() expandAlias("dmsounds on") end},
+    {label = "⏸ Disable", action = function() expandAlias("dmsounds off") end},
+    {label = "🔄 Toggle", action = function() expandAlias("dmsounds toggle") end},
+    {label = "🛑 Stop", action = function() expandAlias("dmsounds stop") end},
+    {label = "📊 Status", action = function() expandAlias("dmsounds status") end},
+    {label = "❓ DMSounds", action = function() expandAlias("dmc help dmsounds") end},
+  }},
+
   {label = "🧪 Enchant Assist", children = {
     {label = "⚗️ Trials", children = {
       {label = "❶ ES Try 1", action = function() expandAlias("es 1") end},
@@ -411,6 +420,7 @@ local HELP_MENU = {
     {label = "📝 Info Box", action = function() expandAlias("dmc help infobox") end},
     {label = "💥 Damage Messages", action = function() expandAlias("dmc help showdmg") end},
     {label = "🚫 Spam Prevention", action = function() expandAlias("dmc help spam") end},
+    {label = "🎧 DMSounds", action = function() expandAlias("dmc help dmsounds") end},
   }},
 
   {label = "🧭 World", children = {

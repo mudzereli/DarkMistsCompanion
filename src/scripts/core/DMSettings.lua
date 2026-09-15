@@ -849,6 +849,41 @@ local function registerUtilities()
   })
 end
 
+local function setDMSoundsEnabled(value)
+  if DMSounds and type(DMSounds.setEnabled) == "function" then
+    return DMSounds.setEnabled(value)
+  end
+  return setGlobalValue("dmsoundsEnabled", value)
+end
+
+local function setDMSoundsVolume(value)
+  if DMSounds and type(DMSounds.setVolume) == "function" then
+    return DMSounds.setVolume(value)
+  end
+  return setGlobalValue("dmsoundsVolume", value)
+end
+
+local function registerDMSounds()
+  registerDefinitions({
+    {
+      key = "dmsounds.enabled", page = "Utilities", group = "DMSounds",
+      label = "Enabled", type = "boolean", default = false,
+      get = function() return globalValue("dmsoundsEnabled", false) end,
+      validate = validateBoolean,
+      set = setDMSoundsEnabled,
+      save = saveGlobalSettings,
+    },
+    {
+      key = "dmsounds.volume", page = "Utilities", group = "DMSounds",
+      label = "Volume", type = "integer", default = 100,
+      get = function() return globalValue("dmsoundsVolume", 100) end,
+      validate = function(value) return validateInteger(value, 0, 100) end,
+      set = setDMSoundsVolume,
+      save = saveGlobalSettings,
+    },
+  })
+end
+
 local function registerAdvanced()
   registerDefinitions({
     {
@@ -1000,4 +1035,5 @@ registerStatusBars()
 registerItemTracker()
 registerWindows()
 registerUtilities()
+registerDMSounds()
 registerAdvanced()
