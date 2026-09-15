@@ -120,8 +120,8 @@ function ButtonBar:_dropdownWidth()
   return ButtonBar.fontWidth * ButtonBar.topLevelMaxCharacters
 end
 
-function ButtonBar:_menuWidth()
-  return ButtonBar.fontWidth * ButtonBar.dropDownMaxCharacters
+function ButtonBar:_menuWidth(characterCount)
+  return ButtonBar.fontWidth * (characterCount or ButtonBar.dropDownMaxCharacters)
 end
 
 -- Update the right-aligned session time display label.
@@ -163,7 +163,7 @@ end
 -- Menu Tree Building
 --================================--
 -- -----------------------------------------------------------------------------
-function ButtonBar:_addMenuChildren(parent, items, depth)
+function ButtonBar:_addMenuChildren(parent, items, depth, characterCount)
   depth = depth or 1
 
   if type(items) ~= "table" then
@@ -180,7 +180,7 @@ function ButtonBar:_addMenuChildren(parent, items, depth)
     local dir = depth == 1 and "BV" or "RV"
 
     local child = parent:addChild({
-      width = ButtonBar:_menuWidth(),
+      width = ButtonBar:_menuWidth(characterCount),
       height = ButtonBar.height,
       layoutDir = dir,
       flyOut = true,
@@ -190,7 +190,7 @@ function ButtonBar:_addMenuChildren(parent, items, depth)
     ButtonBar:_style(child, true)
 
     if item.children then
-      self:_addMenuChildren(child, item.children, depth + 1)
+      self:_addMenuChildren(child, item.children, depth + 1, item.menuWidth)
     else
       child:setClickCallback(function()
         tempTimer(0, function()
@@ -422,15 +422,18 @@ local HELP_MENU = {
     end},
   }},
 
-  {label = "👤 Character", children = {
+  {label = "👤 Character", menuWidth = 26, children = {
     {label = "🎲 Stat Roller", action = function()
       expandAlias("dmc help statroll")
     end},
     {label = "📈 Skillup Tracking", action = function()
       expandAlias("dmc help skillups")
     end},
-    {label = "🧪 Enchant Assist", action = function()
+    {label = "🧪 Enchant Assist (Enchanter)", action = function()
       expandAlias("dmc help es")
+    end},
+    {label = "🛡️ Make Armor (Channeler)", action = function()
+      expandAlias("dmc help makearmor")
     end},
   }},
 

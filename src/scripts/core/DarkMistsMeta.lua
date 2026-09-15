@@ -142,7 +142,7 @@ Fully interactable Mudlet world map with ~15,000 rooms.
   makearmor = {
     title   = "Make Armor",
     command = "makearmor",
-    desc    = "Automated make armor casting with quality checking"
+    desc    = "Channeler-only armor crafting assist with quality checking; starts only when you issue a target command."
   },
   
   ch = {
