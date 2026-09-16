@@ -870,6 +870,15 @@ function Darkmists.Init()
     pcall(CMudWrapper.load)
   end
 
+  if type(exists) == "function"
+      and exists("baseui", "alias") == 1
+      and type(expandAlias) == "function" then
+    log("BaseUI alias found; hiding BaseUI")
+    expandAlias("baseui hide")
+  else
+    log("BaseUI alias not present; skipping BaseUI hide")
+  end
+
   -- UI Scripts
   if not Darkmists.GlobalSettings.minimalMode then
     Darkmists.LoadUIScripts()
