@@ -37,6 +37,23 @@ local dm_good = (DarkmistsTheme and DarkmistsTheme.goodTag) or ""
 local dm_warn = (DarkmistsTheme and DarkmistsTheme.warnTag) or ""
 local dm_bad = (DarkmistsTheme and DarkmistsTheme.badTag) or ""
 
+local function renderFormattedHelp(info)
+  for line in (info .. "\n"):gmatch("([^\n]*)\n") do
+    if line:match("^%s*─") then
+      cecho(dm_header_color .. line .. "\n")
+    else
+      local pos = line:find(" – ", 1, true)
+      if pos then
+        cecho(dm_text .. line:sub(1, pos - 1) .. dm_muted .. line:sub(pos) .. "\n")
+      elseif line:match("^%s+#") then
+        cecho(dm_text .. line .. "\n")
+      else
+        cecho(dm_muted .. line .. "\n")
+      end
+    end
+  end
+end
+
 -- Help index registry: maps feature keys to metadata used by `dmc help`
 DarkMistsMeta.helpIndex = {
   dmc = {
@@ -126,19 +143,26 @@ Use lua showColors() in Mudlet to list all available color names.
     info = [[
 Optional environmental ambience for mapped Dark Mists areas. DMSounds is
 disabled by default and never sends gameplay commands.
-
-• dmsounds on/off/toggle  - enable or disable ambience
-• dmsounds status         - show the current area, track, and volume
-• dmsounds volume <0-100> - set playback volume
-• dmsounds update         - apply the current area immediately
-• dmsounds stop           - stop active ambience
-• dmsounds check          - run the playback watchdog
-• dmsounds silence        - play the transition silence
-
+──── CONTROLS ─────────────────────────────────────────────────
+  dmsounds on              – enable area ambience
+  dmsounds off             – disable area ambience
+  dmsounds toggle          – toggle area ambience
+  dmsounds status          – show the current area, track, and volume
+  dmsounds volume <0-100>  – set playback volume
+──── PLAYBACK ─────────────────────────────────────────────────
+  dmsounds update          – apply the current area immediately
+  dmsounds apply           – re-apply the current area
+  dmsounds check           – run the playback watchdog
+  dmsounds stop            – stop active ambience
+  dmsounds silence         – play the transition silence
+──── NOTES ─────────────────────────────────────────────────────
 Tracks are downloaded and cached by Mudlet when needed. A loaded map provides
 the most useful area detection, while prompt detection remains available in
 Minimal UI mode. Audio is provided by TableTopAudio under its license.
     ]],
+    render = function()
+      renderFormattedHelp(DarkMistsMeta.helpIndex.dmsounds.info)
+    end,
   },
 
   map = {
@@ -446,24 +470,7 @@ Prefix every command with # (e.g. #alias, #trigger).
   #t+ hitme
     ]],
     render = function()
-      local info = DarkMistsMeta.helpIndex.cmud.info
-      for line in (info .. "\n"):gmatch("([^\n]*)\n") do
-        if line:match("^%s*─") then
-          -- Section divider (─ box-drawing character)
-          cecho(dm_header_color .. line .. "\n")
-        else
-          local pos = line:find(" – ", 1, true)
-          if pos then
-            -- Command – description: colorize each half
-            cecho(dm_text .. line:sub(1, pos - 1) .. dm_muted .. line:sub(pos) .. "\n")
-          elseif line:match("^%s+#") then-- or line:match("^%s+%-%- ") then
-            -- Code example lines
-            cecho(dm_text .. line .. "\n")
-          else
-            cecho(dm_muted .. line .. "\n")
-          end
-        end
-      end
+      renderFormattedHelp(DarkMistsMeta.helpIndex.cmud.info)
     end,
   },
 }

@@ -371,7 +371,11 @@ end
 local function handleCommand()
   local command = (matches[2] or ""):match("^%s*(.-)%s*$")
   if command == "" or command == "help" then
-    DMSounds.help()
+    if type(expandAlias) == "function" then
+      expandAlias("dmc help dmsounds")
+    else
+      DMSounds.help()
+    end
   elseif command == "update" then
     DMSounds.update()
   elseif command == "check" then
