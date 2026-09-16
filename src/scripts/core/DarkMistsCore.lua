@@ -139,6 +139,7 @@ Darkmists.DefaultSettings = {
   -- Chat and skill history limits
   chatHistoryMaxMessages = 100,
   skillUpsMaxEntries = 50,
+  skillUpsDisplayMode = "main",
   -- Stat Roller Leniency (0 = Roll must be Max, 1 = Roll can be 1 lower than Max, etc)
   statRollerLeniency = 1,
   statRollerCalibrationLines = 20,
