@@ -196,17 +196,33 @@ end
 -- UI / HELPER STUFF
 -- =============================================================================
 
+-- Post-load adjustments commonly expected after loading the packaged map.
+-- All of it needs a live game session: `find prompt` scans recent output for the
+-- prompt pattern and reports "Prompt not auto-detected" when there is none, and
+-- `look` must not be sent while sitting at the login prompt.
+local function applyMapFollowUps()
+  disableMapInfo("Full")
+  disableMapInfo("Short")
+  expandAlias("find prompt")
+  expandAlias("map config speedwalk_delay 0.4")
+  send("look")
+end
+
 function Darkmists.LoadMapDat()
   log(("Loading Map from: %s"):format(mapDatPath))
   loadMap(mapDatPath)
-  -- post-load adjustments commonly expected after loading packaged map
-  tempTimer(2,function()
-    disableMapInfo("Full")
-    disableMapInfo("Short")
-    expandAlias("find prompt")
-    expandAlias("map config speedwalk_delay 0.4")
-    send("look")
-  end)
+
+  -- Already in game: the usual short pause lets the map settle first.
+  if dmapi.player.online then
+    tempTimer(2, applyMapFollowUps)
+    return
+  end
+
+  -- Map installed before the session was up (login screen, or a reload): wait
+  -- for the game instead of firing mapper commands at a login prompt.
+  DarkmistsEvents.add("Darkmists.map.followup", "dmapi.world.enter", function()
+    tempTimer(2, applyMapFollowUps)
+  end, true)
 end
 
 -- @param onComplete optional; called once with true when the map was installed,

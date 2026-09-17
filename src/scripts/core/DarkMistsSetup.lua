@@ -38,6 +38,18 @@ local function stillCurrent(generation)
   return generation ~= nil and generation == DarkmistsStartup.generation
 end
 
+--- Is the client connected to the game?
+--- Uses Mudlet's real connection state rather than `dmapi.player.online`, which
+--- is a parser inference: it only turns true once a prompt line has been parsed
+--- since DMC loaded, so it reads false right after a mid-session install or any
+--- reload even though the player is connected. Fails open - if the API is
+--- unavailable we would rather let setup proceed than block a local UI choice.
+local function isConnected()
+  if type(getConnectionInfo) ~= "function" then return true end
+  local _, _, connected = getConnectionInfo()
+  return connected and true or false
+end
+
 function DarkmistsSetup.isDone()
   return DarkmistsSetup.step == DarkmistsSetup.STEP_DONE
 end
@@ -112,9 +124,9 @@ end
 function DarkmistsSetup.begin()
   if DarkmistsSetup.isDone() or DarkmistsSetup.isActive() then return false end
 
-  if not dmapi.player.online then
+  if not isConnected() then
     DMLogger.notify("Darkmists Setup", DarkmistsTheme.warnTag ..
-      "You need to be logged in to set up Darkmists Companion.")
+      "You need to be connected to the game to set up Darkmists Companion.")
     -- Step stays idle: the player presses SET UP DMC again once connected.
     -- Nothing is scheduled on their behalf, so nothing pops up unrequested.
     return false
