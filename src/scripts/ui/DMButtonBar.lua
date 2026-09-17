@@ -513,7 +513,7 @@ function ButtonBar.build()
   if Darkmists.GlobalSettings and not Darkmists.GlobalSettings.hasSeenUIIntroMessage then
     ButtonBar.firstRunButton = ButtonBar:addButton(
       "SET UP DMC",
-      function() Darkmists.ShowUIIntroMessage(true) end,
+      function() DarkmistsSetup.begin() end,
       ButtonBar:getAlertButtonStyleSheet()
     )
     ButtonBar.firstRunButton:setToolTip("Choose Minimal UI or Full UI for Dark Mists Companion.")

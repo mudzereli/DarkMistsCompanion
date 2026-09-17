@@ -103,7 +103,11 @@ local function showContrastAlert(switchToLight)
     cecho(win, string.format("For readability, switch to %s or keep %s if you prefer.\n\n", switchLbl, modeDesc))
     cechoLink(win,
       string.format("<dim_gray><u>[<green>Switch to %s<dim_gray>]", switchLbl),
-      string.format("DMAlertWindow.Hide(); Darkmists.GlobalSettings.lightMode = %s; Darkmists.GlobalSettings.hasSeenUIIntroMessage = false; Darkmists.SaveSettings(); DarkmistsTheme.buildTheme(); Darkmists.SafeReload();", modeVal),
+      -- Must NOT reset hasSeenUIIntroMessage: that is the "setup completed"
+      -- marker, so clearing it resurrects the SET UP DMC button and re-arms
+      -- DMAPI's passivity (no score refresh). The new lightMode already matches
+      -- the detected background, so the notice will not re-fire anyway.
+      string.format("DMAlertWindow.Hide(); Darkmists.GlobalSettings.lightMode = %s; Darkmists.SaveSettings(); DarkmistsTheme.buildTheme(); Darkmists.SafeReload();", modeVal),
       string.format("Switch to %s for better contrast", switchLbl),
       true)
     cechoLink(win, "  <dim_gray><u>[<red>Ignore<dim_gray>]",

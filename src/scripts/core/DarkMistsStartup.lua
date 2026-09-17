@@ -6,7 +6,20 @@
 -- =============================================================================
 DarkmistsStartup = {}
 
-DarkmistsStartup.phase = "idle"
+-- Phases are a debugging breadcrumb: nothing branches on them yet, so these
+-- constants exist to keep the valid set in one place and to make a typo visible
+-- instead of silently recording a phase that does not exist.
+DarkmistsStartup.PHASE_IDLE            = "idle"
+DarkmistsStartup.PHASE_STARTING        = "starting"
+DarkmistsStartup.PHASE_DMAPI           = "dmapi"
+DarkmistsStartup.PHASE_SETTINGS_LOADED = "settings-loaded"
+DarkmistsStartup.PHASE_SETTINGS_READY  = "settings-ready"
+DarkmistsStartup.PHASE_MODULES         = "modules"
+DarkmistsStartup.PHASE_UI              = "ui"
+DarkmistsStartup.PHASE_READY           = "ready"
+DarkmistsStartup.PHASE_SHUTTING_DOWN   = "shutting-down"
+
+DarkmistsStartup.phase = DarkmistsStartup.PHASE_IDLE
 DarkmistsStartup.generation = 0
 DarkmistsStartup.onlineSession = 0
 DarkmistsStartup.initialRefreshSent = false
@@ -25,7 +38,7 @@ end
 function DarkmistsStartup.invalidate()
   DarkmistsStartup.generation = DarkmistsStartup.generation + 1
   invalidateMapPromptSchedule()
-  DarkmistsStartup.phase = "shutting-down"
+  DarkmistsStartup.setPhase(DarkmistsStartup.PHASE_SHUTTING_DOWN)
 end
 
 function DarkmistsStartup.resetOnlineSession()
@@ -68,9 +81,16 @@ function DarkmistsStartup.reconcileOnlineState(reason)
     end)
   end
 
-  local canPromptForMap = Darkmists.UI_LOADED
-    and not settings.minimalMode
-    and not settings.hasSeenMapPrompt
+  -- DarkmistsSetup owns the map prompt while its sequence is in flight, so it
+  -- must not be scheduled a second time here. The refresh block above has
+  -- already run, which is what delivers the first score after the UI choice.
+  if DarkmistsSetup.ownsMapPrompt() then
+    return true
+  end
+
+  -- Offered in both UI modes: the bundled map is a Mudlet map, independent of
+  -- DMC's own panels.
+  local canPromptForMap = not settings.hasSeenMapPrompt
   if (reason == "startup" or reason == "setup-complete" or reason == "ui-enabled")
       and canPromptForMap then
     Darkmists._pendingMapPrompt = true
@@ -93,8 +113,6 @@ function DarkmistsStartup.reconcileOnlineState(reason)
     local currentSettings = Darkmists.GlobalSettings
     local stillEligible = dmapi.player.online
       and currentSettings.hasSeenUIIntroMessage
-      and Darkmists.UI_LOADED
-      and not currentSettings.minimalMode
       and not currentSettings.hasSeenMapPrompt
     if not stillEligible then
       Darkmists._pendingMapPrompt = true
@@ -108,11 +126,11 @@ function DarkmistsStartup.reconcileOnlineState(reason)
 end
 
 function DarkmistsStartup.prepare(settingsPath)
-  DarkmistsStartup.setPhase("dmapi")
+  DarkmistsStartup.setPhase(DarkmistsStartup.PHASE_DMAPI)
   dmapi.init()
 
   local hadSettings = Darkmists.LoadSettings()
-  DarkmistsStartup.setPhase("settings-loaded")
+  DarkmistsStartup.setPhase(DarkmistsStartup.PHASE_SETTINGS_LOADED)
 
   local savedLayoutVersion = Darkmists.GlobalSettings.layoutCacheVersion
   local versionChanged = hadSettings
@@ -137,12 +155,12 @@ function DarkmistsStartup.prepare(settingsPath)
     Darkmists.ResetUILayoutCache()
   end
 
-  DarkmistsStartup.setPhase("settings-ready")
+  DarkmistsStartup.setPhase(DarkmistsStartup.PHASE_SETTINGS_READY)
   return versionChanged
 end
 
 function DarkmistsStartup.initializeModules()
-  DarkmistsStartup.setPhase("modules")
+  DarkmistsStartup.setPhase(DarkmistsStartup.PHASE_MODULES)
 
   ItemTracker.init()
   StatRoller.init()
@@ -174,13 +192,16 @@ function DarkmistsStartup.configureRuntime()
     tempTimer(0, Darkmists.UpdateMainWindowWrap)
   end
 
-  -- Keep first-run onboarding passive until the user clicks the Button Bar
-  -- callout; startup should not create a modal before DMC is explicitly started.
-  DarkmistsTheme.checkBackgroundContrast()
+  -- First-run contrast is owned by DarkmistsSetup, which runs it after the map
+  -- prompt. Returning users have no sequence, so queue it here instead;
+  -- finalize() or the map prompt's onClose drains it.
+  if Darkmists.GlobalSettings.hasSeenUIIntroMessage then
+    Darkmists._contrastCheckPending = true
+  end
 end
 
 function DarkmistsStartup.initializeUI()
-  DarkmistsStartup.setPhase("ui")
+  DarkmistsStartup.setPhase(DarkmistsStartup.PHASE_UI)
 
   if not Darkmists.GlobalSettings.minimalMode then
     Darkmists.LoadUIScripts()
@@ -192,20 +213,27 @@ end
 
 function DarkmistsStartup.finalize(notifyMessage)
   DarkMistsMeta.init()
-  DarkmistsStartup.setPhase("ready")
   Darkmists.reconcileOnlineState("startup")
+
+  -- Drain the queued contrast notice unless the map prompt is going to appear
+  -- first; a scheduled map prompt drains it from its onClose handler.
+  if not DarkmistsStartup.mapPromptScheduled then
+    tempTimer(0, Darkmists.RunPendingContrastCheck)
+  end
 
   if notifyMessage then
     notifyMessage((DarkmistsTheme.mutedTag .. "Loaded Darkmists Core " .. DarkmistsTheme.infoTag .. "v%s<r>"):format(Darkmists.VERSION))
   end
+
+  -- Last thing startup does, so the phase only reads ready once the refresh
+  -- reconciliation and the contrast drain are both queued.
+  DarkmistsStartup.setPhase(DarkmistsStartup.PHASE_READY)
 end
 
 function DarkmistsStartup.start()
   DarkmistsStartup.generation = DarkmistsStartup.generation + 1
-  DarkmistsStartup.phase = "starting"
-  local result = Darkmists.runStartup()
-  DarkmistsStartup.phase = "ready"
-  return result
+  DarkmistsStartup.setPhase(DarkmistsStartup.PHASE_STARTING)
+  return Darkmists.runStartup()
 end
 
 return DarkmistsStartup
