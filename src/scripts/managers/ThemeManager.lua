@@ -118,6 +118,7 @@ end
 function DarkmistsTheme.checkBackgroundContrast()
   if _bgWarnShown then return end
   if not Darkmists or not Darkmists.GlobalSettings then return end
+  if not Darkmists.GlobalSettings.hasSeenUIIntroMessage then return end
 
   local ok, r, g, b = pcall(getBackgroundColor, "main")
   if not ok or type(r) ~= "number" then

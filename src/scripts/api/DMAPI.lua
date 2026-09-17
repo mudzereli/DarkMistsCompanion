@@ -944,6 +944,12 @@ function dmapi.core.send(cmd, ...)
   send(cmd)
 end
 
+function dmapi.core.refresh()
+  send("")
+  send("")
+  send("score")
+end
+
 --- Raise an event with optional debugging
 -- @param eventName string The event name
 -- @param ... Event data
@@ -2308,9 +2314,16 @@ function dmapi.RegisterEvents()
       if dmapi.settings.debugLevel > 0 then
         dmapi.core.debug("Connected - vitals reset. Use 'score' or 'dmapi setvitals'")
       end
-      send("")
-      send("")
-      send("score")
+
+      -- Keep a new installation passive until the first-run onboarding has
+      -- been acknowledged. State parsing still works if the player requests
+      -- a score manually, but DMC does not send the initial refresh itself.
+      if Darkmists and Darkmists.GlobalSettings
+        and not Darkmists.GlobalSettings.hasSeenUIIntroMessage then
+        return
+      end
+
+      dmapi.core.refresh()
     end,
     false
   )

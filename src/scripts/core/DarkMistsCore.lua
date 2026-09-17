@@ -10,7 +10,7 @@
 --    • Queues tempTimer(1, Darkmists.Init)  — everything else is deferred
 --
 -- 2. Darkmists.Init() fires at t=1s
---    • DMLogger.create/show — logging infrastructure
+--    • DMLogger.create — hidden logging infrastructure
 --    • dmapi.init()         — registers DMAPI's event handlers, aliases, triggers
 --    • Darkmists.LoadSettings() — reads saved file; if missing, hadSettings=false
 --    • DarkmistsTheme.buildTheme()
@@ -24,7 +24,7 @@
 --       - If mismatch or no file → delete save, apply defaults, reset UI cache,
 --         and schedule tempTimer(1, resetProfile)
 --    • Window borders applied (minimal mode: zero; full mode: from settings)
---    • Darkmists.ShowUIIntroMessage() — queues DMAlertWindow at t+1.5s
+--    • First-run onboarding is opened explicitly from the Button Bar
 --    • Utility module inits (ItemTracker, StatRoller, etc.) — these register
 --      their own DMAPI event handlers
 --    • If not minimalMode → Darkmists.LoadUIScripts() → DMTabFrame, StatusBar,
@@ -33,7 +33,7 @@
 --
 -- 3. Login sequence (user connects, auto-login)
 --    • MUD sends welcome message → dmapi.world.enter fired
---       - dmapi handler: sends "", "", "", "score"
+--       - dmapi handler: after setup, sends "", "", "score"
 --       - Darkmists handler: sets _pendingMapPrompt = true
 --    • "score" response parsed → dmapi.player.vitals.updated fired
 --       - If _pendingMapPrompt, UI_LOADED, !minimalMode, hasSeenUIIntroMessage
@@ -55,7 +55,7 @@
 --   prompt is silently missed.
 -- • Utility modules (ItemTracker, StatRoller, etc.) init AFTER events registered,
 --   so their first on_line call may miss the first few lines of output.
--- • ShowUIIntroMessage queues at t+1.5s from Init, so t≈2.5s from script load.
+-- • ShowUIIntroMessage opens only after an explicit Button Bar action.
 --
 -- == VERSION / SAVE RESET BEHAVIOR ============================================
 --
@@ -260,7 +260,12 @@ function Darkmists.PromptLoadMap()
     cechoLink(win, DarkmistsTheme.mutedTag .. "<u>[" .. DarkmistsTheme.warnTag .. "Ask me later" .. DarkmistsTheme.mutedTag .. "]",
       function() DMAlertWindow.Hide() end,
       "Dismiss this prompt without choosing a map", true)
-  end, { height = mapPromptHeight })
+  end, {
+    height = mapPromptHeight,
+    onClose = function()
+      Darkmists.RunPendingContrastCheck()
+    end,
+  })
 end
 
 -- Prompt the user before performing a UI reload (safe pathway)
@@ -430,6 +435,7 @@ function Darkmists.ShowUIIntroMessage(force)
   -- slight delay so login text finishes first
   tempTimer(force and 0 or 1.5, function()
     local isMinimal = Darkmists.GlobalSettings and Darkmists.GlobalSettings.minimalMode
+    local isFirstRun = Darkmists.GlobalSettings and not Darkmists.GlobalSettings.hasSeenUIIntroMessage
     local _, introCharHeight = calcFontSize(DMAlertWindow.getBodyFontSize())
     local introHeight = math.min(520, math.max(300,
       21 * (introCharHeight or 16) + DMAlertWindow.getChromeHeight()))
@@ -449,16 +455,26 @@ function Darkmists.ShowUIIntroMessage(force)
         cecho(win, "  " .. DarkmistsTheme.infoTag .. "• Player Status & Combat Panels\n")
         cecho(win, "  " .. DarkmistsTheme.infoTag .. "• Dockable & Customizable UI Windows\n\n")
 
-        if isMinimal then
+        if isFirstRun then
+          cecho(win, DarkmistsTheme.infoTag .. " Choose how Dark Mists Companion should start:\n")
+          cecho(win, DarkmistsTheme.mutedTag .. " Minimal UI keeps the main interface uncluttered. Full UI adds dockable panels and status windows.\n\n")
+          cechoLink(win, DarkmistsTheme.mutedTag .. "<u>[" .. DarkmistsTheme.infoTag .. "USE MINIMAL UI" .. DarkmistsTheme.mutedTag .. "]",
+            [[Darkmists.MarkUIIntroSeen(); DMAlertWindow.Hide()]],
+            "Keep the lightweight Minimal UI", true)
+          cecho(win, "\n")
+          cechoLink(win, DarkmistsTheme.mutedTag .. "<u>[" .. DarkmistsTheme.goodTag .. "ENABLE FULL UI NOW" .. DarkmistsTheme.mutedTag .. "]",
+            [[Darkmists.EnableUI(); Darkmists.MarkUIIntroSeen()]],
+            "Enable the full Dark Mists Companion UI", true)
+        elseif isMinimal then
           cecho(win, DarkmistsTheme.infoTag .. " Command: " .. DarkmistsTheme.goodTag .. "dmc ui" .. DarkmistsTheme.infoTag .. "\n")
           cecho(win, DarkmistsTheme.mutedTag .. " (Toggle command — turns UI " .. DarkmistsTheme.goodTag .. "ON" .. DarkmistsTheme.mutedTag .. " or " .. DarkmistsTheme.badTag .. "OFF" .. DarkmistsTheme.mutedTag .. ")\n\n")
           cechoLink(win, DarkmistsTheme.mutedTag .. "<u>[" .. DarkmistsTheme.goodTag .. "ENABLE FULL UI NOW" .. DarkmistsTheme.mutedTag .. "]",
-            [[Darkmists.GlobalSettings.hasSeenUIIntroMessage = true; Darkmists.SaveSettings(); Darkmists.EnableUI()]],
+            [[Darkmists.EnableUI(); Darkmists.MarkUIIntroSeen()]],
             "Enable the full Dark Mists Companion UI", true)
         else
           cecho(win, DarkmistsTheme.mutedTag .. " Click to switch back to Minimal UI.\n\n")
           cechoLink(win, DarkmistsTheme.mutedTag .. "<u>[" .. DarkmistsTheme.badTag .. "DISABLE FULL UI NOW" .. DarkmistsTheme.mutedTag .. "]",
-            [[Darkmists.GlobalSettings.hasSeenUIIntroMessage = true; Darkmists.SaveSettings(); Darkmists.DisableUI()]],
+            [[Darkmists.MarkUIIntroSeen(); Darkmists.DisableUI()]],
             "Switch to minimal UI", true)
         end
 
@@ -469,14 +485,44 @@ function Darkmists.ShowUIIntroMessage(force)
         cecho(win, "\n\n" .. DarkmistsTheme.mutedTag .. "In Mudlet, type:\n")
         cecho(win, "  " .. DarkmistsTheme.goodTag .. "dmc help" .. DarkmistsTheme.mutedTag .. "     for in-game help\n")
         cecho(win, "  " .. DarkmistsTheme.goodTag .. "dmc settings" .. DarkmistsTheme.mutedTag .. " for the settings panel\n")
-    end, { height = introHeight,
-      onClose = function()
-        Darkmists.GlobalSettings.hasSeenUIIntroMessage = true
-        Darkmists.SaveSettings()
-      end
-    })
+    end, { height = introHeight })
 
   end)
+end
+
+function Darkmists.MarkUIIntroSeen()
+  if not Darkmists.GlobalSettings then return end
+
+  if not Darkmists.GlobalSettings.hasSeenUIIntroMessage then
+    Darkmists.GlobalSettings.hasSeenUIIntroMessage = true
+    Darkmists._contrastCheckPending = true
+    Darkmists.SaveSettings()
+
+    if ButtonBar and ButtonBar.rebuild then
+      tempTimer(0, function() ButtonBar.rebuild() end)
+    end
+
+    if dmapi and dmapi.player and dmapi.player.online
+      and dmapi.core and dmapi.core.refresh then
+      tempTimer(0, function() dmapi.core.refresh() end)
+    end
+
+    local mapPromptMayAppear = not Darkmists.GlobalSettings.minimalMode
+      and not Darkmists.GlobalSettings.hasSeenMapPrompt
+      and dmapi and dmapi.player and dmapi.player.online
+    if not mapPromptMayAppear then
+      tempTimer(0, Darkmists.RunPendingContrastCheck)
+    end
+  end
+end
+
+function Darkmists.RunPendingContrastCheck()
+  if not Darkmists._contrastCheckPending then return end
+  Darkmists._contrastCheckPending = false
+
+  if DarkmistsTheme and DarkmistsTheme.checkBackgroundContrast then
+    DarkmistsTheme.checkBackgroundContrast()
+  end
 end
 
 function Darkmists.ApplyFirstRunUILayout()
@@ -705,6 +751,10 @@ end
 
 function Darkmists.CleanupUI(opts)
   opts = opts or {}
+  if DarkmistsStartup and DarkmistsStartup.invalidate then
+    DarkmistsStartup.invalidate()
+  end
+
   if opts.uninstall and StatusBar then
     StatusBar._skipSave = true
     Darkmists.ResetUILayoutCache()
@@ -738,7 +788,6 @@ end
 
 function Darkmists.LoadUIScripts()
   if Darkmists.UI_LOADED then return end
-  DMLogger.show()
   DMTabFrame.init()
   StatusBar.init()
   WhoWindow.init()
@@ -783,7 +832,6 @@ function Darkmists.EnableUI()
     end)
   end
 
-  tempTimer(1, function() DMLogger.hide() end)
   log("UI Enabled")
 end
 
@@ -802,11 +850,24 @@ function Darkmists.DisableUI()
 end
 
 function Darkmists.Init()
+  if DarkmistsStartup and type(DarkmistsStartup.start) == "function" then
+    return DarkmistsStartup.start()
+  end
+
+  return Darkmists.runStartup()
+end
+
+function Darkmists.runStartup()
+  if DarkmistsStartup and DarkmistsStartup.setPhase then
+    DarkmistsStartup.setPhase("dmapi")
+  end
   DMLogger.create()
-  DMLogger.show()
   log((DarkmistsTheme.mutedTag .. "Initializing Darkmists Core " .. DarkmistsTheme.infoTag .. "v%s<r>"):format(Darkmists.VERSION))
   dmapi.init()
   local hadSettings = Darkmists.LoadSettings()
+  if DarkmistsStartup and DarkmistsStartup.setPhase then
+    DarkmistsStartup.setPhase("settings-loaded")
+  end
   local savedLayoutVersion = Darkmists.GlobalSettings.layoutCacheVersion
   local versionChanged = hadSettings and savedLayoutVersion ~= Darkmists.LAYOUT_CACHE_VERSION
 
@@ -835,6 +896,10 @@ function Darkmists.Init()
     Darkmists.ResetUILayoutCache()
   end
 
+  if DarkmistsStartup and DarkmistsStartup.setPhase then
+    DarkmistsStartup.setPhase("settings-ready")
+  end
+
   if versionChanged then
     tempTimer(1, function()
       notify(DarkmistsTheme.warnTag .. "Package version change detected — performing safe reset")
@@ -848,10 +913,13 @@ function Darkmists.Init()
     tempTimer(0, Darkmists.UpdateMainWindowWrap)
   end
 
-  Darkmists.ShowUIIntroMessage()
-  -- checkBackgroundContrast is called here so it queues after the intro alert,
-  -- never inside buildTheme() which may be called multiple times
+  -- Keep first-run onboarding passive until the user clicks the Button Bar
+  -- callout; startup should not create a modal before DMC is explicitly started.
   DarkmistsTheme.checkBackgroundContrast()
+
+  if DarkmistsStartup and DarkmistsStartup.setPhase then
+    DarkmistsStartup.setPhase("modules")
+  end
 
   -- Utility Scripts that use DMAPI
   ItemTracker.init()
@@ -881,6 +949,9 @@ function Darkmists.Init()
   end
 
   -- UI Scripts
+  if DarkmistsStartup and DarkmistsStartup.setPhase then
+    DarkmistsStartup.setPhase("ui")
+  end
   if not Darkmists.GlobalSettings.minimalMode then
     Darkmists.LoadUIScripts()
     tempTimer(0.4, function()
@@ -894,7 +965,9 @@ function Darkmists.Init()
   -- Spam Prevention
   SpamPrevention.init()
 
-  tempTimer(1, function() DMLogger.hide() end)
+  if DarkmistsStartup and DarkmistsStartup.setPhase then
+    DarkmistsStartup.setPhase("ready")
+  end
   notify((DarkmistsTheme.mutedTag .. "Loaded Darkmists Core " .. DarkmistsTheme.infoTag .. "v%s<r>"):format(Darkmists.VERSION))
 end
 

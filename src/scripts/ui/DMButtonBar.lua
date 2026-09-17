@@ -21,6 +21,7 @@ ButtonBar.fontWidth = nil
 ButtonBar.fontHeight = nil
 ButtonBar.height = nil
 ButtonBar.timeLabel = nil
+ButtonBar.firstRunButton = nil
 
 -- Qt-style CSS used by Geyser `QLabel` instances. Keep separate
 -- styles for top-level buttons (compact, horizontal) and menu
@@ -43,6 +44,24 @@ ButtonBar.menuStyleSheet = [[
   }
   QLabel::hover { background-color: #1a1a1a; }
 ]]
+
+function ButtonBar:getAlertButtonStyleSheet()
+  local panel = (DarkmistsTheme and DarkmistsTheme.panel) or {}
+  local background = panel.buttonActiveBg or "#7a5cff"
+  local foreground = panel.buttonActiveFg or "#ffffff"
+  local border = panel.buttonActiveBorder or "#b9a6ff"
+  local hover = panel.buttonHoverBg or background
+
+  return ([[
+  QLabel {
+    background-color: %s;
+    color: %s;
+    border-right: 1px solid %s;
+    font-weight: bold;
+  }
+  QLabel:hover { background-color: %s; }
+]]):format(background, foreground, border, hover)
+end
 
 -- Resolve font sizing and compute measured font metrics used by layout.
 -- Falls back to a sensible default, and keeps calculations idempotent
@@ -74,6 +93,7 @@ function ButtonBar.destroy()
   ButtonBar.container = nil
   ButtonBar.nextX = nil
   ButtonBar.timeLabel = nil
+  ButtonBar.firstRunButton = nil
 end
 
 --================================--
@@ -207,7 +227,7 @@ end
 -- Create a compact top-level clickable button.
 -- Buttons are simple `Geyser.Label` elements; `ButtonBar.nextX` is
 -- incremented to place subsequent controls to the right.
-function ButtonBar:addButton(text, action)
+function ButtonBar:addButton(text, action, styleSheet)
   if not ButtonBar.container then return end
 
   local btn = Geyser.Label:new({
@@ -220,7 +240,11 @@ function ButtonBar:addButton(text, action)
 
   btn:setFontSize(ButtonBar.fontSize)
 
-  ButtonBar:_style(btn, false)
+  if styleSheet then
+    btn:setStyleSheet(styleSheet)
+  else
+    ButtonBar:_style(btn, false)
+  end
 
   btn:setClickCallback(function()
     tempTimer(0, function()
@@ -229,6 +253,7 @@ function ButtonBar:addButton(text, action)
   end)
 
   ButtonBar.nextX = ButtonBar.nextX + ButtonBar:_buttonWidth()
+  return btn
 end
 
 --================================--
@@ -483,6 +508,15 @@ function ButtonBar.build()
 
   if not ButtonBar.container then
     return false
+  end
+
+  if Darkmists.GlobalSettings and not Darkmists.GlobalSettings.hasSeenUIIntroMessage then
+    ButtonBar.firstRunButton = ButtonBar:addButton(
+      "SET UP DMC",
+      function() Darkmists.ShowUIIntroMessage(true) end,
+      ButtonBar:getAlertButtonStyleSheet()
+    )
+    ButtonBar.firstRunButton:setToolTip("Choose Minimal UI or Full UI for Dark Mists Companion.")
   end
 
   ButtonBar:addButton("🐲 Website", function() Darkmists.OpenWebsite() end)

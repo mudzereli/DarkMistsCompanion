@@ -394,6 +394,22 @@ local function setGlobalValue(key, value)
   return true
 end
 
+local function setFullUI(value)
+  if value then
+    if Darkmists and Darkmists.EnableUI then
+      Darkmists.EnableUI()
+      return true
+    end
+    return false, "Full UI controls are unavailable."
+  end
+
+  if Darkmists and Darkmists.DisableUI then
+    Darkmists.DisableUI()
+    return true
+  end
+  return false, "Minimal UI controls are unavailable."
+end
+
 local function getBorderPercent(region)
   local borders = Darkmists.GlobalSettings.borders or {}
   if Darkmists.GetBorderPercentages then
@@ -579,8 +595,8 @@ local function registerAppearance()
       label = "Full UI", type = "boolean", default = false,
       get = function() return not globalValue("minimalMode", true) end,
       validate = validateBoolean,
-      set = function(value) Darkmists.GlobalSettings.minimalMode = not value; return true end,
-      save = saveGlobalSettings, reloadRequired = true,
+      set = setFullUI,
+      save = saveGlobalSettings,
     },
     {
       key = "appearance.fontSize", page = "Appearance", group = "Appearance",
