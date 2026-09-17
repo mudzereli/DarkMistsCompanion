@@ -401,6 +401,9 @@ local SETTINGS_MENU = {
   {label = "🛠 Settings Panel", action = function()
     if DMSettingsPanel and DMSettingsPanel.show then DMSettingsPanel.show() end
   end},
+  -- Setup is an action that writes persisted state, so it lives here rather
+  -- than under Help, which is kept read-only (help topics and the Wiki).
+  {label = "🚀 Setup Wizard", action = function() Darkmists.ShowUIIntroMessage(true) end},
   {label = "🔄 Reload UI", action = function() Darkmists.PromptSafeReload() end},
   --{label = "📊 Toggle UI", action = function() Darkmists.ShowUIIntroMessage(true) end},
 
@@ -483,7 +486,6 @@ local SETTINGS_MENU = {
 -- They call `expandAlias("dmc help <topic>")` to render help in-client.
 local HELP_MENU = {
   {label = "🌐 Dark Mists Wiki", action = function() Darkmists.OpenWiki() end},
-  {label = "🚀 Getting Started", action = function() Darkmists.ShowUIIntroMessage(true) end},
   {label = "❔ General", children = {
     {label = "📘 Main Help", action = function() expandAlias("dmc help") end},
     {label = "🌞 UI Mode", action = function() expandAlias("dmc help ui") end},

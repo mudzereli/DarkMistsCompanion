@@ -44,7 +44,7 @@
 
 ### New User Enhancements
 **First-Run**: new installs get a pulsing `SET UP DMC` button, and DMC does nothing - no panels, no commands - until you press it, then walks you through UI mode, the bundled map, and a theme check in order. This prevents spamming a new user immediately upon login with popups and requests.
-**First-Run**: the intro now links to the Wiki and shows simple directions for `dmc help` and `dmc settings`. The Wiki opens without closing the intro, and `Help -> Getting Started` reopens it later.
+**First-Run**: the intro now links to the Wiki and shows simple directions for `dmc help` and `dmc settings`. The Wiki opens without closing the intro, and `Settings -> Setup Wizard` reopens it later.
 **Button Bar**: the direct top-level `Help -> Dark Mists Wiki` action now opens the Dark Mists Mudlet documentation at `https://wiki.darkmists.org/en/mudlet`.
 
 ### Other Enhancements
