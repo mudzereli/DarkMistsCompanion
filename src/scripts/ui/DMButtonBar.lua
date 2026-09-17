@@ -45,22 +45,64 @@ ButtonBar.menuStyleSheet = [[
   QLabel::hover { background-color: #1a1a1a; }
 ]]
 
-function ButtonBar:getAlertButtonStyleSheet()
-  local panel = (DarkmistsTheme and DarkmistsTheme.panel) or {}
-  local background = panel.buttonActiveBg or "#7a5cff"
-  local foreground = panel.buttonActiveFg or "#ffffff"
-  local border = panel.buttonActiveBorder or "#b9a6ff"
-  local hover = panel.buttonHoverBg or background
+-- -----------------------------------------------------------------------------
+-- First-run setup call to action
+-- -----------------------------------------------------------------------------
+-- This is the only control that has to be noticed before the player has chosen
+-- anything, so its colours are hardcoded rather than theme-driven: the theme may
+-- be wrong for the terminal (which is exactly what the contrast notice reports)
+-- and a themed button could then be unreadable. Both frames are purple shades
+-- with white text, so the pulse reads as a gentle breathing highlight rather
+-- than as an alert. Contrast/speed are the two knobs if it needs tuning.
+ButtonBar.SETUP_PULSE_KEY     = "ButtonBar.SetupPulse"
+ButtonBar.SETUP_PULSE_SECONDS = 0.75
+ButtonBar.SETUP_TEXT          = "SET UP DMC"
 
-  return ([[
-  QLabel {
-    background-color: %s;
-    color: %s;
-    border-right: 1px solid %s;
-    font-weight: bold;
-  }
-  QLabel:hover { background-color: %s; }
-]]):format(background, foreground, border, hover)
+local SETUP_FRAME_A = [[
+QLabel {
+  background-color: #7a5cff;
+  color: #ffffff;
+  border-right: 1px solid #b9a6ff;
+  border-bottom: 2px solid #b9a6ff;
+  font-weight: bold;
+}
+]]
+
+local SETUP_FRAME_B = [[
+QLabel {
+  background-color: #452a99;
+  color: #ffffff;
+  border-right: 1px solid #7a5cff;
+  border-bottom: 2px solid #7a5cff;
+  font-weight: bold;
+}
+]]
+
+--- Alternate the setup button between the two frames until it goes away.
+--- destroy() stops this, and completing setup rebuilds the ButtonBar, so the
+--- pulse ends on its own once the player is set up.
+function ButtonBar.startSetupPulse()
+  if not ButtonBar.firstRunButton then return end
+
+  ButtonBar._setupPulseFrameB = false
+  ButtonBar.firstRunButton:setStyleSheet(SETUP_FRAME_A)
+
+  DarkmistsTimer.add(ButtonBar.SETUP_PULSE_KEY, ButtonBar.SETUP_PULSE_SECONDS, function()
+    -- Safety net if the button vanished without destroy() running.
+    if not ButtonBar.firstRunButton then
+      ButtonBar.stopSetupPulse()
+      return
+    end
+
+    ButtonBar._setupPulseFrameB = not ButtonBar._setupPulseFrameB
+    ButtonBar.firstRunButton:setStyleSheet(
+      ButtonBar._setupPulseFrameB and SETUP_FRAME_B or SETUP_FRAME_A)
+  end, true)
+end
+
+function ButtonBar.stopSetupPulse()
+  DarkmistsTimer.remove(ButtonBar.SETUP_PULSE_KEY)
+  ButtonBar._setupPulseFrameB = nil
 end
 
 -- Resolve font sizing and compute measured font metrics used by layout.
@@ -94,6 +136,9 @@ function ButtonBar.destroy()
   ButtonBar.nextX = nil
   ButtonBar.timeLabel = nil
   ButtonBar.firstRunButton = nil
+  -- Stop the pulse before any rebuild, so a stale timer cannot restyle a
+  -- button that no longer exists.
+  ButtonBar.stopSetupPulse()
 end
 
 --================================--
@@ -511,12 +556,15 @@ function ButtonBar.build()
   end
 
   if Darkmists.GlobalSettings and not Darkmists.GlobalSettings.hasSeenUIIntroMessage then
+    -- startSetupPulse applies the first frame and animates from there.
     ButtonBar.firstRunButton = ButtonBar:addButton(
-      "SET UP DMC",
+      ButtonBar.SETUP_TEXT,
       function() DarkmistsSetup.begin() end,
-      ButtonBar:getAlertButtonStyleSheet()
+      SETUP_FRAME_A
     )
-    ButtonBar.firstRunButton:setToolTip("Choose Minimal UI or Full UI for Dark Mists Companion.")
+    ButtonBar.firstRunButton:setToolTip(
+      "Finish setting up Dark Mists Companion: choose Minimal UI or Full UI.")
+    ButtonBar.startSetupPulse()
   end
 
   ButtonBar:addButton("🐲 Website", function() Darkmists.OpenWebsite() end)

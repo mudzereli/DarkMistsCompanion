@@ -32,7 +32,7 @@
 **DMAPI**: API reference page now documents the referenceable state objects - `dmapi.player`, `dmapi.world`, `dmapi.core`, and `dmapi.settings` - with every field and its meaning, so you can see what's available to read without digging through the source.
 **Item Tracker**: item names now link on give lines in either direction.
 
-**DMC Patch Notes: 1.6.3**
+**DMC Patch Notes: 1.7.0**
 
 ### DMSounds Now Included (Default OFF)
 **DMSounds**: area ambience is now included in the main package as an optional utility. It is **disabled** by default, uses the bundled TableTopAudio catalogue and area map, and downloads tracks on demand. To enable it, use the Button Bar: `Modules > DMSounds > Enable` __*Disable any standalone `DMSounds.lua` or `DMSounds_packaged.lua` script before enabling the package feature.*__
@@ -43,14 +43,13 @@
 **CMudWrapper**: available DMAPI event names and payload fields can be browsed from `Settings -> Advanced -> Dev Tools -> DMAPI Extension`.
 
 ### New User Enhancements
+**First-Run**: new installs get a pulsing `SET UP DMC` button, and DMC does nothing - no panels, no commands - until you press it, then walks you through UI mode, the bundled map, and a theme check in order. This prevents spamming a new user immediately upon login with popups and requests.
+**First-Run**: the intro now links to the Wiki and shows simple directions for `dmc help` and `dmc settings`. The Wiki opens without closing the intro, and `Help -> Getting Started` reopens it later.
 **Button Bar**: the direct top-level `Help -> Dark Mists Wiki` action now opens the Dark Mists Mudlet documentation at `https://wiki.darkmists.org/en/mudlet`.
-**First-Run Onboarding**: the intro now links to the Wiki and shows simple directions for `dmc help` and `dmc settings`. The Wiki opens without closing the intro, and `Help -> Getting Started` reopens it later.
-**Map Prompt**: choosing the bundled map now offers `Load bundled map`, `Keep current map`, or `Ask me later`. The prompt explains the map replacement and navigation impact, and only Load or Keep records the decision.
 
 ### Other Enhancements
 **Mudlet 5.0 compatibility**: at startup, DMC detects the optional Mudlet built-in `baseui` alias and hides BaseUI when present, preventing Mudlet 5.0's BaseUI from interfering with the DarkMistsCompanion interface. *Let me know if you have any problems with the  base ui interfering with DarkMists* 
 **Varius settings enhancements**: the Settings Panel now uses a vertical navigation rail, has a clearer status and action layout, splits the former Utilities group into dedicated Spam Prevention, Stat Roller, Make Armor, and DMSounds pages, and adds a Skill Ups setting for choosing whether clicked notifications open history in the main or alert window.
-
 
 **Future Versions**
 - disconnect / reconnect may lead to a path where default GUI is shown - creating confusion
