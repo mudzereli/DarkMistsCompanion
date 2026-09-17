@@ -62,9 +62,8 @@ function SkillUps.display(win)
 
   echo("\n%s" .. SEPARATOR, DarkmistsTheme.cyanTag)
   echo("\n%sLast %s%d %sSkill Improvements:", DarkmistsTheme.textTag, DarkmistsTheme.highlightTag, #SkillUps.history, DarkmistsTheme.textTag)
-  if win then
-    cechoLink(win, "    <red><u>[Reset]</u><reset>", [[SkillUps.reset(); DMAlertWindow.Hide()]], "Reset skill improvement history", true)
-  end
+  cechoLink(win or "main", "   " .. DarkmistsTheme.badTag .. "<u>[Reset]</u><reset>", [[SkillUps.reset(); DMAlertWindow.Hide()]], "Reset skill improvement history", true)
+  cechoLink(win or "main", " " .. DarkmistsTheme.cyanTag .. "<u>[Refresh]</u><reset>", [[DMAlertWindow.Hide(); SkillUps.showHistory()]], "Refresh skill improvement history", true)
   echo("\n%s" .. SEPARATOR .. "\n", DarkmistsTheme.cyanTag)
 
   for i, skillup in ipairs(SkillUps.history) do
