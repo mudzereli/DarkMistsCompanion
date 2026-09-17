@@ -2323,7 +2323,11 @@ function dmapi.RegisterEvents()
         return
       end
 
-      dmapi.core.refresh()
+      if Darkmists and Darkmists.reconcileOnlineState then
+        Darkmists.reconcileOnlineState("world-enter")
+      else
+        dmapi.core.refresh()
+      end
     end,
     false
   )

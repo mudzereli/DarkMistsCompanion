@@ -223,6 +223,10 @@ function Darkmists.LoadMapDat()
 end
 
 function Darkmists.PromptLoadMap()
+  if DarkmistsStartup and DarkmistsStartup.cancelMapPromptSchedule then
+    DarkmistsStartup.cancelMapPromptSchedule()
+  end
+
   local function rememberMapChoice()
     Darkmists.GlobalSettings.hasSeenMapPrompt = true
     Darkmists.SaveSettings()
@@ -502,8 +506,10 @@ function Darkmists.MarkUIIntroSeen()
       tempTimer(0, function() ButtonBar.rebuild() end)
     end
 
-    if dmapi and dmapi.player and dmapi.player.online
-      and dmapi.core and dmapi.core.refresh then
+    if Darkmists.reconcileOnlineState then
+      Darkmists.reconcileOnlineState("setup-complete")
+    elseif dmapi and dmapi.player and dmapi.player.online
+        and dmapi.core and dmapi.core.refresh then
       tempTimer(0, function() dmapi.core.refresh() end)
     end
 
@@ -514,6 +520,20 @@ function Darkmists.MarkUIIntroSeen()
       tempTimer(0, Darkmists.RunPendingContrastCheck)
     end
   end
+end
+
+function Darkmists.reconcileOnlineState(reason)
+  if DarkmistsStartup and DarkmistsStartup.reconcileOnlineState then
+    return DarkmistsStartup.reconcileOnlineState(reason)
+  end
+
+  if (reason == "world-enter" or reason == "setup-complete")
+      and dmapi and dmapi.player and dmapi.player.online
+      and dmapi.core and dmapi.core.refresh then
+    tempTimer(0, function() dmapi.core.refresh() end)
+    return true
+  end
+  return false
 end
 
 function Darkmists.RunPendingContrastCheck()
@@ -714,20 +734,15 @@ function Darkmists.RegisterEvents()
     Darkmists._pendingMapPrompt = true
   end)
 
+  DarkmistsEvents.add("Darkmists.online.reset", "dmapi.world.exit", function()
+    if DarkmistsStartup and DarkmistsStartup.resetOnlineSession then
+      DarkmistsStartup.resetOnlineSession()
+    end
+  end)
+
 -- After vitals update (score processed), if a pending prompt exists show the map prompt
   DarkmistsEvents.add("Darkmists.map.prompt.aftervitals", "dmapi.player.vitals.updated", function()
-    if Darkmists._pendingMapPrompt then
-      -- only show the packaged-map prompt when the full UI is loaded and enabled
-      if Darkmists.UI_LOADED and not Darkmists.GlobalSettings.minimalMode and Darkmists.GlobalSettings.hasSeenUIIntroMessage then
-        Darkmists._pendingMapPrompt = false
-        if not Darkmists.GlobalSettings.hasSeenMapPrompt then
-          tempTimer(2, Darkmists.PromptLoadMap)
-        end
-      else
-        -- keep pending; EnableUI() or later vitals update will handle it
-        Darkmists._pendingMapPrompt = true
-      end
-    end
+    Darkmists.reconcileOnlineState("vitals")
   end)
 
   DarkmistsEvents.add("DarkmistsPackageUninstall","sysUninstallPackage",function (_,pkgName)
@@ -824,6 +839,7 @@ function Darkmists.EnableUI()
   -- to a simple delayed prompt so manual enables still get prompted.
   if dmapi then
     Darkmists._pendingMapPrompt = true
+    Darkmists.reconcileOnlineState("ui-enabled")
   else
     tempTimer(0.8, function()
       if not Darkmists.GlobalSettings.hasSeenMapPrompt then
@@ -863,41 +879,31 @@ function Darkmists.runStartup()
   end
   DMLogger.create()
   log((DarkmistsTheme.mutedTag .. "Initializing Darkmists Core " .. DarkmistsTheme.infoTag .. "v%s<r>"):format(Darkmists.VERSION))
-  dmapi.init()
-  local hadSettings = Darkmists.LoadSettings()
-  if DarkmistsStartup and DarkmistsStartup.setPhase then
-    DarkmistsStartup.setPhase("settings-loaded")
-  end
-  local savedLayoutVersion = Darkmists.GlobalSettings.layoutCacheVersion
-  local versionChanged = hadSettings and savedLayoutVersion ~= Darkmists.LAYOUT_CACHE_VERSION
+  local versionChanged
+  if DarkmistsStartup and type(DarkmistsStartup.prepare) == "function" then
+    versionChanged = DarkmistsStartup.prepare(saveFilePath)
+  else
+    -- Keep a self-contained fallback for partial package loads.
+    dmapi.init()
+    local hadSettings = Darkmists.LoadSettings()
+    local savedLayoutVersion = Darkmists.GlobalSettings.layoutCacheVersion
+    versionChanged = hadSettings and savedLayoutVersion ~= Darkmists.LAYOUT_CACHE_VERSION
 
-  -- Deferred theme toggle: the Light/Dark settings menu only sets a pending
-  -- flag. Apply it to lightMode now (on this reload/startup build) so nothing
-  -- re-themes before the user confirms the reload.
-  if Darkmists.GlobalSettings.pendingThemeMode ~= nil then
-    Darkmists.GlobalSettings.lightMode = Darkmists.GlobalSettings.pendingThemeMode
-    Darkmists.GlobalSettings.pendingThemeMode = nil
-    Darkmists.SaveSettings()
-  end
+    if Darkmists.GlobalSettings.pendingThemeMode ~= nil then
+      Darkmists.GlobalSettings.lightMode = Darkmists.GlobalSettings.pendingThemeMode
+      Darkmists.GlobalSettings.pendingThemeMode = nil
+      Darkmists.SaveSettings()
+    end
 
-  DarkmistsTheme.buildTheme()
-  Darkmists.RegisterEvents()
-  -- Version-based settings policy:
-  -- If a saved settings file existed and its stored layout version matches the
-  -- current package version, keep the user's settings. Otherwise (no saved
-  -- settings, or a mismatched version), remove the saved file, apply defaults
-  -- and persist defaults so the package starts clean for the new version.
-  if not (hadSettings and savedLayoutVersion == Darkmists.LAYOUT_CACHE_VERSION) then
-    -- version mismatch or no settings: wipe, apply defaults, clear layout cache
-    if io.exists(saveFilePath) then pcall(os.remove, saveFilePath) end
-    Darkmists.ApplyDefaultSettings()
-    Darkmists.GlobalSettings.layoutCacheVersion = Darkmists.LAYOUT_CACHE_VERSION
-    Darkmists.SaveSettings()
-    Darkmists.ResetUILayoutCache()
-  end
-
-  if DarkmistsStartup and DarkmistsStartup.setPhase then
-    DarkmistsStartup.setPhase("settings-ready")
+    DarkmistsTheme.buildTheme()
+    Darkmists.RegisterEvents()
+    if not (hadSettings and savedLayoutVersion == Darkmists.LAYOUT_CACHE_VERSION) then
+      if io.exists(saveFilePath) then pcall(os.remove, saveFilePath) end
+      Darkmists.ApplyDefaultSettings()
+      Darkmists.GlobalSettings.layoutCacheVersion = Darkmists.LAYOUT_CACHE_VERSION
+      Darkmists.SaveSettings()
+      Darkmists.ResetUILayoutCache()
+    end
   end
 
   if versionChanged then
@@ -907,68 +913,71 @@ function Darkmists.runStartup()
     end)
   end
 
-  if Darkmists.GlobalSettings.minimalMode then
-    setBorderTop(0); setBorderBottom(0); setBorderLeft(0); setBorderRight(0)
+  if DarkmistsStartup and type(DarkmistsStartup.configureRuntime) == "function" then
+    DarkmistsStartup.configureRuntime()
   else
-    tempTimer(0, Darkmists.UpdateMainWindowWrap)
+    -- Keep a self-contained fallback for partial package loads.
+    if Darkmists.GlobalSettings.minimalMode then
+      setBorderTop(0); setBorderBottom(0); setBorderLeft(0); setBorderRight(0)
+    else
+      tempTimer(0, Darkmists.UpdateMainWindowWrap)
+    end
+    DarkmistsTheme.checkBackgroundContrast()
   end
 
-  -- Keep first-run onboarding passive until the user clicks the Button Bar
-  -- callout; startup should not create a modal before DMC is explicitly started.
-  DarkmistsTheme.checkBackgroundContrast()
-
-  if DarkmistsStartup and DarkmistsStartup.setPhase then
-    DarkmistsStartup.setPhase("modules")
-  end
-
-  -- Utility Scripts that use DMAPI
-  ItemTracker.init()
-  StatRoller.init()
-  MapDestinations.load()
-  EnchanterAssist.init()
-  SkillUps.init()
-  DMClickables.init()
-  ButtonBar.init()
-  SessionTime.init()
-  MakeArmor.init()
-  DamageMessages.init()
-  DMSounds.init()
-
-  -- CMud compatibility wrapper: persistent aliases/triggers/vars
-  if CMudWrapper and CMudWrapper.load then
-    pcall(CMudWrapper.load)
-  end
-
-  if type(exists) == "function"
-      and exists("baseui", "alias") == 1
-      and type(expandAlias) == "function" then
-    log("BaseUI alias found; hiding BaseUI")
-    expandAlias("baseui hide")
+  if DarkmistsStartup and type(DarkmistsStartup.initializeModules) == "function" then
+    DarkmistsStartup.initializeModules()
   else
-    log("BaseUI alias not present; skipping BaseUI hide")
+    -- Keep a self-contained fallback for partial package loads.
+    ItemTracker.init()
+    StatRoller.init()
+    MapDestinations.load()
+    EnchanterAssist.init()
+    SkillUps.init()
+    DMClickables.init()
+    ButtonBar.init()
+    SessionTime.init()
+    MakeArmor.init()
+    DamageMessages.init()
+    DMSounds.init()
+
+    if CMudWrapper and CMudWrapper.load then
+      pcall(CMudWrapper.load)
+    end
+
+    if type(exists) == "function"
+        and exists("baseui", "alias") == 1
+        and type(expandAlias) == "function" then
+      log("BaseUI alias found; hiding BaseUI")
+      expandAlias("baseui hide")
+    else
+      log("BaseUI alias not present; skipping BaseUI hide")
+    end
   end
 
-  -- UI Scripts
-  if DarkmistsStartup and DarkmistsStartup.setPhase then
-    DarkmistsStartup.setPhase("ui")
-  end
-  if not Darkmists.GlobalSettings.minimalMode then
-    Darkmists.LoadUIScripts()
-    tempTimer(0.4, function()
-      Darkmists.RefreshUILayout({ syncStatusBar = true })
-    end)
+  if DarkmistsStartup and type(DarkmistsStartup.initializeUI) == "function" then
+    DarkmistsStartup.initializeUI()
+  else
+    -- Keep a self-contained fallback for partial package loads.
+    if DarkmistsStartup and DarkmistsStartup.setPhase then
+      DarkmistsStartup.setPhase("ui")
+    end
+    if not Darkmists.GlobalSettings.minimalMode then
+      Darkmists.LoadUIScripts()
+      tempTimer(0.4, function()
+        Darkmists.RefreshUILayout({ syncStatusBar = true })
+      end)
+    end
   end
 
-  -- Meta Help / Command
-  DarkMistsMeta.init()
-
-  -- Spam Prevention
-  SpamPrevention.init()
-
-  if DarkmistsStartup and DarkmistsStartup.setPhase then
-    DarkmistsStartup.setPhase("ready")
+  if DarkmistsStartup and type(DarkmistsStartup.finalize) == "function" then
+    DarkmistsStartup.finalize(notify)
+  else
+    -- Keep a self-contained fallback for partial package loads.
+    DarkMistsMeta.init()
+    SpamPrevention.init()
+    notify((DarkmistsTheme.mutedTag .. "Loaded Darkmists Core " .. DarkmistsTheme.infoTag .. "v%s<r>"):format(Darkmists.VERSION))
   end
-  notify((DarkmistsTheme.mutedTag .. "Loaded Darkmists Core " .. DarkmistsTheme.infoTag .. "v%s<r>"):format(Darkmists.VERSION))
 end
 
 -- =============================================================================
