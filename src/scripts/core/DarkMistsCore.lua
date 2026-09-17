@@ -9,27 +9,22 @@
 --    • Runs top-level code immediately: sets constants, Darkmists.DefaultSettings
 --    • Queues tempTimer(1, Darkmists.Init)  — everything else is deferred
 --
--- 2. Darkmists.Init() fires at t=1s
+-- 2. Darkmists.Init() fires at t=1s and delegates to DarkmistsStartup
 --    • DMLogger.create — hidden logging infrastructure
---    • dmapi.init()         — registers DMAPI's event handlers, aliases, triggers
---    • Darkmists.LoadSettings() — reads saved file; if missing, hadSettings=false
---    • DarkmistsTheme.buildTheme()
---    • Darkmists.RegisterEvents() — registers Darkmists' own event handlers
+--    • prepare() — initializes DMAPI, loads settings, builds the theme, and
+--      registers core events
 --       - sysWindowResizeEvent
 --       - dmapi.world.enter → sets _pendingMapPrompt = true
 --       - dmapi.player.vitals.updated → may call PromptLoadMap()
 --       - sysUninstallPackage
---    • Version check:
+--    • prepare() version check:
 --       - If saved version matches LAYOUT_CACHE_VERSION → keep settings
 --       - If mismatch or no file → delete save, apply defaults, reset UI cache,
 --         and schedule tempTimer(1, resetProfile)
---    • Window borders applied (minimal mode: zero; full mode: from settings)
---    • First-run onboarding is opened explicitly from the Button Bar
---    • Utility module inits (ItemTracker, StatRoller, etc.) — these register
---      their own DMAPI event handlers
---    • If not minimalMode → Darkmists.LoadUIScripts() → DMTabFrame, StatusBar,
---      WhoWindow, ChatHistory, etc.
---    • DarkMistsMeta.init() + SpamPrevention.init()
+--    • configureRuntime() — applies borders and theme contrast checks
+--    • initializeModules() — starts utility modules and optional BaseUI hiding
+--    • initializeUI() — loads the full UI when not in minimal mode
+--    • finalize() — initializes metadata and reconciles an already-online session
 --
 -- 3. Login sequence (user connects, auto-login)
 --    • MUD sends welcome message → dmapi.world.enter fired
@@ -50,9 +45,6 @@
 --
 -- • dmapi.init() MUST run before Darkmists.RegisterEvents() because Darkmists'
 --   handlers listen to dmapi.* events. Order is correct currently.
--- • If auto-login completes BETWEEN dmapi.init() and Darkmists.RegisterEvents(),
---   dmapi.world.enter fires before _pendingMapPrompt handler is registered → map
---   prompt is silently missed.
 -- • Utility modules (ItemTracker, StatRoller, etc.) init AFTER events registered,
 --   so their first on_line call may miss the first few lines of output.
 -- • ShowUIIntroMessage opens only after an explicit Button Bar action.
@@ -182,7 +174,9 @@ end
 
 -- Shorthand — avoids repeating "Darkmists Core" prefix on every log line
 local TAG = "Darkmists Core"
-local function tag()  return (DarkmistsTheme and DarkmistsTheme.purpleTag or "") .. TAG end
+-- DarkmistsTheme loads in managers/ (before core/), and buildNeutralTheme() runs
+-- at file load, so the tag fields always exist by the time this is called.
+local function tag()  return DarkmistsTheme.purpleTag .. TAG end
 local function log(msg)   Darkmists.Log(tag(), msg) end
 local function notify(msg) DMLogger.notify(tag(), msg) end
 
@@ -191,18 +185,11 @@ local function notify(msg) DMLogger.notify(tag(), msg) end
 -- =============================================================================
 
 function Darkmists.OnNewLine()
-  -- Stat parsing (HP/mana/etc)
-  if StatRoller and StatRoller.on_line then
-    StatRoller.on_line(line)
-  end
-
-  if ItemTracker and ItemTracker.renderLineWithLinks then
-    ItemTracker.renderLineWithLinks(line)
-  end
-
-  if dmapi and dmapi.core and dmapi.core.LineTrigger then
-    dmapi.core.LineTrigger(line)
-  end
+  -- StatRoller, ItemTracker, and dmapi each define these handlers
+  -- unconditionally, and all load before any MUD line can arrive.
+  StatRoller.on_line(line)
+  ItemTracker.renderLineWithLinks(line)
+  dmapi.core.LineTrigger(line)
 end
 
 -- =============================================================================
@@ -223,9 +210,7 @@ function Darkmists.LoadMapDat()
 end
 
 function Darkmists.PromptLoadMap()
-  if DarkmistsStartup and DarkmistsStartup.cancelMapPromptSchedule then
-    DarkmistsStartup.cancelMapPromptSchedule()
-  end
+  DarkmistsStartup.cancelMapPromptSchedule()
 
   local function rememberMapChoice()
     Darkmists.GlobalSettings.hasSeenMapPrompt = true
@@ -309,9 +294,7 @@ function Darkmists.cancelPendingTheme()
   if Darkmists.GlobalSettings.pendingThemeMode ~= nil then
     Darkmists.GlobalSettings.pendingThemeMode = nil
     Darkmists.SaveSettings()
-    if DMLogger and DMLogger.notify then
-      DMLogger.notify("Settings", "Theme change cancelled")
-    end
+    DMLogger.notify("Settings", "Theme change cancelled")
   end
 end
 
@@ -426,9 +409,7 @@ function Darkmists.ResetUILayoutCache()
 
   -- Rebuild theme and refresh layout so UI colors/styles are applied after
   -- resetting the layout cache. Use pcall to avoid hard failures during reset.
-  if DarkmistsTheme and DarkmistsTheme.buildTheme then
-    pcall(DarkmistsTheme.buildTheme)
-  end
+  pcall(DarkmistsTheme.buildTheme)
   pcall(Darkmists.RefreshUILayout, { syncStatusBar = true })
 end
 
@@ -438,8 +419,8 @@ function Darkmists.ShowUIIntroMessage(force)
   if not force and not Darkmists.GlobalSettings.minimalMode then return end
   -- slight delay so login text finishes first
   tempTimer(force and 0 or 1.5, function()
-    local isMinimal = Darkmists.GlobalSettings and Darkmists.GlobalSettings.minimalMode
-    local isFirstRun = Darkmists.GlobalSettings and not Darkmists.GlobalSettings.hasSeenUIIntroMessage
+    local isMinimal = Darkmists.GlobalSettings.minimalMode
+    local isFirstRun = not Darkmists.GlobalSettings.hasSeenUIIntroMessage
     local _, introCharHeight = calcFontSize(DMAlertWindow.getBodyFontSize())
     local introHeight = math.min(520, math.max(300,
       21 * (introCharHeight or 16) + DMAlertWindow.getChromeHeight()))
@@ -495,8 +476,6 @@ function Darkmists.ShowUIIntroMessage(force)
 end
 
 function Darkmists.MarkUIIntroSeen()
-  if not Darkmists.GlobalSettings then return end
-
   if not Darkmists.GlobalSettings.hasSeenUIIntroMessage then
     Darkmists.GlobalSettings.hasSeenUIIntroMessage = true
     Darkmists._contrastCheckPending = true
@@ -506,12 +485,7 @@ function Darkmists.MarkUIIntroSeen()
       tempTimer(0, function() ButtonBar.rebuild() end)
     end
 
-    if Darkmists.reconcileOnlineState then
-      Darkmists.reconcileOnlineState("setup-complete")
-    elseif dmapi and dmapi.player and dmapi.player.online
-        and dmapi.core and dmapi.core.refresh then
-      tempTimer(0, function() dmapi.core.refresh() end)
-    end
+    Darkmists.reconcileOnlineState("setup-complete")
 
     local mapPromptMayAppear = not Darkmists.GlobalSettings.minimalMode
       and not Darkmists.GlobalSettings.hasSeenMapPrompt
@@ -523,26 +497,14 @@ function Darkmists.MarkUIIntroSeen()
 end
 
 function Darkmists.reconcileOnlineState(reason)
-  if DarkmistsStartup and DarkmistsStartup.reconcileOnlineState then
-    return DarkmistsStartup.reconcileOnlineState(reason)
-  end
-
-  if (reason == "world-enter" or reason == "setup-complete")
-      and dmapi and dmapi.player and dmapi.player.online
-      and dmapi.core and dmapi.core.refresh then
-    tempTimer(0, function() dmapi.core.refresh() end)
-    return true
-  end
-  return false
+  return DarkmistsStartup.reconcileOnlineState(reason)
 end
 
 function Darkmists.RunPendingContrastCheck()
   if not Darkmists._contrastCheckPending then return end
   Darkmists._contrastCheckPending = false
 
-  if DarkmistsTheme and DarkmistsTheme.checkBackgroundContrast then
-    DarkmistsTheme.checkBackgroundContrast()
-  end
+  DarkmistsTheme.checkBackgroundContrast()
 end
 
 function Darkmists.ApplyFirstRunUILayout()
@@ -619,16 +581,6 @@ function Darkmists.LoadSettings()
     local settings = {}
 ---@diagnostic disable-next-line: undefined-field
     table.load(saveFilePath, settings)
-    -- Migrate older ShowDMG names once, without overwriting newer values.
-    if settings.damageMessageEnabled == nil and settings.showdmgEnabled ~= nil then
-      settings.damageMessageEnabled = settings.showdmgEnabled
-    end
-    if settings.damageMessageMode == nil and settings.showdmgMode ~= nil then
-      settings.damageMessageMode = settings.showdmgMode
-    end
-    if settings.damageMessageColor == nil and settings.showdmgColor ~= nil then
-      settings.damageMessageColor = settings.showdmgColor
-    end
     -- Fill missing font settings from Mudlet without overwriting user values.
     settings.fontName = settings.fontName or Darkmists.DefaultSettings.fontName
     settings.fontSize = settings.fontSize or Darkmists.DefaultSettings.fontSize
@@ -735,9 +687,7 @@ function Darkmists.RegisterEvents()
   end)
 
   DarkmistsEvents.add("Darkmists.online.reset", "dmapi.world.exit", function()
-    if DarkmistsStartup and DarkmistsStartup.resetOnlineSession then
-      DarkmistsStartup.resetOnlineSession()
-    end
+    DarkmistsStartup.resetOnlineSession()
   end)
 
 -- After vitals update (score processed), if a pending prompt exists show the map prompt
@@ -766,9 +716,7 @@ end
 
 function Darkmists.CleanupUI(opts)
   opts = opts or {}
-  if DarkmistsStartup and DarkmistsStartup.invalidate then
-    DarkmistsStartup.invalidate()
-  end
+  DarkmistsStartup.invalidate()
 
   if opts.uninstall and StatusBar then
     StatusBar._skipSave = true
@@ -811,11 +759,12 @@ function Darkmists.LoadUIScripts()
   ScorePanel.init()
   DarkMistsMiniMap.init()
   MapColors.init()
-  if DMSettingsPanel and DMSettingsPanel.init then DMSettingsPanel.init() end
+  DMSettingsPanel.init()
   Darkmists.UI_LOADED = true
-  -- Now UI_LOADED is set: the walk window's canUseDock() checks it, and a
-  -- restored float needs its panel rebuilt here or the window comes back empty.
-  if WalkDestinations and WalkDestinations.init then WalkDestinations.init() end
+  -- Ordering matters: this must stay last and after UI_LOADED is set. The walk
+  -- window's canUseDock() gates on Darkmists.UI_LOADED, and a restored float
+  -- needs its panel rebuilt here or the window comes back empty.
+  WalkDestinations.init()
   log("UI Scripts Loaded")
 end
 
@@ -834,19 +783,9 @@ function Darkmists.EnableUI()
   -- Apply borders
   Darkmists.RefreshUILayout({ syncStatusBar = true })
 
-  -- Defer the packaged-map prompt: if DMAPI is available, set pending and
-  -- let the DMAPI vitals handler show it after score; otherwise fall back
-  -- to a simple delayed prompt so manual enables still get prompted.
-  if dmapi then
-    Darkmists._pendingMapPrompt = true
-    Darkmists.reconcileOnlineState("ui-enabled")
-  else
-    tempTimer(0.8, function()
-      if not Darkmists.GlobalSettings.hasSeenMapPrompt then
-        Darkmists.PromptLoadMap()
-      end
-    end)
-  end
+  -- Defer the packaged-map prompt until the DMAPI vitals refresh completes.
+  Darkmists._pendingMapPrompt = true
+  Darkmists.reconcileOnlineState("ui-enabled")
 
   log("UI Enabled")
 end
@@ -866,45 +805,14 @@ function Darkmists.DisableUI()
 end
 
 function Darkmists.Init()
-  if DarkmistsStartup and type(DarkmistsStartup.start) == "function" then
-    return DarkmistsStartup.start()
-  end
-
-  return Darkmists.runStartup()
+  return DarkmistsStartup.start()
 end
 
 function Darkmists.runStartup()
-  if DarkmistsStartup and DarkmistsStartup.setPhase then
-    DarkmistsStartup.setPhase("dmapi")
-  end
+  DarkmistsStartup.setPhase("dmapi")
   DMLogger.create()
   log((DarkmistsTheme.mutedTag .. "Initializing Darkmists Core " .. DarkmistsTheme.infoTag .. "v%s<r>"):format(Darkmists.VERSION))
-  local versionChanged
-  if DarkmistsStartup and type(DarkmistsStartup.prepare) == "function" then
-    versionChanged = DarkmistsStartup.prepare(saveFilePath)
-  else
-    -- Keep a self-contained fallback for partial package loads.
-    dmapi.init()
-    local hadSettings = Darkmists.LoadSettings()
-    local savedLayoutVersion = Darkmists.GlobalSettings.layoutCacheVersion
-    versionChanged = hadSettings and savedLayoutVersion ~= Darkmists.LAYOUT_CACHE_VERSION
-
-    if Darkmists.GlobalSettings.pendingThemeMode ~= nil then
-      Darkmists.GlobalSettings.lightMode = Darkmists.GlobalSettings.pendingThemeMode
-      Darkmists.GlobalSettings.pendingThemeMode = nil
-      Darkmists.SaveSettings()
-    end
-
-    DarkmistsTheme.buildTheme()
-    Darkmists.RegisterEvents()
-    if not (hadSettings and savedLayoutVersion == Darkmists.LAYOUT_CACHE_VERSION) then
-      if io.exists(saveFilePath) then pcall(os.remove, saveFilePath) end
-      Darkmists.ApplyDefaultSettings()
-      Darkmists.GlobalSettings.layoutCacheVersion = Darkmists.LAYOUT_CACHE_VERSION
-      Darkmists.SaveSettings()
-      Darkmists.ResetUILayoutCache()
-    end
-  end
+  local versionChanged = DarkmistsStartup.prepare(saveFilePath)
 
   if versionChanged then
     tempTimer(1, function()
@@ -913,71 +821,10 @@ function Darkmists.runStartup()
     end)
   end
 
-  if DarkmistsStartup and type(DarkmistsStartup.configureRuntime) == "function" then
-    DarkmistsStartup.configureRuntime()
-  else
-    -- Keep a self-contained fallback for partial package loads.
-    if Darkmists.GlobalSettings.minimalMode then
-      setBorderTop(0); setBorderBottom(0); setBorderLeft(0); setBorderRight(0)
-    else
-      tempTimer(0, Darkmists.UpdateMainWindowWrap)
-    end
-    DarkmistsTheme.checkBackgroundContrast()
-  end
-
-  if DarkmistsStartup and type(DarkmistsStartup.initializeModules) == "function" then
-    DarkmistsStartup.initializeModules()
-  else
-    -- Keep a self-contained fallback for partial package loads.
-    ItemTracker.init()
-    StatRoller.init()
-    MapDestinations.load()
-    EnchanterAssist.init()
-    SkillUps.init()
-    DMClickables.init()
-    ButtonBar.init()
-    SessionTime.init()
-    MakeArmor.init()
-    DamageMessages.init()
-    DMSounds.init()
-
-    if CMudWrapper and CMudWrapper.load then
-      pcall(CMudWrapper.load)
-    end
-
-    if type(exists) == "function"
-        and exists("baseui", "alias") == 1
-        and type(expandAlias) == "function" then
-      log("BaseUI alias found; hiding BaseUI")
-      expandAlias("baseui hide")
-    else
-      log("BaseUI alias not present; skipping BaseUI hide")
-    end
-  end
-
-  if DarkmistsStartup and type(DarkmistsStartup.initializeUI) == "function" then
-    DarkmistsStartup.initializeUI()
-  else
-    -- Keep a self-contained fallback for partial package loads.
-    if DarkmistsStartup and DarkmistsStartup.setPhase then
-      DarkmistsStartup.setPhase("ui")
-    end
-    if not Darkmists.GlobalSettings.minimalMode then
-      Darkmists.LoadUIScripts()
-      tempTimer(0.4, function()
-        Darkmists.RefreshUILayout({ syncStatusBar = true })
-      end)
-    end
-  end
-
-  if DarkmistsStartup and type(DarkmistsStartup.finalize) == "function" then
-    DarkmistsStartup.finalize(notify)
-  else
-    -- Keep a self-contained fallback for partial package loads.
-    DarkMistsMeta.init()
-    SpamPrevention.init()
-    notify((DarkmistsTheme.mutedTag .. "Loaded Darkmists Core " .. DarkmistsTheme.infoTag .. "v%s<r>"):format(Darkmists.VERSION))
-  end
+  DarkmistsStartup.configureRuntime()
+  DarkmistsStartup.initializeModules()
+  DarkmistsStartup.initializeUI()
+  DarkmistsStartup.finalize(notify)
 end
 
 -- =============================================================================

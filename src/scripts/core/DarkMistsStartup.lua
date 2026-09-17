@@ -13,27 +13,29 @@ DarkmistsStartup.initialRefreshSent = false
 DarkmistsStartup.mapPromptScheduled = false
 DarkmistsStartup.mapPromptToken = 0
 
+local function invalidateMapPromptSchedule()
+  DarkmistsStartup.mapPromptToken = DarkmistsStartup.mapPromptToken + 1
+  DarkmistsStartup.mapPromptScheduled = false
+end
+
 function DarkmistsStartup.setPhase(phase)
   DarkmistsStartup.phase = phase
 end
 
 function DarkmistsStartup.invalidate()
   DarkmistsStartup.generation = DarkmistsStartup.generation + 1
-  DarkmistsStartup.mapPromptToken = DarkmistsStartup.mapPromptToken + 1
-  DarkmistsStartup.mapPromptScheduled = false
+  invalidateMapPromptSchedule()
   DarkmistsStartup.phase = "shutting-down"
 end
 
 function DarkmistsStartup.resetOnlineSession()
   DarkmistsStartup.onlineSession = DarkmistsStartup.onlineSession + 1
   DarkmistsStartup.initialRefreshSent = false
-  DarkmistsStartup.mapPromptToken = DarkmistsStartup.mapPromptToken + 1
-  DarkmistsStartup.mapPromptScheduled = false
+  invalidateMapPromptSchedule()
 end
 
 function DarkmistsStartup.cancelMapPromptSchedule()
-  DarkmistsStartup.mapPromptToken = DarkmistsStartup.mapPromptToken + 1
-  DarkmistsStartup.mapPromptScheduled = false
+  invalidateMapPromptSchedule()
 end
 
 function DarkmistsStartup.reconcileOnlineState(reason)
@@ -44,20 +46,21 @@ function DarkmistsStartup.reconcileOnlineState(reason)
     return false
   end
 
-  if not dmapi or not dmapi.player or not dmapi.player.online then
+  if not dmapi.player.online then
     return false
   end
 
   local settings = Darkmists.GlobalSettings
-  if not settings or not settings.hasSeenUIIntroMessage then
+  if not settings.hasSeenUIIntroMessage then
     return false
   end
 
   local session = DarkmistsStartup.onlineSession
-  if not DarkmistsStartup.initialRefreshSent
-      and dmapi.core and dmapi.core.refresh then
+  local generation = DarkmistsStartup.generation
+  if not DarkmistsStartup.initialRefreshSent then
     DarkmistsStartup.initialRefreshSent = true
     tempTimer(0, function()
+      if generation ~= DarkmistsStartup.generation then return end
       if session ~= DarkmistsStartup.onlineSession then return end
       if not dmapi.player.online then return end
       if not Darkmists.GlobalSettings.hasSeenUIIntroMessage then return end
@@ -82,13 +85,13 @@ function DarkmistsStartup.reconcileOnlineState(reason)
   DarkmistsStartup.mapPromptToken = DarkmistsStartup.mapPromptToken + 1
   local promptToken = DarkmistsStartup.mapPromptToken
   tempTimer(2, function()
+    if generation ~= DarkmistsStartup.generation then return end
     if promptToken ~= DarkmistsStartup.mapPromptToken then return end
     DarkmistsStartup.mapPromptScheduled = false
     if session ~= DarkmistsStartup.onlineSession then return end
 
     local currentSettings = Darkmists.GlobalSettings
     local stillEligible = dmapi.player.online
-      and currentSettings
       and currentSettings.hasSeenUIIntroMessage
       and Darkmists.UI_LOADED
       and not currentSettings.minimalMode
@@ -155,9 +158,8 @@ function DarkmistsStartup.initializeModules()
   SpamPrevention.init()
   CMudWrapper.load()
 
-  if type(exists) == "function"
-      and exists("baseui", "alias") == 1
-      and type(expandAlias) == "function" then
+  -- BaseUI is an optional third-party package, so keep the feature detection.
+  if exists("baseui", "alias") == 1 then
     Darkmists.Log("Darkmists Core", "BaseUI alias found; hiding BaseUI")
     expandAlias("baseui hide")
   else
@@ -199,10 +201,6 @@ function DarkmistsStartup.finalize(notifyMessage)
 end
 
 function DarkmistsStartup.start()
-  if type(Darkmists.runStartup) ~= "function" then
-    return false
-  end
-
   DarkmistsStartup.generation = DarkmistsStartup.generation + 1
   DarkmistsStartup.phase = "starting"
   local result = Darkmists.runStartup()
