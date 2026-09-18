@@ -31,6 +31,8 @@ function DMLogger.create()
     width = "60%", height = "60%",
     color = bgHex
   })
+  DMLogger.container:hide()
+  DMLogger.visible = false
 
   DMLogger.console = Geyser.MiniConsole:new({
     name = "DMLoggerConsole",
@@ -44,9 +46,6 @@ function DMLogger.create()
   DMLogger.console:enableAutoWrap()
   DMLogger.console:enableScrollBar()
 
-  DMLogger.container:show()
-  DMLogger.container:raiseAll()
-  DMLogger.visible = true
 end
 
 local function ensure_created()

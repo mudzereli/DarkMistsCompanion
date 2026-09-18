@@ -392,22 +392,22 @@
       <p>
         The movable settings panel is available from the Button Bar &gt; Settings menu or with
         <code>dmc settings</code>. It is organized into Appearance, Status Bars, Windows,
-        Enchanter Assist, ShowDMG, ItemTracker, and Utilities pages. Valid changes
+        Enchanter Assist, ShowDMG, ItemTracker, Spam Prevention, Stat Roller, Make Armor,
+        and DMSounds pages. Valid changes
         are saved immediately.
       </p>
       <p>
         Appearance includes pending Light/Dark theme mode, Full/Minimal UI mode, window font,
         font size, tab font size, and safe screen-border percentages. Status Bars includes enabled state,
         total height, and editable foreground/background RGBA colors. Status Bars are always movable. Windows includes Affects refresh and text lengths,
-        original-line deletion, Who original-line deletion, Chat History message limit, and
-        SkillUps history limit.
+        original-line deletion, Who original-line deletion, Chat History message limit, SkillUps
+        history limit, and SkillUps display location. DMSounds controls are on their own page.
       </p>
       <p>
         Enchanter Assist includes materials, recovery, enabled, and automatic-run controls, plus
         a session reset action that preserves configuration and attempted history. ShowDMG includes damage message
-        mode and color. ItemTracker includes dark/light mode link colors. Utilities includes
-        Spam Prevention, Stat Roller leniency and display settings, and MakeArmor sleeper,
-        container, and default threshold. Settings marked with <code>*</code> require
+        mode and color. ItemTracker includes dark/light mode link colors. Spam Prevention,
+        Stat Roller, and Make Armor each have their own page. Settings marked with <code>*</code> require
         <code>Reload UI</code> before the change is applied.
       </p>
       <table>
@@ -415,11 +415,14 @@
         <tbody>
           <tr><td>Appearance</td><td>Theme, UI mode, window font, font size, tab font size, border percentages</td></tr>
           <tr><td>Status Bars</td><td>Enabled, total height, foreground/background RGBA colors</td></tr>
-          <tr><td>Windows</td><td>Affects, Who, Chat History, and SkillUps display limits</td></tr>
+          <tr><td>Windows</td><td>Affects, Who, Chat History, and SkillUps settings</td></tr>
           <tr><td>Enchanter Assist</td><td>Materials, recovery, workflow controls, and session reset</td></tr>
           <tr><td>ShowDMG</td><td>Damage messages, mode, and color</td></tr>
           <tr><td>ItemTracker</td><td>Dark/light mode link colors</td></tr>
-          <tr><td>Utilities</td><td>Spam Prevention, Stat Roller, MakeArmor</td></tr>
+          <tr><td>Spam Prevention</td><td>Repeated-command prevention and fallback behavior</td></tr>
+          <tr><td>Stat Roller</td><td>Leniency, calibration, details, and sparkline settings</td></tr>
+          <tr><td>Make Armor</td><td>Sleeper, container, and default quality threshold</td></tr>
+          <tr><td>DMSounds</td><td>Area ambience enabled state and volume</td></tr>
         </tbody>
       </table>
 
@@ -756,20 +759,70 @@
       </table>
 
 
+      <!-- ·· DMSounds ································· -->
+      <h2 id="util-dmsounds">DMSounds</h2>
+
+      <p>
+        Optional environmental ambience for Dark Mists areas. DMSounds is disabled by default,
+        uses the current player or mapper area when available, and never sends gameplay commands.
+        The track catalogue and area mapping are bundled with DMC, while audio is downloaded and
+        cached by Mudlet only when a track is needed.
+      </p>
+
+      <div class="warn-box">
+        <strong>Migration:</strong> If you previously installed the standalone
+        <code>DMSounds.lua</code> or <code>DMSounds_packaged.lua</code>, disable or remove that
+        Mudlet script before enabling the package feature. Both versions register the same alias
+        and playback handlers and can otherwise compete with one another.
+      </div>
+
+      <p>
+        Enable ambience from <strong>Settings &gt; DMSounds</strong>,
+        <strong>Modules &gt; DMSounds</strong>, or with <code>dmsounds on</code>. DMSounds also
+        works in Minimal UI mode. Without a loaded map or a resolvable area it remains quiet until
+        a later prompt or mapper event provides an area.
+      </p>
+
+      <h3 id="util-dmsounds-commands">Commands</h3>
+      <table>
+        <thead><tr><th>Command</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>dmsounds</code></td><td>Show DMSounds help</td></tr>
+          <tr><td><code>dmsounds on</code> / <code>off</code></td><td>Enable or disable area ambience</td></tr>
+          <tr><td><code>dmsounds toggle</code></td><td>Toggle ambience on or off</td></tr>
+          <tr><td><code>dmsounds status</code></td><td>Show enabled state, source area, track, and volume</td></tr>
+          <tr><td><code>dmsounds volume &lt;0-100&gt;</code></td><td>Set the persisted playback volume</td></tr>
+          <tr><td><code>dmsounds update</code> / <code>apply</code></td><td>Apply the current area immediately</td></tr>
+          <tr><td><code>dmsounds check</code></td><td>Check and restore the expected track if playback stopped</td></tr>
+          <tr><td><code>dmsounds stop</code></td><td>Stop active ambience and transition silence</td></tr>
+          <tr><td><code>dmsounds silence</code></td><td>Play the transition silence track</td></tr>
+          <tr><td><code>dmsounds version</code></td><td>Show the DMSounds runtime version</td></tr>
+        </tbody>
+      </table>
+
+      <p>
+        Audio tracks are provided by <a href="https://tabletopaudio.com/">TableTopAudio.com</a>
+        under its Creative Commons license. The transition silence file remains an external,
+        on-demand resource; no audio files are bundled with DMC.
+      </p>
+
+
       <!-- ·· Skill Ups ································· -->
       <h2 id="util-skillups">Skill Ups</h2>
 
       <p>
         Tracks skill improvements as they happen and maintains a timestamped history of your recent
-        gains. When a skill improves, a notification appears in your chat area. Skills improved
-        this session are highlighted in a distinct color on the practice screen.
+        gains. Clicking a skill notification opens the history in the <strong>alert window</strong> by
+        default; use <strong>Settings &gt; Windows &gt; SkillUps &gt; Clicked history location</strong> to
+        switch it to the main window instead. The notification itself remains in the main window.
+        Skills improved this session are highlighted in a distinct color on the practice screen.
       </p>
 
       <table>
         <thead><tr><th>Command</th><th>Description</th></tr></thead>
         <tbody>
           <tr><td><code>skillups</code></td><td>Show Skill Ups help</td></tr>
-          <tr><td><code>skillups list</code></td><td>Show the last 20 skill improvements with timestamps and elapsed time</td></tr>
+          <tr><td><code>skillups list</code></td><td>Show the skill improvement history in the alert window</td></tr>
           <tr><td><code>skillups reset</code></td><td>Clear the improvement history</td></tr>
         </tbody>
       </table>
@@ -962,6 +1015,8 @@
         <tbody>
           <tr><td><code>#trigger {name} {pattern} {body}</code></td><td>Add a trigger using CMUD wildcard pattern syntax</td></tr>
           <tr><td><code>#trigger {name} {pattern} {body} {class}</code></td><td>Add wildcard trigger with inline class</td></tr>
+          <tr><td><code>#trigger {name} {dmapi.event.name} {body}</code></td><td>Subscribe to a <code>dmapi.*</code> event; event payload fields are available as <code>@event.field</code></td></tr>
+          <tr><td><code>#trigger {inround} {dmapi.player.combat.round} {cast earthmaw}</code></td><td>Example event trigger that casts when the DMAPI combat-round event fires</td></tr>
           <tr><td><code>#rxtrigger {name} {pattern} {body}</code></td><td>Add a trigger using raw PCRE regex</td></tr>
           <tr><td><code>#rxtrigger {name} {pattern} {body} {class}</code></td><td>Add regex trigger with inline class</td></tr>
           <tr><td><code>#trigger {name}</code></td><td>Show a trigger definition</td></tr>
@@ -971,6 +1026,8 @@
           <tr><td colspan="2"><em><code>#action</code> and <code>#rxaction</code> are synonyms for <code>#trigger</code> and <code>#rxtrigger</code>.</em></td></tr>
         </tbody>
       </table>
+
+      <p>A <code>#trigger</code> pattern that is an exact <code>dmapi.*</code> event name is installed as an event trigger. Multiple event triggers may subscribe to the same event, and their bodies use the normal CMUD command engine. Event payload fields use <code>@event.field</code> (including nested fields such as <code>@event.target.name</code>), while direct scalar event arguments use <code>$1</code>, <code>$2</code>, and so on. Text-trigger captures continue to use <code>%1</code>, <code>%2</code>, and so on.</p>
 
       <h3>Wildcard Tokens (for <code>#trigger</code>)</h3>
       <table>
@@ -1389,6 +1446,14 @@
           <tr><td><code>makearmor stop</code></td><td>Stop current operation</td><td>Make Armor</td></tr>
           <tr><td><code>makearmor sleeper &lt;item&gt;</code></td><td>Set sleep item</td><td>Make Armor</td></tr>
           <tr><td><code>makearmor container &lt;item&gt;</code></td><td>Set container for sleeper</td><td>Make Armor</td></tr>
+          <!-- DMSounds -->
+          <tr><td><code>dmsounds</code></td><td>DMSounds help</td><td>DMSounds</td></tr>
+          <tr><td><code>dmsounds on</code> / <code>off</code></td><td>Enable or disable area ambience</td><td>DMSounds</td></tr>
+          <tr><td><code>dmsounds toggle</code></td><td>Toggle area ambience</td><td>DMSounds</td></tr>
+          <tr><td><code>dmsounds status</code></td><td>Show current area, track, and volume</td><td>DMSounds</td></tr>
+          <tr><td><code>dmsounds volume &lt;0-100&gt;</code></td><td>Set playback volume</td><td>DMSounds</td></tr>
+          <tr><td><code>dmsounds update</code> / <code>apply</code></td><td>Apply the current area</td><td>DMSounds</td></tr>
+          <tr><td><code>dmsounds stop</code></td><td>Stop active ambience</td><td>DMSounds</td></tr>
           <!-- CMud Wrapper -->
           <tr><td><code>#alias {name} {body}</code></td><td>Define a persistent alias</td><td>CMud</td></tr>
           <tr><td><code>#alias {name} {body} {class}</code></td><td>Define alias with inline class</td><td>CMud</td></tr>

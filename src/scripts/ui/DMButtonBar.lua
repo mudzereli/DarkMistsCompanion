@@ -21,6 +21,7 @@ ButtonBar.fontWidth = nil
 ButtonBar.fontHeight = nil
 ButtonBar.height = nil
 ButtonBar.timeLabel = nil
+ButtonBar.firstRunButton = nil
 
 -- Qt-style CSS used by Geyser `QLabel` instances. Keep separate
 -- styles for top-level buttons (compact, horizontal) and menu
@@ -43,6 +44,66 @@ ButtonBar.menuStyleSheet = [[
   }
   QLabel::hover { background-color: #1a1a1a; }
 ]]
+
+-- -----------------------------------------------------------------------------
+-- First-run setup call to action
+-- -----------------------------------------------------------------------------
+-- This is the only control that has to be noticed before the player has chosen
+-- anything, so its colours are hardcoded rather than theme-driven: the theme may
+-- be wrong for the terminal (which is exactly what the contrast notice reports)
+-- and a themed button could then be unreadable. Both frames are purple shades
+-- with white text, so the pulse reads as a gentle breathing highlight rather
+-- than as an alert. Contrast/speed are the two knobs if it needs tuning.
+ButtonBar.SETUP_PULSE_KEY     = "ButtonBar.SetupPulse"
+ButtonBar.SETUP_PULSE_SECONDS = 0.75
+ButtonBar.SETUP_TEXT          = "SET UP DMC"
+
+local SETUP_FRAME_A = [[
+QLabel {
+  background-color: #7a5cff;
+  color: #ffffff;
+  border-right: 1px solid #b9a6ff;
+  border-bottom: 2px solid #b9a6ff;
+  font-weight: bold;
+}
+]]
+
+local SETUP_FRAME_B = [[
+QLabel {
+  background-color: #452a99;
+  color: #ffffff;
+  border-right: 1px solid #7a5cff;
+  border-bottom: 2px solid #7a5cff;
+  font-weight: bold;
+}
+]]
+
+--- Alternate the setup button between the two frames until it goes away.
+--- destroy() stops this, and completing setup rebuilds the ButtonBar, so the
+--- pulse ends on its own once the player is set up.
+function ButtonBar.startSetupPulse()
+  if not ButtonBar.firstRunButton then return end
+
+  ButtonBar._setupPulseFrameB = false
+  ButtonBar.firstRunButton:setStyleSheet(SETUP_FRAME_A)
+
+  DarkmistsTimer.add(ButtonBar.SETUP_PULSE_KEY, ButtonBar.SETUP_PULSE_SECONDS, function()
+    -- Safety net if the button vanished without destroy() running.
+    if not ButtonBar.firstRunButton then
+      ButtonBar.stopSetupPulse()
+      return
+    end
+
+    ButtonBar._setupPulseFrameB = not ButtonBar._setupPulseFrameB
+    ButtonBar.firstRunButton:setStyleSheet(
+      ButtonBar._setupPulseFrameB and SETUP_FRAME_B or SETUP_FRAME_A)
+  end, true)
+end
+
+function ButtonBar.stopSetupPulse()
+  DarkmistsTimer.remove(ButtonBar.SETUP_PULSE_KEY)
+  ButtonBar._setupPulseFrameB = nil
+end
 
 -- Resolve font sizing and compute measured font metrics used by layout.
 -- Falls back to a sensible default, and keeps calculations idempotent
@@ -74,6 +135,10 @@ function ButtonBar.destroy()
   ButtonBar.container = nil
   ButtonBar.nextX = nil
   ButtonBar.timeLabel = nil
+  ButtonBar.firstRunButton = nil
+  -- Stop the pulse before any rebuild, so a stale timer cannot restyle a
+  -- button that no longer exists.
+  ButtonBar.stopSetupPulse()
 end
 
 --================================--
@@ -120,8 +185,8 @@ function ButtonBar:_dropdownWidth()
   return ButtonBar.fontWidth * ButtonBar.topLevelMaxCharacters
 end
 
-function ButtonBar:_menuWidth()
-  return ButtonBar.fontWidth * ButtonBar.dropDownMaxCharacters
+function ButtonBar:_menuWidth(characterCount)
+  return ButtonBar.fontWidth * (characterCount or ButtonBar.dropDownMaxCharacters)
 end
 
 -- Update the right-aligned session time display label.
@@ -163,7 +228,7 @@ end
 -- Menu Tree Building
 --================================--
 -- -----------------------------------------------------------------------------
-function ButtonBar:_addMenuChildren(parent, items, depth)
+function ButtonBar:_addMenuChildren(parent, items, depth, characterCount)
   depth = depth or 1
 
   if type(items) ~= "table" then
@@ -180,7 +245,7 @@ function ButtonBar:_addMenuChildren(parent, items, depth)
     local dir = depth == 1 and "BV" or "RV"
 
     local child = parent:addChild({
-      width = ButtonBar:_menuWidth(),
+      width = ButtonBar:_menuWidth(characterCount),
       height = ButtonBar.height,
       layoutDir = dir,
       flyOut = true,
@@ -190,7 +255,7 @@ function ButtonBar:_addMenuChildren(parent, items, depth)
     ButtonBar:_style(child, true)
 
     if item.children then
-      self:_addMenuChildren(child, item.children, depth + 1)
+      self:_addMenuChildren(child, item.children, depth + 1, item.menuWidth)
     else
       child:setClickCallback(function()
         tempTimer(0, function()
@@ -207,7 +272,7 @@ end
 -- Create a compact top-level clickable button.
 -- Buttons are simple `Geyser.Label` elements; `ButtonBar.nextX` is
 -- incremented to place subsequent controls to the right.
-function ButtonBar:addButton(text, action)
+function ButtonBar:addButton(text, action, styleSheet)
   if not ButtonBar.container then return end
 
   local btn = Geyser.Label:new({
@@ -220,7 +285,11 @@ function ButtonBar:addButton(text, action)
 
   btn:setFontSize(ButtonBar.fontSize)
 
-  ButtonBar:_style(btn, false)
+  if styleSheet then
+    btn:setStyleSheet(styleSheet)
+  else
+    ButtonBar:_style(btn, false)
+  end
 
   btn:setClickCallback(function()
     tempTimer(0, function()
@@ -229,6 +298,7 @@ function ButtonBar:addButton(text, action)
   end)
 
   ButtonBar.nextX = ButtonBar.nextX + ButtonBar:_buttonWidth()
+  return btn
 end
 
 --================================--
@@ -264,7 +334,7 @@ end
 -- Actions frequently call `expandAlias` to route commands into Mudlet.
 local MODULE_MENU = {
   {label = "🎓 Skillups", children = {
-    {label = "📜 Skillups", action = function() SkillUps.showAlert() end},
+    {label = "📜 Skillups", action = function() SkillUps.showHistory() end},
     {label = "🔄 Reset Skillups", action = function() SkillUps.reset() end},
     {label = "❓ Skillups", action = function() expandAlias("dmc help skillups") end},
   }},
@@ -287,6 +357,15 @@ local MODULE_MENU = {
     {label = "❓ Item Tracker", action = function()
       expandAlias("dmc help dmid")
     end},
+  }},
+
+  {label = "🎧 DMSounds", children = {
+    {label = "▶ Enable", action = function() expandAlias("dmsounds on") end},
+    {label = "⏸ Disable", action = function() expandAlias("dmsounds off") end},
+    {label = "🔄 Toggle", action = function() expandAlias("dmsounds toggle") end},
+    {label = "🛑 Stop", action = function() expandAlias("dmsounds stop") end},
+    {label = "📊 Status", action = function() expandAlias("dmsounds status") end},
+    {label = "❓ DMSounds", action = function() expandAlias("dmc help dmsounds") end},
   }},
 
   {label = "🧪 Enchant Assist", children = {
@@ -322,6 +401,9 @@ local SETTINGS_MENU = {
   {label = "🛠 Settings Panel", action = function()
     if DMSettingsPanel and DMSettingsPanel.show then DMSettingsPanel.show() end
   end},
+  -- Setup is an action that writes persisted state, so it lives here rather
+  -- than under Help, which is kept read-only (help topics and the Wiki).
+  {label = "🚀 Setup Wizard", action = function() Darkmists.ShowUIIntroMessage(true) end},
   {label = "🔄 Reload UI", action = function() Darkmists.PromptSafeReload() end},
   --{label = "📊 Toggle UI", action = function() Darkmists.ShowUIIntroMessage(true) end},
 
@@ -403,12 +485,14 @@ local SETTINGS_MENU = {
 -- Help menu entries should correspond to keys in `DarkMistsMeta.helpIndex`.
 -- They call `expandAlias("dmc help <topic>")` to render help in-client.
 local HELP_MENU = {
+  {label = "🌐 DMC Wiki", action = function() Darkmists.OpenWiki() end},
   {label = "❔ General", children = {
     {label = "📘 Main Help", action = function() expandAlias("dmc help") end},
     {label = "🌞 UI Mode", action = function() expandAlias("dmc help ui") end},
     {label = "📝 Info Box", action = function() expandAlias("dmc help infobox") end},
     {label = "💥 Damage Messages", action = function() expandAlias("dmc help showdmg") end},
     {label = "🚫 Spam Prevention", action = function() expandAlias("dmc help spam") end},
+    {label = "🎧 DMSounds", action = function() expandAlias("dmc help dmsounds") end},
   }},
 
   {label = "🧭 World", children = {
@@ -420,15 +504,18 @@ local HELP_MENU = {
     end},
   }},
 
-  {label = "👤 Character", children = {
+  {label = "👤 Character", menuWidth = 26, children = {
     {label = "🎲 Stat Roller", action = function()
       expandAlias("dmc help statroll")
     end},
     {label = "📈 Skillup Tracking", action = function()
       expandAlias("dmc help skillups")
     end},
-    {label = "🧪 Enchant Assist", action = function()
+    {label = "🧪 Enchant Assist (Enchanter)", action = function()
       expandAlias("dmc help es")
+    end},
+    {label = "🛡️ Make Armor (Channeler)", action = function()
+      expandAlias("dmc help makearmor")
     end},
   }},
 
@@ -468,6 +555,18 @@ function ButtonBar.build()
 
   if not ButtonBar.container then
     return false
+  end
+
+  if Darkmists.GlobalSettings and not Darkmists.GlobalSettings.hasSeenUIIntroMessage then
+    -- startSetupPulse applies the first frame and animates from there.
+    ButtonBar.firstRunButton = ButtonBar:addButton(
+      ButtonBar.SETUP_TEXT,
+      function() DarkmistsSetup.begin() end,
+      SETUP_FRAME_A
+    )
+    ButtonBar.firstRunButton:setToolTip(
+      "Finish setting up Dark Mists Companion: choose Minimal UI or Full UI.")
+    ButtonBar.startSetupPulse()
   end
 
   ButtonBar:addButton("🐲 Website", function() Darkmists.OpenWebsite() end)

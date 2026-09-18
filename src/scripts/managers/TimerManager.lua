@@ -35,7 +35,11 @@ function DarkmistsTimer.add(key, seconds, func, repeating)
     return func(...)
   end
 
-  DarkmistsTimer.registry[timerKey] = tempTimer(seconds, wrapped, repeating)
+  if repeating == nil then
+    DarkmistsTimer.registry[timerKey] = tempTimer(seconds, wrapped)
+  else
+    DarkmistsTimer.registry[timerKey] = tempTimer(seconds, wrapped, repeating)
+  end
   return DarkmistsTimer.registry[timerKey]
 end
 

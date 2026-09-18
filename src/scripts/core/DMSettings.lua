@@ -394,6 +394,22 @@ local function setGlobalValue(key, value)
   return true
 end
 
+local function setFullUI(value)
+  if value then
+    if Darkmists and Darkmists.EnableUI then
+      Darkmists.EnableUI()
+      return true
+    end
+    return false, "Full UI controls are unavailable."
+  end
+
+  if Darkmists and Darkmists.DisableUI then
+    Darkmists.DisableUI()
+    return true
+  end
+  return false, "Minimal UI controls are unavailable."
+end
+
 local function getBorderPercent(region)
   local borders = Darkmists.GlobalSettings.borders or {}
   if Darkmists.GetBorderPercentages then
@@ -499,6 +515,14 @@ local function setSkillUpsMax(value)
   return true
 end
 
+local function setSkillUpsDisplayMode(value)
+  setGlobalValue("skillUpsDisplayMode", value)
+  if SkillUps and SkillUps.setDisplayMode then
+    return SkillUps.setDisplayMode(value)
+  end
+  return true
+end
+
 local function setSpamConfig(key, value)
   setGlobalValue(key, value)
   if SpamPrevention then
@@ -571,8 +595,8 @@ local function registerAppearance()
       label = "Full UI", type = "boolean", default = false,
       get = function() return not globalValue("minimalMode", true) end,
       validate = validateBoolean,
-      set = function(value) Darkmists.GlobalSettings.minimalMode = not value; return true end,
-      save = saveGlobalSettings, reloadRequired = true,
+      set = setFullUI,
+      save = saveGlobalSettings,
     },
     {
       key = "appearance.fontSize", page = "Appearance", group = "Appearance",
@@ -753,13 +777,26 @@ local function registerWindows()
       validate = function(value) return validateInteger(value, 5, 500) end,
       set = setSkillUpsMax, save = saveGlobalSettings,
     },
+    {
+      key = "windows.skillDisplayMode", page = "Windows", group = "SkillUps",
+      label = "Clicked history location", type = "enum", default = "alert",
+      choices = {
+        {value = "main", label = "Main window"},
+        {value = "alert", label = "Alert window"},
+      },
+      get = function() return globalValue("skillUpsDisplayMode", "alert") end,
+      validate = function(value)
+        return validateEnum(value, {{value = "main"}, {value = "alert"}})
+      end,
+      set = setSkillUpsDisplayMode, save = saveGlobalSettings,
+    },
   })
 end
 
 local function registerUtilities()
   registerDefinitions({
     {
-      key = "spam.enabled", page = "Utilities", group = "Spam Prevention",
+      key = "spam.enabled", page = "Spam Prevention", group = "Spam Prevention",
       label = "Enabled", type = "boolean", default = true,
       get = function() return globalValue("spamEnabled", true) end,
       validate = validateBoolean,
@@ -767,7 +804,7 @@ local function registerUtilities()
       save = saveGlobalSettings,
     },
     {
-      key = "spam.threshold", page = "Utilities", group = "Spam Prevention",
+      key = "spam.threshold", page = "Spam Prevention", group = "Spam Prevention",
       label = "Repeat threshold", type = "integer", default = 24,
       get = function() return globalValue("spamThreshold", 24) end,
       validate = function(value) return validateInteger(value, 1, 1000) end,
@@ -775,7 +812,7 @@ local function registerUtilities()
       save = saveGlobalSettings,
     },
     {
-      key = "spam.minLength", page = "Utilities", group = "Spam Prevention",
+      key = "spam.minLength", page = "Spam Prevention", group = "Spam Prevention",
       label = "Minimum command length", type = "integer", default = 3,
       get = function() return globalValue("spamMinLength", 3) end,
       validate = function(value) return validateInteger(value, 1, 20) end,
@@ -783,7 +820,7 @@ local function registerUtilities()
       save = saveGlobalSettings,
     },
     {
-      key = "spam.fallback", page = "Utilities", group = "Spam Prevention",
+      key = "spam.fallback", page = "Spam Prevention", group = "Spam Prevention",
       label = "Fallback command", type = "text", default = "save",
       get = function() return globalValue("spamFallbackCommand", "save") end,
       validate = validateOptionalText,
@@ -791,7 +828,7 @@ local function registerUtilities()
       save = saveGlobalSettings,
     },
     {
-      key = "statRoller.leniency", page = "Utilities", group = "Stat Roller",
+      key = "statRoller.leniency", page = "Stat Roller", group = "Stat Roller",
       label = "Leniency", type = "integer", default = 1,
       get = function() return globalValue("statRollerLeniency", 1) end,
       validate = function(value) return validateInteger(value, 0, 3) end,
@@ -799,7 +836,7 @@ local function registerUtilities()
       save = saveGlobalSettings,
     },
     {
-      key = "statRoller.calibrationLines", page = "Utilities", group = "Stat Roller",
+      key = "statRoller.calibrationLines", page = "Stat Roller", group = "Stat Roller",
       label = "Calibration rolls", type = "integer", default = 20,
       get = function() return globalValue("statRollerCalibrationLines", 20) end,
       validate = function(value) return validateInteger(value, 4, 40) end,
@@ -807,7 +844,7 @@ local function registerUtilities()
       save = saveGlobalSettings,
     },
     {
-      key = "statRoller.showDetails", page = "Utilities", group = "Stat Roller",
+      key = "statRoller.showDetails", page = "Stat Roller", group = "Stat Roller",
       label = "Show stat details", type = "boolean", default = true,
       get = function() return globalValue("statRollerShowDetails", true) end,
       validate = validateBoolean,
@@ -815,7 +852,7 @@ local function registerUtilities()
       save = saveGlobalSettings,
     },
     {
-      key = "statRoller.sparklineWidth", page = "Utilities", group = "Stat Roller",
+      key = "statRoller.sparklineWidth", page = "Stat Roller", group = "Stat Roller",
       label = "Sparkline width", type = "integer", default = 16,
       get = function() return globalValue("statRollerSparklineWidth", 16) end,
       validate = function(value) return validateInteger(value, 4, 40) end,
@@ -823,7 +860,7 @@ local function registerUtilities()
       save = saveGlobalSettings,
     },
     {
-      key = "makeArmor.sleeper", page = "Utilities", group = "MakeArmor",
+      key = "makeArmor.sleeper", page = "Make Armor", group = "MakeArmor",
       label = "Sleeper", type = "text", default = "bedroll",
       get = function() return globalValue("makearmorSleeper", "bedroll") end,
       validate = validateText,
@@ -831,7 +868,7 @@ local function registerUtilities()
       save = saveGlobalSettings,
     },
     {
-      key = "makeArmor.container", page = "Utilities", group = "MakeArmor",
+      key = "makeArmor.container", page = "Make Armor", group = "MakeArmor",
       label = "Container", type = "text", default = "bag",
       get = function() return globalValue("makearmorContainer", "bag") end,
       validate = validateText,
@@ -839,11 +876,46 @@ local function registerUtilities()
       save = saveGlobalSettings,
     },
     {
-      key = "makeArmor.defaultThreshold", page = "Utilities", group = "MakeArmor",
+      key = "makeArmor.defaultThreshold", page = "Make Armor", group = "MakeArmor",
       label = "Default threshold", type = "integer", default = 15,
       get = function() return globalValue("makearmorDefaultMinimumTotal", 15) end,
       validate = function(value) return validateInteger(value, 5, 20) end,
       set = function(value) return setMakeArmorConfig("makearmorDefaultMinimumTotal", "defaultMinimumTotal", value) end,
+      save = saveGlobalSettings,
+    },
+  })
+end
+
+local function setDMSoundsEnabled(value)
+  if DMSounds and type(DMSounds.setEnabled) == "function" then
+    return DMSounds.setEnabled(value)
+  end
+  return setGlobalValue("dmsoundsEnabled", value)
+end
+
+local function setDMSoundsVolume(value)
+  if DMSounds and type(DMSounds.setVolume) == "function" then
+    return DMSounds.setVolume(value)
+  end
+  return setGlobalValue("dmsoundsVolume", value)
+end
+
+local function registerDMSounds()
+  registerDefinitions({
+    {
+      key = "dmsounds.enabled", page = "DMSounds", group = "DMSounds",
+      label = "Enabled", type = "boolean", default = false,
+      get = function() return globalValue("dmsoundsEnabled", false) end,
+      validate = validateBoolean,
+      set = setDMSoundsEnabled,
+      save = saveGlobalSettings,
+    },
+    {
+      key = "dmsounds.volume", page = "DMSounds", group = "DMSounds",
+      label = "Volume", type = "integer", default = 100,
+      get = function() return globalValue("dmsoundsVolume", 100) end,
+      validate = function(value) return validateInteger(value, 0, 100) end,
+      set = setDMSoundsVolume,
       save = saveGlobalSettings,
     },
   })
@@ -1000,4 +1072,5 @@ registerStatusBars()
 registerItemTracker()
 registerWindows()
 registerUtilities()
+registerDMSounds()
 registerAdvanced()

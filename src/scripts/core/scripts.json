@@ -40,5 +40,17 @@
               "isActive": "yes",
               "script": "",
               "isFolder": "no"
+       },
+       {
+              "name": "DarkMistsSetup",
+              "isActive": "yes",
+              "script": "",
+              "isFolder": "no"
+       },
+       {
+              "name": "DarkMistsStartup",
+              "isActive": "yes",
+              "script": "",
+              "isFolder": "no"
        }
 ]

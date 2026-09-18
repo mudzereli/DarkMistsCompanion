@@ -8,11 +8,13 @@ DMSettingsPanel = {}
 
 DMSettingsPanel.container = nil
 DMSettingsPanel.content = nil
+DMSettingsPanel.rail = nil
 DMSettingsPanel.status = nil
 DMSettingsPanel.controls = {}
 DMSettingsPanel.pages = {
   "Appearance", "Status Bars", "Windows", "Enchanter Assist",
-  "ShowDMG", "ItemTracker", "CMud", "Utilities",
+  "ShowDMG", "ItemTracker", "CMud", "Spam Prevention",
+  "Stat Roller", "Make Armor", "DMSounds",
 }
 DMSettingsPanel.pageContainers = {}
 DMSettingsPanel.pageHeights = {}
@@ -36,27 +38,30 @@ local rgbaPickerWidth = 70
 local rgbaChannelButtonWidth = 44
 local rgbaChannelValueX = 112
 local rgbaChannelPlusX = 164
-local headerMargin = 0
+local railWidth = 175
+local railInset = 8
+local railButtonWidth = railWidth - (railInset * 2)
+local railButtonRowHeight = 27
+local contentX = railWidth + 8
+local contentRightInset = 8
 local headerY = 8
-local headerHeight = 128
 local headerContentInset = 8
-local headerContentX = headerMargin + headerContentInset
+local headerContentX = contentX + headerContentInset
 local headerContentY = headerY + headerContentInset
-local headerWidth = "100%-" .. (headerMargin * 2)
-local headerPageWidth = 140
-local headerPageButtonWidth = 136
-local headerPageRowHeight = 27
-local headerStatusY = headerContentY + 54
-local headerStatusHeight = 26
+local headerWidth = "100%-" .. (contentX + contentRightInset)
+local headerStatusY = headerContentY
+local headerStatusHeight = 42
 local headerActionGap = 6
 local headerActionWidth = 104
+local headerHeight = headerStatusHeight + railButtonRowHeight + (headerActionGap * 3)
 local headerActionY = headerStatusY + headerStatusHeight + headerActionGap
-local headerActionX = "100%-" .. (headerActionWidth * 2 + headerActionGap + headerContentInset)
-local headerCancelX = "100%-" .. (headerActionWidth + headerContentInset)
-local headerStatusWidth = "100%-" .. (headerContentInset * 2)
+local headerActionX = headerContentX
+local headerCancelX = headerActionX + headerActionWidth + headerActionGap
+local headerStatusWidth = "100%-" .. (headerContentX + contentRightInset + headerContentInset)
 local headerPageGap = 8
 local pageY = headerY + headerHeight + headerPageGap
 local panelWidth = 605
+local panelMinimumWidth = 720
 local panelMinHeight = 520
 local panelMaxHeight = 900
 local panelBottomPadding = 28
@@ -795,6 +800,23 @@ local function resizeForPage(pageName)
   end
 end
 
+local function ensureMinimumWidth()
+  local container = DMSettingsPanel.container
+  if not container or not container.get_width or not container.resize then return end
+
+  local widthOk, currentWidth = pcall(container.get_width, container)
+  if not widthOk or type(currentWidth) ~= "number" or currentWidth >= panelMinimumWidth then
+    return
+  end
+
+  local currentHeight = panelMinHeight
+  if container.get_height then
+    local heightOk, height = pcall(container.get_height, container)
+    if heightOk and type(height) == "number" then currentHeight = height end
+  end
+  container:resize(panelMinimumWidth, currentHeight)
+end
+
 local function showPage(pageName)
   local page = DMSettingsPanel.pageContainers[pageName]
   if not page then return end
@@ -818,8 +840,9 @@ local function buildPage(pageName)
   local keyName = pageName:gsub("[^%w]", "_")
   local page = Geyser.Container:new({
     name = "DMSettingsPage_" .. keyName,
-    x = 0, y = pageY,
-    width = "100%", height = "100%-" .. pageY,
+    x = contentX, y = pageY,
+    width = "100%-" .. (contentX + contentRightInset),
+    height = "100%-" .. pageY,
   }, DMSettingsPanel.content)
   makeLabel("DMSettingsPageBackground_" .. keyName, 0, 0,
     "100%", "100%", "", page, containerStyle)
@@ -900,12 +923,14 @@ function DMSettingsPanel.destroy()
   end
   DMSettingsPanel.container = nil
   DMSettingsPanel.content = nil
+  DMSettingsPanel.rail = nil
   DMSettingsPanel.status = nil
   DMSettingsPanel.controls = {}
   DMSettingsPanel.pageContainers = {}
   DMSettingsPanel.pageHeights = {}
   DMSettingsPanel.pageButtons = {}
   DMSettingsPanel.currentPageContainer = nil
+  DMSettingsPanel.activePage = "Appearance"
   DMSettingsPanel.visible = false
 end
 
@@ -930,6 +955,7 @@ function DMSettingsPanel.init()
     autoLoad = true,
     adjLabelstyle = Darkmists.getDefaultAdjLabelstyle(),
   })
+  ensureMinimumWidth()
 
   if DarkmistsTheme and DarkmistsTheme.buildHeaderStyle then
     DMSettingsPanel.container.adjLabel:setStyleSheet(
@@ -948,20 +974,19 @@ function DMSettingsPanel.init()
   }, DMSettingsPanel.container.Inside)
   makeLabel("DMSettingsContentBackground", 0, 0,
     "100%", "100%", "", DMSettingsPanel.content, containerStyle)
-  makeLabel("DMSettingsHeaderControls", headerMargin, headerY,
+  DMSettingsPanel.rail = makeLabel("DMSettingsRail", 0, 0,
+    railWidth, "100%", "", DMSettingsPanel.content, containerStyle)
+  makeLabel("DMSettingsHeaderControls", contentX, headerY,
     headerWidth, headerHeight, "", DMSettingsPanel.content, headerControlStyle)
 
   DMSettingsPanel.pageButtons = {}
-  local pageColumns = 4
   for index, pageName in ipairs(DMSettingsPanel.pages) do
     local keyName = pageName:gsub("[^%w]", "_")
-    local column = (index - 1) % pageColumns
-    local row = math.floor((index - 1) / pageColumns)
     DMSettingsPanel.pageButtons[pageName] = makeButton(
       "DMSettingsPageButton_" .. keyName,
-      headerContentX + column * headerPageWidth,
-      headerContentY + row * headerPageRowHeight,
-      headerPageButtonWidth, pageName,
+      railInset,
+      railInset + (index - 1) * railButtonRowHeight,
+      railButtonWidth, pageName,
       function() showPage(pageName) end,
       DMSettingsPanel.content)
   end

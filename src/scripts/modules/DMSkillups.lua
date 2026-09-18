@@ -4,6 +4,8 @@
 SkillUps = {
   config = {
     maxSkillUps = 50,  -- Keep last 50 skill ups
+    -- Where the history is shown when a skill notification is clicked: "main" or "alert"
+    displayMode = "alert",
   },
   history = {},
   -- No need for eventHandler tracking; managed by EventManager
@@ -35,7 +37,7 @@ function SkillUps.addSkillUp(skillName)
   
   -- Clickable notification — clicking the skill name opens the full list
   cecho(string.format("\n%s[%sSkillUps%s] ", DarkmistsTheme.mutedTag, DarkmistsTheme.textTag, DarkmistsTheme.mutedTag))
-  cechoLink(string.format("<u>%s</u>", skillName), "SkillUps.showAlert()", "Click to view skill improvement history", true)
+  cechoLink(string.format("<u>%s</u>", skillName), "SkillUps.showHistory()", "Click to view skill improvement history", true)
   cecho(string.format(" %simproved at %s%s!<reset>", DarkmistsTheme.mutedTag, DarkmistsTheme.textTag, timestamp))
 end
 
@@ -61,9 +63,8 @@ function SkillUps.display(win)
 
   echo("\n%s" .. SEPARATOR, DarkmistsTheme.cyanTag)
   echo("\n%sLast %s%d %sSkill Improvements:", DarkmistsTheme.textTag, DarkmistsTheme.highlightTag, #SkillUps.history, DarkmistsTheme.textTag)
-  if win then
-    cechoLink(win, "    <red><u>[Reset]</u><reset>", [[SkillUps.reset(); DMAlertWindow.Hide()]], "Reset skill improvement history", true)
-  end
+  cechoLink(win or "main", "   " .. DarkmistsTheme.badTag .. "<u>[Reset]</u><reset>", [[SkillUps.reset(); DMAlertWindow.Hide()]], "Reset skill improvement history", true)
+  cechoLink(win or "main", " " .. DarkmistsTheme.cyanTag .. "<u>[Refresh]</u><reset>", [[DMAlertWindow.Hide(); SkillUps.showHistory()]], "Refresh skill improvement history", true)
   echo("\n%s" .. SEPARATOR .. "\n", DarkmistsTheme.cyanTag)
 
   for i, skillup in ipairs(SkillUps.history) do
@@ -114,6 +115,14 @@ function SkillUps.showAlert()
   end, { width = estWidth, height = estHeight, scrollable = true })
 end
 
+function SkillUps.showHistory()
+  if SkillUps.config.displayMode == "alert" then
+    SkillUps.showAlert()
+  else
+    SkillUps.display()
+  end
+end
+
 function SkillUps.reset()
   SkillUps.history = {}
   DMLogger.notify("SkillUps",string.format("%sSkill improvement history reset.", DarkmistsTheme.warnTag))
@@ -125,6 +134,12 @@ function SkillUps.setMaxEntries(value)
   while #SkillUps.history > value do
     table.remove(SkillUps.history)
   end
+end
+
+function SkillUps.setDisplayMode(value)
+  if value ~= "main" and value ~= "alert" then return false end
+  SkillUps.config.displayMode = value
+  return true
 end
 
 
@@ -163,7 +178,7 @@ SkillUps Module:
   end)
 
   DarkmistsAlias.add([[^skillups? list$]], function()
-    SkillUps.showAlert()
+    SkillUps.showHistory()
   end)
 
   DarkmistsAlias.add([[^skillups? reset$]], function()
@@ -178,6 +193,8 @@ end
 function SkillUps.init()
   SkillUps.config.maxSkillUps = tonumber(Darkmists.GlobalSettings.skillUpsMaxEntries)
     or SkillUps.config.maxSkillUps
+  SkillUps.config.displayMode = Darkmists.GlobalSettings.skillUpsDisplayMode
+    or SkillUps.config.displayMode
   SkillUps.RegisterHandlers()
   DMLogger.log("SkillUps",string.format("%sTracker initialized. Type '%sskillups%s' to view history.", DarkmistsTheme.goodTag, DarkmistsTheme.textTag, DarkmistsTheme.goodTag))
 end

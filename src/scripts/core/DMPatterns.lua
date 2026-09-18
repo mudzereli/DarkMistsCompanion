@@ -51,16 +51,21 @@ function DMPatterns.identify(line)
   local found = false
   for name, value in pairs(DMPatterns) do
     if type(value) == "string" then
-      local matchResult = {line:match(value)}
+      local matchResult
+      if name:sub(1, 6) == "EXACT_" then
+        matchResult = line == value and {value} or {}
+      else
+        matchResult = {line:match(value)}
+      end
       if #matchResult > 0 and matchResult[1] ~= nil then
         local capStr = table.concat(matchResult, ", ")
-        cecho("main", "<grey>[DMPatterns] ✓ <lime_green>" .. name .. "<grey> → <lime_green>" .. capStr .. "\n")
+        cecho("main", "<green>✓ <lime_green>" .. name)-- .. "<grey> → <lime_green>" .. capStr .. "\n")
         found = true
       end
     end
   end
   if not found then
-    cecho("main", "<grey>[DMPatterns] ✗ No patterns matched: <red>" .. line .. "\n")
+    cecho("main", "<red>✗ NO MATCH")--: <red>" .. line .. "\n")
   end
 end
 
@@ -86,6 +91,7 @@ end
 DMPatterns.EXITS           = "^%[Exits:%s*(.-)%s*%]$"
 DMPatterns.DOOR_CLOSED     = "^The (.+) is closed%.$"
 DMPatterns.DOOR_LOCKED     = "^It is locked%.$"
+DMPatterns.LEAVES_DIRECTION = "^(.+) leaves ([%a]+)%.$"
 
 -- ============================================================================
 -- CURRENCY / EXPERIENCE
@@ -94,6 +100,7 @@ DMPatterns.DOOR_LOCKED     = "^It is locked%.$"
 DMPatterns.CURRENCY_FULL   = "^You have (%d+) gold, (%d+) silver, and (%d+) experience %((%d+) exp to level%)"
 DMPatterns.CURRENCY_NOLVL  = "^You have (%d+) gold, (%d+) silver, and (%d+) experience%."
 DMPatterns.CURRENCY_SCORE  = "^You have scored (%d+) exp, and have (%d+) gold and (%d+) silver coins%."
+DMPatterns.XP_TO_LEVEL      = "^You need (%d+) exp to level%.$"
 
 -- ============================================================================
 -- LEVEL UP
@@ -147,6 +154,36 @@ DMPatterns.ATTRIBUTES = "^Str:%s*(%d+)%((%d+)%)%s+" ..
   "Con:%s*(%d+)%((%d+)%)"
 
 -- ============================================================================
+-- SCORE / CHARACTER DETAILS
+-- ============================================================================
+
+DMPatterns.SCORE_JOINED_AGE        = "^You joined Dark Mists (.+) ago%.$"
+DMPatterns.SCORE_RACE_SEX_CLASS    = "^Race:%s*(.-)%s+Sex:%s*(.-)%s+Class:%s*(.-)$"
+DMPatterns.SCORE_PRACTICES         = "^You have (%d+) practices, (%d+) training sessions, and (%d+) fate points%.$"
+DMPatterns.SCORE_CARRYING          = "^You are carrying (%d+)/(%d+) items with weight (%d+)/(%d+) pounds%.$"
+DMPatterns.SCORE_WIMPY_HOMETOWN    = "^Wimpy set to (%d+) hit points%.%s+Hometown is (.+)%.$"
+DMPatterns.SCORE_STANDING          = "^You are standing%.$"
+DMPatterns.SCORE_ARMOR_VALUES      = "^Armor:%s*pierce:%s*(%S+)%s+bash:%s*(%S+)%s+slash:%s*(%S+)%s+magic:%s*(%S+)$"
+--DMPatterns.SCORE_ARMOR_PROTECTION  = "^You are (.-) against (%a+)%.$"
+DMPatterns.SCORE_COMBAT_ROLLS      = "^Hitroll:%s*(%S+)%s+Damroll:%s*(%S+)%s+Saves:%s*(%S+)$"
+DMPatterns.SCORE_ALIGNMENT         = "^You are (.-), and (.-) inclined%.$"
+DMPatterns.SCORE_ROLEPLAY          = "^You have requested (.+)%.$"
+
+-- ============================================================================
+-- PRACTICE (from "prac" command)
+-- ============================================================================
+
+DMPatterns.PRACTICE_SESSIONS       = "^You have (%d+) practice sessions left%.$"
+
+-- ============================================================================
+-- AFFECTS
+-- ============================================================================
+
+DMPatterns.AFFECTS_HEADER          = "^You are affected by the following:$"
+DMPatterns.AFFECTS_NONE            = "^You are not affected by anything%.$"
+DMPatterns.AFFECT_ARMOR            = "^Armor%s*:%s*modifies armor class by (%S+) for about (.+)%.$"
+
+-- ============================================================================
 -- SKILLS
 -- ============================================================================
 
@@ -159,6 +196,7 @@ DMPatterns.SKILL_LEARNED      = "^You learn from your mistakes%, and your ([%a%s
 
 DMPatterns.XP_GAIN            = "You have earned (%d+) experience points!"
 DMPatterns.XP_RECEIVE         = "You receive (%d+) experience points%."
+DMPatterns.XP_DOUBLE          = "^You gain double the experience!$"
 
 -- ============================================================================
 -- INGEST (eat / drink)
@@ -170,12 +208,25 @@ DMPatterns.TOO_FULL           = "^You are too full to eat more%.$"
 DMPatterns.TOO_DRUNK          = "^You fail to reach your mouth%.%s+%*Hic%*$"
 
 -- ============================================================================
+-- INVENTORY / CONTAINERS
+-- ============================================================================
+
+DMPatterns.ITEM_PUT_IN_CONTAINER = "^You put (.-) in (.+)%.$"
+DMPatterns.ITEM_PUT_NOTHING   = "^You have nothing you can put into (.+)%.$"
+DMPatterns.ITEM_GET_FROM_SOURCE = "^You get (.-) from (.+)%.$"
+DMPatterns.FILL_CONTAINER      = "^You fill (.-) with (.-) from (.+)%.$"
+DMPatterns.POUR_CONTAINER      = "^You pour (.-) from (.-) into (.+)%.$"
+DMPatterns.CONTAINER_FULL      = "^Your (.+) is full%.$"
+DMPatterns.CONTAINER_INVERT     = "^You invert (.-), spilling (.-) all over the ground%.$"
+
+-- ============================================================================
 -- DEATH
 -- ============================================================================
 
 DMPatterns.PLAYER_KILLED      = "^You have been KILLED!!$"
 DMPatterns.PLAYER_DEAD        = "^You are DEAD!!$"
 DMPatterns.MOB_DEAD           = "^(.+) is DEAD!!$"
+DMPatterns.MOB_GROUND_DEAD    = "^(.+) hits the ground %.%.%. DEAD%.$"
 
 -- ============================================================================
 -- BANK
@@ -266,6 +317,12 @@ DMPatterns.COMM_OOC_RECV           = "^%[OOC%] (.*)%: (.*)$"
 DMPatterns.COMM_HOUSE_CHANNEL      = "^%[(.*)%] (.*)%: (.*)$"
 
 -- ============================================================================
+-- LOGIN / NAME
+-- ============================================================================
+
+DMPatterns.LOGIN_PASSWORD          = "^Password:$"
+
+-- ============================================================================
 -- ONE-LINE EXACT MATCHES
 -- ----------------------------------------------------------------------------
 -- These convert exact MUD lines to events without Lua pattern matching.
@@ -273,9 +330,8 @@ DMPatterns.COMM_HOUSE_CHANNEL      = "^%[(.*)%] (.*)%: (.*)$"
 -- dmapi.core.LineTrigger as an exact string lookup.
 --
 -- NOTE: these are plain literals, NOT Lua patterns - never pass them to
--- line:match(). DMPatterns.identify() does exactly that when it scans every
--- string in this table, so entries containing Lua magic characters (e.g. the
--- brackets in EXACT_HIT_RETURN) can report misleading results.
+-- line:match(). DMPatterns.identify() handles these entries with literal
+-- equality, including values containing Lua magic characters.
 -- EXACT_LOGIN_PROMPT currently has no oneLineEvents consumer.
 -- ============================================================================
 
@@ -296,10 +352,26 @@ DMPatterns.EXACT_HIT_RETURN     = "[Hit Return to continue]"
 DMPatterns.EXACT_WELCOME        = "Welcome to Dark Mists.  Please do not feed the mobiles."
 DMPatterns.EXACT_CONNECT        = "Welcome to the Dark Mists, a medieval fantasy role-playing and PK MUD!"
 DMPatterns.EXACT_RECONNECT      = "Reconnecting."
-DMPatterns.EXACT_LOGIN_PROMPT   = "By what name do you wish to be known?"
+DMPatterns.EXACT_LOGIN_PROMPT   = "By what name do you wish to be known? "
 DMPatterns.EXACT_FLEE           = "You choose a direction at random and begin to run..."
 DMPatterns.EXACT_STUN_OFF       = "Your stun wears off."
 DMPatterns.EXACT_SENSES         = "You regain your senses."
+DMPatterns.EXACT_PET_ENJOY      = "Enjoy your pet."
+
+-- ============================================================================
+-- WHO / PLAYER LIST
+-- ============================================================================
+
+DMPatterns.WHO_PLAYERS_FOUND    = "^Players found:%s*(%d+)$"
+
+-- ============================================================================
+-- SHOPPING / TARGET ACTIONS
+-- ============================================================================
+
+DMPatterns.HAGGLE_PRICE_DOWN    = "^You haggle the price down to (%d+) coins%.$"
+DMPatterns.CLAIM_TARGET         = "^You claim (.+)%.$"
+DMPatterns.FOLLOWER_FOLLOWS     = "^(.+) now follows you%.$"
+DMPatterns.FOLLOWER_STOPS       = "^(.+) stops following you%.$"
 
 -- ============================================================================
 -- LOOT / ECONOMY
@@ -307,6 +379,7 @@ DMPatterns.EXACT_SENSES         = "You regain your senses."
 
 DMPatterns.LOOT_CORPSE_BOTH    = "^You get (%d+) silver coins? and (%d+) gold coins? from the corpse of (.*)%."
 DMPatterns.LOOT_CORPSE_SILVER  = "^You get (%d+) silver coins? from the corpse of (.*)%."
+DMPatterns.LOOT_CORPSE_ITEM       = "^You get (.-) from the corpse of (.*)%.$"
 DMPatterns.LOOT_CORPSE_GOLD    = "^You get (%d+) gold coins? from the corpse of (.*)%."
 DMPatterns.LOOT_SELL           = "^You sell (.*) for (%d+) silver and (%d+) gold pieces%."
 DMPatterns.LOOT_SACRIFICE      = "^The gods give you (.*) silver coins? for your sacrifice%."
@@ -316,6 +389,8 @@ DMPatterns.LOOT_BUY            = "^You buy (.*) for (%d+) silver%."
 -- EQUIPMENT / COMBAT EVENTS
 -- ============================================================================
 
+DMPatterns.EQUIPMENT_HEADER    = "^You are using:$"
+DMPatterns.EQUIPMENT_SLOT      = "^<([^>]+)>%s+(.+)$"
 DMPatterns.EQUIP_ZAPPED        = "You are zapped by (.*) and drop it%."
 DMPatterns.COMBAT_DISARM       = "(.*) DISARMS you and sends your weapon flying!"
 
@@ -339,6 +414,7 @@ DMPatterns.THIRST_LEVEL2       = "^Your mouth is parched!"
 DMPatterns.THIRST_LEVEL3       = "^You are beginning to dehydrate!"
 DMPatterns.THIRST_LEVEL4       = "^You are dying of thirst!"
 DMPatterns.THIRST_QUENCHED     = "^Your thirst is quenched%."
+DMPatterns.THIRST_NO_LONGER_DYING = "^You are no longer dying of thirst%.$"
 
 -- ============================================================================
 -- HUNGER
@@ -350,6 +426,7 @@ DMPatterns.HUNGER_LEVEL3       = "^You are beginning to starve!"
 DMPatterns.HUNGER_LEVEL4       = "^You are starving!"
 DMPatterns.HUNGER_STARVATION   = "^Your starvation"
 DMPatterns.HUNGER_SATED        = "^You are no longer hungry%."
+DMPatterns.HUNGER_NO_LONGER_STARVING = "^You are no longer starving%.$"
 DMPatterns.HUNGER_FULL         = "^You are full%."
 
 -- ============================================================================
