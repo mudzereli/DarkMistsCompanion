@@ -779,12 +779,12 @@ local function registerWindows()
     },
     {
       key = "windows.skillDisplayMode", page = "Windows", group = "SkillUps",
-      label = "Clicked history location", type = "enum", default = "main",
+      label = "Clicked history location", type = "enum", default = "alert",
       choices = {
         {value = "main", label = "Main window"},
         {value = "alert", label = "Alert window"},
       },
-      get = function() return globalValue("skillUpsDisplayMode", "main") end,
+      get = function() return globalValue("skillUpsDisplayMode", "alert") end,
       validate = function(value)
         return validateEnum(value, {{value = "main"}, {value = "alert"}})
       end,

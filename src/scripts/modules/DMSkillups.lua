@@ -4,7 +4,8 @@
 SkillUps = {
   config = {
     maxSkillUps = 50,  -- Keep last 50 skill ups
-    displayMode = "main",
+    -- Where the history is shown when a skill notification is clicked: "main" or "alert"
+    displayMode = "alert",
   },
   history = {},
   -- No need for eventHandler tracking; managed by EventManager
@@ -177,7 +178,7 @@ SkillUps Module:
   end)
 
   DarkmistsAlias.add([[^skillups? list$]], function()
-    SkillUps.showAlert()
+    SkillUps.showHistory()
   end)
 
   DarkmistsAlias.add([[^skillups? reset$]], function()
