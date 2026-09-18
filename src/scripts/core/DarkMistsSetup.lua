@@ -9,7 +9,11 @@
 --   2. first score refresh - sent by MarkUIIntroSeen -> reconcileOnlineState
 --   3. bundled-map prompt  - binary: install the map, or keep the current one
 --   4. settle              - only when the map was installed (~4s)
---   5. theme contrast check
+--   5. theme contrast check - followed by the completion notice in chat
+--
+-- The completion notice is printed here rather than by the alert handlers: this
+-- is the only point every successful path converges on, and a dismissed UI
+-- prompt returns to STEP_IDLE without ever arriving here.
 --
 -- `hasSeenUIIntroMessage` doubles as the "setup completed" marker, which is what
 -- keeps a fresh install passive until the player presses the button.
@@ -72,6 +76,23 @@ local function runContrastCheck(generation)
   -- claiming the map prompt, and begin() must be usable again.
   DarkmistsSetup.step = DarkmistsSetup.STEP_DONE
   Darkmists._contrastCheckPending = false
+  -- Printed before the contrast check so the line lands ahead of the alert panel
+  -- when the theme does need switching. Silent paths (no mismatch) would
+  -- otherwise end the sequence with no feedback at all.
+  -- Deliberately does not advertise Settings -> Setup Wizard: that entry only
+  -- offers the UI-mode choice, while the bundled-map prompt is its own entry
+  -- (Settings -> Load Map), so it is not a way back into this sequence.
+  -- The trailing \n is belt-and-braces. notify() prefixes a newline but does not
+  -- terminate the line, and raw command echoes carry no leading newline of their
+  -- own, so anything that does slip in - a menu-driven map load, or a map
+  -- installed before the session is up - would otherwise glue onto the end here.
+  -- Commands are picked out in the theme's success colour, the same way the intro
+  -- panel styles `dmc help` and `dmc settings`.
+  DMLogger.notify("Darkmists Setup",
+    DarkmistsTheme.goodTag .. "Setup complete!" ..
+    DarkmistsTheme.mutedTag .. " Type '" .. DarkmistsTheme.goodTag .. "dmc help" ..
+    DarkmistsTheme.mutedTag .. "' for commands, or '" ..
+    DarkmistsTheme.goodTag .. "dmc settings" .. DarkmistsTheme.mutedTag .. "' for options.\n")
   DarkmistsTheme.checkBackgroundContrast()
 end
 
@@ -79,6 +100,10 @@ end
 local function settleThenCheckContrast(generation, installed)
   if not stillCurrent(generation) then return end
   DarkmistsSetup.step = DarkmistsSetup.STEP_SETTLING
+  -- A fixed delay, long enough for the map's own follow-up commands to go out
+  -- and their replies to land. It cannot see the case where those commands wait
+  -- for the next world enter, so a map installed before the session is up can
+  -- still finish first - the trailing newline on the notice keeps that tidy.
   local delay = installed and DarkmistsSetup.MAP_SETTLE_SECONDS or 0
   tempTimer(delay, function() runContrastCheck(generation) end)
 end

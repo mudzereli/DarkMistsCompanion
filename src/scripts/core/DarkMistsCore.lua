@@ -131,7 +131,8 @@ Darkmists.DefaultSettings = {
   -- Chat and skill history limits
   chatHistoryMaxMessages = 100,
   skillUpsMaxEntries = 50,
-  skillUpsDisplayMode = "main",
+  -- Where skillups history is shown: "main" or "alert"
+  skillUpsDisplayMode = "alert",
   -- Stat Roller Leniency (0 = Roll must be Max, 1 = Roll can be 1 lower than Max, etc)
   statRollerLeniency = 1,
   statRollerCalibrationLines = 20,
@@ -471,12 +472,12 @@ function Darkmists.ShowUIIntroMessage(force, onChosen, onDismissed)
     DMAlertWindow.Show(title, function(win)
       cecho(win, "\n")
         if isMinimal then
-          cecho(win, DarkmistsTheme.yellowTag .. " You are currently using Minimal UI Mode.\n\n")
+          cecho(win, DarkmistsTheme.yellowTag .. "You are currently using Minimal UI Mode.\n\n")
         else
-          cecho(win, DarkmistsTheme.yellowTag .. " You are currently using Full UI Mode.\n\n")
+          cecho(win, DarkmistsTheme.yellowTag .. "You are currently using Full UI Mode.\n\n")
         end
 
-        cecho(win, DarkmistsTheme.infoTag .. " Full UI provides:\n")
+        cecho(win, DarkmistsTheme.infoTag .. "Full UI provides:\n")
         cecho(win, "  " .. DarkmistsTheme.infoTag .. "• Chat History Window\n")
         cecho(win, "  " .. DarkmistsTheme.infoTag .. "• Who List Panel\n")
         cecho(win, "  " .. DarkmistsTheme.infoTag .. "• Affect & Buff Duration Tracker\n")
@@ -484,23 +485,23 @@ function Darkmists.ShowUIIntroMessage(force, onChosen, onDismissed)
         cecho(win, "  " .. DarkmistsTheme.infoTag .. "• Dockable & Customizable UI Windows\n\n")
 
         if isFirstRun then
-          cecho(win, DarkmistsTheme.infoTag .. " Choose how Dark Mists Companion should start:\n")
-          cecho(win, DarkmistsTheme.mutedTag .. " Minimal UI keeps the main interface uncluttered. Full UI adds dockable panels and status windows.\n\n")
-          cechoLink(win, DarkmistsTheme.mutedTag .. "<u>[" .. DarkmistsTheme.infoTag .. "USE MINIMAL UI" .. DarkmistsTheme.mutedTag .. "]",
-            function() commitChoice("minimal"); Darkmists.MarkUIIntroSeen() end,
-            "Keep the lightweight Minimal UI", true)
-          cecho(win, "\n")
+          cecho(win, DarkmistsTheme.infoTag .. "Choose how Dark Mists Companion should start:\n")
+          cecho(win, DarkmistsTheme.mutedTag .. "Minimal UI keeps the main interface uncluttered. Full UI adds dockable panels and status windows.\n\n")
           cechoLink(win, DarkmistsTheme.mutedTag .. "<u>[" .. DarkmistsTheme.goodTag .. "ENABLE FULL UI NOW" .. DarkmistsTheme.mutedTag .. "]",
             function() commitChoice("full"); Darkmists.EnableUI(); Darkmists.MarkUIIntroSeen() end,
             "Enable the full Dark Mists Companion UI", true)
+          cecho(win, "\n")
+          cechoLink(win, DarkmistsTheme.mutedTag .. "<u>[" .. DarkmistsTheme.infoTag .. "USE MINIMAL UI" .. DarkmistsTheme.mutedTag .. "]",
+            function() commitChoice("minimal"); Darkmists.MarkUIIntroSeen() end,
+            "Keep the lightweight Minimal UI", true)
         elseif isMinimal then
-          cecho(win, DarkmistsTheme.infoTag .. " Command: " .. DarkmistsTheme.goodTag .. "dmc ui" .. DarkmistsTheme.infoTag .. "\n")
-          cecho(win, DarkmistsTheme.mutedTag .. " (Toggle command — turns UI " .. DarkmistsTheme.goodTag .. "ON" .. DarkmistsTheme.mutedTag .. " or " .. DarkmistsTheme.badTag .. "OFF" .. DarkmistsTheme.mutedTag .. ")\n\n")
+          cecho(win, DarkmistsTheme.infoTag .. "Command: " .. DarkmistsTheme.goodTag .. "dmc ui" .. DarkmistsTheme.infoTag .. "\n")
+          cecho(win, DarkmistsTheme.mutedTag .. "  (Toggle command — turns UI " .. DarkmistsTheme.goodTag .. "ON" .. DarkmistsTheme.mutedTag .. " or " .. DarkmistsTheme.badTag .. "OFF" .. DarkmistsTheme.mutedTag .. ")\n\n")
           cechoLink(win, DarkmistsTheme.mutedTag .. "<u>[" .. DarkmistsTheme.goodTag .. "ENABLE FULL UI NOW" .. DarkmistsTheme.mutedTag .. "]",
             function() commitChoice("full"); Darkmists.EnableUI(); Darkmists.MarkUIIntroSeen() end,
             "Enable the full Dark Mists Companion UI", true)
         else
-          cecho(win, DarkmistsTheme.mutedTag .. " Click to switch back to Minimal UI.\n\n")
+          cecho(win, DarkmistsTheme.mutedTag .. "Click to switch back to Minimal UI.\n\n")
           cechoLink(win, DarkmistsTheme.mutedTag .. "<u>[" .. DarkmistsTheme.badTag .. "DISABLE FULL UI NOW" .. DarkmistsTheme.mutedTag .. "]",
             function() commitChoice("minimal"); Darkmists.MarkUIIntroSeen(); Darkmists.DisableUI() end,
             "Switch to minimal UI", true)

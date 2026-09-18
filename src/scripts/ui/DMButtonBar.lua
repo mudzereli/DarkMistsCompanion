@@ -485,7 +485,7 @@ local SETTINGS_MENU = {
 -- Help menu entries should correspond to keys in `DarkMistsMeta.helpIndex`.
 -- They call `expandAlias("dmc help <topic>")` to render help in-client.
 local HELP_MENU = {
-  {label = "🌐 Dark Mists Wiki", action = function() Darkmists.OpenWiki() end},
+  {label = "🌐 DMC Wiki", action = function() Darkmists.OpenWiki() end},
   {label = "❔ General", children = {
     {label = "📘 Main Help", action = function() expandAlias("dmc help") end},
     {label = "🌞 UI Mode", action = function() expandAlias("dmc help ui") end},
