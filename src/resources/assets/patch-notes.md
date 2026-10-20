@@ -54,6 +54,7 @@
 **DMC Patch Notes: 1.7.1**
 
 **Map**: updated the bundled map data.
+**Items**: updated the bundled item data.
 
 **Future Versions**
 - disconnect / reconnect may lead to a path where default GUI is shown - creating confusion
