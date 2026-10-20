@@ -1870,6 +1870,11 @@
     "details": "Area: Special Stuff\nObject 'the sword of Enforcers' is type weapon, extra flags glowing noremove nopurge burnproof.\nWeight is 15.0 pounds, value is 200000, level is 52.\nMaterial is steel.\nrestrict flags justicar_allowed.\nWeapon type is sword.\nDamage is 9d5 (average 27).\nDamage noun is slash."
   },
   {
+    "name": "a wooden ranger shield",
+    "vnum": 2909,
+    "details": "Area: Special Stuff\nObject 'a wooden ranger shield' is type armor, extra flags nonmetal.\nWeight is 5.0 pounds, value is 0, level is 0.\nMaterial is wood.\nrestrict flags none.\nArmor class is 0 pierce, 0 bash, 0 slash, and 0 vs. magic."
+  },
+  {
     "name": "a vile gauntlet of flesh",
     "vnum": 2908,
     "details": "Area: Special Stuff\nObject 'a vile gauntlet of flesh' is type weapon, extra flags dark evil magic nodrop anti_good rotdeath sellextract burnproof nouncurse pulsing.\nWeight is 7.0 pounds, value is 0, level is 0.\nMaterial is flesh.\nrestrict flags none.\nWeapon type is exotic.\nDamage is 1d1 (average 1).\nDamage noun is wrath.\nWeapons flags: vampiric"
@@ -21302,7 +21307,7 @@
   {
     "name": "an iron spear",
     "vnum": 72701,
-    "details": "Area: Nightfall Keep\nObject 'an iron spear' is type weapon, extra flags evil.\nWeight is 24.4 pounds, value is 72942, level is 49.\nMaterial is iron.\nrestrict flags none.\nWeapon type is staff.\nDamage is 5d9 (average 25).\nDamage noun is pierce.\nAffects dexterity by 1.\nAffects constitution by 1.\nAffects strength by 1.\nAffects saves by -5."
+    "details": "Area: Nightfall Keep\nObject 'an iron spear' is type weapon, extra flags evil.\nWeight is 24.4 pounds, value is 72942, level is 49.\nMaterial is iron.\nrestrict flags none.\nWeapon type is spear.\nDamage is 5d9 (average 25).\nDamage noun is pierce.\nAffects dexterity by 1.\nAffects constitution by 1.\nAffects strength by 1.\nAffects saves by -5."
   },
   {
     "name": "an iron longsword",
@@ -39387,12 +39392,12 @@
   {
     "name": "a small sleeve of plenty",
     "vnum": 29054,
-    "details": "Area: Radiance\nObject 'a small sleeve of plenty' is type container, extra flags nodrop noremove nopurge nosacrifice nonmetal nolocate nobrains burnproof nouncurse pulsing no_buy no_origin no_blood.\nWeight is 0.0 pounds, value is 0, level is 0.\nMaterial is paper.\nrestrict flags none.\nCapacity: 10000#  Maximum weight: 100#  flags: none"
+    "details": "Area: Radiance\nObject 'a small sleeve of plenty' is type container, extra flags nodrop noremove nopurge nosacrifice nonmetal nolocate nobrains burnproof nouncurse pulsing no_buy no_origin.\nWeight is 0.0 pounds, value is 0, level is 0.\nMaterial is paper.\nrestrict flags none.\nCapacity: 10000#  Maximum weight: 100#  flags: none"
   },
   {
     "name": "a small sleeve",
     "vnum": 29051,
-    "details": "Area: Radiance\nObject 'a small sleeve' is type container, extra flags nodrop noremove nopurge nosacrifice nonmetal nolocate nobrains burnproof nouncurse pulsing no_buy no_origin no_blood.\nWeight is 0.0 pounds, value is 0, level is 0.\nMaterial is paper.\nrestrict flags none.\nCapacity: 1500#  Maximum weight: 2#  flags: none"
+    "details": "Area: Radiance\nObject 'a small sleeve' is type container, extra flags nodrop noremove nopurge nosacrifice nonmetal nolocate nobrains burnproof nouncurse pulsing no_buy no_origin.\nWeight is 0.0 pounds, value is 0, level is 0.\nMaterial is paper.\nrestrict flags none.\nCapacity: 1500#  Maximum weight: 2#  flags: none"
   },
   {
     "name": "an unlit lantern",
@@ -42485,6 +42490,11 @@
     "details": "Area: Tyr-Zinet Mage Camp\nObject 'a medallion of focus' is type armor, extra flags magic.\nWeight is 1.4 pounds, value is 1406, level is 21.\nMaterial is wood.\nrestrict flags none.\nArmor class is 3 pierce, 4 bash, 6 slash, and 9 vs. magic.\nAffects mana by 5.\nAffects wisdom by 1.\nAffects intelligence by 1."
   },
   {
+    "name": "an armored metal chest with a locked padlock",
+    "vnum": 82195,
+    "details": "Area: The City of Sudharma\nObject 'an armored metal chest with a locked padlock' is type container, extra flags nopurge nosacrifice.\nWeight is 0.0 pounds, value is 0, level is 0.\nMaterial is metal.\nrestrict flags none.\nCapacity: 10000#  Maximum weight: 1000#  flags: closable closed locked"
+  },
+  {
     "name": "a box containing one pound of dry semolina lasagna noodles",
     "vnum": 82194,
     "details": "Area: The City of Sudharma\nObject 'a box containing one pound of dry semolina lasagna noodles' is type treasure, extra flags none.\nWeight is 1.0 pounds, value is 54, level is 1.\nMaterial is pasteboard and wheat and semolina and food.\nrestrict flags none."
@@ -43115,9 +43125,9 @@
     "details": "Area: The City of Sudharma\nObject 'a crystal vial filled with a purple cure potion' is type potion, extra flags none.\nWeight is 2.5 pounds, value is 143, level is 11.\nMaterial is crystal.\nrestrict flags none.\nLevel 11 spells of: 'cure poison' 'cure disease'."
   },
   {
-    "name": "a crystal vial filled with a blue healing potion",
+    "name": "a blue-tinted scroll with words and pictures",
     "vnum": 82068,
-    "details": "Area: The City of Sudharma\nObject 'a crystal vial filled with a blue healing potion' is type potion, extra flags none.\nWeight is 2.5 pounds, value is 117, level is 11.\nMaterial is crystal.\nrestrict flags none.\nLevel 11 spells of: 'cure serious' 'cure serious' 'cure serious' 'cure light'."
+    "details": "Area: The City of Sudharma\nObject 'a blue-tinted scroll with words and pictures' is type scroll, extra flags none.\nWeight is 0.8 pounds, value is 117, level is 11.\nMaterial is parchment.\nrestrict flags none.\nLevel 11 spells of: 'cure serious' 'cure serious' 'cure serious' 'cure light'."
   },
   {
     "name": "a large grassy green potion",
@@ -43538,16 +43548,6 @@
     "name": "a platinum ring bearing the seal of the Street Gangsters",
     "vnum": 74120,
     "details": "Area: Street Gangster Mansion\nObject 'a platinum ring bearing the seal of the Street Gangsters' is type armor, extra flags glowing.\nWeight is 0.6 pounds, value is 53451, level is 32.\nMaterial is platinum.\nrestrict flags none.\nArmor class is 5 pierce, 5 bash, 5 slash, and 5 vs. magic.\nAffects damage roll by 3.\nAffects hit roll by 2."
-  },
-  {
-    "name": "the altar of anguish",
-    "vnum": 1952,
-    "details": "Area: Spire of Anguish\nObject 'the altar of anguish' is type container, extra flags nopurge nosacrifice burnproof.\nWeight is 0.0 pounds, value is 0, level is 60.\nMaterial is onyx.\nrestrict flags none.\nCapacity: 500#  Maximum weight: 100#  flags: none"
-  },
-  {
-    "name": "a water filled onyx globe",
-    "vnum": 1951,
-    "details": "Area: Spire of Anguish\nObject 'a water filled onyx globe' is type treasure, extra flags glowing humming bless.\nWeight is 0.2 pounds, value is 0, level is 20.\nMaterial is onyx.\nrestrict flags none."
   },
   {
     "name": "a finely stitched leather quiver",
@@ -45113,11 +45113,6 @@
     "name": "a fleshy looking bladder",
     "vnum": 10260,
     "details": "Area: Temple of the Faceless\nObject 'a fleshy looking bladder' is type drink, extra flags glowing humming evil anti_good noremove nonmetal burnproof.\nWeight is 1.0 pounds, value is 0, level is 1.\nMaterial is flesh.\nrestrict flags none.\nIt holds red-colored blood."
-  },
-  {
-    "name": "a bulb of Belladonna",
-    "vnum": 10259,
-    "details": "Area: Temple of the Faceless\nObject 'a bulb of Belladonna' is type trash, extra flags none.\nWeight is 0.1 pounds, value is 0, level is 10.\nMaterial is hemp.\nrestrict flags none."
   },
   {
     "name": "a steel bucket",
@@ -46823,5 +46818,50 @@
     "name": "a drow scout's insignia",
     "vnum": 33700,
     "details": "Area: The Sundered Vale\nObject 'a drow scout's insignia' is type trash, extra flags visdeath.\nWeight is 0.1 pounds, value is 0, level is 39.\nMaterial is iron.\nrestrict flags none."
+  },
+  {
+    "name": "The Window into Perdition",
+    "vnum": 26808,
+    "details": "Area: Abyssal Passage\nObject 'The Window into Perdition' is type treasure, extra flags glowing humming bless.\nWeight is 0.2 pounds, value is 0, level is 20.\nMaterial is obsidian.\nrestrict flags none."
+  },
+  {
+    "name": "the Compact and Ordinances of the Brethren",
+    "vnum": 26807,
+    "details": "Area: Abyssal Passage\nObject 'the Compact and Ordinances of the Brethren' is type book, extra flags none.\nWeight is 0.8 pounds, value is 5000, level is 1.\nMaterial is leather.\nrestrict flags none."
+  },
+  {
+    "name": "the Brethren Tome: Outer Planes",
+    "vnum": 26806,
+    "details": "Area: Abyssal Passage\nObject 'the Brethren Tome: Outer Planes' is type book, extra flags none.\nWeight is 0.8 pounds, value is 5000, level is 1.\nMaterial is leather.\nrestrict flags none."
+  },
+  {
+    "name": "a damaged bookshelf",
+    "vnum": 26805,
+    "details": "Area: Abyssal Passage\nObject 'a damaged bookshelf' is type container, extra flags none.\nWeight is 0.1 pounds, value is 0, level is 0.\nMaterial is CartoonSillyness.\nrestrict flags none.\nCapacity: 5000#  Maximum weight: 5000#  flags: none"
+  },
+  {
+    "name": "An Ironclad Contract",
+    "vnum": 26804,
+    "details": "Area: Abyssal Passage\nObject 'An Ironclad Contract' is type armor, extra flags glowing humming dark evil anti_good noremove rotdeath nonmetal burnproof no_shield_cleave demon_allowed brethren_allowed crumbles_on_get.\nWeight is 0.0 pounds, value is 0, level is 60.\nMaterial is iron.\nrestrict flags none.\nArmor class is 0 pierce, 0 bash, 0 slash, and 0 vs. magic."
+  },
+  {
+    "name": "A carved bone rapier named 'Thumb Pricker'",
+    "vnum": 26803,
+    "details": "Area: Abyssal Passage\nObject 'A carved bone rapier named 'Thumb Pricker'' is type weapon, extra flags glowing humming dark evil anti_good noremove rotdeath demon_allowed brethren_allowed crumbles_on_get.\nWeight is 0.0 pounds, value is 0, level is 60.\nMaterial is bone.\nrestrict flags none.\nWeapon type is sword.\nDamage is 25d3 (average 50).\nDamage noun is thrust.\nWeapons flags: flaming"
+  },
+  {
+    "name": "a black donation pit",
+    "vnum": 26802,
+    "details": "Area: Abyssal Passage\nObject 'a black donation pit' is type container, extra flags nopurge.\nWeight is 100.0 pounds, value is 0, level is 1.\nMaterial is obsidian.\nrestrict flags none.\nCapacity: 1000#  Maximum weight: 1000#  flags: none"
+  },
+  {
+    "name": "a no-uncurse nocleave training shield",
+    "vnum": 26801,
+    "details": "Area: Abyssal Passage\nObject 'a no-uncurse nocleave training shield' is type armor, extra flags magic noremove nouncurse pulsing no_shield_cleave.\nWeight is 2.0 pounds, value is 1, level is 1.\nMaterial is wood.\nrestrict flags none.\nArmor class is 0 pierce, 0 bash, 0 slash, and 0 vs. magic."
+  },
+  {
+    "name": "a no-uncurse training sword",
+    "vnum": 26800,
+    "details": "Area: Abyssal Passage\nObject 'a no-uncurse training sword' is type weapon, extra flags magic noremove nouncurse pulsing.\nWeight is 2.0 pounds, value is 1, level is 1.\nMaterial is iron.\nrestrict flags none.\nWeapon type is sword.\nDamage is 1d1 (average 1).\nDamage noun is thwack."
   }
 ]
