@@ -91,6 +91,7 @@ MapColors.RoomOverrides = {
   ["yin and yang construction company"] = MapColors.Terrain.INTERIOR_POI,
   ["ny's wonders and baubles - ground floor"] = MapColors.Terrain.INTERIOR_POI,
   ["the training ground"] = MapColors.Terrain.PLAINS,
+  ["greed's domain"] = MapColors.Terrain.INTERIOR,
 }
 
 -- Terrain category sets (for adjacency analysis and context detection)

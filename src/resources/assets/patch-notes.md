@@ -51,6 +51,10 @@
 **Mudlet 5.0 compatibility**: at startup, DMC detects the optional Mudlet built-in `baseui` alias and hides BaseUI when present, preventing Mudlet 5.0's BaseUI from interfering with the DarkMistsCompanion interface. *Let me know if you have any problems with the  base ui interfering with DarkMists* 
 **Varius settings enhancements**: the Settings Panel now uses a vertical navigation rail, has a clearer status and action layout, splits the former Utilities group into dedicated Spam Prevention, Stat Roller, Make Armor, and DMSounds pages, and adds a Skill Ups setting for choosing whether clicked notifications open history in the main or alert window.
 
+**DMC Patch Notes: 1.7.1**
+
+**Map**: updated the bundled map data.
+
 **Future Versions**
 - disconnect / reconnect may lead to a path where default GUI is shown - creating confusion
 - theme manager improvements
